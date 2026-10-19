@@ -6,7 +6,7 @@
 |---|---|---|---|
 | R1 | Some job sites (for example LinkedIn) prohibit automated applying or scraping | Those routes can't be automated; user accounts could be restricted | Source registry records terms; such routes use guided manual apply; legal review of each major source before automation |
 | R2 | Employer portals change layouts often | Adapters break; applications fail | Adapter health checks, admin alerts, fast fixes behind feature flags, fall back to manual guidance |
-| R3 | Bangla and scanned circular extraction errors | Wrong deadlines or eligibility | Evidence + confidence, low-confidence fields marked unverified, Bangla eval set, admin correction tools |
+| R3 | Bangla and scanned circular extraction errors | Wrong deadlines or eligibility | Evidence + confidence, low-confidence fields marked unverified, Bangla unit-test fixtures, admin correction tools |
 | R4 | WhatsApp Business verification and template approval take time | Notifications delayed at launch | Start Meta business verification in Sprint 0; push and email as fallback |
 | R5 | App store review of an app that applies to jobs automatically | Launch delay | Clear store descriptions, user consent screens, beta through TestFlight and Play internal testing early |
 | R6 | Storing portal passwords makes the platform a high-value target | Serious harm if breached | KMS envelope encryption, no read-back API, strict access, audit, security testing, prefer OAuth/SSO where portals allow |

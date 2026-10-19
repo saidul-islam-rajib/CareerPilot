@@ -15,7 +15,7 @@ Each choice lists the reason and the main alternative considered. Exact versions
 | File storage | S3-compatible object storage (AWS S3; MinIO locally) |
 | Browser automation | Playwright (Python) |
 | AI | Claude API via the official `anthropic` Python SDK, model Claude Opus 5.5 |
-| Embeddings | Open multilingual embedding model, self-hosted on CPU (free); hosted API only if evals require |
+| Embeddings | Open multilingual embedding model, self-hosted on CPU (free); hosted API only if quality checks require |
 | OCR fallback | Tesseract with Bangla + English language data |
 | User web app | Next.js (React, TypeScript) |
 | Admin web app | Separate Next.js app (React, TypeScript) |
@@ -88,7 +88,7 @@ The admin app is a separate Next.js app with its own domain and deployment (requ
 | Biometrics | **expo-local-authentication** | Fingerprint/face sign-in |
 | Files and camera | **expo-document-picker, expo-image-picker** | Upload documents, photos, signatures |
 | Builds / store release | **EAS Build, EAS Submit, EAS Update** | Cloud builds, store submission, over-the-air fixes |
-| E2E tests | **Maestro** | Simple, reliable mobile flows |
+| Unit tests | **Jest (jest-expo) + React Native Testing Library** | Unit tests only in v1 |
 
 Alternative considered: Flutter. Rejected because it cannot share code with the TypeScript web apps.
 
@@ -127,11 +127,9 @@ Alternative considered: Flutter. Rejected because it cannot share code with the 
 
 | Area | Tools |
 |---|---|
-| Python | ruff (lint + format), mypy or pyright, pytest, pytest-asyncio, testcontainers |
+| Python | ruff (lint + format), mypy or pyright, pytest, pytest-asyncio (unit tests only) |
 | TypeScript | ESLint, Prettier, `tsc --noEmit`, Vitest, React Testing Library |
-| Web E2E | Playwright Test |
-| Mobile E2E | Maestro |
-| API contract | Schemathesis against the OpenAPI spec; CI fails if generated clients are out of date |
-| Accessibility | axe-core in web tests; manual screen-reader checks |
-| Security | gitleaks (secrets), CodeQL, Dependabot/Renovate, Trivy (container images), OWASP ZAP (staging) |
-| AI quality | Evaluation suites per AI task ([05-AI-Design.md](05-AI-Design.md)) |
+| API client freshness | CI fails if generated clients are out of date |
+| Accessibility | Accessibility lint rules (eslint-plugin-jsx-a11y) and UI review by the UI Validation agent |
+| Security | gitleaks (secrets), CodeQL, Dependabot/Renovate, Trivy (container images) |
+| AI quality | Unit tests with recorded responses; production quality metrics ([05-AI-Design.md](05-AI-Design.md)) |

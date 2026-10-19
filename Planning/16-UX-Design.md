@@ -123,7 +123,7 @@ The profile is the centre of the product. Design goals: complete, fast to edit, 
 - Layouts adapt (reflow, collapse, change navigation), never just shrink.
 - Touch targets ≥ 44 pt / 48 dp; text scales with system font size up to 200%.
 - Images use responsive sizes; tables become cards on small screens.
-- Every screen is checked at each breakpoint by the UI Validation agent (visual regression on all five sizes).
+- Every screen is reviewed at each breakpoint by the UI Validation agent (screenshots at all five sizes).
 
 ## 6. Interaction patterns
 

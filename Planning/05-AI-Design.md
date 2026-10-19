@@ -16,7 +16,7 @@ How CareerPilot uses AI (Claude) and machine learning, and the guardrails that k
 |---|---|
 | Model | **Claude Opus 5.5** (`claude-opus-5-5`) for all AI tasks in version 1 |
 | SDK | Official `anthropic` Python SDK |
-| Effort | Set explicitly per task (`output_config.effort`): `low` for classification, `medium` for extraction, `high` for writing and form understanding. Tuned with evals |
+| Effort | Set explicitly per task (`output_config.effort`): `low` for classification, `medium` for extraction, `high` for writing and form understanding. Tuned with production quality metrics |
 | Structured outputs | `client.messages.parse()` with Pydantic models for every extraction and classification task |
 | PDF and images | Circulars, scanned notices, résumés, and transcripts are sent as `document` / `image` content blocks; this also covers Bangla OCR |
 | Files API | Upload large documents once and reuse them across calls |
@@ -25,7 +25,7 @@ How CareerPilot uses AI (Claude) and machine learning, and the guardrails that k
 | Refusal handling | Always check `stop_reason` before reading output; server-side `fallbacks` enabled; a refused item becomes "needs manual review", never a guess |
 | Streaming | Used for long generations (cover letters, SOPs) so requests don't time out |
 
-Using a cheaper model (for example Claude Haiku 5.5 or Claude Sonnet 5.5) for high-volume tasks such as nightly extraction is a cost decision for the Product Owner. It is listed in [09-Risks-and-Decisions.md](09-Risks-and-Decisions.md) and must be backed by eval results before switching.
+Using a cheaper model (for example Claude Haiku 5.5 or Claude Sonnet 5.5) for high-volume tasks such as nightly extraction is a cost decision for the Product Owner. It is listed in [09-Risks-and-Decisions.md](09-Risks-and-Decisions.md) and must be backed by quality comparisons on recorded samples before switching.
 
 ## 3. AI tasks
 
@@ -50,7 +50,7 @@ Using a cheaper model (for example Claude Haiku 5.5 or Claude Sonnet 5.5) for hi
 
 | Component | Version 1 approach | Later |
 |---|---|---|
-| Semantic similarity | Multilingual embeddings stored in pgvector (profile ↔ posting, question ↔ question group, dedup candidates) | Fine-tuned or larger embedding models if evals show gaps |
+| Semantic similarity | Multilingual embeddings stored in pgvector (profile ↔ posting, question ↔ question group, dedup candidates) | Fine-tuned or larger embedding models if quality metrics show gaps |
 | Match score | Weighted formula in code over features: hard-filter results, skill overlap, seniority, education, location, salary fit, embedding similarity, user feedback adjustments. Versioned (`scoring_model_version`) | Learning-to-rank trained on user feedback and outcomes |
 | Duplicate detection | Text similarity (MinHash/trigram) + embeddings → Claude confirms close cases | Trained classifier |
 | Fraud detection | Rules + Claude signals | Trained classifier on confirmed fraud reports |
@@ -68,13 +68,13 @@ Embedding provider: chosen in Sprint 0 by testing Bangla and English retrieval q
 - **Privacy.** The privacy notice states which data goes to the AI provider; user data is not used for model training (requirements Section 40.4). Data-retention settings with the provider are confirmed before launch.
 - **Cost limits.** Per-user and platform daily AI budgets; usage shown in the admin dashboard (requirements Section 53.3).
 
-## 6. Prompts and evaluation
+## 6. Prompts and quality
 
 - Prompts live in the repository (`services/core/ai/prompts/`), are versioned, and are code-reviewed like code.
-- Each AI task has an evaluation set: real-world-like inputs (including Bangla circulars, scanned PDFs, tricky questions, injection attempts) with expected outputs or grading rules.
-- CI runs the evaluation set when a prompt, model, or effort setting changes; a drop below the agreed score blocks the merge.
-- Target metrics for v1 (to be confirmed with real data):
-  - Extraction: deadline and grade accuracy ≥ 98% on the eval set; any lower-confidence field marked unverified.
-  - Claim check: 100% of seeded fabricated claims caught.
-  - Question matching: no false "same meaning" matches on the seeded tricky set.
-  - Reply classification: ≥ 95% accuracy.
+- **Unit tests only (v1):** each AI task has unit tests that use recorded Claude responses (no live AI calls in tests). They check prompt building, data minimization, schema validation of outputs, refusal and error handling, claim checks, cross-contamination checks, and cost tracking. Recorded fixtures include Bangla circulars, scanned PDFs, tricky questions, and prompt-injection attempts.
+- **Production quality metrics** replace offline evaluation sets in v1: share of extracted fields marked unverified, user and admin corrections per field, claim-check failures, question-matching corrections, reply-classification corrections, refusals. The AI/ML Engineer agent watches these in Grafana and proposes prompt changes.
+- Target levels for v1 (to be confirmed with real data):
+  - Deadline and grade corrections by users/admins below 2% of extracted opportunities.
+  - Zero generated texts sent with an unsupported claim (claim check blocks them).
+  - Question-matching corrections below 1%.
+  - Reply-classification corrections below 5%.

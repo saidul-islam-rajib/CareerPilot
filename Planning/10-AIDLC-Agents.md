@@ -13,7 +13,7 @@ flowchart LR
   end
   subgraph CON["Construction"]
     C1["Code:<br/>backend, web, admin,<br/>mobile, AI"]
-    C2["Test:<br/>unit → E2E, UI validation,<br/>load, security, AI evals"]
+    C2["Test:<br/>unit tests, UI review,<br/>static checks"]
     C3["Review:<br/>code, security,<br/>performance"]
   end
   subgraph OPS["Operations"]
@@ -44,13 +44,13 @@ All agents are Claude-based. Each has its own instructions, tools, permissions, 
 | 6 | **Backend Developer** | Construction | Implements modules, workflows, plugins | Code + tests | All tests pass; module boundaries respected |
 | 7 | **Web Developer** | Construction | Implements user web and admin features | Code + tests | Tests pass; matches screen specs |
 | 8 | **Mobile Developer** | Construction | Implements Android and iOS features (Expo) | Code + tests | Tests pass on Android and iOS emulators; small-screen layouts checked |
-| 9 | **AI/ML Engineer** | Construction | Builds AI tasks, prompts, embeddings, scoring features, evals | Prompts, eval sets, AI code | Eval targets met ([05-AI-Design.md](05-AI-Design.md)) |
+| 9 | **AI/ML Engineer** | Construction | Builds AI tasks, prompts, embeddings, scoring features | Prompts, AI code, unit tests with recorded responses | Unit tests pass; production quality metrics within targets ([05-AI-Design.md](05-AI-Design.md)) |
 | 10 | **Data / Database** | Construction, Ops | Writes migrations, indexes, queries; checks query plans and data growth | Migrations, index changes | Expand-and-contract; no slow queries above budget |
-| 11 | **Test Engineer** | Construction | Writes and maintains unit, integration, contract, E2E tests; finds flaky tests; keeps coverage | Tests, coverage reports | Coverage targets met; no flaky tests in required checks |
-| 12 | **UI Validation** | Construction | Checks screens against specs: visual regression, accessibility, form validation messages, layout on small/large phones and tablets, usability heuristics | UI validation report with screenshots | No accessibility violations; visual diffs approved; validation rules complete |
+| 11 | **Test Engineer** | Construction | Writes and maintains unit tests (the only test type in v1); finds flaky tests; keeps coverage | Tests, coverage reports | Coverage targets met; no flaky tests in required checks |
+| 12 | **UI Validation** | Construction | Reviews screens against specs (a review, not automated tests): design-guide compliance, accessibility rules, form validation messages, layout at every breakpoint, usability heuristics | UI review report with screenshots | No accessibility issues; validation rules complete |
 | 13 | **Code Reviewer** | Construction | Reviews every pull request for correctness, clarity, and rule compliance | Review comments, approve/request changes | No unresolved high-severity findings |
 | 14 | **Security** | Construction, Ops | Reviews security-sensitive changes, scans results, threat-model updates, secret checks | Security review, issues | No high/critical findings open |
-| 15 | **Performance Analyst** | Construction, Ops | Runs load, stress, spike, and soak tests; profiles; finds regressions and bottlenecks | Performance report, fixes or issues | Performance targets met ([14-Testing-and-Quality.md](14-Testing-and-Quality.md)) |
+| 15 | **Performance Analyst** | Construction, Ops | Analyses production latency, throughput, and profiles; finds regressions and bottlenecks | Performance report, fixes or issues | Performance targets met in production monitoring ([11-Observability.md](11-Observability.md)) |
 | 16 | **Capacity, Storage and Cost** | Ops | Tracks database and storage growth, log volume, queue sizes, AI/messaging spend; forecasts; proposes clean-up and cost savings | Weekly capacity and cost report | Forecast within budget; no store above 70% capacity without a plan |
 | 17 | **DevOps / Release** | Ops | Maintains CI/CD, Docker, Terraform; deploys to AWS; builds and submits Android app to Play Store | Pipelines, releases, release notes | Release checklist passed; rollback ready |
 | 18 | **SRE / Production Analyst** | Ops | Watches dashboards and alerts; detects anomalies; correlates logs, traces, metrics; triages incidents | Incident records, triage reports | Every alert triaged within target time |
@@ -65,7 +65,7 @@ All agents are Claude-based. Each has its own instructions, tools, permissions, 
 | New or changed requirement | Business Analyst → Planner → Architect / UX | Claude Code session (interactive or headless) |
 | Bolt starts | Orchestrator assigns Developer + Test Engineer agents | Claude Code with subagents; one git worktree per agent |
 | Pull request opened | Code Reviewer, Security, UI Validation, Test Engineer | GitHub Actions with Claude Code |
-| Nightly | Performance Analyst (load tests on staging), Capacity/Cost, Test Engineer (flaky test hunt) | Scheduled jobs |
+| Nightly | Performance Analyst (production performance and profiles), Capacity/Cost, Test Engineer (flaky test hunt) | Scheduled jobs |
 | Alert or new error in production | SRE → Auto-Fix (or runbook remediation) → Architect if design-level | Webhook from Grafana / error tracker to an agent runner |
 | Weekly | Capacity/Cost report, Compliance check, Documentation sync | Scheduled jobs |
 

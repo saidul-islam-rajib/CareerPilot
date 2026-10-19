@@ -14,8 +14,7 @@ Everything is tracked in **Grafana** using **OpenTelemetry** (a vendor-neutral s
 | Web front-end monitoring (page loads, errors, user journeys) | **Grafana Faro** web SDK | to local Alloy | Grafana Cloud free tier (Frontend Observability) |
 | Mobile crashes and errors | **Sentry** free plan (best Expo/React Native support), linked to traces | Sentry dev project | Sentry free plan |
 | Dashboards and alerts | **Grafana** | Local Grafana | Grafana Cloud |
-| Synthetic checks (is the site up, can a user log in) | Grafana synthetic monitoring or k6 scheduled checks | — | Grafana Cloud free quota |
-| Load-test results | **k6** → Prometheus/Grafana | Local | Staging runs pushed to Grafana |
+| Synthetic checks (is the site up, can a user log in) | Grafana synthetic monitoring | — | Grafana Cloud free quota |
 
 Grafana Cloud's free tier has monthly limits (metrics series, log and trace volume, retention of about two weeks). Check the current limits at sign-up. If usage outgrows the free tier, the fallback is self-hosting the same stack (Loki, Tempo, Prometheus, Grafana) on a small instance. Sampling and log-level rules (§3, §4) keep usage inside the free limits at launch.
 
@@ -80,7 +79,7 @@ Every log line, span, and metric exemplar carries `trace_id`. Business IDs (`app
 7. Infrastructure: hosts, database, Redis, queues.
 8. Capacity, storage, and cost.
 9. Mobile and web experience.
-10. Load-test results history.
+10. Unit-test and coverage trends per package.
 
 Dashboards are stored as code (JSON in `observability/dashboards/`) and provisioned automatically.
 

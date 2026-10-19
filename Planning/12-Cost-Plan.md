@@ -70,8 +70,7 @@ New AWS accounts usually get free-tier usage or credits; check the current offer
 | Push notifications | Expo Push / Firebase Cloud Messaging (free) |
 | CI/CD | GitHub Actions free minutes (private repos have a monthly allowance; public repos are free) |
 | Mobile builds | EAS free tier (limited builds) or local builds on a developer machine |
-| Load testing | k6 (open source) |
-| Security scanning | CodeQL, gitleaks, Trivy, OWASP ZAP (free) |
+| Security scanning | CodeQL, gitleaks, Trivy (free) |
 | Design | Figma free plan |
 
 ## 4. Paid items that can't be avoided
