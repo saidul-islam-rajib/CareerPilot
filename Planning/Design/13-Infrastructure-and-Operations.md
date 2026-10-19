@@ -1,5 +1,7 @@
 # Infrastructure, Deployment, and Operations
 
+> **Stages.** Sections 1–4 describe the **scale-stage** target. Version 1 launches on the low-cost **lean stage** (one ARM EC2 instance with Docker Compose, small RDS, S3, CloudFront, Grafana Cloud free tier) defined in [../12-Cost-Plan.md](../12-Cost-Plan.md); the same containers move to this target without code changes. Detailed observability is in [../11-Observability.md](../11-Observability.md), which supersedes §7 where they differ.
+
 ## 1. AWS account structure
 
 | Account | Purpose |
