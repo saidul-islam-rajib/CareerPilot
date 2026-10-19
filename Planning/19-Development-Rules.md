@@ -98,8 +98,10 @@ Deletion rules:
 - **Pure domain.** Domain code has no I/O. Time comes from a `Clock` port, IDs from an `IdGenerator` port, randomness from a `Random` port, so all behaviour is deterministic in unit tests.
 - **Stateless and horizontally scalable.** No in-process state between requests; sessions, locks, and rate limits live in Redis; long work goes to Temporal or queues; every consumer is idempotent.
 - **Efficient by default.** Async I/O for network calls; cursor pagination on every list (max page size from config); batch reads to avoid N+1; select only the needed columns; every foreign key and filter column indexed; caching only per Design/16.
-- **Strict types.** Python: pyright/mypy strict, Pydantic models at every boundary. TypeScript: `strict`, no `any`, no non-null assertions. Public functions documented with a one-line docstring/TSDoc.
+- **Strict types.** Python: pyright/mypy strict, Pydantic models at every boundary. TypeScript: `strict`, no `any`, no non-null assertions.
 - **Errors.** Typed domain errors with stable error codes from a catalog; API errors as RFC 9457 problem details; never swallow exceptions; every outbound call has a timeout from config.
+
+- **No comments in code.** Code explains itself through clear names, small functions, types, and tests. No inline, block, or doc comments in source files; the only exceptions are lines a tool requires (for example `# type: ignore[code]`, `// @ts-expect-error`, shebangs, license headers of copied third-party files). Explanations belong in specs, ADRs, and READMEs.
 
 ## 7. Secure by default (OWASP ASVS level 2)
 

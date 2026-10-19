@@ -36,6 +36,8 @@ Job discovery and application assistant for job seekers and students (Bangladesh
 
 ## Non-negotiable rules
 
+- Don't write comments in code (no inline, block, or doc comments); use clear names, small functions, and types instead. Tool-required directives are the only exception (`Planning/19-Development-Rules.md` §6).
+
 - Follow `Planning/19-Development-Rules.md` strictly: SOLID and the listed design patterns; nothing hard-coded (every default from `config/`, text from catalogs, colours from tokens); every status/type an enum; every table has automatic `created_*`, `updated_*`, `deleted_*` audit columns; never physically delete (soft delete; permanent deletion = anonymization); reusable generic building blocks; secure by default (OWASP ASVS L2).
 
 - If code and requirements disagree, don't silently choose: mark the task `- [!]` with both options and your recommendation, then continue with other tasks.
