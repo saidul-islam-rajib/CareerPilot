@@ -71,6 +71,9 @@ Rules:
 
 ## 5. Coding rules
 
+The full mandatory rule set (SOLID, design patterns, configuration first, enums, audit columns, no physical delete, security, definition of done) is in [19-Development-Rules.md](19-Development-Rules.md). Summary:
+
+
 - **API.** Versioned paths (`/v1/...`), OpenAPI-first, consistent error format, pagination on all lists, idempotency keys on all endpoints that start external actions.
 - **Domain rules in one place.** Status model, precedence, pause, archive, compensation, and admin access each live in one module (requirements Section 45). Never re-implement them in front ends; front ends display what the API returns.
 - **Time.** Store UTC plus original time zone; use the user's time zone only for display.
