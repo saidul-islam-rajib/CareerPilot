@@ -57,6 +57,10 @@ powershell -ExecutionPolicy Bypass -File scripts\autopilot.ps1
 
 It resumes the latest Claude session, waits and retries when a limit is hit, and stops when all tasks are done or no progress is made. Create `.claude/autopilot-off` to pause. Tasks that need you are marked `- [!]`; tools you need to install are listed in `docs/runbooks/machine-setup.md`.
 
+## Credits
+
+Developed by [Team Sober](https://team-sober.com/). Built with open-source software listed on the in-app open-source licences page.
+
 ## Local default credentials
 
 For **local and dev environments only** (never staging or production):
