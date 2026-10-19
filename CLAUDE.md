@@ -6,6 +6,7 @@ Job discovery and application assistant for job seekers and students (Bangladesh
 
 - Requirements (source of truth): `Requirement Analysis/Requirements.md`
 - Plans: `Planning/` (start with `Planning/README.md`)
+- Architecture and design: `Planning/Design/` (module boundaries, plugin interfaces, state machines, API and event conventions)
 
 ## Parts of the product
 
