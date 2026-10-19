@@ -15,16 +15,22 @@
 | R9 | Email deliverability and user mailbox limits | Applications land in spam or fail | Send from the user's own mailbox, respect limits, monitor bounces |
 | R10 | Data-protection obligations (Bangladesh law, GDPR for EU employers) | Legal exposure | Privacy notice, consent records, export/deletion, data-processing agreements with providers |
 | R11 | Mass automated applications look like spam to employers | Harm to users' reputation | Thresholds, hard filters, caps, per-employer limits, quality checks |
+| R12 | Automatic fixes by agents introduce new bugs | Production regressions | Reproduction test first, full test suite, reviewer agents, canary deploy with automatic rollback, human approval for sensitive areas |
+| R13 | Agent and AI usage cost exceeds the small budget | Budget overrun | Daily agent and AI budgets, cost dashboard, model-per-task decision (T5), Batch API, caching |
+| R14 | Single instance at launch is a single point of failure | Downtime during instance failure | Automated backups, infrastructure as code for fast rebuild, health checks with auto-recovery, move to growth stage when usage justifies |
+| R15 | Google Play closed-testing requirement delays launch | Later Play Store release | Recruit beta testers early; start closed testing as soon as Increment 2 is stable |
+| R16 | WhatsApp per-message fees | Ongoing cost | Push and email first; WhatsApp for urgent messages only; per-user limits |
+| R17 | Grafana Cloud free-tier limits exceeded | Lost telemetry or cost | Sampling, log levels, retention settings; self-hosted fallback |
 
 ## 2. Technical decisions to make in Sprint 0
 
 | # | Decision | Options | Recommendation |
 |---|---|---|---|
 | T1 | AWS region | Mumbai (`ap-south-1`), Singapore (`ap-southeast-1`) | Mumbai for latency, subject to data-protection review |
-| T2 | Temporal hosting | Temporal Cloud, self-hosted | Temporal Cloud at the start (less operations work) |
+| T2 | Temporal hosting | Temporal Cloud, self-hosted | Self-hosted container at launch (free); Temporal Cloud only at scale |
 | T3 | Embedding provider | Hosted multilingual embedding API, self-hosted open model | Decide by Bangla/English retrieval eval |
 | T4 | Authentication | Keycloak self-hosted, managed identity service | Keycloak (two realms, MFA, no per-user fees) |
-| T5 | Model for high-volume extraction | Claude Opus 5.5 everywhere, or a cheaper Claude model for nightly extraction | Start with Opus 5.5; switch only if evals show equal quality and the Product Owner approves the cost trade-off |
+| T5 | Model per AI task | Claude Opus 5.5 everywhere, or a smaller Claude model (for example Claude Haiku 5.5) for high-volume tasks such as extraction and classification | Plan uses Opus 5.5; given the low budget, decide per task using eval results and the cost comparison in [12-Cost-Plan.md](12-Cost-Plan.md) §5 |
 | T6 | Product analytics | PostHog cloud, PostHog self-hosted | PostHog cloud with consent |
 | T7 | Error tracking | Sentry cloud, self-hosted | Sentry cloud |
 | T8 | Initial ATS adapters | Greenhouse, Lever, Workday, SmartRecruiters, Ashby, and others | Pick 2–3 by how often they appear in our target sources |
@@ -32,6 +38,9 @@
 | T10 | Authorization policy engine | Cedar, OPA | Cedar (simple, typed policies for roles and ownership) |
 | T11 | Feature flag provider (OpenFeature) | Self-hosted flag service, database-backed provider | Database-backed provider managed from the admin app, unless a flag service is preferred |
 | T12 | Accept the 20 proposed ADRs | — | Review [Design/14-ADR-Log.md](Design/14-ADR-Log.md) in Sprint 0 |
+| T13 | Payment providers to support first | SSLCommerz, bKash, Nagad, international card gateway | Choose by merchant availability and fees ([Design/15-Integrations-and-Payments.md](Design/15-Integrations-and-Payments.md)) |
+| T14 | Monitoring hosting | Grafana Cloud free tier, self-hosted Grafana stack | Grafana Cloud free tier at launch |
+| T15 | Agent runner for production self-healing | GitHub Actions with Claude Code, scheduled cloud agents, self-hosted runner | GitHub Actions with Claude Code (triggered by alert webhooks) |
 
 ## 3. Product decisions
 
