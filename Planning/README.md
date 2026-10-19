@@ -1,6 +1,6 @@
 # CareerPilot Planning
 
-Planning documents for version 1. The requirements they implement are in [Job Discovery and Application Assistant - Requirements.md](../Requirement%20Analysis/Job%20Discovery%20and%20Application%20Assistant%20-%20Requirements.md).
+Planning documents for version 1. The requirements they implement are in [Requirements.md](../Requirement%20Analysis/Requirements.md).
 
 | Document | What it answers |
 |---|---|

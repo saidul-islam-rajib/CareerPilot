@@ -4,7 +4,7 @@ Job discovery and application assistant for job seekers and students (Bangladesh
 
 ## Read first
 
-- Requirements (source of truth): `Requirement Analysis/Job Discovery and Application Assistant - Requirements.md`
+- Requirements (source of truth): `Requirement Analysis/Requirements.md`
 - Plans: `Planning/` (start with `Planning/README.md`)
 
 ## Parts of the product

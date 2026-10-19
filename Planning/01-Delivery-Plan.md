@@ -2,7 +2,7 @@
 
 This plan explains how CareerPilot version 1 will be built: the SDLC phases, how Scrum runs inside them, the release roadmap, and the team's working agreements.
 
-Source of truth for *what* to build: [Job Discovery and Application Assistant - Requirements.md](../Requirement%20Analysis/Job%20Discovery%20and%20Application%20Assistant%20-%20Requirements.md) (version 1.0).
+Source of truth for *what* to build: [Requirements.md](../Requirement%20Analysis/Requirements.md) (version 1.0).
 
 ## 1. SDLC phases and where we are
 
