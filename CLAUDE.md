@@ -26,7 +26,7 @@ Job discovery and application assistant for job seekers and students (Bangladesh
 ## How to build
 
 - Follow the folder structure in `Planning/17-Project-Structure.md`; write a spec in `specs/<epic>-<feature>/` before coding a feature.
-- Tests: TypeScript `*.spec.ts(x)` next to code, Python `test_*.py`; E2E in `tests/e2e/`.
+- Tests: **unit tests only** in v1 — TypeScript `*.spec.ts(x)` next to code, Python `test_*.py` in `services/*/tests/unit/` (`Planning/14-Testing-and-Quality.md`).
 - Every new table ships with seed data (`Planning/18-Seed-Data.md`); local default admin is `admin@sober.com` / `admin@sober.com`.
 - Use Redis only as described in `Planning/Design/16-Redis-and-Caching.md` (never as source of truth).
 - All screens are designed by the UX/UI agent to `Planning/16-UX-Design.md`, responsive from small phones to desktop, with drag and drop where order matters.

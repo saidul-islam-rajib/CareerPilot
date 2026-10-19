@@ -45,7 +45,7 @@ make mobile     # optional: start the Expo dev server for Android/iOS
 | Mailpit (all local email) | http://localhost:8025 |
 | MinIO console (files) | http://localhost:9001 |
 
-Other commands: `make test`, `make test-e2e`, `make test-load`, `make logs`, `make down`, `make reset`.
+Other commands: `make test` (unit tests), `make logs`, `make down`, `make reset`.
 
 ## Local default credentials
 

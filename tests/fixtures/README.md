@@ -1,3 +1,3 @@
 # tests/fixtures
 
-Shared synthetic test files and data.
+Shared recorded responses and synthetic files used by unit tests.
