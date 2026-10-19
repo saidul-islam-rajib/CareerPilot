@@ -4,6 +4,8 @@ Repository layout, branching, commits, CI/CD, testing, and coding rules.
 
 ## 1. Repository layout (monorepo)
 
+The complete solution layout (including `.claude/agents`, `mocks/`, `tests/load`, `observability/`, Docker Compose files, and the Makefile) is in [13-Local-Development.md](13-Local-Development.md); the tree below shows the application code.
+
 ```text
 CareerPilot/
 ├── CLAUDE.md                     # Instructions for Claude Code (whole repo)
@@ -39,6 +41,7 @@ CareerPilot/
 ## 2. Branching and commits
 
 - **Trunk-based development.** `main` is always releasable. Work happens on short-lived branches (`feat/...`, `fix/...`, `chore/...`) merged by pull request within a few days.
+- **All tests pass before every commit.** Git hooks run formatters, linters, type checks, secret scan, and tests for changed packages on commit, and the full unit + integration suites on push ([13-Local-Development.md](13-Local-Development.md) §5). Never skip or disable tests to commit.
 - **Small commits, short messages.** One logical portion per commit, imperative and brief, for example `Add excluded countries rule`. A pull request may contain several small commits; merge with rebase or a merge commit so they are kept.
 - **Pull requests** link the story and requirement IDs, describe how it was tested, and include screenshots for UI changes on web and mobile.
 - **Reviews.** At least one human approval. Changes to authentication, credentials, automation safety, payments, AI prompts, or database migrations need a second reviewer.
