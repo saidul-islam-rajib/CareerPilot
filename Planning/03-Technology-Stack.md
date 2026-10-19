@@ -9,22 +9,22 @@ Each choice lists the reason and the main alternative considered. Exact versions
 | Backend language | Python |
 | Backend framework | FastAPI + Pydantic v2 |
 | Database access | SQLAlchemy 2 (async) + Alembic migrations |
-| Workflows / scheduling | Temporal (Python SDK) |
+| Workflows / scheduling | Temporal (Python SDK), self-hosted at launch |
 | Primary database | PostgreSQL + pgvector |
 | Cache / rate limits / locks | Redis (or Valkey) |
 | File storage | S3-compatible object storage (AWS S3; MinIO locally) |
 | Browser automation | Playwright (Python) |
 | AI | Claude API via the official `anthropic` Python SDK, model Claude Opus 5.5 |
-| Embeddings | Multilingual embedding model (provider decided in Sprint 0) |
+| Embeddings | Open multilingual embedding model, self-hosted on CPU (free); hosted API only if evals require |
 | OCR fallback | Tesseract with Bangla + English language data |
 | User web app | Next.js (React, TypeScript) |
 | Admin web app | Separate Next.js app (React, TypeScript) |
 | Mobile app | React Native with Expo (TypeScript), Android + iOS |
 | Shared front-end code | pnpm workspaces + Turborepo |
 | Authentication | Keycloak (OIDC), separate realms for users and admins |
-| Infrastructure | AWS, managed with Terraform; Docker everywhere |
+| Infrastructure | AWS, managed with Terraform; Docker everywhere; lean single-instance launch that scales up ([12-Cost-Plan.md](12-Cost-Plan.md)) |
 | CI/CD | GitHub Actions; Expo EAS for mobile builds and store submission |
-| Observability | OpenTelemetry, Sentry, Grafana (or CloudWatch) |
+| Observability | OpenTelemetry + Grafana (Loki, Tempo, Prometheus/Mimir, Pyroscope, Faro) via Grafana Cloud free tier; Sentry free plan for mobile crashes ([11-Observability.md](11-Observability.md)) |
 | Event bus | Transactional outbox → Amazon EventBridge + SQS (CloudEvents format); Kafka later if needed |
 | Rules | CEL (Common Expression Language) for user and platform rules |
 | Feature flags | OpenFeature API (provider chosen in Sprint 0) |
@@ -102,25 +102,25 @@ Alternative considered: Flutter. Rejected because it cannot share code with the 
 | Push | Expo Push Service |
 | System email (digests, reports, account emails) | Amazon SES |
 | Authentication | Keycloak (self-hosted): OIDC + PKCE for web and mobile, TOTP/WebAuthn MFA, `users` and `admins` realms |
-| Payments | Not automated in version 1 for SMS-based fees; tracked only. Card/online payments only through official portal flows under payment rules |
+| Payments | Payment provider plugins (for example SSLCommerz, bKash, Nagad, an international card gateway) with hosted checkout; SMS-based fees tracked only ([Design/15-Integrations-and-Payments.md](Design/15-Integrations-and-Payments.md)) |
 
 ## 5. Infrastructure and operations
 
 | Need | Choice |
 |---|---|
 | Cloud | AWS (region decided in Sprint 0; Mumbai `ap-south-1` or Singapore `ap-southeast-1` for low latency to Bangladesh) |
-| Compute | ECS Fargate for APIs, web apps, and workers; separate task pool for browser automation |
-| Database | Amazon RDS for PostgreSQL (Multi-AZ in production) |
-| Cache | ElastiCache (Redis/Valkey) |
+| Compute | Launch: one ARM EC2 instance with Docker Compose and Caddy. Growth: more instances behind a load balancer. Scale: ECS Fargate services with a separate browser-automation pool ([12-Cost-Plan.md](12-Cost-Plan.md)) |
+| Database | Amazon RDS for PostgreSQL: small single-AZ instance at launch; Multi-AZ from the growth stage |
+| Cache | Redis/Valkey container at launch; ElastiCache from the growth stage |
 | Storage | S3 with versioning; Object Lock for evidence and archived circulars |
 | Secrets and keys | AWS KMS (envelope encryption) + Secrets Manager |
-| Temporal | Temporal Cloud or self-hosted on ECS (decided in Sprint 0) |
+| Temporal | Self-hosted container (free) at launch; Temporal Cloud optional at scale |
 | Edge | CloudFront + AWS WAF |
 | Infrastructure as code | Terraform |
 | Local development | Docker Compose: Postgres, Redis, MinIO, Temporal, Keycloak, Mailpit |
 | CI/CD | GitHub Actions; EAS for mobile |
-| Errors | Sentry (backend, web, admin, mobile) |
-| Metrics, logs, traces | OpenTelemetry → Grafana Cloud or CloudWatch |
+| Errors | Grafana (logs, traces, Faro for web) for backend/web/admin; Sentry free plan for mobile crashes |
+| Metrics, logs, traces, profiles | OpenTelemetry → Grafana Alloy → Grafana Cloud free tier (self-hosted Grafana stack as fallback) |
 | Product analytics | PostHog (only with user consent) |
 
 ## 6. Quality and security tooling
