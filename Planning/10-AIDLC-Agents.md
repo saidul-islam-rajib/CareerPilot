@@ -69,6 +69,20 @@ All agents are Claude-based. Each has its own instructions, tools, permissions, 
 | Alert or new error in production | SRE → Auto-Fix (or runbook remediation) → Architect if design-level | Webhook from Grafana / error tracker to an agent runner |
 | Weekly | Capacity/Cost report, Compliance check, Documentation sync | Scheduled jobs |
 
+Agent access rule (standing authorization from the Product Owner):
+
+- **Full project access, no permission prompts.** All AIDLC agents may read, create, update, move, and delete any file inside the project directory without asking the user. This is configured in the shared Claude Code settings (`.claude/settings.json`: edits auto-accepted, project-wide read/edit allowed, common development commands pre-approved) and stated in `CLAUDE.md`.
+- The authorization covers the project directory only. It does not cover force-pushing, production deployments of sensitive changes, real external actions (applications, emails, payments), or anything outside the project directory; those follow the checkpoints in §4.
+- Every change is still committed in small portions with all tests passing first, so any change can be reviewed and reverted.
+
+Agent working rules:
+
+- **Specs first.** Before building a feature, the Business Analyst and Architect agents create or update its spec in `specs/<epic>-<feature>/` (requirements, design, tasks, test plan) ([17-Project-Structure.md](17-Project-Structure.md) §3).
+- **Designs by the UX/UI agent.** Every screen on web, admin, and mobile is designed by the UX/UI Designer agent to [16-UX-Design.md](16-UX-Design.md), responsive at all breakpoints, then checked by the UI Validation agent.
+- **Seeds with every table.** Any new table ships with seed data in the same change ([18-Seed-Data.md](18-Seed-Data.md)).
+- **Redis by the rules.** Caching, rate limiting, sessions, and locks follow [Design/16-Redis-and-Caching.md](Design/16-Redis-and-Caching.md).
+- **Tests named and placed by convention** (`*.spec.ts(x)`, `test_*.py`) per [17-Project-Structure.md](17-Project-Structure.md) §4.
+
 Agent rules (in each agent's instructions):
 
 - Read the requirements and design before acting; use the single definitions (requirements §45).
