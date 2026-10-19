@@ -34,7 +34,6 @@ CareerPilot/
 ├── infra/
 │   ├── terraform/                # AWS infrastructure
 │   └── docker/                   # Dockerfiles, docker-compose for local
-├── evals/                        # AI evaluation sets and runners
 └── .github/workflows/            # CI/CD
 ```
 
@@ -51,11 +50,10 @@ CareerPilot/
 
 | Pipeline | Runs on | Steps |
 |---|---|---|
-| Backend | PR + main | ruff, type check, import-linter (module boundaries), unit tests, integration tests (testcontainers: Postgres, Redis, MinIO, Temporal), OpenAPI generation and drift check, Docker build, Trivy scan |
-| Web / admin | PR + main | lint, type check, Vitest, build, Playwright E2E against a preview stack, axe accessibility checks |
-| Mobile | PR + main | lint, type check, unit tests; EAS build on main; Maestro E2E on staging builds |
-| AI evals | PR when prompts, models, or AI code change | Run eval sets; block on score drop |
-| Security | PR + nightly | gitleaks, CodeQL, dependency updates, container scans; OWASP ZAP against staging weekly |
+| Backend | PR + main | ruff, type check, import-linter (module boundaries), unit tests with coverage, OpenAPI generation and drift check, Docker build, Trivy scan |
+| Web / admin | PR + main | lint (including accessibility lint rules), type check, Vitest unit tests with coverage, build |
+| Mobile | PR + main | lint, type check, Jest unit tests with coverage; EAS build on main |
+| Security | PR + nightly | gitleaks, CodeQL, dependency updates, container scans |
 | Deploy | main → dev (automatic); tag → staging; approved release → production | Terraform plan/apply, database migrations, rolling deploys |
 | Mobile release | Release tag | EAS Submit to Google Play and App Store; EAS Update for JS-only fixes |
 
@@ -64,12 +62,7 @@ CareerPilot/
 | Level | What | Tools | Target |
 |---|---|---|---|
 | Naming | TypeScript tests `*.spec.ts(x)` next to code; Python `test_*.py`; see [17-Project-Structure.md](17-Project-Structure.md) §4 | — | — |
-| Unit | Domain logic: status model, precedence, compensation rules, country checks, computed answers, deadline/time-zone logic | pytest, Vitest | ≥ 90% for domain modules |
-| Integration | API + DB + workflows, adapters against mock portals and sandbox mailboxes | pytest + testcontainers, Temporal test environment | All workflows and adapters |
-| Contract | OpenAPI conformance; generated clients up to date | Schemathesis, CI drift check | Every endpoint |
-| End-to-end | Key user journeys on web, admin, and mobile | Playwright Test, Maestro | All acceptance criteria journeys |
-| AI evaluation | Each AI task | `evals/` runners | Scores in [05-AI-Design.md](05-AI-Design.md) |
-| Non-functional | Load, security, accessibility, restore drills | k6, ZAP, axe, manual | Before each release gate |
+| Unit (the only test type in v1) | Domain rules, handlers, workflows, plugins, AI code (recorded responses), UI components and hooks | pytest, Vitest, Jest | ≥ 95% domain, ≥ 85% backend, ≥ 80% front end ([14-Testing-and-Quality.md](14-Testing-and-Quality.md)) |
 
 Rules:
 - Tests never submit to real employers or send real emails. Outbound actions use mock portals and sandbox mailboxes (see [02-Architecture.md](02-Architecture.md) §7).

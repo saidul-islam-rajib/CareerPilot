@@ -12,7 +12,7 @@ CareerPilot/
 ├── Makefile                   # One entry point for all common tasks
 ├── docker-compose.yml         # Core services
 ├── docker-compose.observability.yml
-├── docker-compose.tools.yml   # Mock portals, mail catcher, load tests
+├── docker-compose.tools.yml   # Mock portals, mail catcher
 ├── .env.example               # All settings with safe local defaults (no real secrets)
 ├── .devcontainer/             # Ready-made dev environment (VS Code / Codespaces)
 ├── .claude/
@@ -25,10 +25,7 @@ CareerPilot/
 ├── apps/                      # web, admin, mobile
 ├── packages/                  # Shared TypeScript packages
 ├── services/                  # Python backend, plugins, workers
-├── evals/                     # AI evaluation sets
 ├── tests/
-│   ├── e2e/                   # Cross-app end-to-end (Playwright, Maestro flows)
-│   ├── load/                  # k6 scripts and scenarios
 │   └── fixtures/              # Synthetic users, postings, circulars
 ├── mocks/                     # Mock job sources, mock ATS portals, mock payment provider, mock WhatsApp
 ├── observability/             # Dashboards, alert rules, Alloy config
@@ -55,7 +52,6 @@ CareerPilot/
 | `mailpit` | Catches all outgoing email | 8025 |
 | `mock-portals`, `mock-sources`, `mock-payments`, `mock-whatsapp` | Safe stand-ins for external systems | 9100–9400 |
 | `otel-lgtm` | Grafana + Loki + Tempo + Prometheus + Pyroscope in one container | Grafana 3100 |
-| `k6` (on demand) | Load tests | — |
 
 Rules:
 - Local, dev, test, and CI environments never contact real employers, real mailboxes, real payment providers, or real WhatsApp numbers. Outbound integrations point to mocks by default (requirements: no real actions outside production).
@@ -69,12 +65,9 @@ Rules:
 | `make up` | Start everything (core + observability + mocks) |
 | `make down` / `make reset` | Stop / stop and wipe local data |
 | `make seed` | Load synthetic users, postings, circulars (including Bangla PDFs), and portal scenarios |
-| `make test` | All unit and integration tests |
-| `make test-e2e` | Web, admin, and API end-to-end tests |
-| `make test-mobile` | Mobile unit tests + Maestro flows on a running emulator |
-| `make test-load` | k6 load scenarios against local or staging |
+| `make test` | All unit tests (backend, web, admin, mobile, packages) with coverage |
+| `make test-mobile` | Mobile unit tests only |
 | `make lint` / `make types` | Linters and type checks for Python and TypeScript |
-| `make evals` | AI evaluation sets |
 | `make logs` / `make grafana` | Follow logs / open local Grafana |
 | `make mobile` | Start Expo dev server for Android and iOS |
 
@@ -91,7 +84,7 @@ Installed by `make setup` (pre-commit framework):
 | Hook | Runs |
 |---|---|
 | pre-commit | Formatters, linters, type checks, secret scan, and unit tests for the changed packages |
-| pre-push | Full unit + integration test suites, OpenAPI drift check |
-| CI (required checks) | Everything, including E2E, contract, security scans, and evals |
+| pre-push | All unit tests, OpenAPI drift check |
+| CI (required checks) | All unit tests with coverage, lint, types, and security scans |
 
 A commit is blocked if any check fails. Claude Code agents use the same commands, so they can't commit failing code either ([14-Testing-and-Quality.md](14-Testing-and-Quality.md)).

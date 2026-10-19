@@ -40,12 +40,7 @@ CareerPilot/
 ├── seeds/                       # Seed data for every table (Planning/18)
 ├── mocks/                       # Mock portals, sources, payments, WhatsApp, mail
 ├── tests/
-│   ├── e2e/                     # web/, admin/ (Playwright *.spec.ts), mobile/ (Maestro flows)
-│   ├── contract/                # API and event contract tests
-│   ├── load/                    # k6 scenarios
-│   ├── security/                # Security test suites
 │   └── fixtures/                # Shared synthetic files (CVs, circulars, images)
-├── evals/                       # AI evaluation sets and runners
 ├── observability/               # Alloy config, dashboards/, alerts/, slo/
 ├── infra/
 │   ├── terraform/               # modules/, envs/{dev,staging,prod}
@@ -83,8 +78,9 @@ applications/
 ├── seeds/           # Seed factories for this context's tables
 └── module.py        # Public interface
 services/core/tests/
-├── unit/applications/test_state_machine.py
-└── integration/applications/test_submission_flow.py
+└── unit/applications/
+    ├── test_state_machine.py
+    └── test_submission_flow.py      # with fakes; unit tests only in v1
 ```
 
 ### 2.2 Next.js app (`apps/web/`, same for `apps/admin/`)
@@ -97,7 +93,7 @@ apps/web/
 │   ├── shared/              # Layout, providers, utilities
 │   └── bff/                 # Session, token exchange, API proxy
 ├── public/
-├── next.config.ts  tailwind.config.ts  vitest.config.ts  playwright.config.ts
+├── next.config.ts  tailwind.config.ts  vitest.config.ts
 ```
 
 ### 2.3 Expo app (`apps/mobile/`)
@@ -131,15 +127,12 @@ Rules:
 
 ## 4. Test file naming
 
+Version 1 has **unit tests only** ([14-Testing-and-Quality.md](14-Testing-and-Quality.md)). `tests/fixtures/` holds shared recorded responses and synthetic files used by unit tests.
+
 | Kind | Location | Naming |
 |---|---|---|
-| TypeScript unit/component tests | Next to the code | `*.spec.ts` / `*.spec.tsx` |
-| Web/admin end-to-end | `tests/e2e/web`, `tests/e2e/admin` | `*.spec.ts` (Playwright) |
-| Mobile end-to-end | `tests/e2e/mobile` | `*.yaml` (Maestro flows) |
-| Python unit and integration | `services/*/tests/{unit,integration}/` mirroring source | `test_*.py` (pytest) |
-| Contract | `tests/contract/` | `*.spec.ts` / `test_*.py` |
-| Load | `tests/load/` | `*.k6.ts` |
-| AI evals | `evals/<task>/` | `cases.jsonl` + runner |
+| TypeScript unit tests (web, admin, mobile, packages) | Next to the code | `*.spec.ts` / `*.spec.tsx` |
+| Python unit | `services/*/tests/unit/` mirroring source | `test_*.py` (pytest) |
 
 ## 5. Rules
 

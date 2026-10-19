@@ -51,7 +51,7 @@ These phases map to the AIDLC phases: Requirements, Planning, and Design form **
 ### Definition of Done (a story is done when)
 
 - Code is merged to `main` through a reviewed pull request, with small commits.
-- Unit and integration tests pass in CI; new behaviour has tests.
+- Unit tests pass in CI with coverage targets; new behaviour has unit tests.
 - It works on every platform the story covers (web, Android, iOS, admin).
 - All new user-facing text is in the English string catalog (no hard-coded strings).
 - Accessibility checks pass (keyboard, labels, contrast) for new screens.
@@ -74,7 +74,7 @@ AIDLC agents do the work in parallel (one git worktree per agent). The sprint nu
 | 2. Approve-each applications | 4–6 | A user approves an application and the system completes it automatically, with full submission records | E08, E09, E10, E11 |
 | 3. Automatic mode | 7–8 | Rules, windows, pause, caps, emergency stop, reconciliation | E12, E13 |
 | 4. Bangladesh and students | 9–11 | Government circulars and stages, Bangla OCR, master's/PhD journey, supervisor outreach | E14, E15 |
-| 5. After applying and hardening | 12–15 | Inbox/calendar, interviews/offers, insights, fraud, integrations and payments, compliance, security, accessibility and load testing, beta, Play Store release | E16, E17, E18, E19, E20, E21 |
+| 5. After applying and hardening | 12–15 | Inbox/calendar, interviews/offers, insights, fraud, integrations and payments, compliance, security and accessibility review, beta, Play Store release | E16, E17, E18, E19, E20, E21 |
 
 Epic details and requirement mapping are in [06-Product-Backlog.md](06-Product-Backlog.md).
 
@@ -84,7 +84,7 @@ Epic details and requirement mapping are in [06-Product-Backlog.md](06-Product-B
 |---|---|
 | Internal alpha (end of Increment 2) | Approve-each mode works end to end for email and at least two career-page systems; records are accurate |
 | Closed beta (end of Increment 4) | All tracks working; automatic mode enabled only for tested routes; beta users invited |
-| Production launch (end of Increment 5) | Every acceptance criterion in requirements Section 16 passed or has an approved limitation (requirements Section 25.3); security, privacy, and load tests passed; Android app approved on Google Play (App Store when the Apple developer account is set up) |
+| Production launch (end of Increment 5) | Every acceptance criterion in requirements Section 16 passed or has an approved limitation (requirements Section 25.3); all unit tests and static checks passed; Android app approved on Google Play (App Store when the Apple developer account is set up) |
 
 ## 4. Sprint 0 checklist
 

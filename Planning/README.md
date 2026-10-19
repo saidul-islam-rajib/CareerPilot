@@ -17,7 +17,7 @@ Planning documents for version 1. The requirements they implement are in [Requir
 | [11-Observability.md](11-Observability.md) | Logs, traces, metrics, profiles, errors in Grafana; dashboards, alerts, AIOps |
 | [12-Cost-Plan.md](12-Cost-Plan.md) | Low-cost lean launch, free services, paid items, AI cost, guardrails |
 | [13-Local-Development.md](13-Local-Development.md) | One solution folder, Docker local platform, commands, git hooks |
-| [14-Testing-and-Quality.md](14-Testing-and-Quality.md) | Test types, sign-in/registration suite, device matrix, load testing, UI validation, quality gates |
+| [14-Testing-and-Quality.md](14-Testing-and-Quality.md) | Unit-test scope (the only test type in v1), sign-in/registration unit tests, coverage, quality gates |
 | [15-Mobile-and-Play-Store.md](15-Mobile-and-Play-Store.md) | Android and iOS support, release pipeline, Google Play checklist |
 | [16-UX-Design.md](16-UX-Design.md) | UX principles, navigation, key screens, master profile, image viewer, drag and drop, responsive layout, light-theme visual design |
 | [17-Project-Structure.md](17-Project-Structure.md) | Canonical solution folder structure, specs, test naming |

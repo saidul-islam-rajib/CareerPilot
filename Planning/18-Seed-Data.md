@@ -18,9 +18,8 @@ Every database table has seed data, so the whole platform can be explored and te
 | `base` (reference) | Countries, currencies, time zones, opportunity types and schemas, profile field definitions, question groups, platform settings, admin roles and policies, notification templates, feature flags, scoring model v1, country pack (Bangladesh: divisions, districts, upazilas, boards, grades, holidays), mock sources and plugins | All environments (production too) |
 | `demo` | Users covering every persona with complete profiles, photos, signatures, multiple emails/phones, documents and versions, tracks, rules, windows, pauses, compensation rules, excluded countries; opportunities of every type and state with archived circulars (English and Bangla, HTML/PDF/scanned); recommendations; applications in **every** submission and outcome status with Q&A, emails, files, evidence; approvals; government stages; academic plans; interviews, offers; payments; notifications; audit events; support tickets; reconciliation issues | Local, dev |
 | `scenarios` | Edge cases for automated tests: duplicates, reposts, conflicting deadlines, unclear countries, knock-out questions, outcome unknown, bounced email, expired approval, paused user, deletion grace period | Local, CI |
-| `load` | Bulk generated data for load tests (for example 10,000 users, 1,000,000 opportunities, 5,000,000 recommendations) | Load-test environment |
 
-Commands: `make seed` (base + demo), `make seed-scenarios`, `make seed-load`, `make seed-reset` (wipe and reseed).
+Commands: `make seed` (base + demo), `make seed-scenarios`, `make seed-reset` (wipe and reseed).
 
 ## 3. Local default accounts
 

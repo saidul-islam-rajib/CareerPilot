@@ -25,7 +25,7 @@ Platforms: **B** = backend, **AI** = AI tasks, **W** = user web app, **M** = mob
 | E17 | Admin application: dashboard, management areas, roles, view-as-user, platform settings and stop | 24, 53 | B A | 1 (basic), 5 (full) |
 | E18 | Privacy and account: data export, account deletion, confidentiality, consent, third-party data, minors | 13, 40, 46.2 | B W M A | 1 (basic), 5 (full) |
 | E19 | Fees and payments tracking: rules, records, receipts, uncertain payments | 10.10 | B W M | 5 |
-| E20 | Hardening and launch: security testing, accessibility (WCAG 2.2 AA), load and performance testing, beta, Play Store release, acceptance evidence | 14, 15, 25, 43 | All | 5 |
+| E20 | Hardening and launch: security and accessibility (WCAG 2.2 AA) review, beta, Play Store release, acceptance evidence | 14, 15, 25, 43 | All | 5 |
 | E21 | Integrations and payment providers: integration hub, webhook gateway, payment provider plugins, partner API foundations | 10.10, 10.11 | B W M A | 5 |
 | E22 | Observability and self-healing: OpenTelemetry everywhere, Grafana dashboards and alerts, error tracking, automated triage, runbook remediation, auto-fix pipeline | 15, 24.1–24.3 | All | 0 (foundation), then every increment |
 | E23 | AIDLC platform: agent definitions, Docker local platform, mocks, git hooks, CI gates, agent budgets and reports | Planning 10, 13, 14 | All | 0 |
