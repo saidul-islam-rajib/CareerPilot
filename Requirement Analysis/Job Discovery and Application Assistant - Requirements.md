@@ -15,11 +15,13 @@ This document describes product requirements and expected behavior. It intention
 5. Track successful, unsuccessful, incomplete, and manual applications, with clear reasons and next actions.
 6. Find master's and PhD opportunities and explain their academic, language-test, funding, and application requirements.
 7. Protect the user's personal, academic, and employment information.
+8. Automate the full journey, from discovery through application, confirmation, and follow-up, wherever sources permit and the user has authorized it, leaving the user only the steps that legally or technically require them.
+9. Show the user an accurate, well-designed record of every application, including the exact questions answered, emails sent, documents attached, and evidence of submission.
 
 ## 3. Users and terminology
 
 - **User**: The individual who owns the profile, reviews opportunities, and authorizes actions.
-- **Opportunity**: A job, government recruitment notice, master's opening, PhD opening, or other explicitly enabled opportunity type.
+- **Opportunity**: A job, internship, government recruitment notice, master's opening, PhD opening, scholarship, fellowship, assistantship, or other explicitly enabled opportunity type (see Sections 33.1 and 34.6).
 - **Source**: A career page, employer or university site, job portal, public-sector notice source, or other permitted publication channel.
 - **Match score**: A relevance estimate based on the user's profile and preferences. It is not a promise of eligibility, interview, admission, or employment.
 - **Application assistance**: Preparing an email, opening a source application form, filling supported fields, or tracking an application. It does not mean a submission succeeded unless the system has evidence of success.
@@ -39,6 +41,10 @@ This document describes product requirements and expected behavior. It intention
 - Bangladesh government job discovery with grade and eligibility filters.
 - Master's and PhD discovery with academic, funding, and test-requirement details.
 - Notifications, reminders, user controls, privacy controls, and data export/deletion.
+- End-to-end automated application in both approve-each and automatic modes (Sections 27 and 37).
+- Applied-applications report with full question, answer, email, document, and evidence records (Section 28).
+- The full student journey (Section 33) and the job seeker journey after applying (Section 34).
+- Bangladesh-specific profile data, government application stages, and portals (Sections 8.4.1 and 35).
 
 ### 4.2 Out of scope unless separately approved
 
@@ -111,6 +117,8 @@ Each track must have independently configurable:
 - Sort preferences, such as match, closing date, publication date, or user-selected ordering.
 - Notification and repeat-display preferences.
 - Application mode and automation-rule scope, where the opportunity and source support it.
+
+The result count limits only how many opportunities are shown in the daily dashboard and digest for that track. It does not limit which opportunities an automatic-application rule may apply to; that is governed by the rule's own threshold, filters, and volume caps (Section 10.1) and the global caps (Section 10.8). Every application made by a rule must appear in the applications list (Section 28.1) even if the opportunity was not among the displayed results.
 
 ### 6.1 Match score and explanation
 
@@ -260,7 +268,7 @@ Scholarships that are independent of a specific program (for example, government
 
 - Application actions must be off by default until the user configures and authorizes them. Preparation, form filling, email sending, and form submission must have separately configurable permissions.
 - The user must be able to choose between at least these application modes for each recommendation track and supported submission method:
-  - **Approve each application**: The system prepares the application and waits for the user's review and explicit approval before sending an email or submitting a form.
+  - **Approve each application**: The system prepares the application and waits for the user's review and explicit approval before sending an email or submitting a form. Once the user approves (with or without changes), the system completes all remaining steps automatically, as specified in Section 37.
   - **Automatically apply within rules**: After the user explicitly enables a recurring rule, the system may prepare and submit each application that satisfies the rule without asking for separate approval for that individual application.
 - Automatic application must not mean permission-free operation. The user must first knowingly enable it and grant any required external account access. After that setup, the user need not approve each in-scope application individually.
 - Each automatic-application rule must be inspectable, pausable, revocable, and recorded in the activity history. At minimum, it must define the enabled track and opportunity types, eligible sources and submission methods, match threshold and hard eligibility filters, locations and other relevant limits, approved profile facts and document versions, approved reusable answers, maximum application volume or rate, whether any application fee is allowed (default: none), and an expiry or review date.
@@ -293,7 +301,7 @@ Scholarships that are independent of a specific program (for example, government
 - If a site presents a CAPTCHA, bot challenge, or other human-verification challenge, the system must pause automation and ask the user to complete it through the legitimate site flow. It must not solve, outsource, relay, circumvent, or otherwise automate CAPTCHA validation. After the user completes the challenge, automation may resume only if the source permits it and the session remains valid.
 - The system must stop and hand control to the user where a site requires MFA, unsupported file upload, or another control the system cannot safely complete.
 - The system must not evade anti-bot controls, access restrictions, source rate limits, or terms that prohibit the action.
-- The system must distinguish form opened, form partially filled, ready for review, submitted, and submission confirmed. It must not report success based only on clicking a submit button.
+- The system must distinguish form opened, form partially filled, ready for review, submitted, and submission confirmed, using the status model in Section 20.2. It must not report success based only on clicking a submit button.
 - If a source does not support safe or permitted automation, show the official link and a checklist of information/documents needed for manual completion.
 
 ### 10.4 Applications requiring manual action
@@ -364,7 +372,7 @@ The user must be able to review opportunities and applications by day, status, t
 
 - Opportunity identity, source links, discovery and update dates, and relevant snapshots of displayed details.
 - Application status and timestamps, actions attempted, user approvals, source confirmations, and error details.
-- Email/form status, including draft, prepared, submitted, confirmed, failed, or manual action required.
+- Email/form status, including draft, prepared, submitted, confirmed, failed, or manual action required, as defined in the status model in Section 20.2.
 - User decisions, such as saved, dismissed, applied, or not eligible, and optional reasons.
 
 Application statuses must not imply success without evidence. Users must be able to correct a status and add notes.
@@ -377,7 +385,7 @@ Application statuses must not imply success without evidence. Users must be able
 - Avoid duplicate notifications for unchanged opportunities; explain important changes to a previously seen listing.
 - Allow notification preferences to be changed or paused without losing the opportunity history.
 - Report delivery failure where available; do not claim a notification was delivered if delivery could not be confirmed.
-- Support quiet hours and a limit on non-urgent notifications per day, without suppressing urgent deadline reminders the user has asked for.
+- Support quiet hours and a limit on non-urgent notifications per day. Notifications classed as urgent (Section 36) may be sent during quiet hours only if the user has allowed urgent notifications to override quiet hours; otherwise they must be sent when quiet hours end, and the deadline buffer (Section 27.2) must account for this delay.
 
 ### 11.4 Calendar and inbox integration (optional)
 
@@ -477,6 +485,34 @@ The product is ready for an initial release only when all of the following are d
 23. A second application to the same opening through a different route is detected and blocked from automatic submission; overall and per-employer application limits are enforced.
 24. Government applications can be tracked through fee payment, admit card, exam stages, and results, with no stage or payment marked complete without evidence.
 25. Application fees are paid only within explicit rule limits to verified destinations, and every payment is recorded with confirmation evidence.
+26. With automatic mode enabled, a qualifying opportunity moves from discovery to confirmed submission without user involvement, and every opportunity that stops before submission shows the step and reason.
+27. The emergency stop halts all automatic external actions immediately, and a rule dry run shows what would be submitted without submitting anything.
+28. Every automatic submission passes the pre-submission checks in Section 27.4; a cover letter or email naming a different employer or program is never sent.
+29. The posting is re-checked immediately before submission, and material changes trigger re-matching or re-approval.
+30. The applications list and detail views show every question exactly as asked, the exact answer and its source, full email content and thread, the exact files sent, and submission evidence.
+31. Submission records cannot be altered; corrections appear as separate timestamped entries.
+32. New questions that blocked automatic applications appear in the question bank, and approving an answer there unblocks later applications.
+33. Daily and weekly application reports are delivered and exportable as PDF and spreadsheet.
+34. Portal accounts are created only when authorized, with unique passwords in an encrypted store, and are listed for the user.
+35. Portal-parsed résumé values are checked and corrected; choice questions without an exact matching option are sent to the user.
+36. Tailored résumés contain only verified facts and the exact version sent is recorded.
+37. Photos and signatures are resized to portal specifications without altering appearance, and originals are kept.
+38. Student plans include reverse-planned milestones, test-score expiry warnings, official score-sending tracking, and an application budget.
+39. Supervisor outreach respects per-day and per-department limits and stops for professors who decline.
+40. Assessments, interviews, and offers are tracked with reminders; the system never takes an assessment for the user.
+41. Bangladesh government age eligibility is calculated as of each circular's stated date, and applicant copies and portal-issued credentials are stored securely.
+42. In approve-each mode, after the user approves (with or without edits), the system completes account sign-in, filling, uploads, approved fees, checks, submission, confirmation, and recording without asking again, except for the cases in Section 37.4.
+43. Edits made during approval apply to that application only unless the user saves them as a reusable answer or profile update, and saved answers never change already approved or submitted applications.
+44. A new question appearing after approval pauses only for that question, keeps all other approved values, and can be answered from a WhatsApp or push notification.
+45. Approvals expire as configured, can be cancelled before submission starts, and approvals never count as legal attestations.
+46. An opportunity matching several tracks or rules is applied to at most once, using the most restrictive settings (Section 38).
+47. All screens, reports, and notifications use the single status model in Section 20.2.
+48. Age, years of experience, availability, and document expiry are computed as of the relevant date and shown in the approval package and submission record.
+49. Excluded employers (such as the current employer) are never applied to or contacted.
+50. The data shared with each organization is recorded in the submission record.
+51. Automatic applications pause after the configured inactivity period and when key profile facts are overdue for confirmation.
+52. Agency postings, rolling deadlines, multi-position postings, reposts, and bilingual duplicates are handled as specified in Section 42.
+53. WhatsApp and push notifications are delivered, with fallback to email when delivery fails.
 
 ## 17. Onboarding and initial setup
 
@@ -492,6 +528,9 @@ The system must provide guided onboarding that allows the user to configure the 
 - Setting match thresholds, result limits, notification preferences, and time zone.
 - Connecting external accounts only when the user chooses to enable a feature that needs them.
 - Reviewing privacy, document-use, and application-authorization settings.
+- Choosing an application mode for each track (approve each application, or automatic within rules) and seeing what each mode means, including the steps that always stay with the user (Section 27.3).
+- Connecting and verifying notification channels (WhatsApp, push, and email) and choosing which events are urgent.
+- Answering the most common screening questions once (work authorization, sponsorship, notice period, salary expectations, relocation, demographic preferences) so they can be approved for reuse.
 - Showing which features are ready, need more information, or are unavailable due to source or account limitations.
 
 The user must be able to skip optional questions and complete onboarding later. Missing information must reduce match certainty where appropriate; it must not automatically disqualify the user from every opportunity.
@@ -563,7 +602,30 @@ Saving an opportunity must not count as applying. Creating an application record
 
 ### 20.2 Application statuses
 
-The system must support a consistent status model, including interested, saved, not started, preparing materials, awaiting user information, ready for review, awaiting user authorization, submission in progress, submitted but awaiting confirmation, submission confirmed, submission failed, manual action required, under review, interview, assessment, offer received, rejected, withdrawn, closed, and outcome unknown.
+This section is the single status model for the whole product. All other sections, screens, reports, and notifications must use these statuses and labels.
+
+**Opportunity decisions** (set by the user on an opportunity, not an application): interested, saved, dismissed, not eligible, irrelevant. Saving or marking interest is not an application.
+
+**Submission status** (what the system or user did to submit):
+
+| Status | Meaning |
+| --- | --- |
+| Not started | Application record exists; no preparation yet. |
+| Preparing | Materials and answers being prepared; includes form opened and form partially filled. |
+| Awaiting user information | Blocked on a missing answer, document, or fact. |
+| Awaiting approval | Ready for review in approve-each mode, or a rule requires review for this item. |
+| Approved – queued | User approved (Section 37) or a rule authorized it; waiting to be submitted. |
+| Submitting | Submission in progress. |
+| Submitted – awaiting confirmation | Submit action completed but no confirmation evidence yet. |
+| Confirmed | Confirmation evidence received: a confirmation page or number, confirmation email, or for email applications, the email service's confirmation that the message was sent with no bounce received. |
+| Failed | Submission did not go through; a reason and next step are recorded. |
+| Manual action required | A step must be completed by the user (Section 27.3). |
+| Outcome unknown | The system cannot tell whether the submission succeeded (Section 23.2). |
+| Cancelled | Stopped by the user or emergency stop before submission. |
+
+**Outcome status** (the employer's or institution's process, observed from evidence or entered by the user): no response yet, under review, assessment, interview, offer received, admitted, conditionally admitted, waitlisted, deferred, rejected, offer accepted, offer declined, withdrawn, closed. "No response yet" is shown with the date of last contact and is never treated as rejection.
+
+Form-level steps (form opened, partially filled, ready for review) and email-level steps (draft, prepared, sent, bounced) are details within these statuses and must be shown in the timeline (Section 28.2), not as separate status systems. A bounce after "Confirmed" must move an email application to "Failed".
 
 Not every status applies to every source or opportunity type. The system must distinguish system-observed events from statuses entered by the user or reported by an external organization. It must not infer rejection, acceptance, interview selection, or another employer decision solely from silence or elapsed time.
 
@@ -688,6 +750,22 @@ Before release, the product must be tested against representative scenarios, inc
 - The same opening offered through multiple application routes, and per-employer or overall application limits being reached.
 - Government follow-up stages such as fee payment, admit card release, exam rescheduling, and results.
 - Fee payments that fail, time out, or have an uncertain outcome.
+- Full automatic pipeline runs, including postings that close or change between matching and submission.
+- Cover letters and emails reused across employers (cross-contamination), leftover placeholders, and wrong document versions.
+- Multi-page conditional forms, portal résumé auto-parse errors, choice questions without a matching option, character limits, and knock-out questions.
+- Portal account creation, existing accounts, email verification, expired sessions, and account lockout risk.
+- Large attachments, email sending limits, out-of-office replies, and recruiter questions in reply threads.
+- Photo and signature resizing to exact portal specifications; DOCX-to-PDF conversion and file compression.
+- Expiring test scores, early scholarship deadlines, conditional offers, and referee invitations through university portals.
+- Interview scheduling within the user's availability and time-zone differences.
+- Emergency stop during an in-progress submission.
+- Accuracy of the applications report against the actual submitted forms and sent emails.
+- Approve-each flows: approve as-is, edit and approve, edits saved for reuse or to the profile, new questions after approval, posting changes after approval, approval expiry, cancellation, and bulk approval.
+- Conflicting tracks and rules matching the same opportunity, and conflicting user settings.
+- Answers computed across date boundaries: birthdays, expiring passports or test scores, notice periods, and daylight-saving changes.
+- Excluded current employer, agency duplicates, rolling deadlines, multi-position postings, and reposts.
+- Inactivity pause, profile-freshness pause, rule expiry, and re-authentication for sensitive actions.
+- WhatsApp and push delivery failures, fallback to email, and approvals completed from a notification.
 
 ### 25.2 Security and privacy testing
 
@@ -714,12 +792,15 @@ The initial release should prioritize:
 5. Master's and PhD discovery with admission, funding, language-test, and deadline information.
 6. Application preparation, manual-action guidance, and reliable application-status tracking.
 7. Privacy controls, external-authorization management, audit history, and data export/deletion.
+8. Approve-each application mode with automatic completion after approval (Section 37), for supported routes.
+9. The applied-applications report and submission records (Section 28).
+10. WhatsApp and push notifications with approvals from the notification (Section 36).
 
 External application submission should be enabled only for explicitly supported and tested workflows. Features that depend on unavailable or restricted sources must be presented as limitations rather than implied capabilities.
 
 ### 26.2 Future enhancements
 
-Potential future enhancements may include additional source integrations, more advanced ranking customization, application-document tailoring, interview preparation, academic supervisor outreach, application analytics, and broader language support.
+Potential future enhancements may include additional source integrations, more advanced ranking customization, and broader language support. Application-document tailoring, interview preparation, supervisor outreach, and application analytics are now specified in Sections 11.5, 32, 33.5, and 34.2; their release priority must be agreed under Section 26.1.
 
 These enhancements must not be treated as existing capabilities until implemented, tested, and included in supported-feature documentation.
 
@@ -729,7 +810,499 @@ New opportunity types, integrations, ranking behaviors, and automation capabilit
 
 Changes to ranking logic, source coverage, or application automation must be documented so users can understand material changes to product behavior.
 
-## 27. Decisions to confirm before implementation
+## 27. End-to-end automated workflow
+
+### 27.1 Automated pipeline
+
+Once the user has completed setup and enabled automatic application for a track, the system must run the following pipeline without requiring the user to start each step:
+
+1. **Discover**: Search enabled sources on schedule and accept opportunities the user adds manually (Section 27.5).
+2. **Verify**: Check that the posting is live, open, legitimate (Section 7.5), not a duplicate, and not already applied to through any route (Section 10.8).
+3. **Match**: Score against the profile, apply hard eligibility filters, and place it in the correct track.
+4. **Prepare**: Select the approved résumé version, generate or select the cover letter, answer questions from approved facts and answers, prepare required documents in the required formats, and choose the application route.
+5. **Pre-submission check**: Run the quality checks in Section 27.4. Any failure stops this application only, not the whole pipeline.
+6. **Re-check the posting**: Immediately before submission, confirm the posting is still open and its requirements, deadline, and application instructions have not materially changed since matching. A material change requires re-matching and, where the rule requires it, re-approval.
+7. **Submit**: Submit through the chosen route under the active rule.
+8. **Confirm**: Collect submission evidence (confirmation page, confirmation number, confirmation email, sent-email record).
+9. **Record**: Store the complete submission record (Section 28.2).
+10. **Report**: Include the application in the daily application report and notify the user according to their preferences.
+11. **Follow up**: Track responses, deadlines, next stages, and reminders until the application reaches a final outcome.
+
+Every opportunity that leaves the pipeline before submission must record the step at which it stopped and the reason, so the user can see why a matching opportunity was not applied to.
+
+### 27.2 Global automation controls
+
+- **Emergency stop**: One clearly visible control must immediately stop all automatic applications, emails, uploads, and payments across all tracks. In-progress actions must be brought to a safe state and their outcome reported.
+- **Vacation/pause mode**: The user must be able to pause automatic applications for a period, with discovery and reminders optionally continuing.
+- **Rule simulation (dry run)**: The user must be able to run a rule against current opportunities and see exactly which applications would have been submitted, with which materials and answers, without submitting anything.
+- **Deadline buffer**: The user must be able to set a minimum time before a deadline by which automatic applications should be submitted (for example, 24 hours), to reduce the risk of last-minute portal failures.
+- **Approval escalation**: If an application is waiting for user action and its deadline is approaching, the system must escalate the reminder through the user's urgent notification channel.
+
+### 27.3 Steps that always remain with the user
+
+Some steps cannot or must not be automated, either because they require the user personally, because sources prohibit automation, or because they are legal commitments. The product must clearly state these limits during onboarding and in each affected application:
+
+- Completing CAPTCHA, MFA, identity verification, or other human checks.
+- Taking online assessments, coding tests, psychometric tests, language tests, or exams. The system must never complete or assist in real time with an assessment on the user's behalf.
+- Recording or attending live or one-way video interviews, phone screens, and interviews. (Uploading a video file the user has already recorded, when a form asks for a video file, is allowed under Section 10.7.)
+- Signing legal declarations, attestations, contracts, or offer acceptances.
+- Making payments outside an active payment rule.
+- Accepting or declining offers.
+- Any action on a source whose terms or technical controls prohibit automation.
+
+Every other step should be automated where the source supports and permits it and the user has authorized it.
+
+### 27.4 Error prevention and quality checks
+
+The product cannot guarantee that external portals, emails, or third-party data will be free of errors. It must aim for zero avoidable errors by running the following checks before every submission the system makes, in both automatic and approve-each modes, and stopping the individual application if any check fails:
+
+- **Correct target**: Employer/institution name, role/program title, and job reference in the cover letter, email, and answers match the opportunity being applied to. Text written for a different employer or program must never be sent (cross-contamination check).
+- **Correct documents**: The attached files are the intended approved versions, are readable, open correctly, meet stated format/size/page limits, and have sensible file names.
+- **Complete answers**: All required fields are answered from approved sources; no placeholder text, template variables, or empty sections remain.
+- **Consistent facts**: Dates, titles, grades, contact details, and names are consistent across the profile, résumé, cover letter, and form answers.
+- **Language quality**: Generated text passes spelling and grammar checks in the language of the application.
+- **Valid contacts**: Recipient email addresses and application links are valid, verified, and belong to the employer or institution.
+- **Within limits**: The application is within the rule's volume, fee, and source limits, and the deadline has not passed in the source time zone.
+- **No duplicates**: The user has not already applied to this opening.
+
+After submission, the system must check the confirmation evidence. If the evidence is missing or does not match the opportunity, the status must be "submitted but awaiting confirmation" or "outcome unknown", not "confirmed".
+
+### 27.5 Adding opportunities manually
+
+- The user must be able to paste a job or program link, upload a circular (PDF/image), or forward an email, and the system must extract the details, score it, and handle it like a discovered opportunity, including automatic application where a rule covers it.
+- The user must be able to ask why an opportunity was not shown (for example, by pasting its link) and see whether it was not found, filtered out, below threshold, ineligible, or a duplicate.
+- The user should be able to search all stored opportunities in free text (for example, "remote Python jobs in Europe with sponsorship closing this month").
+
+## 28. Applied-applications report and submission record
+
+This is the user's main view of what the system has done on their behalf. It must be accurate, complete, and easy to read.
+
+### 28.1 Applications list
+
+The user must be able to see a list of all applications, with at least:
+
+- Opportunity title, employer/institution, location, and track.
+- Application route (for example LinkedIn Easy Apply, career page, email, government portal, university portal).
+- Applied by (automatic rule name, user-approved, or manual by the user).
+- Date and time submitted, in the user's time zone.
+- Current submission status and outcome status (Section 20.2), shown with both a text label and a visual indicator.
+- Deadline, next action, and next action due date.
+- Match score at the time of application.
+
+The list must support sorting, filtering (by date, track, status, route, employer, country, rule, and opportunity type), free-text search, and grouping by day or week. The list must also show opportunities that matched but were not applied to, with the reason (Section 27.1).
+
+### 28.2 Application detail and submission record
+
+For every submitted or attempted application, the detail view must show:
+
+- **Opportunity snapshot**: The posting as it appeared at the time of application, including title, description, requirements, deadline, and source links. Later changes to the posting must be shown separately.
+- **Timeline**: Every step with time and outcome, such as discovered, matched, prepared, checked, submitted, confirmed, and later status changes.
+- **Questions and answers**: Every question asked by the form, shown exactly as written on the form, with its field type, the options offered (for choice questions), whether it was required, the exact answer submitted, the source of the answer (verified profile fact, approved reusable answer, generated text approved under a rule, or entered by the user), and whether the user edited it.
+- **Email applications**: The sender address, recipients (to/cc/bcc), subject, full message body, attachments, sending time, and message identifier, plus any replies, bounces, or automatic responses in the same thread.
+- **Documents**: Each file submitted, its version, file name, size, and a fingerprint (hash), with the ability to open the exact file that was sent.
+- **Evidence**: Confirmation number, confirmation email, and, where permitted, a screenshot or saved copy of the completed form and the confirmation page.
+- **Rule and authorization**: Which rule or approval allowed the submission, and the rule version at that time.
+- **Issues**: Any warnings, uncertain answers, skipped optional questions, or errors, and how each was resolved.
+
+Information in the submission record must not be edited afterwards. User corrections and notes must be added as separate entries with timestamps. The only exception is deletion requested by the user under privacy controls (Section 13), which must remove the content and keep only a minimal record that a deletion took place.
+
+### 28.3 Question bank
+
+- The system must keep a library of all application questions encountered across applications, grouping questions with the same meaning.
+- For each question group, show how it was answered, how often it appears, and whether an approved reusable answer exists.
+- New or unanswered questions that blocked automatic applications must be highlighted so the user can add approved answers once and unblock future applications.
+
+### 28.4 Reports
+
+- **Daily application report**: Applications submitted, confirmed, failed, and waiting for user action that day, with links to each record, delivered with or alongside the daily digest.
+- **Weekly summary**: Totals by track, route, and status; responses received; upcoming deadlines, interviews, and exams.
+- Reports and individual records must be exportable (for example as PDF and spreadsheet), and printable.
+
+### 28.5 Presentation and design
+
+- Layouts must prioritize what needs the user's action first, then recent activity, then history.
+- Status must never be shown by colour alone; each status must have a text label and an explanation of what it means.
+- Generated text, user-written text, and text copied from sources must be visually distinguishable.
+- The list and detail views must work on mobile-sized screens, including approving or answering blocked questions from a phone.
+- Dates must show the time zone; amounts must show currency and period.
+- Long content (job descriptions, emails, essays) must be collapsible with the key facts summarized first.
+
+## 29. Employer and university portal accounts
+
+Many applicant-tracking systems and university portals require a separate account per employer or institution.
+
+- The system must detect whether the user already has an account on a portal before creating one.
+- Account creation is an external action and must be covered by the active rule or approved by the user. The rule must state whether the system may create accounts and with which email address.
+- Passwords for created accounts must be strong, unique, and stored in an encrypted credential store. The user's main email or other account passwords must never be reused. The user must be able to view, export, and delete stored credentials.
+- Email-verification links and one-time codes may be completed automatically only if the user has authorized inbox access for that purpose (Section 11.4); otherwise the user must be asked.
+- "Sign in with Google/LinkedIn/Microsoft" or similar options require the user's consent for each provider and must show what access is being granted.
+- The system must keep a list of all portal accounts it created or used, with portal, employer, email used, creation date, and a link to manage or delete the account.
+- Expired sessions, locked accounts, and password-reset requests must be reported, and the system must not repeatedly attempt logins in a way that could lock the account.
+
+## 30. Online-form corner cases
+
+The system must handle the following situations correctly or stop and ask the user:
+
+- **Multi-page and conditional forms**: Questions that appear only after earlier answers; the full set of questions must be known before submission is considered ready.
+- **Résumé auto-parse by the portal**: Many portals pre-fill fields by parsing the résumé. All pre-filled values must be checked against verified profile facts and corrected; parsed values must not be accepted unchecked.
+- **Choice questions without an exact match**: When the user's approved answer is not among the options, the system must not pick the "closest" option if that changes the meaning; it must ask the user.
+- **Format constraints**: Character and word limits, numeric-only fields, phone formats with country code, date formats, address formats, month/year fields where the exact month is unknown, and "years of experience" fields requiring a whole number. The system must not truncate or round an answer in a way that changes its meaning without approval.
+- **Employment and education history entries**: Multiple entries, "currently working here", gaps, and overlapping dates must be entered consistently with the profile.
+- **Knock-out questions**: Questions whose answer disqualifies the user (for example, "Do you require sponsorship?") must be answered truthfully from approved answers. The system must never change an answer to pass a knock-out question.
+- **Voluntary and demographic questions** (gender, ethnicity, disability, veteran status, and similar): Answered only from the user's explicit choice per question, including "prefer not to say" where the user has chosen it.
+- **Consent and terms checkboxes**: Privacy consent, data-processing consent, and terms acceptance must be covered by the rule or presented to the user; declarations of truthfulness are attestations (Section 27.3).
+- **Free-text and essay questions**: Answered from approved reusable answers or generated under a rule that explicitly allows generated essay answers; otherwise sent to the user.
+- **Questions in another language**: Answered only if the meaning is clear and the language of the answer is allowed by the user's settings.
+- **"How did you hear about us"** and referral fields: Answered with the actual source; referral names only if the user recorded a real referral.
+- **Location and preference selections**: Multiple location, shift, or department choices must follow the user's preferences.
+- **Session timeouts, save-as-draft, and resumed forms**: Progress must be saved where the portal allows, and resumption must not create a duplicate application.
+- **Job closed or changed during application**: Stop, record the reason, and notify the user.
+- **"Already applied" messages**: Record them and do not attempt again.
+- **Portal errors after clicking submit**: Treat as an uncertain outcome (Section 23.2).
+- **One-way video, live coding, or assessment steps embedded in the form**: Hand over to the user (Section 27.3).
+
+## 31. Email-application corner cases
+
+- Attachments must respect common size limits; when too large, the system should compress files without changing their content, or use another method allowed by the employer, and never silently drop an attachment.
+- File names must be professional and consistent (for example, "Firstname-Lastname-CV.pdf").
+- Emails must use the user's configured signature and contact details.
+- Sending should follow the user's preference on timing, for example within business hours in the recipient's time zone, unless the deadline requires otherwise.
+- The system must respect the email provider's daily sending limits and avoid patterns likely to mark the user's account as spam.
+- Replies, out-of-office responses, bounces, and recruiter questions must be linked to the application thread and shown to the user. Automatic replies to recruiters must be limited to what the active rule allows; questions requiring the user's judgment must be sent to the user.
+- Follow-up emails after no response may be sent only if the rule allows it, at most a user-defined number of times, and not if the employer asked not to be contacted.
+- Emails must never be sent to addresses not stated by the employer for applications, and must never be sent in bulk to multiple employers in one message.
+
+## 32. Application materials: tailoring and formatting
+
+### 32.1 Résumé/CV tailoring
+
+- The system should create role-specific résumé versions by selecting, reordering, and rewording the user's verified experience, skills, and achievements to match the posting's requirements and keywords.
+- Tailoring must never add skills, experience, employers, dates, titles, results, or qualifications the user does not have.
+- Tailored versions must be checked for compatibility with applicant-tracking systems (readable text, standard section headings, no information hidden in images, supported file type) and for page-length targets set by the user.
+- Whether tailored versions may be sent automatically or need review must be set in the rule, as for cover letters.
+- The system must record exactly which version was sent with each application.
+- Academic CVs, Bangladesh-style CVs, and country-specific formats (for example, Europass) should be supported where the user enables them.
+
+### 32.2 Document preparation and conversion
+
+- The system should convert documents to required formats (for example DOCX to PDF), compress files to size limits, merge multiple pages into one file where required, and rename files to required conventions.
+- For photos and signatures with exact requirements (pixel size, file size, background, format), the system should resize and compress the user's original image to meet the specification and show the result for approval. It must not alter the person's appearance.
+- Conversion must never change the content of a document. The original must always be kept, and converted files must be linked to their source.
+
+### 32.3 Generated writing
+
+Cover letters, statements of purpose, personal statements, research statements, motivation letters, essay answers, and emails must:
+
+- Be based only on verified profile facts, approved materials, and verified opportunity details.
+- Be specific to the employer/program, not generic, and respect stated word or character limits.
+- Pass the cross-contamination and language-quality checks (Section 27.4).
+- Avoid copying text from other people's work; quotations from sources must be attributed.
+- Follow the user's chosen tone, length, and language.
+
+## 33. Student and academic journey
+
+### 33.1 Opportunity types for students
+
+In addition to master's and PhD programs, the system should support, when enabled: internships, part-time and campus jobs, graduate trainee and fresher programs, research assistantships, teaching assistantships, fellowships, scholarships, exchange programs, summer schools, and postdoctoral positions.
+
+For international study opportunities, the system should show work-hour limits for students and post-study work options as published by official sources, with source links and dates, labeled as information and not legal advice.
+
+### 33.2 Application planning
+
+- For each target intake (for example, Fall/Spring/Winter), the system must create a plan working backwards from the deadlines, including test dates, test registration deadlines, score-sending time, document preparation, referee requests, and application submission.
+- Early-decision, priority, and scholarship-consideration deadlines that are earlier than the final deadline must be tracked separately.
+- The system must estimate the total application budget (application fees, test fees, score-sending fees, document evaluation, translation, courier, visa fees), showing which amounts are from official sources and which are estimates.
+- The system must show application fee waivers where published, with their conditions.
+
+### 33.3 Tests and scores
+
+- Track test registration deadlines, test dates, score release dates, and score validity expiry dates, and warn when a score will expire before a program's deadline or start date.
+- Track official score reports sent to each institution (for example, via institution codes), including date sent and whether the institution confirmed receipt. Sending official scores may involve fees and must follow payment rules.
+- Show whether a program accepts self-reported scores, requires official scores, or accepts alternatives such as a medium-of-instruction letter, and label each as stated, not stated, or unclear.
+
+### 33.4 Academic credentials
+
+- Grades must be stored in their original scale (for example, CGPA out of 4.00, GPA out of 5.00, percentage, division/class). Any conversion must be labeled as an estimate unless the program or an evaluation service provides an official conversion.
+- The system must show whether a program requires a credential evaluation (for example, WES or similar), certified or attested copies, translations, notarization, or sealed transcripts, with timelines and costs where published.
+- Degree-equivalence rules (for example, three-year versus four-year bachelor's degrees) must be shown when stated and flagged as uncertain when not stated.
+
+### 33.5 Supervisor and professor outreach
+
+For research degrees where contacting a supervisor is expected or helpful:
+
+- The system should find potential supervisors whose research matches the user's interests, using faculty pages and publication listings, and show the evidence of the match.
+- The system may draft personalized emails that refer accurately to the supervisor's real work and the user's verified background. Sending is an external action under the email authorization rules.
+- The user must be able to set limits such as maximum outreach emails per day, per department, and per university, and whether follow-ups are allowed.
+- Replies must be tracked and linked to the program; positive replies, requests for a call, or requests for documents must be raised to the user immediately.
+- The system must not send the same generic email to many professors, and must stop outreach to a professor who declines or asks not to be contacted.
+
+### 33.6 University application portals
+
+- Track each university portal application: account, sections completed, documents uploaded, referees invited, fee status, and submission status.
+- Inviting referees through a portal sends an email to a third party and requires the user's authorization for each referee and program, or a rule that explicitly covers it.
+- Show missing items that block submission and items the institution must still receive (for example, official transcripts or test scores).
+
+### 33.7 Decisions, offers, and next steps
+
+- Track admission decisions: accepted, conditionally accepted (with the conditions to meet and their deadlines), waitlisted, interview invited, rejected, and deferred.
+- Track acceptance deadlines, deposit amounts and deadlines, deferral options, and scholarship acceptance requirements.
+- Provide a comparison of offers, covering total cost, funding amount and duration, net cost, location, program length, and other factors the user selects, using only stated or clearly labeled estimated values.
+- Accepting an offer, paying a deposit, and declining other offers are user actions (Section 27.3); the system may prepare the messages.
+
+### 33.8 After admission
+
+The system should provide a checklist and deadlines for steps after admission, based on official sources for the destination country and institution: admission documents (for example, I-20, CAS, CoE, or admission letter), proof of funds, visa or study-permit application and appointment, health insurance, accommodation, tuition payment, travel, and arrival registration. Requirements must be linked to their official sources and dates, and must not be presented as legal or immigration advice.
+
+## 34. Job seeker journey after applying
+
+### 34.1 Assessments
+
+The system must detect assessment invitations (from emails, portals, or user input), record their type, platform, deadline, and duration, remind the user, and provide preparation material relevant to the role. The system must not take or assist in real time with any assessment (Section 27.3).
+
+### 34.2 Interviews
+
+- Record interview invitations, rounds, format (phone, video, on-site), date and time with time zone, interviewers where provided, and meeting links or addresses.
+- Where the user has authorized calendar access and set availability, the system may select an interview slot from an employer's scheduling link within the user's available times, under a rule that allows it; otherwise it must propose slots for the user to choose.
+- Provide an interview preparation pack: company and role summary, requirements from the posting, likely questions, and the user's relevant experiences mapped to the requirements.
+- Send reminders before the interview and prepare a thank-you email draft afterwards.
+
+### 34.3 Offers
+
+- Record offer details: salary and its period, bonus, benefits, start date, location, work arrangement, probation, notice period, and acceptance deadline.
+- Normalize salaries for comparison (annual/monthly/hourly, gross where stated, currency with the conversion date), labeling assumptions.
+- Check offers for fraud warning signs (Section 7.5).
+- Provide offer comparison and negotiation preparation based on the user's stated priorities and available market information, labeled as guidance.
+- After the user accepts an offer, the system should suggest pausing automatic applications and preparing withdrawal messages for other active applications, each requiring the user's authorization.
+
+### 34.4 Rejections and outcomes
+
+Record rejections with any stated reason, apply reapplication waiting periods (Section 10.8), and use outcomes in personal insights (Section 11.5). Silence must not be recorded as rejection; the outcome status remains "no response yet" with the date of last contact (Section 20.2), and after a user-defined period the system may suggest a follow-up (Section 31) or let the user close the application.
+
+### 34.5 Employer research and networking
+
+- Show employer information such as size, industry, locations, official website, and legitimacy indicators, and employer reviews where permitted by the source.
+- Allow the user to record contacts (recruiters, employees, referrers, alumni) and link them to employers and applications.
+- Draft referral requests and networking messages from verified facts; sending them follows the email authorization rules.
+
+### 34.6 Job types
+
+Each track must be able to filter by full-time, part-time, contract, temporary, freelance, internship, apprenticeship, graduate trainee, and volunteer roles. Bidding on freelance marketplaces is out of scope unless explicitly enabled.
+
+## 35. Bangladesh-specific requirements
+
+### 35.1 Profile data for Bangladesh applications
+
+- Name in both English and Bangla, matching the spelling on certificates and NID exactly. The system must warn when names, dates of birth, or parents' names differ between documents.
+- SSC/HSC (or equivalent such as Dakhil/Alim, O/A level) and degree records: board or university, roll number, registration number, passing year, group/subject, and result in the original scale (GPA out of 5, CGPA out of 4, or division/class).
+- Present and permanent addresses with division, district, and upazila/thana, and home district.
+- Mobile number in the Bangladesh format (+880) and its connection to payment services where used for fees.
+- Quota or special-status information (for example, children/grandchildren of freedom fighters, persons with disabilities, ethnic minorities) only if the user provides it, with supporting document references.
+
+### 35.2 Government application specifics
+
+- **Age calculation**: Age eligibility must be calculated as of the date specified in each circular, which may differ from the deadline. Age relaxations (for example, for specific quotas or special government orders) must be applied only when the circular states them and the user's status is verified.
+- **Photo and signature**: Prepare the user's photo and signature to the exact size, dimension, and format requirements of each portal (Section 32.2).
+- **Post selection**: Where one circular includes multiple posts, the system must show each post separately with its own eligibility, and the user's selection rules must determine which posts to apply for. Rank-ordered preferences (for example, cadre or post preferences) must always come from the user.
+- **Fee payment**: Fees paid through mobile or SMS-based payment within an official time limit after form submission must be tracked as a separate deadline; the application is not complete until payment is confirmed.
+- **Applicant copy**: The system must download and store the applicant copy or confirmation provided by the portal, along with the user ID and password the portal issues.
+- **Holidays and office hours**: Public holidays and official working hours that affect deadlines, payments, or document submission must be shown where relevant.
+
+### 35.3 Private-sector job portals
+
+The system should support Bangladesh job portals and employer career pages as permitted, including keeping the user's portal profile consistent with the verified profile, and handle "salary negotiable" as "not stated".
+
+## 36. Notifications, approvals, and communication channels
+
+- The product must support WhatsApp and mobile push notifications as primary channels, and email for the daily digest, reports, and as a fallback. SMS and Telegram may be added as optional channels. The user must be able to choose different channels for urgent and non-urgent messages.
+- If a notification cannot be delivered on the chosen channel (for example, the WhatsApp number is not verified or push permission is turned off), the system must use the user's fallback channel and show the delivery problem in the dashboard.
+- Channels with sending restrictions (for example, messaging-platform rules on message templates and reply windows) must be handled within those rules; if an approval cannot be completed in the channel, the notification must link to the app.
+- Urgent notifications include: approval needed close to a deadline, a blocked automatic application, an interview invitation, an offer, a payment request, a suspected fraudulent posting, and authorization expiry.
+- The user should be able to approve an application, answer a blocking question, or complete a simple action directly from a notification, with secure authentication and a link to the full details.
+- Approvals given through a notification must be recorded the same way as approvals in the main interface.
+
+## 37. Approve-each mode: approval and automatic completion
+
+In approve-each mode, the user approves each application once. After approval, the system must complete every remaining step automatically, without asking again, except for the steps that must stay with the user (Section 27.3) or a situation listed in Section 37.4.
+
+### 37.1 Approval package
+
+Before asking for approval, the system must prepare the application as completely as possible and present one approval package containing:
+
+- The opportunity summary, match explanation, hard-eligibility status, deadline, and any fraud or uncertainty warnings.
+- The application route and destination (portal, career page, email address).
+- Every question known so far, exactly as asked, with the proposed answer and its source.
+- The full text of the cover letter, email, and any generated essays.
+- The exact files to be sent (résumé version, cover letter, transcripts, photo, signature, video), each viewable.
+- Any account that will be created, fee that will be paid, consent checkbox that will be ticked, and personal data that will be shared with the employer or institution.
+- Items still missing that the user must provide, clearly separated from items ready to send.
+
+The package must be readable on a phone and must highlight what needs the user's attention first.
+
+### 37.2 What the user can do
+
+The user must be able to:
+
+- **Approve** the package as it is.
+- **Edit and approve**: change any answer, text, recipient (within verified addresses), or file selection, and then approve.
+- **Answer missing items** and approve in the same step.
+- **Approve with timing**: choose to submit now or at a set time before the deadline.
+- **Reject** with an optional reason (for example "not interested", "not eligible"), which is used as recommendation feedback (Section 22.3).
+- **Defer**: keep the package for later; it must be re-checked before it can be approved again.
+
+For each edit, the user must be able to choose whether the change applies:
+
+- **to this application only** (the default);
+- **as a saved reusable answer** for questions with the same meaning, used in future approval packages and, if the user adds it to a rule, in automatic mode; or
+- **as a profile update**, which changes the verified profile fact and is shown as a profile change in the audit history.
+
+Edits applied to this application only must not change the profile, saved answers, or approved documents. Edits saved for reuse must not be applied to applications that were already approved or submitted.
+
+### 37.3 After approval
+
+After approval, the system must automatically and in order: create or sign in to the portal account (if the approval covered it), fill all fields with the approved values, upload the approved files, tick only the consents included in the approval, pay any approved fee, run the pre-submission checks (Section 27.4), re-check the posting (Section 27.1, step 6), submit, collect confirmation evidence, store the submission record (Section 28.2), and notify the user of the result.
+
+The approval covers only the opportunity, route, content, files, fees, and consents shown in the package. It must not be used for any other application (Section 23.1).
+
+### 37.4 When the system must come back to the user after approval
+
+The system may continue without asking again for differences that do not change meaning or content, such as a field order change or a different page layout. It must pause and ask the user only about the specific new item, keeping all other approved values, when:
+
+- The form shows a question that was not in the approval package and cannot be answered from an approved reusable answer with the same meaning.
+- A required file, fee, consent, or account step was not in the package.
+- The posting, deadline, requirements, or destination changed materially since approval.
+- A pre-submission check fails, a CAPTCHA/MFA or other user-only step appears (Section 27.3), or a fraud warning is raised.
+
+A short new question should be answerable directly from the notification (Section 36).
+
+### 37.5 Approval validity and cancellation
+
+- An approval expires if the application has not been submitted within a user-defined period (default to be decided, Section 46) or after the deadline passes; an expired approval requires a new review.
+- The user must be able to cancel an approved application until submission starts. For emails, the user should be able to set a short cancel window (for example, 30 seconds to 10 minutes) during which a queued email can still be stopped.
+- The emergency stop (Section 27.2) also stops approved applications that have not started submitting.
+
+### 37.6 Bulk approval
+
+The user should be able to review several approval packages in a list and approve many at once. Bulk approval must show, for each item, the employer, role, route, files, and any warnings, and must exclude items with blocking warnings, fees, or attestations, which must be approved individually.
+
+### 37.7 Approval is not an attestation
+
+Approving a package does not count as signing a legal declaration or attestation. Declarations of truthfulness, terms acceptance with legal effect, and similar statements must be shown with their full text and confirmed separately, even inside an approval package.
+
+## 38. Rule precedence and conflict resolution
+
+To avoid contradictory behaviour, the following order of precedence applies whenever settings or rules disagree. A higher item always wins over a lower one:
+
+1. Law, source terms, and technical restrictions (for example CAPTCHA, prohibited automation).
+2. Product safeguards that can never be turned off: no fabrication, no bypassing verification, user-only steps (Section 27.3), and the emergency stop.
+3. The user's explicit decision on a specific item (an approval, rejection, edit, or cancellation).
+4. Global user settings (global caps, paused mode, excluded employers, privacy choices, quiet hours).
+5. Track settings.
+6. Automatic-application rules.
+7. Generated suggestions and recommendations.
+
+Further rules:
+
+- **Most restrictive wins**: If an opportunity matches more than one track or rule, it must be applied to at most once, and the most restrictive applicable settings apply: approve-each wins over automatic, a lower fee limit wins over a higher one, and a block wins over an allow. The user may set an explicit track priority to decide which track the opportunity is reported under.
+- **Official source wins over secondary**: When sources conflict, the official employer, institution, or government source is preferred, and the conflict is shown (Sections 7.3 and 21.2).
+- **Verified profile facts win over documents and extracted data**: Inconsistencies are shown for review (Section 19.3), never resolved silently.
+- **Newer user decisions win over older ones**, but must not change actions already completed.
+- **Unknown is not satisfied**: An unknown hard requirement blocks automatic application by default. A rule may allow applying when a hard requirement is unknown (not when it is known to fail) only if the user explicitly enables that option for the rule.
+
+When the system detects two user settings that conflict and the precedence above does not settle it, it must show the conflict to the user and apply the more restrictive setting until the user resolves it.
+
+## 39. Computed answers and eligibility over time
+
+Many answers depend on the date of submission. The system must compute them at submission time, not when the profile was created:
+
+- **Age**: From date of birth as of the date the opportunity specifies (Section 35.2), otherwise as of submission.
+- **Years of experience**: Overall and per skill, calculated from employment history using user-approved counting rules (for example, whether internships, part-time work, and overlapping roles count). The computed value and rule must be shown in the approval package and submission record.
+- **Availability and start date**: Calculated from the user's notice period or availability rule (for example, "one month after offer"), not a fixed stored date that may already be in the past.
+- **Expected graduation and pending results**: Shown as expected, with the expected date. The system must not state that a degree is completed before it is.
+- **Expiring documents and status**: Passports, visas, work permits, and test scores must be checked against the deadline and expected start date; an expiry before those dates must be flagged.
+- **Salary expectations**: Converted to the posting's currency and period using a stated rate and date, only within user-approved ranges.
+- **"Or equivalent experience"**: Treated as satisfied only if the user's approved rule says so; otherwise shown as uncertain.
+
+## 40. Confidentiality of the job search and third-party data
+
+### 40.1 Confidential job search
+
+- The user must be able to mark their current employer (and related companies or recruiters) as excluded. The system must never apply to, contact, or share the user's profile with excluded organizations.
+- The user must be able to choose whether portal profiles created or updated by the system are visible to recruiters or searchable, where the portal allows this setting.
+- Notifications must not show sensitive details on a lock screen if the user turns on private notifications.
+
+### 40.2 Sharing personal data with employers and institutions
+
+- Every application shares personal data with a third party. The approval package (Section 37.1) or the active rule must show which data and documents will be shared and with whom.
+- The system must keep a record of what personal data was shared with each organization and when, as part of the submission record.
+- Where an employer's or institution's privacy notice is shown during application, the system must keep a link to it in the submission record.
+
+### 40.3 Data about other people
+
+- Referee and contact details are personal data of other people. The user must confirm that each referee has agreed to be listed before the system shares their details.
+- The system must not collect personal data about recruiters, professors, or employees beyond what is needed for the application and what is publicly published for professional contact.
+
+### 40.4 Use of AI services
+
+- If generated text, extraction, or matching uses external AI services, the product must tell the user which data is sent to them and why.
+- User data must not be used to train external models without the user's explicit consent.
+- The model version used for generated content and scoring must be stored in the submission record (Section 22.1).
+
+## 41. Account security and automation safety over time
+
+- The product must support multi-factor authentication for the user's own account, and should require it when automatic application, payments, or connected email accounts are enabled.
+- Sensitive actions must require recent re-authentication: enabling or widening an automatic rule, enabling payments, viewing stored portal passwords, exporting all data, and deleting the account.
+- The user must be able to see active sessions and devices and sign out of all of them.
+- The user must be notified of new sign-ins, rule changes, and connected-account changes.
+- **Inactivity safety**: If the user has not opened the product or responded to notifications for a user-defined period, automatic applications must pause automatically until the user returns, and the user must be notified.
+- **Profile freshness**: If key profile facts (contact details, current job, availability, salary expectations) have not been confirmed within a user-defined period, the system must ask the user to confirm them, and may pause automatic applications until they do.
+- **Rule expiry**: Automatic rules expire on their set review date (Section 10.1); the user must be reminded before expiry.
+- **Security incidents**: If a security incident may have affected the user's data or connected accounts, the user must be informed promptly with what happened and what to do.
+
+## 42. Additional opportunity corner cases
+
+The system must handle these situations explicitly:
+
+- **Recruitment agencies**: Identify postings by agencies versus direct employers; show the agency and, where stated, the client. The user must be able to exclude agencies. Applying to the same job through an agency and directly must be treated as a duplicate (Section 10.8).
+- **Rolling or "open until filled" deadlines**: Show as rolling, recommend applying early, and never invent a deadline.
+- **No stated deadline**: Show "deadline not stated" and re-check that the posting is still live before submission.
+- **Multiple positions in one posting**: Show each position separately with its own requirements and apply only to the positions the user's rules or approval select.
+- **Reposted jobs**: Link reposts to earlier versions, and show any earlier application or rejection for the same job.
+- **Bilingual or translated duplicates**: Treat the same posting in two languages as one opportunity.
+- **Language requirements**: A required language the user does not speak at the required level is a hard eligibility failure.
+- **Contractor and employer-of-record roles**: Show whether a role is employment or contract, and the country of contract, where stated.
+- **Unpaid or very low-paid roles**: Label unpaid internships and roles below the user's minimum, and exclude them if the user chooses.
+- **Daylight-saving changes and time zones**: Deadlines must remain correct across daylight-saving changes in both the source and user time zones.
+- **Posting removed after application**: Keep the snapshot taken at application (Section 28.2) and continue tracking the application.
+- **Job closed early**: Notify the user if an opportunity awaiting approval closes before the stated deadline.
+- **Same person, multiple names or spellings**: Support name variants (for example, the name order on a passport versus certificates) and use the variant each application requires, with a consistency warning (Section 35.1).
+- **Minors**: If the user is under the minimum age set for the product, guardian consent or other restrictions required by law must apply.
+
+## 43. Standards and compliance
+
+- **Accessibility**: The product should meet WCAG 2.2 Level AA.
+- **Security**: The product should be verified against a recognized application-security standard (for example, OWASP ASVS Level 2) before external application automation is enabled.
+- **Data protection**: The product must comply with the data-protection laws that apply to the user and to launch markets, including Bangladesh's applicable law and, where users or employers are in the EU/UK, GDPR. Consent records, purpose limitation, data minimization, and the user's rights to access, correct, export, and delete must be supported.
+- **Email and messaging rules**: Emails and messages must follow anti-spam rules and the messaging platforms' usage policies.
+- **Source terms**: Each source's terms on access, automation, and data reuse must be recorded in the source registry (Section 18.1) and respected.
+- **Transparency**: The product must clearly state its limits, including what it cannot automate, that coverage is not complete, and that match scores are estimates.
+
+## 44. Help, support, and feedback
+
+- The product must provide in-app help explaining each feature, status, and setting in plain language, in the interface language the user selects.
+- The user must be able to report a problem with a specific application, opportunity, or notification, and the report must include the relevant record automatically (without secrets).
+- The user must be able to see the status of reported problems.
+- Product-wide incidents affecting the user must be communicated as described in Section 24.2.
+
+## 45. Requirement consistency rules
+
+To keep this document free of contradictions as it grows:
+
+- Section 20.2 is the only status model; Section 38 is the only precedence order; Section 27.3 is the only list of user-only steps; Section 27.4 is the only list of pre-submission checks. Other sections must refer to these rather than define their own versions.
+- Where a section says "automatic" without further detail, it means "within an active rule or an approval, and subject to Sections 27.3 and 38".
+- Where a section says "must not report success", success means the "Confirmed" status in Section 20.2.
+- Any new requirement must be checked against Sections 20.2, 27.3, 27.4, and 38 before it is added.
+
+## 46. Decisions to confirm before implementation
 
 These are product choices not fully determined by the initial request. They should be resolved before implementation or exposed as user settings where appropriate:
 
@@ -768,23 +1341,39 @@ These are product choices not fully determined by the initial request. They shou
 33. What warning signs and thresholds should be used to flag suspicious postings, and should flagged postings be hidden or shown with a warning by default?
 34. What overall daily/weekly application caps and per-employer reapplication waiting periods should be the defaults?
 35. What budget limits apply to paid data sources and usage-based services, and who bears those costs?
+36. May the system create portal accounts automatically, and which email address should be used for them?
+37. May generated essay answers, tailored résumés, and supervisor-outreach emails be sent automatically, or must they always be reviewed?
+38. What default deadline buffer should automatic applications use?
+39. WhatsApp, push, and email are required (Section 36). Should SMS or Telegram also be offered at launch, and which events count as urgent by default?
+40. Which student opportunity types (internships, assistantships, exchange programs, summer schools, postdocs) are in scope for the first release?
+41. Should screenshots or saved copies of submitted forms be kept as evidence, and for how long, given source terms and privacy?
+42. Should follow-up emails to recruiters and professors be allowed automatically, and how many times?
+43. How long should an approval stay valid before it expires (Section 37.5), and what should the default email cancel window be?
+44. Should bulk approval be available at launch, and which items must always be approved individually?
+45. What inactivity period should automatically pause automatic applications, and how often must key profile facts be reconfirmed (Section 41)?
+46. What counting rules should be the defaults for years of experience (internships, part-time, overlapping roles) (Section 39)?
+47. Should automatic rules ever be allowed to apply when a hard requirement is unknown (Section 38)?
+48. What is the minimum user age, and is guardian consent needed for younger students?
+49. Which data-protection laws and standards apply at launch (Section 43)?
 
-## 28. Document control
+## 47. Document control
 
 | Field | Value |
 | --- | --- |
 | Document | Job Discovery and Application Assistant – Requirements |
-| Version | 0.2 (draft) |
+| Version | 0.4 (draft) |
 | Owner | To be confirmed |
-| Status | Draft – pending review of Section 27 decisions |
+| Status | Draft – pending review of Section 46 decisions |
 
-### 28.1 Revision history
+### 47.1 Revision history
 
 | Version | Date | Summary of changes |
 | --- | --- | --- |
 | 0.1 | — | Initial requirements draft. |
 | 0.2 | 2026-10-20 | Added portfolio, identity, and referee profile fields; fraudulent-posting detection (7.5); Bangla and PDF/scanned notice handling (7.6); government recruitment stages (8.4.1); referee and standalone scholarship tracking (Section 9); cross-route duplicate and volume limits, posting-specific instructions, and fee payments (10.8–10.10); quiet hours, calendar/inbox integration, and personal insights (11.3–11.5); UI language selection; backup/recovery and cost transparency; acceptance criteria 21–25; additional test scenarios; decisions 29–35. |
+| 0.3 | 2026-10-20 | Added goals 8–9; widened opportunity types; end-to-end automated pipeline, global controls, steps that stay with the user, pre-submission quality checks, and manual opportunity entry (27); applied-applications report with question-and-answer and email records, question bank, reports, and design rules (28); portal accounts (29); online-form corner cases (30); email corner cases (31); résumé tailoring, document conversion, and generated writing (32); full student journey (33); job-seeker journey after applying (34); Bangladesh-specific requirements (35); notification channels and approvals (36); acceptance criteria 26–41; more test scenarios; decisions 36–42. Decisions and document control renumbered to 37 and 38. |
+| 0.4 | 2026-10-20 | Consistency review. Fixed contradictions: single status model (20.2) replacing separate lists; result count does not limit automatic applications (6); pre-submission checks apply in both modes (27.4); submission-record immutability versus deletion rights (28.2); pre-recorded video upload versus one-way video interviews (27.3); urgent notifications and quiet hours (11.3). Added approve-each mode with automatic completion after approval (37); rule precedence (38); computed answers (39); confidentiality and third-party data (40); account security and automation safety (41); additional opportunity corner cases (42); standards and compliance (43); help and support (44); requirement consistency rules (45). Made WhatsApp and push required notification channels (36). Updated scope, onboarding, and MVP; acceptance criteria 42–53; more test scenarios; decisions 43–49. Decisions and document control renumbered to 46 and 47. |
 
-### 28.2 Requirement traceability
+### 47.2 Requirement traceability
 
 Before implementation, each requirement should be given a stable identifier (for example, `REQ-10.8-01`) and a priority (must / should / could), so that design items, test cases, and acceptance evidence in Section 25.3 can be traced back to it.
