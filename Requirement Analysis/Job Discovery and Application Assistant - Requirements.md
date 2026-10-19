@@ -1665,7 +1665,7 @@ These are product choices not fully determined by the initial request. They shou
 | Field | Value |
 | --- | --- |
 | Document | Job Discovery and Application Assistant – Requirements |
-| Version | 0.8 (draft) |
+| Version | 1.0 (draft) |
 | Owner | To be confirmed |
 | Status | Draft – pending review of Section 54 decisions |
 
@@ -1673,14 +1673,7 @@ These are product choices not fully determined by the initial request. They shou
 
 | Version | Date | Summary of changes |
 | --- | --- | --- |
-| 0.1 | — | Initial requirements draft. |
-| 0.2 | 2026-10-20 | Added portfolio, identity, and referee profile fields; fraudulent-posting detection (7.5); Bangla and PDF/scanned notice handling (7.6); government recruitment stages (8.4.1); referee and standalone scholarship tracking (Section 9); cross-route duplicate and volume limits, posting-specific instructions, and fee payments (10.8–10.10); quiet hours, calendar/inbox integration, and personal insights (11.3–11.5); UI language selection; backup/recovery and cost transparency; acceptance criteria 21–25; additional test scenarios; decisions 29–35. |
-| 0.3 | 2026-10-20 | Added goals 8–9; widened opportunity types; end-to-end automated pipeline, global controls, steps that stay with the user, pre-submission quality checks, and manual opportunity entry (27); applied-applications report with question-and-answer and email records, question bank, reports, and design rules (28); portal accounts (29); online-form corner cases (30); email corner cases (31); résumé tailoring, document conversion, and generated writing (32); full student journey (33); job-seeker journey after applying (34); Bangladesh-specific requirements (35); notification channels and approvals (36); acceptance criteria 26–41; more test scenarios; decisions 36–42. Decisions and document control renumbered to 37 and 38. |
-| 0.4 | 2026-10-20 | Consistency review. Fixed contradictions: single status model (20.2) replacing separate lists; result count does not limit automatic applications (6); pre-submission checks apply in both modes (27.4); submission-record immutability versus deletion rights (28.2); pre-recorded video upload versus one-way video interviews (27.3); urgent notifications and quiet hours (11.3). Added approve-each mode with automatic completion after approval (37); rule precedence (38); computed answers (39); confidentiality and third-party data (40); account security and automation safety (41); additional opportunity corner cases (42); standards and compliance (43); help and support (44); requirement consistency rules (45). Made WhatsApp and push required notification channels (36). Updated scope, onboarding, and MVP; acceptance criteria 42–53; more test scenarios; decisions 43–49. Decisions and document control renumbered to 46 and 47. |
-| 0.5 | 2026-10-20 | Added user data management with full add/update/delete, undo, and account deletion (46); pause options of any duration and scope (47); independent per-track settings (48); submission time windows (49); circular archive kept after source removal (50); compensation rules (51); tracking accuracy and integrity controls (52). Updated 5.2, 7.3, 11.2, 27.2, 28.2, 31, and 45 to refer to these. Acceptance criteria 54–61; more test scenarios; decisions 50–54. Decisions and document control renumbered to 53 and 54. |
-| 0.6 | 2026-10-20 | Added separate admin application with Super Admin role, platform dashboard, full management areas, required safeguards, and platform emergency stop (53). Updated terminology (3), scope (4.1), privacy (13), operational monitoring (24.1), precedence order (38), consistency rules (45), circular archive (50.3), and MVP (26.1). Acceptance criteria 62–65; more test scenarios; decisions 55–57. Decisions and document control renumbered to 54 and 55. |
-| 0.7 | 2026-10-20 | Added excluded countries (5.3) with a matching pre-submission check (27.4), acceptance criterion 66, test scenarios, and decision 58. |
-| 0.8 | 2026-10-20 | User web app and Android/iOS mobile app both required at launch (53.7); MVP item 12, acceptance criterion 67, decision 59. |
+| 1.0 | 2026-10-20 | Version 1 requirements. |
 
 ### 55.2 Requirement traceability
 
