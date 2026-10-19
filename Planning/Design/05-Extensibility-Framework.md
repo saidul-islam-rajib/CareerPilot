@@ -22,7 +22,7 @@ How CareerPilot grows without rewrites. Most growth should need **configuration 
 | New admin role | Role + policy definitions | No | Admin → Roles |
 | New platform limit / default | Platform setting (typed, versioned) | No | Admin → Settings |
 | New feature rollout | Feature flag (per user, tenant, %, country) | No | Admin → Flags |
-| New payment provider (future) | Payment tracker plugin | Yes (plugin) | Admin → Payments |
+| New payment provider | `PaymentProvider` plugin ([15-Integrations-and-Payments.md](15-Integrations-and-Payments.md)) | Yes (plugin) | Admin → Integrations |
 | New external partner integration (future) | Outbound webhooks + partner API scopes | Small | Admin → Integrations |
 
 What is **not** extensible without a requirements change: the status model (20.2), the precedence order (38), user-only steps (27.3), and the core pre-submission checks (27.4). These protect users and stay in the core.

@@ -20,6 +20,7 @@ Architecture and design for version 1, from the highest level down to code contr
 | Security | [12-Security-Architecture.md](12-Security-Architecture.md) | Trust boundaries, STRIDE, identity and access, data protection, AI security |
 | Operations | [13-Infrastructure-and-Operations.md](13-Infrastructure-and-Operations.md) | AWS deployment, scaling, resilience, DR, CI/CD, observability, SLOs, cost |
 | Decisions | [14-ADR-Log.md](14-ADR-Log.md) | 20 architecture decisions with alternatives |
+| Integrations | [15-Integrations-and-Payments.md](15-Integrations-and-Payments.md) | Integration hub, webhook gateway, payment provider interface and flow |
 
 ## Design at a glance
 
