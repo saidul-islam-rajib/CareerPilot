@@ -547,6 +547,7 @@ The product is ready for an initial release only when all of the following are d
 64. Secrets are never shown in readable form to admins; admins cannot submit, send, or pay on a user's behalf without the user's authorization; every admin access and change is audited and visible to the affected user.
 65. The platform emergency stop halts automatic actions for all users, a group, a source, or a route, and affected users are notified.
 66. Opportunities connected to a user- or platform-excluded country are never applied to; unclear countries block automatic application; adding an exclusion cancels affected approvals.
+67. The web app and the Android and iOS apps are released together with all user features, share the same data, and stay in sync; offline actions in the mobile app are shown as pending until saved.
 
 ## 17. Onboarding and initial setup
 
@@ -839,6 +840,7 @@ The initial release should prioritize:
 9. The applied-applications report and submission records (Section 28).
 10. WhatsApp and push notifications with approvals from the notification (Section 36).
 11. The admin application with the Super Admin role, dashboard, and management areas (Section 53).
+12. The user web app and the Android and iOS mobile app, released together (Section 53.7).
 
 External application submission should be enabled only for explicitly supported and tested workflows. Features that depend on unavailable or restricted sources must be presented as limitations rather than implied capabilities.
 
@@ -1522,7 +1524,7 @@ Every recommendation must be recorded with: date and time, track, position in th
 ### 53.1 Separate applications
 
 - The product must consist of two separate applications:
-  - **User application**: used by job seekers and students (web and mobile-sized screens), as described in the rest of this document.
+  - **User application**: used by job seekers and students, as described in the rest of this document. It must be delivered at launch as both a **web app** and a **mobile app** (Section 53.7).
   - **Admin application**: used only by administrators to view and manage the whole platform.
 - The two applications must have separate access points (for example, separate web addresses) and separate sign-in. The admin application must not be reachable from the user application, and a user account must never gain admin access.
 - The two applications may look and behave differently. Whether they share underlying services is an implementation decision.
@@ -1584,6 +1586,15 @@ Admins can see and manage all information. The following limits are required by 
 ### 53.6 Platform emergency stop
 
 Super Admins must be able to stop all automatic external actions for all users, a selected group of users, a source, or an application route, for example during an incident or when a source changes its terms. Affected users must be notified, and in-progress actions handled as in Section 27.2.
+
+### 53.7 User web app and mobile app
+
+- The user application must be released at the same time as a web app and a mobile app for Android and iOS. Neither is a later phase.
+- Both must provide every user feature in this document, including profile and document management, tracks and rules, approval packages, the applications list and submission records, archived circulars, pause, and account deletion.
+- The mobile app must support push notifications, approving and answering blocked questions from notifications (Section 36), uploading documents and photos from the device, and secure sign-in (including device biometrics where available).
+- The web app, mobile app, and admin application must use the same backend and data, so any change on one appears on the others without the user doing anything.
+- The same account must work on the web and mobile apps at the same time. Session management (Section 41) must cover all devices.
+- The mobile app should let the user view recent applications, records, and archived circulars when offline. Actions taken offline must be clearly marked as pending and must not be treated as done until they reach the backend.
 
 ## 54. Decisions to confirm before implementation
 
@@ -1647,13 +1658,14 @@ These are product choices not fully determined by the initial request. They shou
 56. For which purposes may admins view a user's sensitive data, and should users be notified each time an admin views it, or only when an admin changes it (Section 53.5)?
 57. Should the admin application be desktop-only, or also usable on mobile-sized screens?
 58. By default, should a country exclusion also cover the employer's base country, or only the job location (Section 5.3)?
+59. Which minimum Android and iOS versions must the mobile app support (Section 53.7)?
 
 ## 55. Document control
 
 | Field | Value |
 | --- | --- |
 | Document | Job Discovery and Application Assistant – Requirements |
-| Version | 0.7 (draft) |
+| Version | 0.8 (draft) |
 | Owner | To be confirmed |
 | Status | Draft – pending review of Section 54 decisions |
 
@@ -1668,6 +1680,7 @@ These are product choices not fully determined by the initial request. They shou
 | 0.5 | 2026-10-20 | Added user data management with full add/update/delete, undo, and account deletion (46); pause options of any duration and scope (47); independent per-track settings (48); submission time windows (49); circular archive kept after source removal (50); compensation rules (51); tracking accuracy and integrity controls (52). Updated 5.2, 7.3, 11.2, 27.2, 28.2, 31, and 45 to refer to these. Acceptance criteria 54–61; more test scenarios; decisions 50–54. Decisions and document control renumbered to 53 and 54. |
 | 0.6 | 2026-10-20 | Added separate admin application with Super Admin role, platform dashboard, full management areas, required safeguards, and platform emergency stop (53). Updated terminology (3), scope (4.1), privacy (13), operational monitoring (24.1), precedence order (38), consistency rules (45), circular archive (50.3), and MVP (26.1). Acceptance criteria 62–65; more test scenarios; decisions 55–57. Decisions and document control renumbered to 54 and 55. |
 | 0.7 | 2026-10-20 | Added excluded countries (5.3) with a matching pre-submission check (27.4), acceptance criterion 66, test scenarios, and decision 58. |
+| 0.8 | 2026-10-20 | User web app and Android/iOS mobile app both required at launch (53.7); MVP item 12, acceptance criterion 67, decision 59. |
 
 ### 55.2 Requirement traceability
 
