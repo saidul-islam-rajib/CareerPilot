@@ -101,6 +101,8 @@ flowchart TB
 
 ## 3. Container catalogue
 
+At launch (lean stage, [../12-Cost-Plan.md](../12-Cost-Plan.md)) all application containers, Keycloak, Temporal, and Redis run on one instance; the containers and their responsibilities are the same.
+
 | Container | Technology | Responsibility | Scales by | Notes |
 |---|---|---|---|---|
 | User web app | Next.js, TypeScript | All user features in a browser; server side acts as a Backend-for-Frontend that keeps tokens in httpOnly cookies | Stateless instances | [11-Frontend-Architecture.md](11-Frontend-Architecture.md) |
