@@ -1,6 +1,6 @@
 # Developing with Claude
 
-How the team uses Claude Code to build CareerPilot safely and quickly. This is about *building* the product; the AI *inside* the product is covered in [05-AI-Design.md](05-AI-Design.md).
+How Claude Code is used to build CareerPilot safely and quickly. Under AIDLC, the roles below are performed by the agents in [10-AIDLC-Agents.md](10-AIDLC-Agents.md); "humans" means the Product Owner at the checkpoints listed there. This is about *building* the product; the AI *inside* the product is covered in [05-AI-Design.md](05-AI-Design.md).
 
 ## 1. Setup (Sprint 0)
 
