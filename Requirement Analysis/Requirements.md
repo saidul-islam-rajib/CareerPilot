@@ -374,6 +374,18 @@ The system must not promise “without any errors”: external forms and portals
 - Each payment must be recorded with amount, time, method, transaction ID, receipt, and the application it relates to. A payment must not be reported as complete without confirmation from the payment provider or the official portal.
 - Failed, uncertain, or duplicate payments must be shown with refund or verification guidance and must never be retried automatically without checking the previous attempt's outcome.
 
+### 10.11 Third-party integrations and payment providers
+
+- The platform must support adding third-party integrations without changing core behaviour, including job sources, application portals, email and calendar providers, messaging channels, payment providers, analytics, and future partner systems (for example universities or career centres).
+- **Payment providers**: The platform must support connecting payment providers through a common payment interface, so providers can be added or replaced (for example local mobile-financial-service and card gateways in Bangladesh, and international card gateways). Payment providers may be used for:
+  - paying application fees where an official portal accepts online payment through that provider, under the payment rules in Section 10.10; and
+  - future paid features of CareerPilot itself (for example subscriptions), if introduced.
+- Card details must never be stored by CareerPilot; payments must use the provider's hosted checkout or tokenization so that card data stays with the provider.
+- Every payment-provider callback (webhook) must be verified (signature, amount, currency, reference) before a payment is marked confirmed, and duplicate callbacks must not create duplicate records.
+- Each integration must be individually enabled, configured, monitored, and disabled from the admin application (Section 53), with health status and error rates visible.
+- Integrations must use the minimum permissions needed, store their secrets in the platform's secret store, and appear in the user's connected-accounts list when they act for a specific user (Section 13).
+- Partner integrations (inbound API access or outbound webhooks for organizations) must use scoped credentials, be rate-limited, and be audited.
+
 ## 11. Dashboard, history, and notifications
 
 ### 11.1 Daily dashboard
@@ -460,7 +472,8 @@ When status is uncertain, say so and give the user a safe next step. Do not sile
 - Dates and times must be shown unambiguously and in the user's selected time zone, with the source's original time zone retained when known.
 - Salary, stipend, grade, GPA, and test scores must show their units/scales and avoid misleading comparisons.
 - The user must be able to understand why an opportunity appeared, why it did not appear, and what action is needed next.
-- The interface language and the language of generated application materials should be selectable independently, with English and Bangla as candidates for initial support.
+- Version 1 interfaces (web, mobile, and admin) are in **English only** and in a **light colour theme only**. All interface text must still be kept in string catalogs, and colours in design tokens, so that Bangla and a dark theme can be added later without redesign. Opportunities, circulars, and documents in Bangla must still be handled as described in Section 7.6.
+- The language of generated application materials should be selectable per application; English is the default.
 
 ## 15. Non-functional requirements
 
@@ -473,6 +486,9 @@ These are product-level expectations; exact service-level targets can be set bef
 - **Scalability**: The product should be able to add supported sources and opportunity categories without changing the user's core workflow.
 - **Portability**: User data should be exportable in a commonly usable format.
 - **Maintainability**: Source-specific failures must be diagnosable without hiding their effect from users.
+- **Observability**: All parts of the system (web, mobile, admin, APIs, workers, workflows, integrations, AI calls) must produce structured logs, distributed traces, and metrics that can be correlated by a single trace or application ID, and must be viewable in one monitoring platform with dashboards and alerts.
+- **Load and scalability**: The system must be load-tested before each release (normal, peak, stress, spike, and long-duration loads) against agreed targets, and must scale horizontally without design changes.
+- **Cost efficiency**: The platform must be able to run at low cost at launch (free tiers and small instances where possible) and scale up as usage grows without redesign.
 - **Localization readiness**: Dates, currencies, languages, country names, and grading/test scales must be represented so that international opportunities can be compared without losing original values.
 - **Backup and recovery**: Profile data, documents, application records, and audit history must be backed up and recoverable after failure. Loss of application evidence (confirmations, receipts, transaction IDs) must be treated as a serious failure.
 - **Cost transparency**: Where the product depends on paid data sources, external services, or usage-based processing, the operator must be able to see and limit those costs, and any cost borne by the user must be disclosed before it is incurred.
@@ -754,7 +770,17 @@ When a failure affects searches, recommendations, notifications, or application 
 
 Where a failure may have caused missed deadlines, duplicate actions, or uncertain submissions, communication and recovery guidance should be prioritized.
 
-### 24.3 Auditability
+### 24.3 Automated error detection and remediation
+
+- The platform must automatically detect errors and abnormal behaviour in production (error-rate increases, failed workflows, failing integrations, slow responses, reconciliation mismatches, crashes in the apps).
+- Detected problems must be triaged automatically, grouped with related occurrences, and linked to the relevant logs, traces, metrics, and code.
+- Known problems must be remediated automatically using approved runbook actions (for example rolling back a release, disabling a failing integration behind its feature flag, retrying safe operations, or scaling a service).
+- For new problems, an automated fix must be prepared as a code change with a test that reproduces the problem, and must pass all tests and checks before release. Fixes affecting authentication, credentials, payments, automation safety (Sections 27.3, 27.4, 38), user data deletion, or database structure must be approved by a person before release.
+- Problems that show a design weakness must produce a redesign proposal (architecture decision record and backlog item) rather than only a code patch.
+- Automatic remediation must never weaken a safeguard, delete user data, or perform an external action on a user's behalf.
+- Every detection, remediation, and fix must be recorded with its outcome, and the affected users must be informed when the problem affected their applications, deadlines, or data (Section 24.2).
+
+### 24.4 Auditability
 
 The system must maintain a reliable history of important events, including profile changes that affect eligibility, source checks, opportunity updates, user approvals, external actions, status corrections, and authorization changes.
 
@@ -1628,7 +1654,7 @@ These are product choices not fully determined by the initial request. They shou
 26. What feedback measures should evaluate recommendation quality, and how should ranking changes be reviewed?
 27. What incident-notification process should apply when source or system failures could affect deadlines or application outcomes?
 28. What minimum functional, security, and privacy test evidence is required before enabling external application automation?
-29. Should the interface and generated application materials support Bangla at launch, or English only?
+29. Decided: version 1 interfaces are English only and light theme only (Section 14); Bangla interface and dark theme come later.
 30. Should fee payments ever be automated (for example, Bangladesh government application fees), or always handed to the user?
 31. Should the product read the user's email inbox to detect application responses, and should it ever update statuses without confirmation?
 32. Which calendar integration, if any, is needed at launch: a calendar feed export or direct calendar-account synchronization?
