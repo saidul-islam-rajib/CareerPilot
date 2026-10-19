@@ -79,6 +79,7 @@ flowchart LR
 ## 5. Privacy by design
 
 - Data minimization: optional sensitive fields; AI tasks receive only needed fields; events carry IDs not personal data.
+- Registration consent (required Terms and Privacy Policy checkbox) covers automatic collection of IP address, device and app information, IP-based approximate location, and sign-in history for security and operations (requirements §13). Precise location and device contacts are only accessed after an operating-system permission prompt for a stated feature; never silently. IP addresses and sign-in history are stored in `sign_in_events`, retained for a defined period, and shown to the user ("Sign-in activity") and to admins.
 - Purpose limitation and consent records per purpose (matching, applications, analytics, inbox reading).
 - User rights built in: access, correction, export, deletion (requirements Sections 13, 46).
 - Transparency: privacy notice covers admin access, AI providers, third-party sharing per application (requirements Sections 40, 53.5).

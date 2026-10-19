@@ -30,6 +30,7 @@ erDiagram
   USERS ||--o{ SESSIONS : has
   USERS ||--o{ DEVICES : registers
   USERS ||--o{ CONSENT_RECORDS : gives
+  USERS ||--o{ SIGN_IN_EVENTS : signs_in
   PROFILES ||--o{ PROFILE_FACTS : contains
   PROFILES ||--o{ EDUCATIONS : lists
   PROFILES ||--o{ EMPLOYMENTS : lists

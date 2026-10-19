@@ -27,7 +27,7 @@ Detailed schemas are designed per sprint. Core entities:
 
 | Area | Entities |
 |---|---|
-| Identity | `user`, `admin_user`, `role`, `session`, `device`, `consent_record` |
+| Identity | `user`, `admin_user`, `role`, `session`, `device`, `consent_record` (document versions, time, IP, device), `sign_in_event` (time, IP, device, approximate location, method, result) |
 | Profile | `profile`, `contact`, `education`, `employment`, `skill`, `test_score`, `identity_detail` (sensitive), `address`, `referee`, `link`, `profile_change` |
 | Documents | `document`, `document_version`, `video`, `derived_file` (conversions, resized photos) |
 | Preferences | `track`, `track_setting`, `excluded_country`, `compensation_rule`, `submission_window`, `pause`, `notification_setting` |
@@ -58,7 +58,7 @@ Detailed schemas are designed per sprint. Core entities:
 |---|---|---|
 | Secret | Portal passwords, OAuth tokens | KMS envelope encryption; never returned by any API; access logged |
 | Sensitive personal | NID, passport, date of birth, parents' names, quota status, demographic answers | Column-level encryption; shown only where needed; admin views audited |
-| Personal | Name, contact, CV, education, applications | Encrypted at rest (RDS/S3), row-level security |
+| Personal | Name, contact, CV, education, applications, IP addresses, device information, approximate location, sign-in history | Encrypted at rest (RDS/S3), row-level security |
 | Platform | Sources, opportunities, settings | Standard encryption at rest |
 
 ## 5. Backup, retention, and recovery

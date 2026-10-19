@@ -45,7 +45,7 @@ Notes:
 
 | Context | Seeded tables (examples) |
 |---|---|
-| Identity | users, admin_users, roles, policies, sessions, devices, consent_records |
+| Identity | users, admin_users, roles, policies, sessions, devices, consent_records, sign_in_events |
 | Profile | profiles, profile_facts, educations, employments, test_scores, referees, links, profile_changes |
 | Documents | documents, document_versions (CVs, transcripts, certificates, photos, signatures, a demo video), derived_files |
 | Preferences | tracks (4 named + custom), track_settings, excluded_countries, compensation_rules, submission_windows, pauses, auto_rules, auto_rule_versions, reusable_answers |
