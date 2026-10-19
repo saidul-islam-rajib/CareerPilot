@@ -16,6 +16,7 @@ CareerPilot/
 │   └── dependabot.yml
 ├── Requirement Analysis/        # Requirements (source of truth)
 ├── Planning/                    # Plans; Planning/Design/ for architecture
+├── config/                      # defaults/*.yaml (every default value + schema), env/<env>.yaml (ADR 0021)
 ├── specs/                       # Feature specifications (spec-driven development, §3)
 ├── apps/
 │   ├── web/                     # User web app (Next.js)

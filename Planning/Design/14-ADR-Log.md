@@ -24,5 +24,8 @@ Each decision is recorded as an ADR. Full ADR files go in `docs/adr/NNNN-title.m
 | 0018 | OpenFeature-based feature flags managed from the admin app | Ad-hoc config flags | Safe gradual rollouts; flag hygiene process needed | Proposed |
 | 0019 | Separate browser sandbox pool with egress proxy for automation | Automation inside general workers | Isolation of untrusted web content and credentials | Proposed |
 | 0020 | Deterministic, versioned scoring in code; AI only for extraction and explanations | AI-computed scores | Reproducible, explainable scores; AI cost limited | Proposed |
+| 0021 | Configuration-first: every default in `config/defaults` (schema-validated), environment overrides, secrets manager, admin runtime settings, feature flags; top-level `config/` folder | Constants in code | Behaviour changes without releases; config schema must be maintained | Accepted |
+| 0022 | No physical deletes: audit and soft-delete columns on every table, no `DELETE` privilege, permanent deletion by anonymization and crypto-shredding | Hard delete with purge jobs | Full history and restore; erasure still guaranteed; tables grow (partitioning and archival handle it) | Accepted |
+| 0023 | Statuses as code enums stored as `text` + `CHECK`, display metadata in `enum_values` | PostgreSQL enum types; free text | Safe to extend, dynamic labels; migration needed for new values | Accepted |
 
 All ADRs are accepted (or changed) by the Product Owner and tech lead during Sprint 0.
