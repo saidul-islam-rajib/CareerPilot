@@ -54,7 +54,7 @@ Phases 3–5 repeat inside every sprint (Agile). Phases 1–2 are mostly up fron
 - Code is merged to `main` through a reviewed pull request, with small commits.
 - Unit and integration tests pass in CI; new behaviour has tests.
 - It works on every platform the story covers (web, Android, iOS, admin).
-- English and Bangla strings exist for all new user-facing text.
+- All new user-facing text is in the English string catalog (no hard-coded strings).
 - Accessibility checks pass (keyboard, labels, contrast) for new screens.
 - No secrets in code or logs; security checklist done for sensitive areas.
 - API contract (OpenAPI) and generated clients are updated.

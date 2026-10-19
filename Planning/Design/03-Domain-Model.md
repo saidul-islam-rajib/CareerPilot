@@ -20,7 +20,7 @@
 | 14 | Country Packs (Bangladesh first) | Supporting | Country-specific rules: government stages, age rules, quotas, formats, holidays | 8.4, 35 |
 | 15 | Career Tracking | Supporting | Assessments, interviews, offers, contacts, insights | 11.5, 34 |
 | 16 | Payments Tracking | Supporting | Fee rules, payment records, receipts | 10.10 |
-| 17 | Audit and Compliance | Generic | Audit events, data requests (export/deletion), retention | 13, 24.3, 46.2 |
+| 17 | Audit and Compliance | Generic | Audit events, data requests (export/deletion), retention | 13, 24.4, 46.2 |
 | 18 | Administration | Supporting | Platform settings, feature flags, support tickets, incidents, dashboards | 24, 44, 53 |
 | 19 | AI Services | Generic (shared kernel for AI) | Prompt registry, AI task runs, evals, cost tracking | AI design |
 

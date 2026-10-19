@@ -24,6 +24,6 @@ Job discovery and application assistant for job seekers and students (Bangladesh
 - Use the single definitions in the requirements: status model (§20.2), precedence (§38), user-only steps (§27.3), pre-submission checks (§27.4), pause (§47), submission timing (§49), circular archive (§50), compensation (§51), admin access (§53).
 - Never fabricate user facts, never solve CAPTCHAs or evade bot detection, never resubmit when the outcome is unknown, never log or return secrets or plain-text credentials.
 - Never send real applications, emails, or payments from local, dev, test, staging, or CI.
-- All user-facing text goes through English and Bangla string catalogs.
+- v1 UI is English only and light theme only; all user-facing text still goes through string catalogs and colours through design tokens (so Bangla and dark mode can be added later).
 - Commit portion by portion with very short messages.
 - Requirements stay at version 1.0; edit in place, don't add revision rows.

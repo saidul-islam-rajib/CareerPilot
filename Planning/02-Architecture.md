@@ -94,7 +94,7 @@ flowchart LR
 | `academic` | Programs, tests, scores, referees, supervisor outreach, offers | 9, 33 |
 | `government` | Circular specifics, stages, fees, applicant copies | 8.4, 35 |
 | `tracking` | Interviews, assessments, offers, insights | 11.5, 34 |
-| `audit` | Append-only audit events, reconciliation | 24.3, 52.3 |
+| `audit` | Append-only audit events, reconciliation | 24.3, 24.4, 52.3 |
 | `admin` | Admin dashboard queries, management actions, platform settings | 53 |
 | `ai` | All Claude calls, prompts, evals, cost tracking | [05-AI-Design.md](05-AI-Design.md) |
 

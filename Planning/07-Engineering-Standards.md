@@ -21,7 +21,7 @@ CareerPilot/
 │   ├── api-client/               # Generated from OpenAPI
 │   ├── ui-tokens/                # Design tokens (web + mobile)
 │   ├── ui-web/                   # Shared web components (web + admin)
-│   ├── i18n/                     # English and Bangla strings
+│   ├── i18n/                     # String catalogs (English in v1)
 │   ├── validation/               # Zod schemas shared by web and mobile
 │   └── config/                   # ESLint, TypeScript, Prettier presets
 ├── services/                     # Python (uv workspace)
@@ -78,7 +78,7 @@ Rules:
 - **Domain rules in one place.** Status model, precedence, pause, archive, compensation, and admin access each live in one module (requirements Section 45). Never re-implement them in front ends; front ends display what the API returns.
 - **Time.** Store UTC plus original time zone; use the user's time zone only for display.
 - **Money.** Integer minor units plus currency code; never floats.
-- **Text.** No hard-coded user-facing strings; everything goes through English and Bangla catalogs.
+- **Text.** No hard-coded user-facing strings; everything goes through string catalogs (English in v1).
 - **Logging.** Structured logs; personal data and secrets are scrubbed; every log line carries a request or workflow ID.
 - **Feature flags.** New risky features (new routes, automatic mode per route) ship behind flags controlled from the admin app.
 - **Dependencies.** Pinned and updated weekly by Renovate/Dependabot; new dependencies need a reason in the PR.

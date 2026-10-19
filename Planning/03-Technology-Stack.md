@@ -59,7 +59,7 @@ Each choice lists the reason and the main alternative considered. Exact versions
 | API client | Generated from the backend OpenAPI (for example with `openapi-typescript` + a typed fetch client) |
 | Server state | TanStack Query |
 | Forms | React Hook Form + Zod |
-| Internationalization | English and Bangla string catalogs shared by web and mobile |
+| Internationalization | String catalogs shared by web and mobile (English only in v1; Bangla later) |
 | Dates and time zones | date-fns + date-fns-tz (or Temporal API polyfill) |
 
 ### 3.2 User web app and admin app

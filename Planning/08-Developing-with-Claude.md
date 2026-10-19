@@ -30,7 +30,7 @@ How the team uses Claude Code to build CareerPilot safely and quickly. This is a
 - Use the single definitions: status model (requirements Section 20.2), precedence (38), user-only steps (27.3), pre-submission checks (27.4), pause (47), submission timing (49), circular archive (50), compensation (51), admin access (53).
 - Never weaken a safeguard: no fabrication, no CAPTCHA solving or bot-detection evasion, no blind resubmission, no secrets in code or logs, no plain-text credentials.
 - Never send real applications, emails, or payments from development, test, or CI environments.
-- Every user-facing string goes through English and Bangla catalogs.
+- Every user-facing string goes through the string catalogs (English only in v1).
 - Keep commits small, with short messages.
 
 ## 4. What humans always own

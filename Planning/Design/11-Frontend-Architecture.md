@@ -7,7 +7,7 @@ flowchart TB
   subgraph packages["packages/ (shared TypeScript)"]
     client["api-client<br/>(generated from OpenAPI)"]
     val["validation<br/>(Zod schemas)"]
-    i18n["i18n<br/>(en, bn catalogs + formatters)"]
+    i18n["i18n<br/>(string catalogs: en in v1)"]
     tokens["ui-tokens<br/>(colors, spacing, type)"]
     forms["dynamic-forms<br/>(JSON Schema → form model)"]
     domainui["domain-ui-logic<br/>(status labels, formatting,<br/>money, dates, time zones)"]
@@ -63,7 +63,7 @@ Each feature contains `components/`, `hooks/` (TanStack Query), `screens/` or ro
 | Forms | React Hook Form + Zod; dynamic forms for metadata-driven fields |
 | Accessibility | Radix primitives, axe checks in CI, keyboard paths for approvals and records |
 | Performance | Route-level code splitting, image optimization, performance budgets in CI (Core Web Vitals) |
-| i18n | next-intl, locale routing (`/en`, `/bn`), Bangla fonts with proper shaping |
+| i18n | next-intl with English only in v1 (locale routing ready for Bangla later); Bangla font support for displaying Bangla circulars and documents |
 
 ## 4. Admin web app
 
@@ -94,9 +94,9 @@ Each feature contains `components/`, `hooks/` (TanStack Query), `screens/` or ro
 ## 6. Design system
 
 - Design tokens (colour, spacing, typography, radius, motion) defined once in `ui-tokens`, exported to Tailwind (web/admin) and NativeWind (mobile).
-- Light and dark themes; status colours always paired with text labels and icons (requirements Section 28.5).
+- Light theme only in v1 (tokens ready for a dark theme later); status colours always paired with text labels and icons (requirements Section 28.5).
 - Figma library mirrors the tokens and components; Code Connect can link Figma components to code later.
-- Bangla typography tested for long words and mixed scripts.
+- Bangla text inside content (circulars, names) renders correctly with a Bangla-capable font.
 
 ## 7. Front-end quality
 
