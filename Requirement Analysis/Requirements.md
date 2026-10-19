@@ -502,7 +502,9 @@ When status is uncertain, say so and give the user a safe next step. Do not sile
 - Dates and times must be shown unambiguously and in the user's selected time zone, with the source's original time zone retained when known.
 - Salary, stipend, grade, GPA, and test scores must show their units/scales and avoid misleading comparisons.
 - The user must be able to understand why an opportunity appeared, why it did not appear, and what action is needed next.
-- Version 1 interfaces (web, mobile, and admin) are in **English only** and in a **light colour theme only**. All interface text must still be kept in string catalogs, and colours in design tokens, so that Bangla and a dark theme can be added later without redesign. Opportunities, circulars, and documents in Bangla must still be handled as described in Section 7.6.
+- Version 1 interfaces (web, mobile, and admin) are in **English only** and use **light colour themes only**. All interface text must still be kept in string catalogs, and colours in design tokens, so that Bangla and a dark theme can be added later without redesign. Opportunities, circulars, and documents in Bangla must still be handled as described in Section 7.6.
+- **Themes**: The user web app and mobile app offer three light visual themes: **Sober** (the default), **Horizon**, and **Orchid**. A Super Admin chooses the active theme in the admin application (with a preview before applying); it applies to every user's web and mobile app at once, without a new release. Users do not choose their own theme in version 1. The admin application always uses the Sober theme. All themes must meet the accessibility contrast requirements in this section.
+- **Credits**: The web app, mobile app (About screen), admin application, and email footers must credit the development team: "Developed by Team Sober" with a link to https://team-sober.com/. Third-party open-source components and their licences must be acknowledged on an open-source licences page.
 - The language of generated application materials should be selectable per application; English is the default.
 
 ## 15. Non-functional requirements
@@ -601,13 +603,15 @@ The product is ready for an initial release only when all of the following are d
 69. Production errors are detected, triaged, and remediated automatically within the limits of Section 24.3; automated fixes include a reproducing test and pass all tests, and sensitive fixes are approved by a person before release.
 70. Logs, traces, and metrics from all parts of the system can be correlated by trace or application ID in one monitoring platform with dashboards and alerts.
 71. The system scales by adding instances without code changes; capacity is monitored in production (load testing is out of scope for version 1).
-72. Version 1 interfaces are English only and light theme only, with all text in string catalogs and colours in design tokens.
+72. Version 1 interfaces are English only and use light themes only, with all text in string catalogs and colours in design tokens.
 73. The user can add, crop, replace, and remove a profile photo and signature, manage multiple verified emails and phone numbers, and edit, reorder, and delete every profile section.
 74. Images, documents, and archived circulars open in a viewer with zoom, pan, rotate, and full-screen on touch and desktop devices.
 75. Ordered lists support drag and drop with mouse, touch, and keyboard, with an accessible non-drag alternative, autosave, and undo.
 76. Every screen of the web, admin, and mobile apps works without layout problems from small phones to large desktop screens.
 77. Registration requires the Terms and Privacy Policy consent checkbox; the consent record and sign-in history (IP, device, approximate location, time) are stored and shown to the user and admins; precise location and device contacts are only accessed after an operating-system permission prompt.
 78. Every record shows its created and last-updated time and who made each change; deleting any item marks it deleted and it can be restored during the recently-deleted period; after permanent deletion its personal content cannot be recovered.
+79. A Super Admin can switch the user web and mobile apps between the Sober (default), Horizon, and Orchid themes after a preview, and every user sees the new theme without a release; every theme meets the contrast requirements.
+80. Every app and email footer shows "Developed by Team Sober" linking to https://team-sober.com/, and an open-source licences page lists third-party components.
 
 ## 17. Onboarding and initial setup
 
@@ -1636,7 +1640,7 @@ The admin application must provide full read, create, update, and delete for:
 - **Opportunities and circulars**: view, correct extracted details, merge or split duplicates, mark expired or fraudulent, and manage archived copies.
 - **Sources**: add, edit, enable, disable, and remove sources; record terms and limitations; set check frequency; run a manual check.
 - **Applications**: view every application and its full record, cancel queued applications, verify uncertain outcomes, and record corrections.
-- **Platform rules and defaults**: default tracks, thresholds, result counts, global and maximum caps, deadline buffer, pause limits, recently-deleted and grace periods, retention periods, scoring-model versions and weights, fraud warning signs, supported application routes, and feature switches.
+- **Platform rules and defaults**: default tracks, thresholds, result counts, global and maximum caps, deadline buffer, pause limits, recently-deleted and grace periods, retention periods, scoring-model versions and weights, fraud warning signs, supported application routes, feature switches, and the active theme of the user web and mobile apps (Section 14).
 - **Templates and content**: email, cover-letter, and notification templates (including messaging-platform templates), help articles, announcements, and incident messages.
 - **Question bank**: platform-wide grouping of questions with the same meaning (Section 28.3).
 - **Support**: problem reports, responses, and status.
@@ -1702,7 +1706,7 @@ These are product choices not fully determined by the initial request. They shou
 26. What feedback measures should evaluate recommendation quality, and how should ranking changes be reviewed?
 27. What incident-notification process should apply when source or system failures could affect deadlines or application outcomes?
 28. What minimum functional, security, and privacy test evidence is required before enabling external application automation?
-29. Decided: version 1 interfaces are English only and light theme only (Section 14); Bangla interface and dark theme come later.
+29. Decided: version 1 interfaces are English only and use light themes only (Section 14): three admin-selected themes (Sober default, Horizon, Orchid); Bangla interface, dark themes, and per-user theme choice come later.
 30. Should fee payments ever be automated (for example, Bangladesh government application fees), or always handed to the user?
 31. Should the product read the user's email inbox to detect application responses, and should it ever update statuses without confirmation?
 32. Which calendar integration, if any, is needed at launch: a calendar feed export or direct calendar-account synchronization?
