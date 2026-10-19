@@ -25,6 +25,12 @@ Each choice lists the reason and the main alternative considered. Exact versions
 | Infrastructure | AWS, managed with Terraform; Docker everywhere |
 | CI/CD | GitHub Actions; Expo EAS for mobile builds and store submission |
 | Observability | OpenTelemetry, Sentry, Grafana (or CloudWatch) |
+| Event bus | Transactional outbox → Amazon EventBridge + SQS (CloudEvents format); Kafka later if needed |
+| Rules | CEL (Common Expression Language) for user and platform rules |
+| Feature flags | OpenFeature API (provider chosen in Sprint 0) |
+| Authorization | Policy engine (Cedar or OPA, chosen in Sprint 0) + PostgreSQL row-level security |
+| File safety | ClamAV antivirus scanning for uploads |
+| Module boundaries | import-linter contracts in CI |
 
 ## 2. Backend
 
