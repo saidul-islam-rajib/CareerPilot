@@ -165,7 +165,7 @@ sequenceDiagram
     P-->>TMP: Stop with reason
     TMP-->>U: Listed in "not applied" with reason
   else allowed
-    TMP->>TMP: Reserve cap slot; wait for submission window
+    TMP->>TMP: Reserve cap slot, wait for submission window
     TMP->>W: Prepare + checks + re-check posting
     W->>W: Submit + evidence
     TMP-->>U: Notification + daily report entry
@@ -189,10 +189,10 @@ sequenceDiagram
   SYNC->>G: Poll / push notifications for thread
   alt bounce
     G-->>SYNC: Bounce
-    SYNC->>DB: status Failed + reason; notify user
+    SYNC->>DB: status Failed + reason, notify user
   else reply
     G-->>SYNC: Reply
-    SYNC->>DB: link to thread; classify (AI); suggest outcome update
+    SYNC->>DB: link to thread, classify (AI), suggest outcome update
   end
 ```
 
@@ -310,6 +310,6 @@ sequenceDiagram
   TMP->>DB: Outbox fully published?
   alt mismatches
     TMP->>DB: reconciliation_issues
-    TMP->>ADM: Alert; affected users informed when relevant
+    TMP->>ADM: Alert, affected users informed when relevant
   end
 ```
