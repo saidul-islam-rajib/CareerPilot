@@ -13,6 +13,13 @@ Planning documents for version 1. The requirements they implement are in [Requir
 | [07-Engineering-Standards.md](07-Engineering-Standards.md) | Repo layout, branching, commits, CI/CD, testing, coding rules |
 | [08-Developing-with-Claude.md](08-Developing-with-Claude.md) | How the team builds with Claude Code |
 | [09-Risks-and-Decisions.md](09-Risks-and-Decisions.md) | Risks, mitigations, and decisions still open |
+| [10-AIDLC-Agents.md](10-AIDLC-Agents.md) | AI-Driven Development Lifecycle: agent roster, triggers, human checkpoints, self-healing loop |
+| [11-Observability.md](11-Observability.md) | Logs, traces, metrics, profiles, errors in Grafana; dashboards, alerts, AIOps |
+| [12-Cost-Plan.md](12-Cost-Plan.md) | Low-cost lean launch, free services, paid items, AI cost, guardrails |
+| [13-Local-Development.md](13-Local-Development.md) | One solution folder, Docker local platform, commands, git hooks |
+| [14-Testing-and-Quality.md](14-Testing-and-Quality.md) | Test types, sign-in/registration suite, device matrix, load testing, UI validation, quality gates |
+| [15-Mobile-and-Play-Store.md](15-Mobile-and-Play-Store.md) | Android and iOS support, release pipeline, Google Play checklist |
+| [16-UX-Design.md](16-UX-Design.md) | UX principles, navigation, key screens, patterns, light-theme visual design |
 | [Design/](Design/README.md) | Full architecture and design, high level to low level: principles, C4 diagrams, domain model, components, extensibility, data model, state machines, sequences, API, events, front ends, security, infrastructure, ADRs |
 
 ## Stack at a glance
@@ -21,4 +28,6 @@ Planning documents for version 1. The requirements they implement are in [Requir
 - **AI:** Claude Opus 5.5 via the Anthropic Python SDK; multilingual embeddings
 - **User web app and admin app:** Next.js + TypeScript (two separate apps)
 - **Mobile app:** React Native + Expo (Android and iOS)
-- **Infrastructure:** AWS, Terraform, GitHub Actions, Expo EAS
+- **Infrastructure:** AWS (lean single-instance launch with Docker Compose), Terraform, GitHub Actions, Expo EAS
+- **Observability:** OpenTelemetry + Grafana (Cloud free tier); Sentry free plan for mobile crashes
+- **Delivery:** AIDLC with AI agents; everything runs locally in Docker
