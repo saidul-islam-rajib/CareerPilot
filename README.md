@@ -47,6 +47,16 @@ make mobile     # optional: start the Expo dev server for Android/iOS
 
 Other commands: `make test` (unit tests), `make logs`, `make down`, `make reset`.
 
+## Unattended development (autopilot)
+
+Claude Code works through the open tasks in `specs/*/tasks.md` without stopping. To keep it going across usage-limit resets, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\autopilot.ps1
+```
+
+It resumes the latest Claude session, waits and retries when a limit is hit, and stops when all tasks are done or no progress is made. Create `.claude/autopilot-off` to pause. Tasks that need you are marked `- [!]`; tools you need to install are listed in `docs/runbooks/machine-setup.md`.
+
 ## Local default credentials
 
 For **local and dev environments only** (never staging or production):

@@ -21,7 +21,10 @@ Job discovery and application assistant for job seekers and students (Bangladesh
 ## Agent access (standing authorization)
 
 - Claude and all AIDLC agents have full access to every file in this project directory and may read, create, update, move, and delete files **without asking the user**. Permissions are pre-configured in `.claude/settings.json`.
-- This covers the project directory only; force-push, real external actions, and sensitive production releases still follow the checkpoints in `Planning/10-AIDLC-Agents.md` §4.
+- Claude may run any shell command (Bash, PowerShell, cmd) needed for this project without asking, and may use this machine for CareerPilot development only. Never touch files or settings outside the project for other purposes.
+- Never install system-wide software or elevate (sudo, admin). If a tool is missing, list it in `docs/runbooks/machine-setup.md` for the user to install, mark the dependent task `- [!]`, continue with the recommended workaround or the next task, and never wait for an answer.
+- **Don't stop until the job is done.** Work through the open tasks in `specs/*/tasks.md` without asking questions; make the recommended choice and record it in the spec. A Stop hook keeps the session going while tasks are open; `scripts/autopilot.ps1` resumes work after usage limits reset. Pause with `.claude/autopilot-off`.
+- This covers the project directory only; force-push, real external actions, and sensitive production releases still follow the checkpoints in `Planning/10-AIDLC-Agents.md` §4 (mark those tasks `- [!]` and move on).
 
 ## How to build
 
@@ -33,7 +36,9 @@ Job discovery and application assistant for job seekers and students (Bangladesh
 
 ## Non-negotiable rules
 
-- If code and requirements disagree, stop and ask. Don't silently choose.
+- Follow `Planning/19-Development-Rules.md` strictly: SOLID and the listed design patterns; nothing hard-coded (every default from `config/`, text from catalogs, colours from tokens); every status/type an enum; every table has automatic `created_*`, `updated_*`, `deleted_*` audit columns; never physically delete (soft delete; permanent deletion = anonymization); reusable generic building blocks; secure by default (OWASP ASVS L2).
+
+- If code and requirements disagree, don't silently choose: mark the task `- [!]` with both options and your recommendation, then continue with other tasks.
 - Use the single definitions in the requirements: status model (§20.2), precedence (§38), user-only steps (§27.3), pre-submission checks (§27.4), pause (§47), submission timing (§49), circular archive (§50), compensation (§51), admin access (§53).
 - Never fabricate user facts, never solve CAPTCHAs or evade bot detection, never resubmit when the outcome is unknown, never log or return secrets or plain-text credentials.
 - Never send real applications, emails, or payments from local, dev, test, staging, or CI.

@@ -1,0 +1,44 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read(/**)",
+      "Edit(/**)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git mv *)",
+      "Bash(git rm *)",
+      "Bash(git worktree *)",
+      "Bash(make *)",
+      "Bash(docker compose *)",
+      "Bash(pnpm *)",
+      "Bash(uv *)",
+      "Bash(pytest *)",
+      "Bash(npx expo *)",
+      "Bash(mkdir *)",
+      "Bash(ls *)"
+    ],
+    "deny": [
+      "Bash(git push --force *)",
+      "Bash(git push -f *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/hooks/requirements_changed.py\"",
+            "timeout": 10,
+            "statusMessage": "Checking for requirement changes"
+          }
+        ]
+      }
+    ]
+  }
+}
