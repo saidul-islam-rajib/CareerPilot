@@ -13,6 +13,7 @@ Planning documents for version 1. The requirements they implement are in [Requir
 | [07-Engineering-Standards.md](07-Engineering-Standards.md) | Repo layout, branching, commits, CI/CD, testing, coding rules |
 | [08-Developing-with-Claude.md](08-Developing-with-Claude.md) | How the team builds with Claude Code |
 | [09-Risks-and-Decisions.md](09-Risks-and-Decisions.md) | Risks, mitigations, and decisions still open |
+| [Design/](Design/README.md) | Full architecture and design, high level to low level: principles, C4 diagrams, domain model, components, extensibility, data model, state machines, sequences, API, events, front ends, security, infrastructure, ADRs |
 
 ## Stack at a glance
 
