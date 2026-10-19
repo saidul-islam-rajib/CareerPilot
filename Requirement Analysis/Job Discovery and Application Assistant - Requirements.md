@@ -26,6 +26,8 @@ This document describes product requirements and expected behavior. It intention
 - **Match score**: A relevance estimate based on the user's profile and preferences. It is not a promise of eligibility, interview, admission, or employment.
 - **Application assistance**: Preparing an email, opening a source application form, filling supported fields, or tracking an application. It does not mean a submission succeeded unless the system has evidence of success.
 - **Recommendation track**: One of up to ten user-configurable lists, each with its own scope, ranking preferences, match threshold, and result limit.
+- **Administrator (admin)**: A platform operator who uses the separate admin application to view and manage all users, data, sources, and settings (Section 53). Unless a section says otherwise, "user" in this document means the job seeker or student, not an admin.
+- **User application** and **admin application**: The two separate applications that make up the product (Section 53.1).
 
 ## 4. Scope
 
@@ -45,6 +47,7 @@ This document describes product requirements and expected behavior. It intention
 - Applied-applications report with full question, answer, email, document, and evidence records (Section 28).
 - The full student journey (Section 33) and the job seeker journey after applying (Section 34).
 - Bangladesh-specific profile data, government application stages, and portals (Sections 8.4.1 and 35).
+- A separate admin application with a full platform dashboard and management of all data (Section 53).
 
 ### 4.2 Out of scope unless separately approved
 
@@ -87,14 +90,14 @@ The user must be able to:
 
 - Set, edit, enable, disable, reorder, and reset recommendation tracks.
 - Set a minimum match-score threshold for each track independently.
-- Set a maximum number of results per track; the initial requested default is five.
+- Set a maximum number of results per track; the initial requested default is five. Changing one track's count (for example, ten for remote jobs) must not change any other track's count (Section 48).
 - Choose whether a track includes only new opportunities or also still-open opportunities previously shown.
 - Set preferred and excluded locations, industries, employers, institutions, roles, job types, and keywords.
 - Set salary, funding, degree, academic, work authorization, and other eligibility filters where applicable.
 - Mark an opportunity as interested, saved, dismissed, applied, not eligible, or irrelevant, and optionally provide a reason.
 - Correct a match explanation or profile detail that produced a poor result.
 - Configure daily delivery time, time zone, notification channel, and frequency.
-- Pause discovery and notifications without deleting their profile or history.
+- Pause discovery and notifications without deleting their profile or history (pause options are defined in Section 47).
 - Choose an application mode separately for each recommendation track and supported submission method: manual approval for every application, or pre-authorized automatic application within user-defined rules.
 - Configure, review, pause, and revoke automatic-application rules, including their scope, eligibility filters, permitted materials, maximum application volume, any allowed fees, and expiry.
 
@@ -168,7 +171,7 @@ Each opportunity detail page must show, when available:
 - Extraction confidence or an “unverified” indication for uncertain fields.
 - Any conflicts between sources, with source attribution and no unsupported resolution.
 
-The system should preserve a useful excerpt or source evidence for important extracted requirements, subject to source rights and data-retention rules.
+The system must keep a full archived copy of the original circular for every opportunity that was recommended to the user or applied to, as defined in Section 50.
 
 ### 7.4 Duplicate detection
 
@@ -370,7 +373,7 @@ The dashboard must include:
 
 The user must be able to review opportunities and applications by day, status, type, source, track, employer/university, and deadline. The system must retain:
 
-- Opportunity identity, source links, discovery and update dates, and relevant snapshots of displayed details.
+- Opportunity identity, source links, discovery and update dates, and the archived original circular with all its versions (Section 50).
 - Application status and timestamps, actions attempted, user approvals, source confirmations, and error details.
 - Email/form status, including draft, prepared, submitted, confirmed, failed, or manual action required, as defined in the status model in Section 20.2.
 - User decisions, such as saved, dismissed, applied, or not eligible, and optional reasons.
@@ -422,7 +425,7 @@ When status is uncertain, say so and give the user a safe next step. Do not sile
 
 - The system must collect only information needed for the enabled features and explain why sensitive information is requested.
 - The user must control which profile details and documents are used for matching, applications, or notifications.
-- Uploaded documents and personal data must not be exposed to other users.
+- Uploaded documents and personal data must not be exposed to other users. Administrators may access them through the admin application under the safeguards in Section 53.5.
 - The system must provide secure authentication, account recovery, session controls, and protection against unauthorized account access.
 - Sensitive data, credentials, tokens, and uploaded documents must be protected in storage and transit; credentials must not be displayed in logs or ordinary activity history.
 - Access to a user's connected email account and other external services must be limited to the permissions necessary for enabled actions and revocable by the user.
@@ -513,6 +516,18 @@ The product is ready for an initial release only when all of the following are d
 51. Automatic applications pause after the configured inactivity period and when key profile facts are overdue for confirmation.
 52. Agency postings, rolling deadlines, multi-position postings, reposts, and bilingual duplicates are handled as specified in Section 42.
 53. WhatsApp and push notifications are delivered, with fallback to email when delivery fails.
+54. The user can add, update, undo, and delete every type of their data, with change history and warnings when an item is used by a rule, approval, or in-progress application.
+55. The user can delete their account; all automation stops immediately, connected access and stored credentials are revoked, data is deleted after any grace period, and a confirmation is sent.
+56. The user can pause for days, weeks, months, years, until a date, a future date range, or indefinitely, for everything or for selected tracks, rules, routes, or notifications; nothing is submitted during a pause.
+57. Changing one track's result count (for example, remote jobs to ten) leaves all other tracks unchanged.
+58. Applications are submitted only within the user's chosen time windows (for example, 12:00 a.m.), with the deadline rule applied when a window falls too late.
+59. Every recommended, saved, or applied opportunity has an archived copy of the original circular, including original files and versions, which remains viewable after the source removes it.
+60. Compensation rules work as hard filters or preferences, handle "not stated" as configured, and salary answers never go below the user's minimum.
+61. Every recommendation and every system action has exactly one record; reconciliation finds no missing or duplicate records, and report counts match the records.
+62. The admin application is separate from the user application, with its own access point and sign-in; user accounts cannot reach it.
+63. A Super Admin can read, create, update, and delete all user, opportunity, source, application, settings, template, and audit data, and see every dashboard figure in Section 53.3 with drill-down.
+64. Secrets are never shown in readable form to admins; admins cannot submit, send, or pay on a user's behalf without the user's authorization; every admin access and change is audited and visible to the affected user.
+65. The platform emergency stop halts automatic actions for all users, a group, a source, or a route, and affected users are notified.
 
 ## 17. Onboarding and initial setup
 
@@ -711,7 +726,7 @@ Revoking access must prevent future use of that authorization. The product must 
 
 The product must monitor scheduled discovery, source access, opportunity processing, notification delivery, connected accounts, and application actions. Monitoring should distinguish source-specific failures from product-wide failures and user-configuration problems.
 
-User-relevant failures must be exposed through the dashboard without revealing sensitive operational details or credentials.
+User-relevant failures must be exposed through the user dashboard without revealing sensitive operational details or credentials. The admin application must show full operational details (Section 53.3), excluding secrets (Section 53.5).
 
 ### 24.2 Incident communication
 
@@ -766,6 +781,14 @@ Before release, the product must be tested against representative scenarios, inc
 - Excluded current employer, agency duplicates, rolling deadlines, multi-position postings, and reposts.
 - Inactivity pause, profile-freshness pause, rule expiry, and re-authentication for sensitive actions.
 - WhatsApp and push delivery failures, fallback to email, and approvals completed from a notification.
+- Adding, editing, undoing, bulk-deleting, and restoring data; deleting a document used by an active rule; account deletion with and without cancelling during the grace period.
+- Pauses of every duration and scope, approved applications falling inside a pause, pause end with a backlog, and extending a pause.
+- Changing one track's result count and limits, "apply to all tracks", and track limits above global limits.
+- Submission windows at midnight and across time zones, windows after the deadline, and many applications in one window.
+- Circular archiving for postings removed after recommendation or application, amended circulars, PDF and image circulars, and partial captures.
+- Compensation in other currencies, salary ranges, "negotiable" or missing salary, benefits filters, and salary-expectation questions.
+- Reconciliation of recommendation and application records after interrupted actions, failures, and restores from backup.
+- Admin role permissions, attempts by user accounts to reach the admin application, admin edits appearing in the user's change history, secret masking, admin bulk deletion, and the platform emergency stop.
 
 ### 25.2 Security and privacy testing
 
@@ -795,6 +818,7 @@ The initial release should prioritize:
 8. Approve-each application mode with automatic completion after approval (Section 37), for supported routes.
 9. The applied-applications report and submission records (Section 28).
 10. WhatsApp and push notifications with approvals from the notification (Section 36).
+11. The admin application with the Super Admin role, dashboard, and management areas (Section 53).
 
 External application submission should be enabled only for explicitly supported and tested workflows. Features that depend on unavailable or restricted sources must be presented as limitations rather than implied capabilities.
 
@@ -833,7 +857,8 @@ Every opportunity that leaves the pipeline before submission must record the ste
 ### 27.2 Global automation controls
 
 - **Emergency stop**: One clearly visible control must immediately stop all automatic applications, emails, uploads, and payments across all tracks. In-progress actions must be brought to a safe state and their outcome reported.
-- **Vacation/pause mode**: The user must be able to pause automatic applications for a period, with discovery and reminders optionally continuing.
+- **Vacation/pause mode**: The user must be able to pause automatic applications for a period, with discovery and reminders optionally continuing. Pause durations and scopes are defined in Section 47.
+- **Submission time windows**: The user must be able to choose when applications are submitted (for example, only at 12:00 a.m.), as defined in Section 49.
 - **Rule simulation (dry run)**: The user must be able to run a rule against current opportunities and see exactly which applications would have been submitted, with which materials and answers, without submitting anything.
 - **Deadline buffer**: The user must be able to set a minimum time before a deadline by which automatic applications should be submitted (for example, 24 hours), to reduce the risk of last-minute portal failures.
 - **Approval escalation**: If an application is waiting for user action and its deadline is approaching, the system must escalate the reminder through the user's urgent notification channel.
@@ -895,7 +920,7 @@ The list must support sorting, filtering (by date, track, status, route, employe
 
 For every submitted or attempted application, the detail view must show:
 
-- **Opportunity snapshot**: The posting as it appeared at the time of application, including title, description, requirements, deadline, and source links. Later changes to the posting must be shown separately.
+- **Original circular**: The archived copy of the posting exactly as it appeared at the time of application (Section 50), including title, description, requirements, deadline, attachments, and source links. It must remain available even after the employer removes the posting. Later changes to the posting must be shown as separate versions.
 - **Timeline**: Every step with time and outcome, such as discovered, matched, prepared, checked, submitted, confirmed, and later status changes.
 - **Questions and answers**: Every question asked by the form, shown exactly as written on the form, with its field type, the options offered (for choice questions), whether it was required, the exact answer submitted, the source of the answer (verified profile fact, approved reusable answer, generated text approved under a rule, or entered by the user), and whether the user edited it.
 - **Email applications**: The sender address, recipients (to/cc/bcc), subject, full message body, attachments, sending time, and message identifier, plus any replies, bounces, or automatic responses in the same thread.
@@ -966,7 +991,7 @@ The system must handle the following situations correctly or stop and ask the us
 - Attachments must respect common size limits; when too large, the system should compress files without changing their content, or use another method allowed by the employer, and never silently drop an attachment.
 - File names must be professional and consistent (for example, "Firstname-Lastname-CV.pdf").
 - Emails must use the user's configured signature and contact details.
-- Sending should follow the user's preference on timing, for example within business hours in the recipient's time zone, unless the deadline requires otherwise.
+- Sending must follow the user's submission time windows (Section 49). If the user has not set a window for email applications, the default should be business hours in the recipient's time zone.
 - The system must respect the email provider's daily sending limits and avoid patterns likely to mark the user's account as spam.
 - Replies, out-of-office responses, bounces, and recruiter questions must be linked to the application thread and shown to the user. Automatic replies to recruiters must be limited to what the active rule allows; questions requiring the user's judgment must be sent to the user.
 - Follow-up emails after no response may be sent only if the rule allows it, at most a user-defined number of times, and not if the employer asked not to be contacted.
@@ -1176,7 +1201,7 @@ A short new question should be answerable directly from the notification (Sectio
 
 ### 37.5 Approval validity and cancellation
 
-- An approval expires if the application has not been submitted within a user-defined period (default to be decided, Section 46) or after the deadline passes; an expired approval requires a new review.
+- An approval expires if the application has not been submitted within a user-defined period (default to be decided, Section 54) or after the deadline passes; an expired approval requires a new review.
 - The user must be able to cancel an approved application until submission starts. For emails, the user should be able to set a short cancel window (for example, 30 seconds to 10 minutes) during which a queued email can still be stopped.
 - The emergency stop (Section 27.2) also stops approved applications that have not started submitting.
 
@@ -1194,11 +1219,13 @@ To avoid contradictory behaviour, the following order of precedence applies when
 
 1. Law, source terms, and technical restrictions (for example CAPTCHA, prohibited automation).
 2. Product safeguards that can never be turned off: no fabrication, no bypassing verification, user-only steps (Section 27.3), and the emergency stop.
-3. The user's explicit decision on a specific item (an approval, rejection, edit, or cancellation).
-4. Global user settings (global caps, paused mode, excluded employers, privacy choices, quiet hours).
-5. Track settings.
-6. Automatic-application rules.
-7. Generated suggestions and recommendations.
+3. Platform settings set by administrators (Section 53): platform emergency stop, disabled sources or routes, and platform maximum limits.
+4. The user's explicit decision on a specific item (an approval, rejection, edit, or cancellation).
+5. Global user settings (global caps, paused mode, excluded employers, privacy choices, quiet hours).
+6. Track settings.
+7. Automatic-application rules.
+8. Platform defaults set by administrators, which apply only where the user has not chosen a setting.
+9. Generated suggestions and recommendations.
 
 Further rules:
 
@@ -1297,12 +1324,247 @@ The system must handle these situations explicitly:
 
 To keep this document free of contradictions as it grows:
 
-- Section 20.2 is the only status model; Section 38 is the only precedence order; Section 27.3 is the only list of user-only steps; Section 27.4 is the only list of pre-submission checks. Other sections must refer to these rather than define their own versions.
+- Section 20.2 is the only status model; Section 38 is the only precedence order; Section 27.3 is the only list of user-only steps; Section 27.4 is the only list of pre-submission checks; Section 47 is the only definition of pause; Section 49 is the only definition of submission timing; Section 50 is the only definition of circular archiving; Section 51 is the only definition of compensation rules; Section 53 is the only definition of administrator access. Other sections must refer to these rather than define their own versions.
 - Where a section says "automatic" without further detail, it means "within an active rule or an approval, and subject to Sections 27.3 and 38".
 - Where a section says "must not report success", success means the "Confirmed" status in Section 20.2.
 - Any new requirement must be checked against Sections 20.2, 27.3, 27.4, and 38 before it is added.
 
-## 46. Decisions to confirm before implementation
+## 46. User data management
+
+### 46.1 Add, update, and delete everything
+
+The user must be able to add, view, update, and delete every type of data they own, including:
+
+- Profile facts, education, employment, skills, tests, links, identity details, addresses, and referees.
+- Documents and all their versions, videos, photos, and signatures.
+- Saved reusable answers and the question bank (Section 28.3).
+- Tracks, filters, thresholds, result counts, compensation rules (Section 51), submission windows (Section 49), and automatic-application rules.
+- Notification channels and preferences.
+- Connected accounts, stored portal credentials, and portal-account records.
+- Contacts, notes, tasks, reminders, and follow-ups.
+- Opportunity decisions (saved, dismissed, not eligible) and feedback.
+- Recommendation history, application records, and archived circulars (subject to Section 46.3).
+
+For every change:
+
+- The previous value must be kept in the change history so the user can see what changed and when, and undo a recent change.
+- Deleting an item that is used by an active rule, a queued approval, or an in-progress application must show what will be affected and ask the user to confirm. Applications already submitted keep the values that were actually sent (Section 28.2).
+- Bulk actions (for example, delete several documents or dismiss many opportunities) must show a summary before they are applied.
+- Deleted items should go to a recently-deleted area for a user-defined period (default to be decided) before permanent deletion, unless the user chooses permanent deletion immediately.
+
+### 46.2 Account deletion
+
+- The user must be able to delete their whole account from the settings, after re-authentication (Section 41).
+- Before deletion, the product must offer a full data export (Section 13) and show what will be deleted, what cannot be deleted by the product (for example, applications already received by employers, and accounts on employer portals, which the user must close with each portal), and any grace period.
+- During an optional grace period (default to be decided), the user must be able to cancel the deletion. All automatic applications, emails, and payments must stop immediately when deletion is requested.
+- On deletion, the product must revoke all connected-account access, delete stored portal credentials, delete all personal data, documents, records, and archives, and send a final confirmation to the user's email.
+- Data kept after deletion because of legal obligations must be listed, kept only for the required period, and not used for any other purpose.
+
+### 46.3 Deleting application history
+
+Deleting an application record or archived circular is allowed, but the product must warn the user that the record will no longer be available as evidence. Deletion follows Section 28.2 (a minimal record that a deletion happened is kept).
+
+## 47. Pausing
+
+### 47.1 Pause durations
+
+The user must be able to pause for:
+
+- A number of days, weeks, months, or years.
+- Until a specific date and time.
+- A custom date range starting in the future (for example, from 1 to 15 December).
+- Indefinitely, until the user resumes manually.
+
+### 47.2 Pause scope
+
+The user must be able to choose what is paused:
+
+- Everything (discovery, recommendations, applications, and notifications).
+- Applications only (discovery and recommendations continue).
+- Notifications only, or specific notification types.
+- One or more specific tracks, rules, or application routes.
+
+### 47.3 Pause behaviour
+
+- During a pause of applications, no application may be submitted, including those already approved. Approved applications whose deadline falls within the pause must be listed for the user before the pause starts, with the option to submit them first, keep them paused, or cancel them.
+- Reminders for deadlines, interviews, exams, and offers the user has already recorded should continue unless the user pauses those too.
+- The dashboard must clearly show what is paused and until when.
+- The user must be reminded before a timed pause ends (for example, one day before), and must be able to extend or end the pause early.
+- When a pause ends, the system must re-check approvals (Section 37.5), rule expiry, and profile freshness (Section 41) before resuming applications, and must not submit a large backlog at once beyond the volume caps (Section 10.8).
+- A pause never deletes data. Account deletion is a separate action (Section 46.2).
+
+## 48. Per-track customization
+
+Every track setting is independent. Changing one track must not change any other track unless the user explicitly chooses "apply to all tracks" or "apply to selected tracks". In particular, the user must be able to set separately for each track:
+
+- Number of results shown per day (for example, ten for remote jobs while other tracks stay at five).
+- Number of applications allowed per day and per week.
+- Match threshold, filters, compensation rules (Section 51), application mode, submission windows (Section 49), notification settings, and pause (Section 47).
+
+The product must have a clear "reset to default" per track and show which settings differ from the defaults. Per-track limits must stay within global limits (Section 10.8). If a track limit is higher than the global limit, the global limit applies, and the conflict must be shown (Section 38).
+
+## 49. Submission timing
+
+### 49.1 Time windows
+
+- The user must be able to choose when applications are submitted: as soon as ready, at a specific time (for example, 12:00 a.m.), within a time window (for example, 11 p.m. to 2 a.m.), or on specific days of the week.
+- Windows can be set globally, per track, and per application route (for example, emails during the recipient's business hours, portal applications at midnight).
+- The user must choose whether times are in the user's time zone or the recipient's time zone.
+- In approve-each mode, the user can also choose a time for a single application when approving it (Section 37.2).
+
+### 49.2 Deadlines and windows
+
+- If the next allowed window falls after the deadline buffer (Section 27.2) or the deadline, the system must follow the user's chosen setting: submit at the earliest possible time before the deadline, or skip and notify. The default must be to notify the user and ask.
+- The deadline must be checked in the source's time zone.
+- If many applications are scheduled for the same window, they must be submitted one after another within volume caps and source rate limits, not all at once.
+- If a submission in the window fails, retries must follow Section 23.2, and the next window may be used if the deadline allows.
+
+### 49.3 Records
+
+The scheduled time, actual submission time, and the reason for any delay must be stored in the submission record.
+
+## 50. Circular archive
+
+### 50.1 What is archived
+
+For every opportunity that was recommended to the user, saved, or applied to, the system must keep a complete private copy of the original circular, including:
+
+- The full text exactly as published, in its original language, and any translation (labeled as a translation).
+- The page as it appeared (for example, as a saved page or PDF), and the original files, such as PDF circulars, images of newspaper advertisements, and attached documents.
+- The source URL, source name, publication date, the date and time the copy was taken, and a fingerprint (hash) to show it has not been changed.
+- The application form questions as seen when applying, where they could be captured.
+
+### 50.2 Versions
+
+- The circular must be archived when the opportunity is first recommended or saved, and again at the time of application.
+- If the posting changes (for example, an amended deadline or corrigendum), each version must be archived and the differences highlighted.
+- The archived copy at the time of application is the one linked to the submission record (Section 28.2).
+
+### 50.3 Availability
+
+- Archived circulars must remain available to the user even after the employer or source removes or changes the posting, for as long as the user keeps their account and has not deleted them (Section 46).
+- The product must show clearly when the live posting has been removed and that the user is viewing the archived copy.
+- Archived circulars are private to the user (and visible to administrators under Section 53) and must not be shared or republished. If a source's terms or applicable law restrict storing a copy, this must be recorded in the source registry (Section 18.1), the user must be told what could not be kept, and the decision is listed in Section 54.
+- If the system could not capture a complete copy (for example, the page was unavailable), it must say so and must not present a partial copy as complete.
+
+## 51. Compensation rules
+
+### 51.1 What the user can set
+
+The user must be able to set compensation rules globally and per track, including:
+
+- Minimum and target salary, with currency, period (hourly, monthly, yearly), and whether gross or net.
+- Different minimums by country, city, or work arrangement (for example, a higher minimum for on-site roles abroad than for remote roles).
+- For Bangladesh government jobs, the minimum grade or pay scale.
+- For academic opportunities, minimum stipend or salary, required tuition coverage (full, partial, none), and minimum funding duration.
+- Required or preferred benefits, such as bonus, equity, health insurance, paid leave, housing, relocation support, visa and immigration costs, remote-work allowance, transport, meals, festival bonus, provident fund, gratuity, and retirement benefits.
+
+### 51.2 How compensation rules are applied
+
+- Each compensation rule is either a hard filter (opportunities below it are excluded and never applied to) or a preference (it affects the match score only). The user chooses which.
+- When a posting does not state compensation ("negotiable" or "not stated"), the user must choose whether such opportunities are included, excluded, or included only for recommendations and not automatic applications. The default is: include in recommendations, exclude from automatic applications.
+- Salary ranges must be compared using the top and bottom of the range as the user chooses (for example, the top of the range must meet the minimum).
+- Comparisons in a different currency must use a stated exchange rate and date, and must be labeled as converted.
+- Compensation that is unclear (for example, a period not stated) must be shown as uncertain and treated as "not stated" for hard filters.
+
+### 51.3 Salary questions in applications
+
+- The user must set approved answers for salary-expectation questions per country, currency, and track, including whether to give a number, a range, or "negotiable" where the form allows.
+- The system must never state a figure below the user's minimum, and must not reveal the user's minimum unless the user has approved that answer.
+- Current-salary questions must only be answered from a user-approved answer, and must be left to the user where the user has not approved one. Where local law restricts such questions, the product may show this as information.
+
+### 51.4 Offers
+
+Offers must be checked against the user's compensation rules, and differences shown in the offer comparison (Section 34.3).
+
+## 52. Tracking accuracy
+
+### 52.1 What "100% accurate" means in this product
+
+- **Records of what the system did must be complete and exact**: every recommendation, application, email, upload, payment, status change, and user decision must be recorded, with no missing or duplicated records. This is a strict requirement.
+- **External outcomes depend on evidence**: whether an employer received or processed an application can only be as accurate as the evidence available. The product must never show an external outcome as certain without evidence (Section 20.2).
+
+### 52.2 Recommendation history
+
+Every recommendation must be recorded with: date and time, track, position in the list, match score and explanation, scoring-model version, the archived circular (Section 50), whether the user opened it, and the user's action (applied, saved, dismissed, ignored). The user must be able to search and filter this history like the applications list.
+
+### 52.3 Integrity controls
+
+- A record must be written for each external action before and after the action, so an interrupted action can never disappear from the history.
+- The product must regularly reconcile its records: every submission must have an application record, every application record must have a matching archived circular, and counts in reports and dashboards must match the underlying records.
+- Any mismatch must be shown to the user and investigated; it must not be hidden or silently corrected.
+- Records must be protected against accidental change (Section 28.2) and backed up (Section 15).
+- The product must not delete or merge records automatically, except for duplicates the user confirms.
+
+## 53. Administration application
+
+### 53.1 Separate applications
+
+- The product must consist of two separate applications:
+  - **User application**: used by job seekers and students (web and mobile-sized screens), as described in the rest of this document.
+  - **Admin application**: used only by administrators to view and manage the whole platform.
+- The two applications must have separate access points (for example, separate web addresses) and separate sign-in. The admin application must not be reachable from the user application, and a user account must never gain admin access.
+- The two applications may look and behave differently. Whether they share underlying services is an implementation decision.
+- A person who is both an administrator and a user must use separate accounts for each role.
+
+### 53.2 Administrator roles
+
+- The product must have a **Super Admin** role with full read, write, update, and delete permissions over everything in the admin application.
+- The product should allow additional roles with narrower permissions (for example, Support, Operations, Read-only) to be created later. Permissions must be configurable per area and per action (read, create, update, delete).
+- Super Admins must be able to create, edit, suspend, and delete admin accounts and assign roles.
+
+### 53.3 Admin dashboard
+
+The admin home dashboard must show, with filters by date range, country, track, and user, and drill-down to individual records:
+
+- **Users**: total, new, active, inactive, paused, suspended, pending deletion, and deleted; users with automatic application enabled; users with incomplete profiles.
+- **Recommendations**: number generated per day and per track, average match score, user actions (opened, saved, applied, dismissed), and tracks returning no results.
+- **Applications**: totals by submission status and outcome status (Section 20.2), route, track, country, and opportunity type; approve-each versus automatic; approvals waiting; applications blocked and why; failures; outcomes unknown.
+- **Automation queue**: scheduled submissions (Section 49), in-progress submissions, retries, and paused items.
+- **Sources**: source registry status, last successful check, failures, rate limits, layout changes, and coverage gaps (Section 18).
+- **Opportunities**: discovered, active, expired, duplicates, flagged as suspicious, and archived circulars (Section 50).
+- **Notifications**: sent, delivered, failed, and fallback use per channel (WhatsApp, push, email).
+- **Payments**: fees paid, failed, uncertain, and refunds.
+- **Integrity**: reconciliation results and mismatches (Section 52.3).
+- **Support and incidents**: open problem reports (Section 44), incidents, and affected users (Section 24.2).
+- **Costs and usage**: usage of paid data sources, AI services, messaging, and email, against budgets (Section 15).
+- **System health**: service status, error rates, and backup status.
+
+### 53.4 Management areas
+
+The admin application must provide full read, create, update, and delete for:
+
+- **Users**: every user's complete data, including profile, sensitive identity details, documents, videos, photos, signatures, tracks, rules, compensation rules, submission windows, pauses, saved answers, notification settings, connected-account details, portal-account records, sessions and devices, contacts, notes, recommendations, applications, submission records, archived circulars, change history, and audit history. Admins must be able to create users, suspend and reactivate them, reset MFA, sign them out of all devices, pause or resume their automation, export their data, and process account deletion.
+- **View as user**: Admins must be able to see any user's screens exactly as the user sees them, in read-only mode.
+- **Opportunities and circulars**: view, correct extracted details, merge or split duplicates, mark expired or fraudulent, and manage archived copies.
+- **Sources**: add, edit, enable, disable, and remove sources; record terms and limitations; set check frequency; run a manual check.
+- **Applications**: view every application and its full record, cancel queued applications, verify uncertain outcomes, and record corrections.
+- **Platform rules and defaults**: default tracks, thresholds, result counts, global and maximum caps, deadline buffer, pause limits, recently-deleted and grace periods, retention periods, scoring-model versions and weights, fraud warning signs, supported application routes, and feature switches.
+- **Templates and content**: email, cover-letter, and notification templates (including messaging-platform templates), help articles, announcements, and incident messages.
+- **Question bank**: platform-wide grouping of questions with the same meaning (Section 28.3).
+- **Support**: problem reports, responses, and status.
+- **Admins and roles**: Section 53.2.
+- **Compliance**: data-export and deletion requests, consent records, and security incidents.
+- **Audit logs**: all user, system, and admin actions, searchable and exportable.
+- **Reports**: every dashboard figure exportable as PDF and spreadsheet.
+
+### 53.5 Safeguards that still apply to admins
+
+Admins can see and manage all information. The following limits are required by law, security practice, or the user's authorization rules, and are the only exceptions:
+
+- **Secrets**: Passwords, access tokens, and similar secrets must never be shown in readable form to anyone, including admins (Section 13). Admins can see that a secret exists, when it was created and last used, and can revoke, reset, or delete it.
+- **External actions as the user**: Admins must not submit applications, send emails, make payments, or accept terms on a user's behalf without that user's authorization (Section 23.1). Admins may always stop, pause, or cancel such actions.
+- **Submission records**: Admin corrections are added as separate entries; the original record is not overwritten (Section 28.2).
+- **Audit of admin actions**: Every admin view of sensitive data and every admin change must be recorded with the admin, time, and what was accessed or changed. Audit entries may be removed only through the retention policy, not by individual deletion.
+- **User visibility**: Changes an admin makes to a user's data or settings must appear in the user's change history as made by an administrator, and the user must be notified of changes that affect applications, rules, or account status.
+- **Admin account security**: MFA is mandatory for admins; destructive and bulk actions require re-authentication and confirmation; admin sessions time out after inactivity.
+- **Transparency**: The privacy notice must tell users that administrators can access their data and for what purposes.
+
+### 53.6 Platform emergency stop
+
+Super Admins must be able to stop all automatic external actions for all users, a selected group of users, a source, or an application route, for example during an incident or when a source changes its terms. Affected users must be notified, and in-progress actions handled as in Section 27.2.
+
+## 54. Decisions to confirm before implementation
 
 These are product choices not fully determined by the initial request. They should be resolved before implementation or exposed as user settings where appropriate:
 
@@ -1355,17 +1617,25 @@ These are product choices not fully determined by the initial request. They shou
 47. Should automatic rules ever be allowed to apply when a hard requirement is unknown (Section 38)?
 48. What is the minimum user age, and is guardian consent needed for younger students?
 49. Which data-protection laws and standards apply at launch (Section 43)?
+50. How long should deleted items stay in recently deleted, and how long should the account-deletion grace period be (Section 46)?
+51. What maximum result count and application count per track should be allowed (Section 48)?
+52. Where a source's terms or law restrict keeping a copy of a circular, what may still be archived (Section 50.3)?
+53. Which benefits should be offered as compensation filters at launch, and which exchange-rate source should be used (Section 51)?
+54. Should submission windows default to "as soon as ready" or a specific time (Section 49)?
+55. Which admin roles besides Super Admin are needed at launch, and who may hold Super Admin access (Section 53.2)?
+56. For which purposes may admins view a user's sensitive data, and should users be notified each time an admin views it, or only when an admin changes it (Section 53.5)?
+57. Should the admin application be desktop-only, or also usable on mobile-sized screens?
 
-## 47. Document control
+## 55. Document control
 
 | Field | Value |
 | --- | --- |
 | Document | Job Discovery and Application Assistant – Requirements |
-| Version | 0.4 (draft) |
+| Version | 0.6 (draft) |
 | Owner | To be confirmed |
-| Status | Draft – pending review of Section 46 decisions |
+| Status | Draft – pending review of Section 54 decisions |
 
-### 47.1 Revision history
+### 55.1 Revision history
 
 | Version | Date | Summary of changes |
 | --- | --- | --- |
@@ -1373,7 +1643,9 @@ These are product choices not fully determined by the initial request. They shou
 | 0.2 | 2026-10-20 | Added portfolio, identity, and referee profile fields; fraudulent-posting detection (7.5); Bangla and PDF/scanned notice handling (7.6); government recruitment stages (8.4.1); referee and standalone scholarship tracking (Section 9); cross-route duplicate and volume limits, posting-specific instructions, and fee payments (10.8–10.10); quiet hours, calendar/inbox integration, and personal insights (11.3–11.5); UI language selection; backup/recovery and cost transparency; acceptance criteria 21–25; additional test scenarios; decisions 29–35. |
 | 0.3 | 2026-10-20 | Added goals 8–9; widened opportunity types; end-to-end automated pipeline, global controls, steps that stay with the user, pre-submission quality checks, and manual opportunity entry (27); applied-applications report with question-and-answer and email records, question bank, reports, and design rules (28); portal accounts (29); online-form corner cases (30); email corner cases (31); résumé tailoring, document conversion, and generated writing (32); full student journey (33); job-seeker journey after applying (34); Bangladesh-specific requirements (35); notification channels and approvals (36); acceptance criteria 26–41; more test scenarios; decisions 36–42. Decisions and document control renumbered to 37 and 38. |
 | 0.4 | 2026-10-20 | Consistency review. Fixed contradictions: single status model (20.2) replacing separate lists; result count does not limit automatic applications (6); pre-submission checks apply in both modes (27.4); submission-record immutability versus deletion rights (28.2); pre-recorded video upload versus one-way video interviews (27.3); urgent notifications and quiet hours (11.3). Added approve-each mode with automatic completion after approval (37); rule precedence (38); computed answers (39); confidentiality and third-party data (40); account security and automation safety (41); additional opportunity corner cases (42); standards and compliance (43); help and support (44); requirement consistency rules (45). Made WhatsApp and push required notification channels (36). Updated scope, onboarding, and MVP; acceptance criteria 42–53; more test scenarios; decisions 43–49. Decisions and document control renumbered to 46 and 47. |
+| 0.5 | 2026-10-20 | Added user data management with full add/update/delete, undo, and account deletion (46); pause options of any duration and scope (47); independent per-track settings (48); submission time windows (49); circular archive kept after source removal (50); compensation rules (51); tracking accuracy and integrity controls (52). Updated 5.2, 7.3, 11.2, 27.2, 28.2, 31, and 45 to refer to these. Acceptance criteria 54–61; more test scenarios; decisions 50–54. Decisions and document control renumbered to 53 and 54. |
+| 0.6 | 2026-10-20 | Added separate admin application with Super Admin role, platform dashboard, full management areas, required safeguards, and platform emergency stop (53). Updated terminology (3), scope (4.1), privacy (13), operational monitoring (24.1), precedence order (38), consistency rules (45), circular archive (50.3), and MVP (26.1). Acceptance criteria 62–65; more test scenarios; decisions 55–57. Decisions and document control renumbered to 54 and 55. |
 
-### 47.2 Requirement traceability
+### 55.2 Requirement traceability
 
 Before implementation, each requirement should be given a stable identifier (for example, `REQ-10.8-01`) and a priority (must / should / could), so that design items, test cases, and acceptance evidence in Section 25.3 can be traced back to it.
