@@ -1,11 +1,13 @@
 # System Architecture
 
-This document describes how CareerPilot is structured. Technology names are in [03-Technology-Stack.md](03-Technology-Stack.md); storage choices in [04-Data-and-Storage.md](04-Data-and-Storage.md); AI in [05-AI-Design.md](05-AI-Design.md).
+This document is the architecture overview. Technology names are in [03-Technology-Stack.md](03-Technology-Stack.md); storage choices in [04-Data-and-Storage.md](04-Data-and-Storage.md); AI in [05-AI-Design.md](05-AI-Design.md). The full detailed design (C4 levels, domain model, extensibility, data model, state machines, sequences, API, events, security, infrastructure, ADRs) is in [Design/](Design/README.md); where the two differ, the Design folder is more detailed and wins.
 
 ## 1. Architecture style
 
 - **Backend: modular monolith plus workers.** One Python codebase, split into domain modules (profile, opportunities, matching, applications, notifications, admin, and so on). It is deployed as a few processes: the user API, the admin API, and background workers. This keeps development simple for a new team while letting heavy work (crawling, browser automation, AI) scale separately.
 - **Durable workflows for anything long-running or external.** Discovery cycles, the application pipeline (requirements Section 27.1), approvals that wait for days, scheduled submissions at 12:00 a.m., pauses, retries, and reconciliation all run as Temporal workflows. These survive restarts, never lose their place, and give the "no blind resubmission" guarantee (requirements Section 23.2).
+- **Events for integration.** Modules publish versioned domain events through a transactional outbox to an event bus (EventBridge + SQS), so modules stay decoupled and can later become separate services ([Design/10-Event-Architecture.md](Design/10-Event-Architecture.md)).
+- **Plugins for everything external.** Sources, application routes, notification channels, document transformers, and country rules are plugins; most growth is configuration ([Design/05-Extensibility-Framework.md](Design/05-Extensibility-Framework.md)).
 - **API-first.** The backend publishes an OpenAPI contract. The web app, mobile app, and admin app use generated typed clients, so the three front ends never drift from the backend.
 - **Separate user and admin surfaces** (requirements Section 53.1): different apps, domains, sign-in realms, and API deployments over the same data.
 
