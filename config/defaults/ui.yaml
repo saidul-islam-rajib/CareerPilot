@@ -1,0 +1,6 @@
+# User interface defaults (Planning/16-UX-Design.md §7)
+ui:
+  # Active theme for the user web and mobile apps; one of ThemeKey: sober, horizon, orchid.
+  # Super Admins override it at runtime in platform_settings.
+  active_theme: sober
+  admin_theme: sober

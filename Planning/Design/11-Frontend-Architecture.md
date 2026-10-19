@@ -94,7 +94,7 @@ Each feature contains `components/`, `hooks/` (TanStack Query), `screens/` or ro
 ## 6. Design system
 
 - Design tokens (colour, spacing, typography, radius, motion) defined once in `ui-tokens`, exported to Tailwind (web/admin) and NativeWind (mobile).
-- Light theme only in v1 (tokens ready for a dark theme later); status colours always paired with text labels and icons (requirements Section 28.5).
+- Three light themes in v1 (Sober default, Horizon, Orchid) as variable sets; the admin-selected theme is served by `GET /v1/config` and applied by the web BFF (server-rendered `data-theme`) and the mobile app; built on shadcn/ui blocks (web, admin) and React Native Reusables (mobile) ([../16-UX-Design.md](../16-UX-Design.md) §7). Status colours always paired with text labels and icons (requirements Section 28.5).
 - Figma library mirrors the tokens and components; Code Connect can link Figma components to code later.
 - Bangla text inside content (circulars, names) renders correctly with a Bangla-capable font.
 

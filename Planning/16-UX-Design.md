@@ -1,4 +1,4 @@
-# UX and UI Design Guide (Light Theme, English)
+# UX and UI Design Guide (Light Themes, English)
 
 The guide used by the UX/UI Designer and UI Validation agents. Scope for v1: light theme, English, web + Android + iOS + admin. **All screens, flows, and components are designed by the UX/UI Designer agent** following this guide and checked by the UI Validation agent ([10-AIDLC-Agents.md](10-AIDLC-Agents.md)); the Product Owner reviews them at the Inception checkpoint.
 
@@ -141,21 +141,40 @@ The profile is the centre of the product. Design goals: complete, fast to edit, 
 | Dates and money | Always with time zone and currency; relative dates ("in 3 days") plus exact date |
 | Tables (web/admin) | Sticky headers, column chooser, saved filters, bulk actions with preview |
 
-## 7. Visual design (light theme)
+## 7. Visual design: templates and themes
 
-| Token group | Values (initial) |
-|---|---|
-| Primary | Blue 600 `#2563EB` (actions, links), hover 700 `#1D4ED8` |
-| Neutrals | Background `#FFFFFF`, surface `#F8FAFC`, border `#E2E8F0`, text primary `#0F172A`, text secondary `#475569` |
-| Semantic | Success `#15803D`, warning `#B45309`, danger `#B91C1C`, info `#0369A1` (all meet AA contrast on white for text) |
-| Typography | Inter for UI text; Noto Sans Bengali for Bangla content inside circulars and names; sizes 12/14/16/18/20/24/30; body 16 on mobile |
-| Spacing | 4-point grid (4, 8, 12, 16, 24, 32, 48) |
-| Radius | 8 (controls), 12 (cards) |
-| Elevation | Subtle shadows on cards and sheets only |
-| Icons | Lucide icon set, 20/24 px, always with a label for actions |
-| Motion | 150–250 ms ease-out; respects "reduce motion" |
+### 7.1 Templates (use them, don't hand-roll)
 
-Tokens live in `packages/ui-tokens` and feed both Tailwind (web, admin) and NativeWind (mobile). Dark theme tokens can be added later without component changes.
+| App | Template | Notes |
+|---|---|---|
+| User web app | shadcn/ui + official blocks (sidebar layout, sign-in/sign-up, dashboard, data table, forms, charts) | MIT; components are copied into `packages/ui-web` and themed by variables |
+| Admin app | shadcn/ui dashboard blocks + TanStack Table data-table pattern | Same package as web; dense layouts for tables |
+| Mobile app | React Native Reusables (shadcn/ui for React Native) Expo starter with NativeWind | Same variable names as web, so one token file themes both |
+
+New screens start from the closest template block; custom components are added only when no block fits, and they use the same variables.
+
+### 7.2 Themes
+
+Three light themes. A Super Admin picks one in the admin app (preview first); every user's web and mobile app switches to it without a release. The admin app always uses Sober. Theme keys are an enum (`ThemeKey`: `sober`, `horizon`, `orchid`); the default comes from `config/defaults/ui.yaml`.
+
+| Token | **Sober** (default): calm, warm, trustworthy | **Horizon**: classic, bright | **Orchid**: modern, distinctive |
+|---|---|---|---|
+| Primary (actions, links) | Teal 700 `#0F766E`, hover `#115E59` | Blue 600 `#2563EB`, hover `#1D4ED8` | Violet 700 `#6D28D9`, hover `#5B21B6` |
+| Accent | Amber 700 `#B45309` | Sky 700 `#0369A1` | Pink 700 `#BE185D` |
+| Background / surface | `#FFFFFF` / `#FAFAF9` (stone) | `#FFFFFF` / `#F8FAFC` (slate) | `#FFFFFF` / `#FAFAFA` (zinc) |
+| Border | `#E7E5E4` | `#E2E8F0` | `#E4E4E7` |
+| Text primary / secondary | `#1C1917` / `#57534E` | `#0F172A` / `#475569` | `#18181B` / `#52525B` |
+| Radius (controls / cards) | 8 / 12 | 6 / 10 | 10 / 16 |
+
+Shared by all themes: semantic colours success `#15803D`, warning `#B45309`, danger `#B91C1C`, info `#0369A1` (AA contrast on white for text; status colours always shown with a text label and icon); Inter for UI text and Noto Sans Bengali for Bangla content; sizes 12/14/16/18/20/24/30 (body 16 on mobile); 4-point spacing grid; subtle shadows on cards and sheets only; Lucide icons 20/24 px with labels; motion 150–250 ms ease-out, respecting "reduce motion".
+
+How it works: tokens live in `packages/ui-tokens` as one variable set per theme (shadcn CSS variables such as `--primary` and `--background`; the same names through NativeWind `vars()` on mobile). The web BFF reads the active theme from `GET /v1/config` and renders `data-theme` on the server (no flash of the wrong theme); the mobile app applies it at launch and when a silent push or the next config refresh reports a change. Changing the theme is an audited platform setting (a `ThemeChanged` event invalidates the Redis config cache). Unit tests on the token files check the contrast of every theme. Dark variants can be added later as extra token sets.
+
+### 7.3 Credits
+
+- The footer of the user web app and admin app, the mobile Settings → About screen, and all email templates show "Developed by Team Sober" linking to the company site (URL from `config/defaults/branding.yaml`, text from the string catalog).
+- An "Open-source licences" page (web and mobile) lists third-party components and their licences (shadcn/ui, React Native Reusables, Radix, Lucide, Inter, and others), generated from the dependency list.
+- Store listings name Team Sober as the developer, with the company website.
 
 ## 8. Writing style
 
