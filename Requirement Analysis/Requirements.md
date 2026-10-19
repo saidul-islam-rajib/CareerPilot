@@ -564,6 +564,11 @@ The product is ready for an initial release only when all of the following are d
 65. The platform emergency stop halts automatic actions for all users, a group, a source, or a route, and affected users are notified.
 66. Opportunities connected to a user- or platform-excluded country are never applied to; unclear countries block automatic application; adding an exclusion cancels affected approvals.
 67. The web app and the Android and iOS apps are released together with all user features, share the same data, and stay in sync; offline actions in the mobile app are shown as pending until saved.
+68. Third-party integrations, including payment providers, can be added, configured, monitored, and disabled from the admin application without core changes; payments use hosted checkout or tokenization and are confirmed only by verified callbacks or status checks.
+69. Production errors are detected, triaged, and remediated automatically within the limits of Section 24.3; automated fixes include a reproducing test and pass all tests, and sensitive fixes are approved by a person before release.
+70. Logs, traces, and metrics from all parts of the system can be correlated by trace or application ID in one monitoring platform with dashboards and alerts.
+71. Load tests (normal, peak, stress, spike, and long-duration) meet the agreed targets before each release.
+72. Version 1 interfaces are English only and light theme only, with all text in string catalogs and colours in design tokens.
 
 ## 17. Onboarding and initial setup
 
@@ -835,6 +840,9 @@ Before release, the product must be tested against representative scenarios, inc
 - Compensation in other currencies, salary ranges, "negotiable" or missing salary, benefits filters, and salary-expectation questions.
 - Reconciliation of recommendation and application records after interrupted actions, failures, and restores from backup.
 - Excluded countries by job location, employer base, remote contract country, and required travel; multi-country postings; unclear countries; alternative country names; exclusions added after approval.
+- Payment provider webhooks with invalid signatures, mismatched amounts, duplicates, and missing callbacks; integration failures and disabling an integration.
+- Automated error remediation: known runbook actions, new problems producing fix changes, canary rollback, and sensitive fixes waiting for approval.
+- Load, stress, spike, and long-duration tests, including midnight submission bursts and digest bursts.
 - Admin role permissions, attempts by user accounts to reach the admin application, admin edits appearing in the user's change history, secret masking, admin bulk deletion, and the platform emergency stop.
 
 ### 25.2 Security and privacy testing
