@@ -14,7 +14,7 @@ sequenceDiagram
   participant W as AI worker
   participant AI as Claude
   U->>IdP: Sign up (email/phone, password or passkey, MFA)
-  IdP-->>U: Tokens (web: via BFF cookie; mobile: secure store)
+  IdP-->>U: Tokens (web: via BFF cookie, mobile: secure store)
   U->>API: POST /v1/onboarding (basics, locale, time zone)
   U->>API: POST /v1/documents/uploads (request presigned URL)
   API-->>U: Presigned URL
@@ -114,7 +114,7 @@ sequenceDiagram
   TMP->>W: Build approval package
   W->>EXT: discover_form (sandbox)
   W->>AI: question_understanding, writing tasks, claim_check
-  W->>DB: approval_package (Ready); status AwaitingApproval
+  W->>DB: approval_package (Ready), status AwaitingApproval
   TMP-->>U: Notify "Approval needed"
   U->>API: POST /v1/approval-packages/{id}/approve {edits, edit_scopes, submit_at}
   API->>DB: approval + edits (this app / reusable answer / profile)
@@ -236,7 +236,7 @@ sequenceDiagram
   API->>DB: pause (Scheduled/Active) + outbox(PauseStarted)
   API->>TMP: Signal affected workflows (hold)
   TMP-->>U: Reminder before end
-  TMP->>TMP: On end: re-check approvals, rules, profile freshness; resume within caps
+  TMP->>TMP: On end: re-check approvals, rules, profile freshness, resume within caps
 ```
 
 ## 11. Emergency stop (user or platform)
@@ -268,7 +268,7 @@ sequenceDiagram
   participant EXT as Mail/Calendar/Portals
   U->>API: Re-authenticate + request deletion
   API->>TMP: Start (stop all automation immediately)
-  TMP-->>U: Offer export; confirm grace period
+  TMP-->>U: Offer export, confirm grace period
   TMP->>TMP: Wait grace period (cancellable by signal)
   TMP->>EXT: Revoke OAuth tokens
   TMP->>DB: Delete credentials, personal data, records (redact immutable rows)
