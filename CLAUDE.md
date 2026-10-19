@@ -1,6 +1,6 @@
 # CareerPilot
 
-Job discovery and application assistant for job seekers and students (Bangladesh and international). Version 1 is being built with Agile (Scrum, 2-week sprints).
+Job discovery and application assistant for job seekers and students (Bangladesh and international). Version 1 is built with AIDLC (AI-Driven Development Lifecycle): AI agents do the work, the Product Owner validates at checkpoints (`Planning/10-AIDLC-Agents.md`).
 
 ## Read first
 
@@ -25,5 +25,8 @@ Job discovery and application assistant for job seekers and students (Bangladesh
 - Never fabricate user facts, never solve CAPTCHAs or evade bot detection, never resubmit when the outcome is unknown, never log or return secrets or plain-text credentials.
 - Never send real applications, emails, or payments from local, dev, test, staging, or CI.
 - v1 UI is English only and light theme only; all user-facing text still goes through string catalogs and colours through design tokens (so Bangla and dark mode can be added later).
+- All tests must pass before every commit (git hooks + CI); never skip or disable tests to commit.
 - Commit portion by portion with very short messages.
+- Keep costs low: prefer free tiers and self-hosted open-source tools (`Planning/12-Cost-Plan.md`).
+- Every service emits OpenTelemetry logs, traces, and metrics for Grafana (`Planning/11-Observability.md`).
 - Requirements stay at version 1.0; edit in place, don't add revision rows.
