@@ -43,3 +43,4 @@ Job discovery and application assistant for job seekers and students (Bangladesh
 - Keep costs low: prefer free tiers and self-hosted open-source tools (`Planning/12-Cost-Plan.md`).
 - Every service emits OpenTelemetry logs, traces, and metrics for Grafana (`Planning/11-Observability.md`).
 - Requirements stay at version 1.0; edit in place, don't add revision rows.
+- When any requirement changes, update every affected document (requirements cross-references, `Planning/`, `Planning/Design/`, `specs/`, seed plan, README, CLAUDE.md) in the same change; a hook reminds you after each requirements edit.
