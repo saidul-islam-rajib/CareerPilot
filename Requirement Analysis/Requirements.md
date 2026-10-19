@@ -475,6 +475,15 @@ When status is uncertain, say so and give the user a safe next step. Do not sile
 ## 13. Privacy, security, and trust
 
 - The system must collect only information needed for the enabled features and explain why sensitive information is requested.
+- **Registration consent**: To register, the user must accept the Terms of Service and the Privacy Policy by ticking a required consent checkbox (never pre-ticked) with links to both documents. Registration is not possible without it. The accepted document versions, time, IP address, and device are recorded. Optional purposes (product analytics, precise location, marketing messages) each have a separate optional consent that is off by default and can be changed at any time.
+- **Information collected automatically** (covered by the registration consent and listed in the Privacy Policy and Play Store data-safety form; used for account security, fraud prevention, troubleshooting, and operating the service):
+  - IP address at registration, at every sign-in, and at sensitive actions;
+  - device and app information: device type and model, operating system and version, app version, browser and user agent, language, time zone, screen size, network type where available;
+  - approximate location derived from the IP address (country and city level);
+  - sign-in and session history: time, IP, device, approximate location, method, and result;
+  - push-notification token and permission state.
+- **Information protected by the device**: Precise location (GPS) and the device's contacts or address book can only be accessed after the user grants the operating system's permission prompt for a clearly described feature; they must never be collected silently or in the background. No version 1 feature needs the device address book, so it is not requested. Precise location is requested only when a feature needs it (for example nearby on-site jobs), and the app must keep working if the user declines. The user's own contact details are the ones they enter in their profile (Section 5.4).
+- The user must be able to see their sign-in activity and devices (Section 41). Automatically collected information is visible to administrators (Section 53), kept only for a defined retention period, never sold, and included in data export and deletion (Section 46).
 - The user must control which profile details and documents are used for matching, applications, or notifications.
 - Uploaded documents and personal data must not be exposed to other users. Administrators may access them through the admin application under the safeguards in Section 53.5.
 - The system must provide secure authentication, account recovery, session controls, and protection against unauthorized account access.
@@ -508,7 +517,7 @@ These are product-level expectations; exact service-level targets can be set bef
 - **Portability**: User data should be exportable in a commonly usable format.
 - **Maintainability**: Source-specific failures must be diagnosable without hiding their effect from users.
 - **Observability**: All parts of the system (web, mobile, admin, APIs, workers, workflows, integrations, AI calls) must produce structured logs, distributed traces, and metrics that can be correlated by a single trace or application ID, and must be viewable in one monitoring platform with dashboards and alerts.
-- **Load and scalability**: The system must be load-tested before each release (normal, peak, stress, spike, and long-duration loads) against agreed targets, and must scale horizontally without design changes.
+- **Load and scalability**: The system must scale horizontally without design changes. Load testing is not part of the version 1 test scope (Section 25.1); capacity is watched through production monitoring.
 - **Cost efficiency**: The platform must be able to run at low cost at launch (free tiers and small instances where possible) and scale up as usage grows without redesign.
 - **Localization readiness**: Dates, currencies, languages, country names, and grading/test scales must be represented so that international opportunities can be compared without losing original values.
 - **Backup and recovery**: Profile data, documents, application records, and audit history must be backed up and recoverable after failure. Loss of application evidence (confirmations, receipts, transaction IDs) must be treated as a serious failure.
@@ -588,12 +597,13 @@ The product is ready for an initial release only when all of the following are d
 68. Third-party integrations, including payment providers, can be added, configured, monitored, and disabled from the admin application without core changes; payments use hosted checkout or tokenization and are confirmed only by verified callbacks or status checks.
 69. Production errors are detected, triaged, and remediated automatically within the limits of Section 24.3; automated fixes include a reproducing test and pass all tests, and sensitive fixes are approved by a person before release.
 70. Logs, traces, and metrics from all parts of the system can be correlated by trace or application ID in one monitoring platform with dashboards and alerts.
-71. Load tests (normal, peak, stress, spike, and long-duration) meet the agreed targets before each release.
+71. The system scales by adding instances without code changes; capacity is monitored in production (load testing is out of scope for version 1).
 72. Version 1 interfaces are English only and light theme only, with all text in string catalogs and colours in design tokens.
 73. The user can add, crop, replace, and remove a profile photo and signature, manage multiple verified emails and phone numbers, and edit, reorder, and delete every profile section.
 74. Images, documents, and archived circulars open in a viewer with zoom, pan, rotate, and full-screen on touch and desktop devices.
 75. Ordered lists support drag and drop with mouse, touch, and keyboard, with an accessible non-drag alternative, autosave, and undo.
 76. Every screen of the web, admin, and mobile apps works without layout problems from small phones to large desktop screens.
+77. Registration requires the Terms and Privacy Policy consent checkbox; the consent record and sign-in history (IP, device, approximate location, time) are stored and shown to the user and admins; precise location and device contacts are only accessed after an operating-system permission prompt.
 
 ## 17. Onboarding and initial setup
 
@@ -601,7 +611,7 @@ The product is ready for an initial release only when all of the following are d
 
 The system must provide guided onboarding that allows the user to configure the product without requiring every profile field to be complete before discovery begins. Onboarding must support:
 
-- Creating an account and setting account-security preferences.
+- Creating an account (with the required Terms and Privacy Policy consent checkbox, Section 13) and setting account-security preferences.
 - Entering essential profile information and optionally importing a résumé/CV.
 - Reviewing and correcting extracted information before it is used.
 - Selecting opportunity types, countries, locations, industries, academic fields, and employment preferences.
@@ -818,9 +828,9 @@ Audit records should include event time, action type, outcome, and relevant refe
 
 ## 25. Testing and release readiness
 
-### 25.1 Functional testing
+### 25.1 Test scope and scenarios
 
-Before release, the product must be tested against representative scenarios, including:
+Version 1 uses **automated unit tests only**. Integration, end-to-end, contract, load, and other automated test types are out of scope for version 1 and may be added later. The scenarios below must be covered by unit tests, using fakes or mocks for databases, external services, AI responses, and time:
 
 - Complete and partially completed profiles.
 - Opportunities below, at, and above a configured match threshold.
@@ -873,13 +883,13 @@ Before release, the product must be tested against representative scenarios, inc
 
 ### 25.2 Security and privacy testing
 
-The product must be tested for unauthorized access to profiles and documents, inappropriate reuse of application materials, exposure of secrets in logs, and unintended external actions. Tests must verify authorization boundaries across tracks, opportunities, connected accounts, and application actions.
+Unit tests must cover the rules that prevent unauthorized access to profiles and documents, inappropriate reuse of application materials, exposure of secrets in logs (log scrubbing), and unintended external actions, including authorization rules across tracks, opportunities, connected accounts, and application actions. Static checks (secret scanning, dependency and code scanning) also run on every change; they are checks, not tests.
 
 The product must safely handle malicious or misleading content retrieved from external sources. Instructions contained in job postings, web pages, documents, or emails must not override the user's settings, product safeguards, or authorization requirements.
 
 ### 25.3 Acceptance evidence
 
-Acceptance testing must produce evidence that each criterion in Section 16 passed or has an explicitly approved limitation. Source coverage, automation restrictions, unsupported workflows, and known accuracy limitations must be documented before the product is presented as production-ready.
+Evidence that each criterion in Section 16 is met must come from passing unit tests and, where a criterion cannot be verified by unit tests (for example store approval or real-device behaviour), from a recorded demonstration accepted by the Product Owner, or an explicitly approved limitation. Source coverage, automation restrictions, unsupported workflows, and known accuracy limitations must be documented before the product is presented as production-ready.
 
 Critical failures involving privacy, unauthorized external actions, fabricated application data, or false submission confirmations must block release until resolved or formally addressed through an approved release decision.
 
@@ -1719,6 +1729,8 @@ These are product choices not fully determined by the initial request. They shou
 57. Should the admin application be desktop-only, or also usable on mobile-sized screens?
 58. By default, should a country exclusion also cover the employer's base country, or only the job location (Section 5.3)?
 59. Which minimum Android and iOS versions must the mobile app support (Section 53.7)?
+60. How long should sign-in history, IP addresses, and device information be kept (Section 13)?
+61. Does any version 1 feature need precise location (for example nearby on-site jobs), or is IP-based approximate location enough?
 
 ## 55. Document control
 
