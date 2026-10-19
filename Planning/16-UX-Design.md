@@ -1,6 +1,6 @@
 # UX and UI Design Guide (Light Theme, English)
 
-The guide used by the UX/UI Designer and UI Validation agents. Scope for v1: light theme, English, web + Android + iOS + admin.
+The guide used by the UX/UI Designer and UI Validation agents. Scope for v1: light theme, English, web + Android + iOS + admin. **All screens, flows, and components are designed by the UX/UI Designer agent** following this guide and checked by the UI Validation agent ([10-AIDLC-Agents.md](10-AIDLC-Agents.md)); the Product Owner reviews them at the Inception checkpoint.
 
 ## 1. UX principles
 
@@ -76,6 +76,54 @@ Target: a new user reaches the first recommended matches in under 10 minutes and
 | **Onboarding** | Progress indicator, skip for optional steps, readiness indicators | Continue, Skip |
 | **Documents** | Versions, approved state, validity dates, which applications used each version | Upload, Approve, Replace |
 | **Admin dashboard** | Metric cards, trends, alerts, drill-down tables | Filter, export, act |
+
+## 5a. Profile (the "master" profile)
+
+The profile is the centre of the product. Design goals: complete, fast to edit, trustworthy, beautiful on every device.
+
+| Area | Design |
+|---|---|
+| Header | Profile photo (tap to view full size with zoom; edit button to replace/crop/remove), name, headline, location, completeness ring, "Preview as application" and "Preview CV" buttons |
+| Section navigation | Sticky section index (phone: horizontal chips; tablet/desktop: left column) with completeness per section |
+| Sections | Basics · Contact (multiple emails and phones, verified badges, primary marker) · Identity details (masked until revealed) · Addresses · Education · Employment · Projects · Skills and languages · Tests and scores · Certifications · Publications and awards · Links · Referees · Signature · Documents · Preferences |
+| Entries | Cards with drag handle, inline edit, overflow menu (duplicate, delete, move up/down) |
+| Photo editor | Upload or camera, crop with aspect presets (square, passport 3:4, portal-specific sizes), rotate, background check for formal photos, live preview of required size |
+| Signature | Upload or draw on a signature pad (finger/stylus/mouse), auto background removal, crop, preview at portal size |
+| Verification | Email/phone verification inline with code entry; clear "verified"/"not verified" states |
+| Guidance | "Next best item" card (for example "Add IELTS score to unlock 34 programmes"), expiry warnings, privacy notes for sensitive fields |
+| Editing | Autosave with "Saved" indicator, undo toast, validation inline |
+
+## 5b. Image and document viewer
+
+- One shared viewer component on web, admin, and mobile for photos, signatures, certificates, documents, and archived circulars.
+- Zoom: pinch and double-tap (touch); scroll wheel, +/− buttons, and keyboard (+, −, 0 to reset) on desktop; zoom range 25%–800%.
+- Pan by drag; rotate in 90° steps; fit-to-width and fit-to-screen; full-screen mode; page navigation for multi-page PDFs with thumbnails.
+- Download and share (where allowed); version selector for documents; metadata panel (size, type, version, validity).
+- Accessible: buttons with labels, focus trap in full-screen, Escape to close, alt text where available.
+
+## 5c. Drag and drop
+
+- Used wherever order matters (requirements §5.5): tracks, profile entries, contacts, documents, locations, reusable answers, dashboard cards, approval queue (custom order), admin ordered lists.
+- Visible drag handle (⋮⋮) on each item; on touch devices long-press to start dragging; haptic feedback on mobile.
+- Clear drop indicator and auto-scroll near list edges; animation 150–200 ms.
+- Keyboard: focus item, Space to pick up, arrow keys to move, Space to drop, Escape to cancel; screen-reader announcements of position.
+- Non-drag alternative always present (Move up/Move down, or "Move to position…"), meeting WCAG 2.2 SC 2.5.7.
+- Order saves automatically with an Undo toast; where order affects behaviour (track priority, CV order) a short hint explains it.
+
+## 5d. Responsive layout
+
+| Breakpoint | Width | Layout |
+|---|---|---|
+| XS (small phone) | < 360 px | Single column, compact spacing, bottom tabs |
+| SM (phone) | 360–599 px | Single column, bottom tabs, bottom sheets for actions |
+| MD (large phone/small tablet, foldable) | 600–839 px | Single column with wider cards; optional two-pane in landscape |
+| LG (tablet/laptop) | 840–1199 px | Two panes (list + detail), side navigation rail |
+| XL (desktop) | ≥ 1200 px | Sidebar navigation, list + detail + context panel; max content width for readability |
+
+- Layouts adapt (reflow, collapse, change navigation), never just shrink.
+- Touch targets ≥ 44 pt / 48 dp; text scales with system font size up to 200%.
+- Images use responsive sizes; tables become cards on small screens.
+- Every screen is checked at each breakpoint by the UI Validation agent (visual regression on all five sizes).
 
 ## 6. Interaction patterns
 
