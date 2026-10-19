@@ -517,6 +517,9 @@ These are product-level expectations; exact service-level targets can be set bef
 - **Portability**: User data should be exportable in a commonly usable format.
 - **Maintainability**: Source-specific failures must be diagnosable without hiding their effect from users.
 - **Observability**: All parts of the system (web, mobile, admin, APIs, workers, workflows, integrations, AI calls) must produce structured logs, distributed traces, and metrics that can be correlated by a single trace or application ID, and must be viewable in one monitoring platform with dashboards and alerts.
+- **Configurability**: Every default value, limit, threshold, schedule, timeout, and piece of text used by the product must come from configuration or administrator-managed settings, never fixed in code, so behaviour can change without a new release.
+- **Statuses and types**: Every status, type, and category is taken from a defined list (enumeration); its display label, colour, and order are managed as data.
+- **Record keeping**: Every stored record must show when it was created and last changed, and by whom (user, administrator, system, or automation). Records are never physically removed: deleting marks a record as deleted so it can be restored during the recently-deleted period, and permanent deletion irreversibly erases its personal content while the anonymized record remains.
 - **Load and scalability**: The system must scale horizontally without design changes. Load testing is not part of the version 1 test scope (Section 25.1); capacity is watched through production monitoring.
 - **Cost efficiency**: The platform must be able to run at low cost at launch (free tiers and small instances where possible) and scale up as usage grows without redesign.
 - **Localization readiness**: Dates, currencies, languages, country names, and grading/test scales must be represented so that international opportunities can be compared without losing original values.
@@ -604,6 +607,7 @@ The product is ready for an initial release only when all of the following are d
 75. Ordered lists support drag and drop with mouse, touch, and keyboard, with an accessible non-drag alternative, autosave, and undo.
 76. Every screen of the web, admin, and mobile apps works without layout problems from small phones to large desktop screens.
 77. Registration requires the Terms and Privacy Policy consent checkbox; the consent record and sign-in history (IP, device, approximate location, time) are stored and shown to the user and admins; precise location and device contacts are only accessed after an operating-system permission prompt.
+78. Every record shows its created and last-updated time and who made each change; deleting any item marks it deleted and it can be restored during the recently-deleted period; after permanent deletion its personal content cannot be recovered.
 
 ## 17. Onboarding and initial setup
 
@@ -1443,14 +1447,14 @@ For every change:
 - The previous value must be kept in the change history so the user can see what changed and when, and undo a recent change.
 - Deleting an item that is used by an active rule, a queued approval, or an in-progress application must show what will be affected and ask the user to confirm. Applications already submitted keep the values that were actually sent (Section 28.2).
 - Bulk actions (for example, delete several documents or dismiss many opportunities) must show a summary before they are applied.
-- Deleted items should go to a recently-deleted area for a user-defined period (default to be decided) before permanent deletion, unless the user chooses permanent deletion immediately.
+- Deleted items should go to a recently-deleted area for a user-defined period (default to be decided) before permanent deletion, unless the user chooses permanent deletion immediately. Permanent deletion irreversibly erases the item's content (Section 15, record keeping).
 
 ### 46.2 Account deletion
 
 - The user must be able to delete their whole account from the settings, after re-authentication (Section 41).
 - Before deletion, the product must offer a full data export (Section 13) and show what will be deleted, what cannot be deleted by the product (for example, applications already received by employers, and accounts on employer portals, which the user must close with each portal), and any grace period.
 - During an optional grace period (default to be decided), the user must be able to cancel the deletion. All automatic applications, emails, and payments must stop immediately when deletion is requested.
-- On deletion, the product must revoke all connected-account access, delete stored portal credentials, delete all personal data, documents, records, and archives, and send a final confirmation to the user's email.
+- On deletion, the product must revoke all connected-account access, delete stored portal credentials, irreversibly erase all personal data, documents, records, and archives (anonymized so they can never be linked back to the user; Section 15, record keeping), and send a final confirmation to the user's email.
 - Data kept after deletion because of legal obligations must be listed, kept only for the required period, and not used for any other purpose.
 
 ### 46.3 Deleting application history
@@ -1731,6 +1735,7 @@ These are product choices not fully determined by the initial request. They shou
 59. Which minimum Android and iOS versions must the mobile app support (Section 53.7)?
 60. How long should sign-in history, IP addresses, and device information be kept (Section 13)?
 61. Does any version 1 feature need precise location (for example nearby on-site jobs), or is IP-based approximate location enough?
+62. Decided: records are never physically deleted; deletion is logical and permanent deletion is irreversible anonymization (Section 15, record keeping).
 
 ## 55. Document control
 
