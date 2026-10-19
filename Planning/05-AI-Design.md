@@ -44,6 +44,7 @@ Using a cheaper model (for example Claude Haiku 5.5 or Claude Sonnet 5.5) for hi
 | 11 | Reply classification | Incoming emails on application threads | Confirmation / interview / assessment / rejection / offer / question / other | 11.4, 34 |
 | 12 | Supervisor matching | Faculty pages, publications, user interests | Match evidence for review | 33.5 |
 | 13 | Admin assistance (later in v1) | Source failures, incidents | Summaries for admins | 24, 53 |
+| 14 | Operations analysis (AIOps) | Scrubbed logs, traces, metrics, alerts | Error grouping, root-cause hints, anomaly explanations, capacity forecasts ([11-Observability.md](11-Observability.md) §8) | 24.3 |
 
 ## 4. Machine learning (non-generative)
 
