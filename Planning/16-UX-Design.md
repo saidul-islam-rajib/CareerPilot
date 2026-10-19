@@ -1,0 +1,123 @@
+# UX and UI Design Guide (Light Theme, English)
+
+The guide used by the UX/UI Designer and UI Validation agents. Scope for v1: light theme, English, web + Android + iOS + admin.
+
+## 1. UX principles
+
+1. **Trust through transparency.** Users let the system act for them only if they can see what it will do, what it did, and why. Always show the reason, the evidence, and the status in plain words.
+2. **Action first.** Every screen starts with what needs the user now (approvals, blocked questions, deadlines), then progress, then history.
+3. **One-tap where safe, deliberate where risky.** Approving a ready package takes one tap. Payments, attestations, automatic rules, and deletion need a clear review step.
+4. **Progressive disclosure.** Show the key facts first (role, employer, match, deadline, status); details expand on demand.
+5. **Forgiving.** Undo for recent changes, recently deleted area, cancel windows for queued emails, and drafts that never get lost.
+6. **Mobile first, works everywhere.** Designed for a one-handed phone first, then expanded for tablets and desktop.
+7. **Consistency.** Same words, statuses, icons, and layouts on web, mobile, and admin (single status model, requirements §20.2).
+8. **Accessible by default.** WCAG 2.2 AA; readable for non-native English speakers; large touch targets.
+9. **Calm, not noisy.** Few, meaningful notifications; quiet hours; no dark patterns.
+10. **Honest states.** Never show success without evidence; uncertain is shown as uncertain.
+
+## 2. Users (personas)
+
+| Persona | Needs most |
+|---|---|
+| Fresh graduate in Bangladesh | Simple onboarding, local and government jobs, guidance on missing documents, low data use |
+| Experienced professional seeking remote/international work | Strong filtering (sponsorship, countries, salary), automatic applications, detailed records |
+| Master's/PhD applicant | Deadlines and test planning, funding clarity, supervisor outreach, document tracking |
+| Government job seeker | Grade filters, circular details, fee and admit-card reminders, Bangla circular reading |
+| Administrator | Fast overview, drill-down, safe bulk actions, audit trail |
+
+## 3. Information architecture
+
+### 3.1 Mobile (bottom tabs)
+
+```mermaid
+flowchart TB
+  root["CareerPilot app"] --> home["Home<br/>needs your action · today's matches ·<br/>deadlines · automation status"]
+  root --> opp["Opportunities<br/>tracks (tabs) · search · saved"]
+  root --> apps["Applications<br/>list · filters · detail (timeline,<br/>questions & answers, emails,<br/>files, evidence, circular)"]
+  root --> inbox["Inbox<br/>approvals · blocked questions ·<br/>interviews · messages"]
+  root --> me["Profile<br/>profile · documents · answers ·<br/>tracks & rules · pause · windows ·<br/>notifications · account & privacy"]
+```
+
+### 3.2 Web (left sidebar, same sections) and admin
+
+```mermaid
+flowchart LR
+  adm["Admin app"] --> d["Dashboard"]
+  adm --> u["Users"]
+  adm --> o["Opportunities"]
+  adm --> s["Sources & integrations"]
+  adm --> a["Applications"]
+  adm --> p["Platform settings<br/>types · rules · flags · templates ·<br/>scoring · countries"]
+  adm --> c["Compliance & audit"]
+  adm --> sup["Support & incidents"]
+  adm --> r["Admins & roles"]
+```
+
+## 4. Key journeys
+
+```mermaid
+flowchart LR
+  j1["Sign up"] --> j2["Import CV"] --> j3["Confirm facts"] --> j4["Pick tracks<br/>(4 named + custom)"] --> j5["Set countries,<br/>salary, mode"] --> j6["First matches<br/>(same day)"] --> j7["Approve first<br/>application"] --> j8["See confirmed<br/>record"]
+```
+
+Target: a new user reaches the first recommended matches in under 10 minutes and the first approved application in under 15 minutes.
+
+## 5. Key screens
+
+| Screen | Must show | Primary actions |
+|---|---|---|
+| **Home** | "Needs your action" cards (approvals, questions, deadlines), today's matches per track, automation status (on/paused, next submission time), recent results | Approve, Answer, Open |
+| **Opportunity detail** | Title, organization, location, work type, deadline (with time zone), compensation, match score with reasons, hard-requirement checks (pass/fail/unknown), warnings (fraud, sponsorship not stated), source and "archived copy" link | Apply, Save, Dismiss (with reason), Report |
+| **Approval package** | Summary first (where, how, deadline, warnings); sections: answers (editable inline, source shown), cover letter (editable), files (preview), account/fee/consents, data shared; missing items at top | Approve, Edit & approve, Schedule, Reject, Defer |
+| **Applications list** | Status chip (text + icon), route, date, next action, deadline | Filter, search, open |
+| **Application detail** | Timeline; questions exactly as asked with answers and sources; email thread; exact files; evidence; archived circular; notes and corrections | Add note, correct status, withdraw |
+| **Automation rule wizard** | Step by step: scope → filters → materials → limits → schedule → review summary → dry run results | Save draft, Run dry run, Activate |
+| **Pause** | Duration presets (1 day, 1 week, 1 month, custom, until I resume), scope, affected approvals | Pause, Extend, End |
+| **Onboarding** | Progress indicator, skip for optional steps, readiness indicators | Continue, Skip |
+| **Documents** | Versions, approved state, validity dates, which applications used each version | Upload, Approve, Replace |
+| **Admin dashboard** | Metric cards, trends, alerts, drill-down tables | Filter, export, act |
+
+## 6. Interaction patterns
+
+| Pattern | Rule |
+|---|---|
+| Status | Chip with icon + text + tooltip explanation; never colour alone |
+| Loading | Skeletons for content; progress for uploads and long tasks; never block the whole screen without a reason |
+| Empty states | Explain why it's empty and what to do (for example "No matches above 80% today. Lower the threshold or add skills.") |
+| Errors | Say what happened, why (if known), and how to fix it; keep user input; offer retry |
+| Confirmation | Only for irreversible or external actions; state the consequence ("This sends your application to Acme Ltd.") |
+| Undo | Toast with Undo for reversible changes (dismiss, delete to recently deleted, edits) |
+| Offline | Banner "You're offline. Changes will be sent when you're back online."; pending items marked |
+| Notifications | Each notification opens exactly the related item; quick actions where safe |
+| Forms | Labels above fields, helpful defaults, inline validation on blur, error summary on submit, keyboard types matching data (email, phone, number) |
+| Dates and money | Always with time zone and currency; relative dates ("in 3 days") plus exact date |
+| Tables (web/admin) | Sticky headers, column chooser, saved filters, bulk actions with preview |
+
+## 7. Visual design (light theme)
+
+| Token group | Values (initial) |
+|---|---|
+| Primary | Blue 600 `#2563EB` (actions, links), hover 700 `#1D4ED8` |
+| Neutrals | Background `#FFFFFF`, surface `#F8FAFC`, border `#E2E8F0`, text primary `#0F172A`, text secondary `#475569` |
+| Semantic | Success `#15803D`, warning `#B45309`, danger `#B91C1C`, info `#0369A1` (all meet AA contrast on white for text) |
+| Typography | Inter for UI text; Noto Sans Bengali for Bangla content inside circulars and names; sizes 12/14/16/18/20/24/30; body 16 on mobile |
+| Spacing | 4-point grid (4, 8, 12, 16, 24, 32, 48) |
+| Radius | 8 (controls), 12 (cards) |
+| Elevation | Subtle shadows on cards and sheets only |
+| Icons | Lucide icon set, 20/24 px, always with a label for actions |
+| Motion | 150–250 ms ease-out; respects "reduce motion" |
+
+Tokens live in `packages/ui-tokens` and feed both Tailwind (web, admin) and NativeWind (mobile). Dark theme tokens can be added later without component changes.
+
+## 8. Writing style
+
+- Plain, short English; sentence case; active voice.
+- Specific button labels ("Approve and send", not "OK").
+- Explain automation in user terms ("We'll apply at 12:00 a.m. using CV v3 and your saved answers.").
+- No jargon, no blame in error messages.
+
+## 9. Validation and research
+
+- Heuristic review (Nielsen's 10 heuristics) of every new screen by the UI Validation agent.
+- Usability tests with 5 users per persona before beta (remote, task-based).
+- Metrics: task success rate, time to first application, approval completion time, System Usability Scale (target ≥ 80), drop-off per onboarding step (PostHog funnels).
