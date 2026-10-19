@@ -63,6 +63,7 @@ CareerPilot/
 
 | Level | What | Tools | Target |
 |---|---|---|---|
+| Naming | TypeScript tests `*.spec.ts(x)` next to code; Python `test_*.py`; see [17-Project-Structure.md](17-Project-Structure.md) §4 | — | — |
 | Unit | Domain logic: status model, precedence, compensation rules, country checks, computed answers, deadline/time-zone logic | pytest, Vitest | ≥ 90% for domain modules |
 | Integration | API + DB + workflows, adapters against mock portals and sandbox mailboxes | pytest + testcontainers, Temporal test environment | All workflows and adapters |
 | Contract | OpenAPI conformance; generated clients up to date | Schemathesis, CI drift check | Every endpoint |

@@ -15,7 +15,7 @@ Which database or store is used for which kind of data, and why.
 | Portal passwords, OAuth tokens | **PostgreSQL ciphertext + AWS KMS envelope encryption** | Never stored in plain text; never returned by any API (requirements Section 53.5) |
 | App secrets (API keys, database passwords) | **AWS Secrets Manager** | Rotation, no secrets in code |
 | Workflow state (pipelines, approvals, schedules, pauses) | **Temporal persistence** | Durable state for long-running workflows |
-| Caches, per-source rate-limit buckets, short locks, idempotency keys in flight | **Redis** | Fast, expiring data; never the source of truth |
+| Caches, sessions, rate limits, short locks, idempotency fast checks, verification codes, real-time fan-out | **Redis** (two instances: `redis-cache` and `redis-coord`) | Fast, expiring data; never the source of truth ([Design/16-Redis-and-Caching.md](Design/16-Redis-and-Caching.md)) |
 | Audit log | **PostgreSQL append-only table** (insert-only database role, hash chain) | Trustworthy history of user, system, and admin actions |
 | Mobile offline copy | **SQLite on device** (expo-sqlite) | Offline viewing of recent records |
 | Product analytics | **PostHog** (consented events only) | Kept apart from operational data |

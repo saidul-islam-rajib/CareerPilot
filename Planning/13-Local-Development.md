@@ -4,6 +4,8 @@ Everything (backend, workers, web, admin, mobile, infrastructure, observability,
 
 ## 1. Solution folder
 
+The canonical, detailed structure is in [17-Project-Structure.md](17-Project-Structure.md); the summary below shows the parts used for local development. Local default accounts (for example `admin@sober.com`) are listed in [18-Seed-Data.md](18-Seed-Data.md) §3.
+
 ```text
 CareerPilot/
 ├── CLAUDE.md                  # Rules for Claude and agents
