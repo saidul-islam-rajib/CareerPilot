@@ -18,6 +18,19 @@ Job discovery and application assistant for job seekers and students (Bangladesh
 
 (Folders are created in Sprint 0; see `Planning/07-Engineering-Standards.md`.)
 
+## Agent access (standing authorization)
+
+- Claude and all AIDLC agents have full access to every file in this project directory and may read, create, update, move, and delete files **without asking the user**. Permissions are pre-configured in `.claude/settings.json`.
+- This covers the project directory only; force-push, real external actions, and sensitive production releases still follow the checkpoints in `Planning/10-AIDLC-Agents.md` §4.
+
+## How to build
+
+- Follow the folder structure in `Planning/17-Project-Structure.md`; write a spec in `specs/<epic>-<feature>/` before coding a feature.
+- Tests: TypeScript `*.spec.ts(x)` next to code, Python `test_*.py`; E2E in `tests/e2e/`.
+- Every new table ships with seed data (`Planning/18-Seed-Data.md`); local default admin is `admin@sober.com` / `admin@sober.com`.
+- Use Redis only as described in `Planning/Design/16-Redis-and-Caching.md` (never as source of truth).
+- All screens are designed by the UX/UI agent to `Planning/16-UX-Design.md`, responsive from small phones to desktop, with drag and drop where order matters.
+
 ## Non-negotiable rules
 
 - If code and requirements disagree, stop and ask. Don't silently choose.
