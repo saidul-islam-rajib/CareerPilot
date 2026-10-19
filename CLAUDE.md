@@ -16,7 +16,7 @@ Job discovery and application assistant for job seekers and students (Bangladesh
 - `apps/mobile` — user mobile app (Expo, Android + iOS)
 - `packages/` — shared TypeScript packages (generated API client, UI tokens, i18n, validation)
 
-(Folders are created in Sprint 0; see `Planning/07-Engineering-Standards.md`.)
+(Folder skeleton exists with READMEs; code is added from Sprint 0. Canonical structure: `Planning/17-Project-Structure.md`.)
 
 ## Agent access (standing authorization)
 
