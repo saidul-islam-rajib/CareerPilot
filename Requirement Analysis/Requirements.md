@@ -119,6 +119,27 @@ Users may not want to, or may not be able to, apply for opportunities connected 
 - Country names must be matched reliably, including alternative names, cities, and regions within a country.
 - Administrators may also set countries where applications are not allowed on the platform, for legal reasons (Section 53); these apply to all users and are shown to them.
 
+### 5.4 Profile experience
+
+The profile is the foundation of every recommendation and application, so it must be complete, easy to manage, and pleasant to use on every device.
+
+- **Profile photo**: The user must be able to upload, take (camera), crop, rotate, replace, and remove a profile photo, and keep separate photos for different purposes where required (for example a formal application photo meeting a portal's size rules, Section 35.2).
+- **Signature**: The user must be able to upload a signature image or draw one on screen, crop and clean the background, preview it at the required size, and replace or remove it.
+- **Contact details**: The user must be able to add, verify (code by email or SMS), edit, reorder, and remove multiple email addresses and phone numbers, mark one as primary, and choose which one each application or notification uses.
+- **All other information**: Every profile section in Section 5.1 (identity, addresses, education, employment, projects, skills, languages, tests, certifications, publications, awards, volunteering, links, referees, preferences) must support add, view, edit, reorder, and delete, with the change history in Section 46.1.
+- **Image and document viewing**: Profile photos, signatures, uploaded images, certificates, and documents must open in a viewer that supports zoom (pinch and double-tap on touch devices; buttons, scroll wheel, and keyboard on desktop), pan, rotate, full-screen view, and download. The same viewer is used for archived circulars (Section 50).
+- **Completeness and quality**: The profile must show a completeness indicator per section, highlight missing or expiring items (for example a passport or test score expiring soon), and suggest the next most valuable item to add, without implying eligibility (Section 17.2).
+- **Editing experience**: Inline editing, autosave of drafts, clear validation messages, and undo for recent changes.
+- **Preview**: The user must be able to preview how their profile data will appear in an application and in a generated CV.
+- **Responsive**: Every profile screen must work on small and large phones, tablets, and desktop browsers (Section 14).
+
+### 5.5 Ordering with drag and drop
+
+- Wherever the order of items matters, the user must be able to reorder them by drag and drop, including: recommendation tracks, profile sections and entries (education, employment, projects, skills, languages, certifications), contact emails and phone numbers, documents and document versions within a list, preferred locations and countries, reusable answers, approval queues (custom ordering), dashboard cards, and admin tables or lists where a manual order applies.
+- Drag and drop must work with mouse, touch (long-press to drag on mobile), and keyboard, and every drag action must have an accessible alternative (for example "Move up" / "Move down" controls or a position selector), as required by accessibility standards (Section 43).
+- A new order must be saved automatically, shown immediately, and be undoable.
+- Where order has meaning for the system (for example track priority in Section 38, or order of entries in a generated CV), the user must be told what the order affects.
+
 ## 6. Recommendation tracks
 
 The system must support ten configurable tracks. The following four are the initial named tracks requested by the user:
@@ -467,7 +488,7 @@ When status is uncertain, say so and give the user a safe next step. Do not sile
 
 ## 14. Accessibility and usability
 
-- Core workflows must be usable on desktop and mobile-sized screens.
+- All interfaces must be responsive and fully usable on every device class: small and large phones (portrait and landscape), foldables, tablets, laptops, and large desktop screens, with layouts that adapt rather than simply shrink.
 - The interface must support keyboard navigation, readable contrast, clear labels, and accessible status/error messages.
 - Dates and times must be shown unambiguously and in the user's selected time zone, with the source's original time zone retained when known.
 - Salary, stipend, grade, GPA, and test scores must show their units/scales and avoid misleading comparisons.
@@ -569,6 +590,10 @@ The product is ready for an initial release only when all of the following are d
 70. Logs, traces, and metrics from all parts of the system can be correlated by trace or application ID in one monitoring platform with dashboards and alerts.
 71. Load tests (normal, peak, stress, spike, and long-duration) meet the agreed targets before each release.
 72. Version 1 interfaces are English only and light theme only, with all text in string catalogs and colours in design tokens.
+73. The user can add, crop, replace, and remove a profile photo and signature, manage multiple verified emails and phone numbers, and edit, reorder, and delete every profile section.
+74. Images, documents, and archived circulars open in a viewer with zoom, pan, rotate, and full-screen on touch and desktop devices.
+75. Ordered lists support drag and drop with mouse, touch, and keyboard, with an accessible non-drag alternative, autosave, and undo.
+76. Every screen of the web, admin, and mobile apps works without layout problems from small phones to large desktop screens.
 
 ## 17. Onboarding and initial setup
 
@@ -843,6 +868,7 @@ Before release, the product must be tested against representative scenarios, inc
 - Payment provider webhooks with invalid signatures, mismatched amounts, duplicates, and missing callbacks; integration failures and disabling an integration.
 - Automated error remediation: known runbook actions, new problems producing fix changes, canary rollback, and sensitive fixes waiting for approval.
 - Load, stress, spike, and long-duration tests, including midnight submission bursts and digest bursts.
+- Profile photo and signature upload, camera capture, crop, and replacement; email and phone verification; reordering by drag and drop with mouse, touch, and keyboard; image zoom and pan on phones, tablets, and desktop.
 - Admin role permissions, attempts by user accounts to reach the admin application, admin edits appearing in the user's change history, secret masking, admin bulk deletion, and the platform emergency stop.
 
 ### 25.2 Security and privacy testing
