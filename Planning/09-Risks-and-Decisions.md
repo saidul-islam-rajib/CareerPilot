@@ -29,6 +29,9 @@
 | T7 | Error tracking | Sentry cloud, self-hosted | Sentry cloud |
 | T8 | Initial ATS adapters | Greenhouse, Lever, Workday, SmartRecruiters, Ashby, and others | Pick 2–3 by how often they appear in our target sources |
 | T9 | Initial sources | Government notice sites, local portals, employer career pages, university pages | Pick by permission and coverage per track |
+| T10 | Authorization policy engine | Cedar, OPA | Cedar (simple, typed policies for roles and ownership) |
+| T11 | Feature flag provider (OpenFeature) | Self-hosted flag service, database-backed provider | Database-backed provider managed from the admin app, unless a flag service is preferred |
+| T12 | Accept the 20 proposed ADRs | — | Review [Design/14-ADR-Log.md](Design/14-ADR-Log.md) in Sprint 0 |
 
 ## 3. Product decisions
 
