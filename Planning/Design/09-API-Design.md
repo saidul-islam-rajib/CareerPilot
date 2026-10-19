@@ -5,7 +5,7 @@
 | Topic | Decision | Reason |
 |---|---|---|
 | Style | REST, resource-oriented, JSON over HTTPS | Simple, cacheable, well-supported on web and mobile |
-| Contract | OpenAPI 3.1 generated from FastAPI + Pydantic; committed to `docs/api/` | Single source for typed clients and contract tests |
+| Contract | OpenAPI 3.1 generated from FastAPI + Pydantic; committed to `docs/api/` | Single source for typed clients |
 | Two APIs | User API (`api.<domain>/v1`) and Admin API (`admin-api.<domain>/v1`) | Separate access points and permissions (requirements Section 53.1) |
 | GraphQL | Not used in v1 | REST + field selection covers needs; simpler caching, security, and rate limiting. Revisit if clients need many joins per screen |
 | Real-time | Server-Sent Events for web (`/v1/events/stream`); push + refetch for mobile in background | Live status updates without polling |
@@ -110,4 +110,3 @@ Content-Type: application/json
 - Every endpoint has an owner module and appears in the OpenAPI spec with examples.
 - CI lints the spec (consistent naming, errors, pagination) and fails on breaking changes inside `/v1`.
 - Generated TypeScript clients are rebuilt in CI; the build fails if they are stale.
-- Contract tests (Schemathesis) run against every pull request.

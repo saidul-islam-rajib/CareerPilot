@@ -17,7 +17,7 @@ How CareerPilot grows without rewrites. Most growth should need **configuration 
 | New country | `CountryPack` plugin (fields, checks, stages, holidays, formats) | Yes (plugin) | Admin → Countries |
 | New language | String catalogs + locale formats | No (translation files) | Translation workflow |
 | New document conversion | `DocumentTransformer` plugin | Yes (plugin) | Automatic |
-| New AI task / prompt change | `AITask` + versioned prompt + eval set | Yes for task; prompt changes via review | Repo + admin (enable/disable, budgets) |
+| New AI task / prompt change | `AITask` + versioned prompt + unit tests with recorded responses | Yes for task; prompt changes via review | Repo + admin (enable/disable, budgets) |
 | New notification/email template | Template record (per locale, versioned) | No | Admin → Templates |
 | New admin role | Role + policy definitions | No | Admin → Roles |
 | New platform limit / default | Platform setting (typed, versioned) | No | Admin → Settings |
@@ -131,17 +131,17 @@ All settings are typed (schema per setting), versioned, audited, and readable th
 ### Add a new job source
 1. Check source terms; record them in the source registry.
 2. If an existing connector fits (for example a known job-board system), create a source record with config. Done.
-3. Otherwise create a `SourceConnector` plugin from the template (`/new-connector` project skill), with contract tests against recorded responses.
+3. Otherwise create a `SourceConnector` plugin from the template (`/new-connector` project skill), with unit tests against recorded responses.
 4. Enable behind a flag for a test tenant; watch plugin metrics; roll out.
 
 ### Add a new application route (ATS / portal)
 1. Record terms and whether automation is allowed.
-2. Create a `RouteAdapter` plugin with mock-portal tests for every corner case in requirements Section 30.
+2. Create a `RouteAdapter` plugin with unit tests (recorded portal pages) for every corner case in requirements Section 30.
 3. Release with automatic mode off; enable approve-each first; enable automatic mode per route after the success-rate threshold.
 
 ### Add a new opportunity type
 1. Define the type (schema, UI schema, filters, stages) in Admin → Opportunity types.
-2. Add eval examples for extraction of the new type.
+2. Add unit-test fixtures (recorded responses) for extraction of the new type.
 3. Users can now select it in tracks; forms and filters render automatically.
 
 ### Add a new country

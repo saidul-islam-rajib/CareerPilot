@@ -96,14 +96,13 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-  pr["Pull request"] --> ci["CI: lint, types, unit,<br/>integration, contract,<br/>security scans, AI evals"]
+  pr["Pull request"] --> ci["CI: lint, types,<br/>unit tests + coverage,<br/>security scans"]
   ci --> review["Human review"]
   review --> main["Merge to main"]
   main --> build["Build images (signed)<br/>+ SBOM + scan"]
   build --> dev["Deploy dev<br/>(auto) + migrations"]
-  dev --> e2e["E2E: web, admin, mobile<br/>against dev"]
-  e2e --> tag["Release tag"]
-  tag --> stg["Deploy staging<br/>+ smoke + DAST"]
+  dev --> tag["Release tag"]
+  tag --> stg["Deploy staging"]
   stg --> approve["Release approval"]
   approve --> prod["Deploy production<br/>(rolling / blue-green)"]
   prod --> verify["Post-deploy checks<br/>+ automatic rollback"]

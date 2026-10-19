@@ -62,7 +62,7 @@ services/
 │   ├── payments/
 │   ├── audit/
 │   ├── administration/
-│   └── ai/                     # Prompt registry, task runner, Claude gateway, evals hooks
+│   └── ai/                     # Prompt registry, task runner, Claude gateway, quality metrics
 ├── plugins/                    # First-party plugins, each an installable package
 │   ├── sources/                #   e.g. source_greenhouse_board, source_bd_gov_notices
 │   ├── routes/                 #   e.g. route_email, route_workday, route_bd_gov_portal

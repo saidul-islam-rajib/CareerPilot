@@ -22,7 +22,7 @@
 | 16 | Payments Tracking | Supporting | Fee rules, payment records, receipts | 10.10 |
 | 17 | Audit and Compliance | Generic | Audit events, data requests (export/deletion), retention | 13, 24.4, 46.2 |
 | 18 | Administration | Supporting | Platform settings, feature flags, support tickets, incidents, dashboards | 24, 44, 53 |
-| 19 | AI Services | Generic (shared kernel for AI) | Prompt registry, AI task runs, evals, cost tracking | AI design |
+| 19 | AI Services | Generic (shared kernel for AI) | Prompt registry, AI task runs, quality metrics, cost tracking | AI design |
 
 **Core** contexts are where CareerPilot differs from other products and get the most design attention. **Supporting** contexts are specific to us but simpler. **Generic** contexts solve common problems with standard patterns or products.
 

@@ -55,5 +55,5 @@ At the lean launch stage both run as small containers on the same host; at the g
 
 ## 5. Testing
 
-- Integration tests run against a real Redis container (testcontainers).
+- Unit tests use an in-memory Redis fake (no real Redis in tests).
 - Tests cover cache invalidation by events, rate-limit behaviour at limits, lock expiry, session expiry, and the failure behaviours in §3 (Redis stopped mid-test).

@@ -102,7 +102,7 @@ Each feature contains `components/`, `hooks/` (TanStack Query), `screens/` or ro
 
 | Area | Practice |
 |---|---|
-| Testing | Vitest + Testing Library (units), Playwright (web/admin E2E), Maestro (mobile E2E), visual regression for key screens |
+| Testing | Unit tests only in v1: Vitest + Testing Library (web/admin), Jest + React Native Testing Library (mobile) |
 | Errors | Sentry with PII scrubbing; error boundaries per feature |
 | Analytics | Consent-based PostHog events with a typed event catalogue |
 | Feature flags | OpenFeature client; flags evaluated server side for web, cached for mobile |

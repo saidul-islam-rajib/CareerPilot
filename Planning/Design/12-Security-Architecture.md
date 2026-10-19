@@ -95,14 +95,13 @@ flowchart LR
 | Excessive agency | AI cannot submit, send, or pay; only code paths with checks can |
 | Misinformation / hallucination | Evidence quotes, confidence, claim check, "unverified" labels |
 | Unbounded consumption | Per-user and platform AI budgets, max tokens, rate limits |
-| Supply chain / model changes | Model version pinned per task, eval gate before changes |
+| Supply chain / model changes | Model version pinned per task; changes reviewed and unit-tested with recorded responses |
 
 ## 7. Secure development lifecycle
 
 - Threat model reviewed when a new route adapter, channel, or data class is added.
 - SAST (CodeQL), dependency and container scanning, secret scanning on every pull request.
-- DAST (OWASP ZAP) against staging weekly.
-- Independent penetration test before production launch and yearly after.
+- Security agent and Product Owner review of every sensitive change (penetration testing is out of scope for v1).
 - Security champions review authentication, credentials, automation, payments, and admin changes.
 
 ## 8. Incident response
