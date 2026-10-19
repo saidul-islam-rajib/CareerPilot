@@ -1,0 +1,38 @@
+export const ApiErrorCode = {
+  InvalidCredentials: 'invalid_credentials',
+  EmailTaken: 'email_taken',
+  Unauthorized: 'unauthorized',
+  NotFound: 'not_found',
+  Conflict: 'conflict',
+  Validation: 'validation',
+  Network: 'network',
+  Timeout: 'timeout',
+  Server: 'server',
+} as const;
+export type ApiErrorCode = (typeof ApiErrorCode)[keyof typeof ApiErrorCode];
+
+export class ApiError extends Error {
+  constructor(
+    readonly code: ApiErrorCode,
+    readonly status?: number,
+    readonly detail?: string,
+  ) {
+    super(detail ?? code);
+    this.name = 'ApiError';
+  }
+}
+
+export function isApiError(error: unknown, code?: ApiErrorCode): error is ApiError {
+  return error instanceof ApiError && (code === undefined || error.code === code);
+}
+
+const STATUS_CODES: ReadonlyArray<[number, ApiErrorCode]> = [
+  [401, ApiErrorCode.Unauthorized],
+  [404, ApiErrorCode.NotFound],
+  [409, ApiErrorCode.Conflict],
+  [422, ApiErrorCode.Validation],
+];
+
+export function errorCodeForStatus(status: number): ApiErrorCode {
+  return STATUS_CODES.find(([code]) => code === status)?.[1] ?? ApiErrorCode.Server;
+}

@@ -1,0 +1,119 @@
+import {
+  ApplicationRoute,
+  EnumKey,
+  OpportunityType,
+  OutcomeStatus,
+  RequirementCheck,
+  SponsorshipEvidence,
+  StatusTone,
+  SubmissionStatus,
+  WorkArrangement,
+  ApprovalState,
+  ApplicationMode,
+  TrackKind,
+  OpportunityDecision,
+  type EnumValueMetadata,
+} from '@careerpilot/domain-ui-logic';
+
+type Row = [value: string, tone: StatusTone, terminal?: boolean];
+
+function rows(enumKey: EnumKey, values: Row[]): EnumValueMetadata[] {
+  return values.map(([value, tone, terminal], index) => ({
+    enumKey,
+    value,
+    labelKey: `enums.${enumKey}.${value}`,
+    tone,
+    sortOrder: index + 1,
+    isTerminal: terminal ?? false,
+    isActive: true,
+  }));
+}
+
+export const enumValueSeed: EnumValueMetadata[] = [
+  ...rows(EnumKey.SubmissionStatus, [
+    [SubmissionStatus.NotStarted, StatusTone.Neutral],
+    [SubmissionStatus.Preparing, StatusTone.Info],
+    [SubmissionStatus.AwaitingUserInformation, StatusTone.Warning],
+    [SubmissionStatus.AwaitingApproval, StatusTone.Warning],
+    [SubmissionStatus.ApprovedQueued, StatusTone.Primary],
+    [SubmissionStatus.Submitting, StatusTone.Info],
+    [SubmissionStatus.SubmittedAwaitingConfirmation, StatusTone.Info],
+    [SubmissionStatus.Confirmed, StatusTone.Success, true],
+    [SubmissionStatus.Failed, StatusTone.Danger, true],
+    [SubmissionStatus.ManualActionRequired, StatusTone.Warning],
+    [SubmissionStatus.OutcomeUnknown, StatusTone.Danger],
+    [SubmissionStatus.Cancelled, StatusTone.Neutral, true],
+  ]),
+  ...rows(EnumKey.OutcomeStatus, [
+    [OutcomeStatus.NoResponseYet, StatusTone.Neutral],
+    [OutcomeStatus.UnderReview, StatusTone.Info],
+    [OutcomeStatus.Assessment, StatusTone.Primary],
+    [OutcomeStatus.Interview, StatusTone.Primary],
+    [OutcomeStatus.OfferReceived, StatusTone.Success],
+    [OutcomeStatus.Admitted, StatusTone.Success],
+    [OutcomeStatus.ConditionallyAdmitted, StatusTone.Success],
+    [OutcomeStatus.Waitlisted, StatusTone.Warning],
+    [OutcomeStatus.Deferred, StatusTone.Warning],
+    [OutcomeStatus.Rejected, StatusTone.Danger, true],
+    [OutcomeStatus.OfferAccepted, StatusTone.Success, true],
+    [OutcomeStatus.OfferDeclined, StatusTone.Neutral, true],
+    [OutcomeStatus.Withdrawn, StatusTone.Neutral, true],
+    [OutcomeStatus.Closed, StatusTone.Neutral, true],
+  ]),
+  ...rows(EnumKey.SponsorshipEvidence, [
+    [SponsorshipEvidence.Stated, StatusTone.Success],
+    [SponsorshipEvidence.NotStated, StatusTone.Neutral],
+    [SponsorshipEvidence.Unverified, StatusTone.Warning],
+  ]),
+  ...rows(EnumKey.RequirementCheck, [
+    [RequirementCheck.Met, StatusTone.Success],
+    [RequirementCheck.NotMet, StatusTone.Danger],
+    [RequirementCheck.Unknown, StatusTone.Warning],
+  ]),
+  ...rows(EnumKey.WorkArrangement, [
+    [WorkArrangement.Remote, StatusTone.Primary],
+    [WorkArrangement.Hybrid, StatusTone.Info],
+    [WorkArrangement.Onsite, StatusTone.Neutral],
+    [WorkArrangement.NotStated, StatusTone.Neutral],
+  ]),
+  ...rows(EnumKey.ApplicationRoute, [
+    [ApplicationRoute.Email, StatusTone.Neutral],
+    [ApplicationRoute.AtsPortal, StatusTone.Neutral],
+    [ApplicationRoute.EmployerPortal, StatusTone.Neutral],
+    [ApplicationRoute.GovernmentPortal, StatusTone.Neutral],
+    [ApplicationRoute.GuidedManual, StatusTone.Warning],
+  ]),
+  ...rows(EnumKey.OpportunityType, [
+    [OpportunityType.Job, StatusTone.Neutral],
+    [OpportunityType.GovernmentJob, StatusTone.Neutral],
+    [OpportunityType.Masters, StatusTone.Neutral],
+    [OpportunityType.Phd, StatusTone.Neutral],
+    [OpportunityType.Scholarship, StatusTone.Neutral],
+    [OpportunityType.Internship, StatusTone.Neutral],
+  ]),
+  ...rows(EnumKey.ApprovalState, [
+    [ApprovalState.Pending, StatusTone.Warning],
+    [ApprovalState.Approved, StatusTone.Success, true],
+    [ApprovalState.Rejected, StatusTone.Neutral, true],
+    [ApprovalState.Expired, StatusTone.Neutral, true],
+  ]),
+  ...rows(EnumKey.ApplicationMode, [
+    [ApplicationMode.Off, StatusTone.Neutral],
+    [ApplicationMode.ApproveEach, StatusTone.Primary],
+    [ApplicationMode.Automatic, StatusTone.Success],
+  ]),
+  ...rows(EnumKey.TrackKind, [
+    [TrackKind.Remote, StatusTone.Neutral],
+    [TrackKind.InternationalSponsored, StatusTone.Neutral],
+    [TrackKind.BangladeshOnsite, StatusTone.Neutral],
+    [TrackKind.BangladeshGovernment, StatusTone.Neutral],
+    [TrackKind.Custom, StatusTone.Neutral],
+  ]),
+  ...rows(EnumKey.OpportunityDecision, [
+    [OpportunityDecision.Interested, StatusTone.Primary],
+    [OpportunityDecision.Saved, StatusTone.Primary],
+    [OpportunityDecision.Dismissed, StatusTone.Neutral],
+    [OpportunityDecision.NotEligible, StatusTone.Neutral],
+    [OpportunityDecision.Irrelevant, StatusTone.Neutral],
+  ]),
+];
