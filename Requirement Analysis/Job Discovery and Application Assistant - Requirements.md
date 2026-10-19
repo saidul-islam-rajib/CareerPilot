@@ -93,6 +93,7 @@ The user must be able to:
 - Set a maximum number of results per track; the initial requested default is five. Changing one track's count (for example, ten for remote jobs) must not change any other track's count (Section 48).
 - Choose whether a track includes only new opportunities or also still-open opportunities previously shown.
 - Set preferred and excluded locations, industries, employers, institutions, roles, job types, and keywords.
+- Set countries the user will not apply to, as defined in Section 5.3.
 - Set salary, funding, degree, academic, work authorization, and other eligibility filters where applicable.
 - Mark an opportunity as interested, saved, dismissed, applied, not eligible, or irrelevant, and optionally provide a reason.
 - Correct a match explanation or profile detail that produced a poor result.
@@ -100,6 +101,23 @@ The user must be able to:
 - Pause discovery and notifications without deleting their profile or history (pause options are defined in Section 47).
 - Choose an application mode separately for each recommendation track and supported submission method: manual approval for every application, or pre-authorized automatic application within user-defined rules.
 - Configure, review, pause, and revoke automatic-application rules, including their scope, eligibility filters, permitted materials, maximum application volume, any allowed fees, and expiry.
+
+### 5.3 Excluded countries
+
+Users may not want to, or may not be able to, apply for opportunities connected to certain countries.
+
+- The user must be able to keep a list of excluded countries, globally and per track, and add, change, or remove countries at any time.
+- For each excluded country, the user must be able to choose what it applies to:
+  - the country where the job or study program is located (always included);
+  - the country where the employer or institution is based or registered;
+  - remote roles that require working from, or being employed through, that country;
+  - travel or relocation to that country required by the role.
+- Opportunities matching an excluded country must never be applied to, in either application mode, and must not be recommended unless the user chooses to see them marked as "excluded country".
+- When the country is unclear (for example, an employer's base country is not stated, or a remote role does not say where the contract is), the opportunity must be treated as uncertain: it may be recommended with a warning but must not be applied to automatically.
+- Multi-country postings (for example, "Dubai or London") must be checked for each listed country. If any listed country is excluded, the user's chosen setting decides whether the posting is excluded or only the excluded locations are removed from the application.
+- An excluded country is a block and always wins over track settings, rules, and approvals (Section 38). If the user approves an application that a newly added country exclusion now blocks, the approval must be cancelled and the user notified.
+- Country names must be matched reliably, including alternative names, cities, and regions within a country.
+- Administrators may also set countries where applications are not allowed on the platform, for legal reasons (Section 53); these apply to all users and are shown to them.
 
 ## 6. Recommendation tracks
 
@@ -528,6 +546,7 @@ The product is ready for an initial release only when all of the following are d
 63. A Super Admin can read, create, update, and delete all user, opportunity, source, application, settings, template, and audit data, and see every dashboard figure in Section 53.3 with drill-down.
 64. Secrets are never shown in readable form to admins; admins cannot submit, send, or pay on a user's behalf without the user's authorization; every admin access and change is audited and visible to the affected user.
 65. The platform emergency stop halts automatic actions for all users, a group, a source, or a route, and affected users are notified.
+66. Opportunities connected to a user- or platform-excluded country are never applied to; unclear countries block automatic application; adding an exclusion cancels affected approvals.
 
 ## 17. Onboarding and initial setup
 
@@ -788,6 +807,7 @@ Before release, the product must be tested against representative scenarios, inc
 - Circular archiving for postings removed after recommendation or application, amended circulars, PDF and image circulars, and partial captures.
 - Compensation in other currencies, salary ranges, "negotiable" or missing salary, benefits filters, and salary-expectation questions.
 - Reconciliation of recommendation and application records after interrupted actions, failures, and restores from backup.
+- Excluded countries by job location, employer base, remote contract country, and required travel; multi-country postings; unclear countries; alternative country names; exclusions added after approval.
 - Admin role permissions, attempts by user accounts to reach the admin application, admin edits appearing in the user's change history, secret masking, admin bulk deletion, and the platform emergency stop.
 
 ### 25.2 Security and privacy testing
@@ -888,6 +908,7 @@ The product cannot guarantee that external portals, emails, or third-party data 
 - **Language quality**: Generated text passes spelling and grammar checks in the language of the application.
 - **Valid contacts**: Recipient email addresses and application links are valid, verified, and belong to the employer or institution.
 - **Within limits**: The application is within the rule's volume, fee, and source limits, and the deadline has not passed in the source time zone.
+- **Allowed country**: No country connected to the opportunity is excluded by the user or the platform (Section 5.3).
 - **No duplicates**: The user has not already applied to this opening.
 
 After submission, the system must check the confirmation evidence. If the evidence is missing or does not match the opportunity, the status must be "submitted but awaiting confirmation" or "outcome unknown", not "confirmed".
@@ -1625,13 +1646,14 @@ These are product choices not fully determined by the initial request. They shou
 55. Which admin roles besides Super Admin are needed at launch, and who may hold Super Admin access (Section 53.2)?
 56. For which purposes may admins view a user's sensitive data, and should users be notified each time an admin views it, or only when an admin changes it (Section 53.5)?
 57. Should the admin application be desktop-only, or also usable on mobile-sized screens?
+58. By default, should a country exclusion also cover the employer's base country, or only the job location (Section 5.3)?
 
 ## 55. Document control
 
 | Field | Value |
 | --- | --- |
 | Document | Job Discovery and Application Assistant – Requirements |
-| Version | 0.6 (draft) |
+| Version | 0.7 (draft) |
 | Owner | To be confirmed |
 | Status | Draft – pending review of Section 54 decisions |
 
@@ -1645,6 +1667,7 @@ These are product choices not fully determined by the initial request. They shou
 | 0.4 | 2026-10-20 | Consistency review. Fixed contradictions: single status model (20.2) replacing separate lists; result count does not limit automatic applications (6); pre-submission checks apply in both modes (27.4); submission-record immutability versus deletion rights (28.2); pre-recorded video upload versus one-way video interviews (27.3); urgent notifications and quiet hours (11.3). Added approve-each mode with automatic completion after approval (37); rule precedence (38); computed answers (39); confidentiality and third-party data (40); account security and automation safety (41); additional opportunity corner cases (42); standards and compliance (43); help and support (44); requirement consistency rules (45). Made WhatsApp and push required notification channels (36). Updated scope, onboarding, and MVP; acceptance criteria 42–53; more test scenarios; decisions 43–49. Decisions and document control renumbered to 46 and 47. |
 | 0.5 | 2026-10-20 | Added user data management with full add/update/delete, undo, and account deletion (46); pause options of any duration and scope (47); independent per-track settings (48); submission time windows (49); circular archive kept after source removal (50); compensation rules (51); tracking accuracy and integrity controls (52). Updated 5.2, 7.3, 11.2, 27.2, 28.2, 31, and 45 to refer to these. Acceptance criteria 54–61; more test scenarios; decisions 50–54. Decisions and document control renumbered to 53 and 54. |
 | 0.6 | 2026-10-20 | Added separate admin application with Super Admin role, platform dashboard, full management areas, required safeguards, and platform emergency stop (53). Updated terminology (3), scope (4.1), privacy (13), operational monitoring (24.1), precedence order (38), consistency rules (45), circular archive (50.3), and MVP (26.1). Acceptance criteria 62–65; more test scenarios; decisions 55–57. Decisions and document control renumbered to 54 and 55. |
+| 0.7 | 2026-10-20 | Added excluded countries (5.3) with a matching pre-submission check (27.4), acceptance criterion 66, test scenarios, and decision 58. |
 
 ### 55.2 Requirement traceability
 
