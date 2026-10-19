@@ -25,9 +25,10 @@ CareerPilot/
 │   ├── validation/               # Zod schemas shared by web and mobile
 │   └── config/                   # ESLint, TypeScript, Prettier presets
 ├── services/                     # Python (uv workspace)
-│   ├── core/                     # Domain modules, DB models, AI, adapters
+│   ├── core/                     # Domain modules (bounded contexts), platform, AI
+│   ├── plugins/                  # Sources, routes, channels, transformers, country packs
 │   ├── api/                      # User API and admin API entry points
-│   └── workers/                  # Temporal workflows and activities
+│   └── workers/                  # Temporal workflows and activities (one entry per task queue)
 ├── infra/
 │   ├── terraform/                # AWS infrastructure
 │   └── docker/                   # Dockerfiles, docker-compose for local
@@ -47,7 +48,7 @@ CareerPilot/
 
 | Pipeline | Runs on | Steps |
 |---|---|---|
-| Backend | PR + main | ruff, type check, unit tests, integration tests (testcontainers: Postgres, Redis, MinIO, Temporal), OpenAPI generation and drift check, Docker build, Trivy scan |
+| Backend | PR + main | ruff, type check, import-linter (module boundaries), unit tests, integration tests (testcontainers: Postgres, Redis, MinIO, Temporal), OpenAPI generation and drift check, Docker build, Trivy scan |
 | Web / admin | PR + main | lint, type check, Vitest, build, Playwright E2E against a preview stack, axe accessibility checks |
 | Mobile | PR + main | lint, type check, unit tests; EAS build on main; Maestro E2E on staging builds |
 | AI evals | PR when prompts, models, or AI code change | Run eval sets; block on score drop |
