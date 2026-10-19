@@ -96,7 +96,7 @@ flowchart LR
 | `tracking` | Interviews, assessments, offers, insights | 11.5, 34 |
 | `audit` | Append-only audit events, reconciliation | 24.3, 24.4, 52.3 |
 | `admin` | Admin dashboard queries, management actions, platform settings | 53 |
-| `ai` | All Claude calls, prompts, evals, cost tracking | [05-AI-Design.md](05-AI-Design.md) |
+| `ai` | All Claude calls, prompts, quality metrics, cost tracking | [05-AI-Design.md](05-AI-Design.md) |
 
 Rules for modules:
 - A module owns its tables; other modules use its service functions, not its tables directly.
