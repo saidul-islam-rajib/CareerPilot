@@ -1,0 +1,175 @@
+export const SubmissionStatus = {
+  NotStarted: 'not_started',
+  Preparing: 'preparing',
+  AwaitingUserInformation: 'awaiting_user_information',
+  AwaitingApproval: 'awaiting_approval',
+  ApprovedQueued: 'approved_queued',
+  Submitting: 'submitting',
+  SubmittedAwaitingConfirmation: 'submitted_awaiting_confirmation',
+  Confirmed: 'confirmed',
+  Failed: 'failed',
+  ManualActionRequired: 'manual_action_required',
+  OutcomeUnknown: 'outcome_unknown',
+  Cancelled: 'cancelled',
+} as const;
+export type SubmissionStatus = (typeof SubmissionStatus)[keyof typeof SubmissionStatus];
+
+export const OutcomeStatus = {
+  NoResponseYet: 'no_response_yet',
+  UnderReview: 'under_review',
+  Assessment: 'assessment',
+  Interview: 'interview',
+  OfferReceived: 'offer_received',
+  Admitted: 'admitted',
+  ConditionallyAdmitted: 'conditionally_admitted',
+  Waitlisted: 'waitlisted',
+  Deferred: 'deferred',
+  Rejected: 'rejected',
+  OfferAccepted: 'offer_accepted',
+  OfferDeclined: 'offer_declined',
+  Withdrawn: 'withdrawn',
+  Closed: 'closed',
+} as const;
+export type OutcomeStatus = (typeof OutcomeStatus)[keyof typeof OutcomeStatus];
+
+export const OpportunityDecision = {
+  Interested: 'interested',
+  Saved: 'saved',
+  Dismissed: 'dismissed',
+  NotEligible: 'not_eligible',
+  Irrelevant: 'irrelevant',
+} as const;
+export type OpportunityDecision = (typeof OpportunityDecision)[keyof typeof OpportunityDecision];
+
+export const TrackKind = {
+  Remote: 'remote',
+  InternationalSponsored: 'international_sponsored',
+  BangladeshOnsite: 'bangladesh_onsite',
+  BangladeshGovernment: 'bangladesh_government',
+  Custom: 'custom',
+} as const;
+export type TrackKind = (typeof TrackKind)[keyof typeof TrackKind];
+
+export const ApplicationMode = {
+  Off: 'off',
+  ApproveEach: 'approve_each',
+  Automatic: 'automatic',
+} as const;
+export type ApplicationMode = (typeof ApplicationMode)[keyof typeof ApplicationMode];
+
+export const ApplicationRoute = {
+  Email: 'email',
+  AtsPortal: 'ats_portal',
+  EmployerPortal: 'employer_portal',
+  GovernmentPortal: 'government_portal',
+  GuidedManual: 'guided_manual',
+} as const;
+export type ApplicationRoute = (typeof ApplicationRoute)[keyof typeof ApplicationRoute];
+
+export const OpportunityType = {
+  Job: 'job',
+  GovernmentJob: 'government_job',
+  Masters: 'masters',
+  Phd: 'phd',
+  Scholarship: 'scholarship',
+  Internship: 'internship',
+} as const;
+export type OpportunityType = (typeof OpportunityType)[keyof typeof OpportunityType];
+
+export const WorkArrangement = {
+  Remote: 'remote',
+  Hybrid: 'hybrid',
+  Onsite: 'onsite',
+  NotStated: 'not_stated',
+} as const;
+export type WorkArrangement = (typeof WorkArrangement)[keyof typeof WorkArrangement];
+
+export const SponsorshipEvidence = {
+  Stated: 'stated',
+  NotStated: 'not_stated',
+  Unverified: 'unverified',
+} as const;
+export type SponsorshipEvidence = (typeof SponsorshipEvidence)[keyof typeof SponsorshipEvidence];
+
+export const RequirementCheck = {
+  Met: 'met',
+  NotMet: 'not_met',
+  Unknown: 'unknown',
+} as const;
+export type RequirementCheck = (typeof RequirementCheck)[keyof typeof RequirementCheck];
+
+export const ApprovalState = {
+  Pending: 'pending',
+  Approved: 'approved',
+  Rejected: 'rejected',
+  Expired: 'expired',
+} as const;
+export type ApprovalState = (typeof ApprovalState)[keyof typeof ApprovalState];
+
+export const PauseScope = {
+  All: 'all',
+  Track: 'track',
+} as const;
+export type PauseScope = (typeof PauseScope)[keyof typeof PauseScope];
+
+export const PauseDuration = {
+  Days: 'days',
+  Months: 'months',
+  Years: 'years',
+  Indefinite: 'indefinite',
+  Until: 'until',
+} as const;
+export type PauseDuration = (typeof PauseDuration)[keyof typeof PauseDuration];
+
+export const SubmissionWindowKind = {
+  AsSoonAsReady: 'as_soon_as_ready',
+  DailyWindow: 'daily_window',
+} as const;
+export type SubmissionWindowKind = (typeof SubmissionWindowKind)[keyof typeof SubmissionWindowKind];
+
+export const ContactKind = {
+  Email: 'email',
+  Phone: 'phone',
+} as const;
+export type ContactKind = (typeof ContactKind)[keyof typeof ContactKind];
+
+export const TimelineActor = {
+  System: 'system',
+  User: 'user',
+  Employer: 'employer',
+  Admin: 'admin',
+} as const;
+export type TimelineActor = (typeof TimelineActor)[keyof typeof TimelineActor];
+
+export const StatusTone = {
+  Neutral: 'neutral',
+  Info: 'info',
+  Success: 'success',
+  Warning: 'warning',
+  Danger: 'danger',
+  Primary: 'primary',
+} as const;
+export type StatusTone = (typeof StatusTone)[keyof typeof StatusTone];
+
+export const EnumKey = {
+  SubmissionStatus: 'submission_status',
+  OutcomeStatus: 'outcome_status',
+  OpportunityDecision: 'opportunity_decision',
+  TrackKind: 'track_kind',
+  ApplicationMode: 'application_mode',
+  ApplicationRoute: 'application_route',
+  OpportunityType: 'opportunity_type',
+  WorkArrangement: 'work_arrangement',
+  SponsorshipEvidence: 'sponsorship_evidence',
+  RequirementCheck: 'requirement_check',
+  ApprovalState: 'approval_state',
+} as const;
+export type EnumKey = (typeof EnumKey)[keyof typeof EnumKey];
+
+export function enumValues<T extends Record<string, string>>(enumObject: T): Array<T[keyof T]> {
+  return Object.values(enumObject) as Array<T[keyof T]>;
+}
+
+export function isEnumValue<T extends Record<string, string>>(enumObject: T, value: unknown): value is T[keyof T] {
+  return typeof value === 'string' && (Object.values(enumObject) as string[]).includes(value);
+}
