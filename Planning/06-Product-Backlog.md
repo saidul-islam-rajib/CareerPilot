@@ -6,7 +6,7 @@ Platforms: **B** = backend, **AI** = AI tasks, **W** = user web app, **M** = mob
 
 | ID | Epic | Requirement sections | Platforms | Increment |
 |---|---|---|---|---|
-| E01 | Foundation: repo, CI/CD, environments, auth, design system, API skeleton, observability, audit base | 13, 15, 41, 43, 53.1 | B W M A | 0 |
+| E01 | Foundation: repo, CI/CD, environments, auth, design system (templates, three themes, credits and licences pages), API skeleton, observability, audit base | 13, 15, 41, 43, 53.1 | B W M A | 0 |
 | E02 | Onboarding and profile: sign-up, guided onboarding, profile CRUD, résumé import, change history, undo | 5.1, 17, 19.3, 46.1 | B AI W M | 1 |
 | E03 | Documents: library, versions, validation, conversion, photo/signature resizing | 19, 32.2 | B W M | 1 |
 | E04 | Tracks and preferences: ten tracks, per-track settings, filters, excluded countries, compensation rules | 5.2, 5.3, 6, 48, 51 | B W M | 1 |
@@ -22,7 +22,7 @@ Platforms: **B** = backend, **AI** = AI tasks, **W** = user web app, **M** = mob
 | E14 | Bangladesh: government circulars, grades, age rules, stages, fees, applicant copies, Bangla profile data, local portals | 8.4, 35 | B AI W M | 4 |
 | E15 | Students and academics: programs, tests and scores, credentials, referees, supervisor outreach, university portals, decisions, after-admission checklist | 9, 33 | B AI W M | 4 |
 | E16 | After applying: inbox and calendar sync, assessments, interviews, offers, rejections, contacts, insights | 11.4, 11.5, 34 | B AI W M | 5 |
-| E17 | Admin application: dashboard, management areas, roles, view-as-user, platform settings and stop | 24, 53 | B A | 1 (basic), 5 (full) |
+| E17 | Admin application: dashboard, management areas, roles, view-as-user, platform settings (including theme selection with preview) and stop | 24, 53 | B A | 1 (basic), 5 (full) |
 | E18 | Privacy and account: data export, account deletion, confidentiality, consent, third-party data, minors | 13, 40, 46.2 | B W M A | 1 (basic), 5 (full) |
 | E19 | Fees and payments tracking: rules, records, receipts, uncertain payments | 10.10 | B W M | 5 |
 | E20 | Hardening and launch: security and accessibility (WCAG 2.2 AA) review, beta, Play Store release, acceptance evidence | 14, 15, 25, 43 | All | 5 |

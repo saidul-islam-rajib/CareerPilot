@@ -24,7 +24,7 @@ CareerPilot/
 │   └── mobile/                  # User mobile app (Expo: Android + iOS)
 ├── packages/                    # Shared TypeScript packages
 │   ├── api-client/              # Generated from OpenAPI
-│   ├── ui-tokens/               # Design tokens (light theme)
+│   ├── ui-tokens/               # Theme tokens: Sober (default), Horizon, Orchid
 │   ├── ui-web/                  # Web components (web + admin)
 │   ├── ui-native/               # Mobile components
 │   ├── media-viewer/            # Shared image/document viewer logic (zoom, pan, rotate)

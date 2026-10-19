@@ -11,7 +11,7 @@
 | Text size | Respects system font scaling up to 200% without broken layouts |
 | Network | Works on slow 3G/4G; retries; offline viewing (requirements §53.7) |
 | App size | Target under 30 MB download for Android (App Bundle splits per device) |
-| Theme and language | Light theme, English (v1) |
+| Theme and language | Active light theme chosen by admin (Sober default, Horizon, Orchid), applied at launch and on change; English (v1) |
 
 ## 2. Build and release pipeline
 
@@ -37,7 +37,7 @@ Policies change; the DevOps/Release and Compliance agents re-check current Googl
 | 3 | Target API level | Build with the target Android API level Google currently requires for new apps and updates |
 | 4 | App format and signing | Android App Bundle (AAB); Play App Signing enabled; upload key stored safely (EAS credentials or secure vault) |
 | 5 | Package name | Final reverse-domain name chosen once (for example `com.<company>.careerpilot`); can't be changed later |
-| 6 | Store listing | App name, short and full description, 512 × 512 icon, 1024 × 500 feature graphic, phone and tablet screenshots, contact email, website |
+| 6 | Store listing | App name, short and full description, 512 × 512 icon, 1024 × 500 feature graphic, phone and tablet screenshots, contact email, website; developer credit "Team Sober" (https://team-sober.com/) |
 | 7 | Privacy policy URL | Public page describing data use, AI providers, admin access, retention (requirements §13, §40, §53.5) |
 | 8 | Data safety form | Declares data collected (account, profile, documents, contact info, IP address, approximate location, device and app information, sign-in history, push token), purposes (account security, fraud prevention, app functionality), sharing (employers, AI provider, messaging), encryption, deletion. Precise location and contacts are declared only if a feature requesting them is added |
 | 8a | Permissions disclosure | Runtime permission prompts only with an in-app explanation first; no silent or background collection of location or contacts (Google Play user-data policy) |

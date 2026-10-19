@@ -68,7 +68,8 @@ Each choice lists the reason and the main alternative considered. Exact versions
 |---|---|---|
 | Framework | **Next.js (App Router)** | Server rendering, routing, mature ecosystem |
 | Styling | **Tailwind CSS** | Fast, consistent, shares tokens with mobile (NativeWind) |
-| Components | **shadcn/ui (Radix based)** | Accessible primitives, owned in the repo |
+| Components and templates | **shadcn/ui (Radix based) + official shadcn blocks** (sidebar, sign-in, dashboard, data table) | Most-used free (MIT) React template set; accessible; code copied into the repo so it can be themed; CSS-variable theming powers the three themes |
+| Icons | **Lucide** | Default shadcn icon set, also on mobile |
 | Tables (admin) | **TanStack Table** | Large filterable, sortable tables |
 | Charts (admin) | **Recharts** or similar | Dashboard figures |
 | i18n | **next-intl** | English/Bangla, locale routing |
@@ -82,6 +83,7 @@ The admin app is a separate Next.js app with its own domain and deployment (requ
 | Framework | **React Native + Expo** | One TypeScript codebase for Android and iOS, shares API client, validation, and strings with web |
 | Navigation | **Expo Router** | File-based routing, deep links from notifications |
 | Styling | **NativeWind** | Tailwind classes on mobile, same design tokens |
+| Components and template | **React Native Reusables** (shadcn/ui for React Native, Expo starter) | Same components and theme variables as web, MIT licensed, accessible primitives |
 | Push | **expo-notifications** (Expo Push → FCM/APNs) | Approve/answer actions from notifications |
 | Offline | **expo-sqlite** + TanStack Query persistence | Offline viewing of records (requirements Section 53.7) |
 | Secure storage | **expo-secure-store** | Tokens on device |

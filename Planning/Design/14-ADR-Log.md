@@ -27,5 +27,6 @@ Each decision is recorded as an ADR. Full ADR files go in `docs/adr/NNNN-title.m
 | 0021 | Configuration-first: every default in `config/defaults` (schema-validated), environment overrides, secrets manager, admin runtime settings, feature flags; top-level `config/` folder | Constants in code | Behaviour changes without releases; config schema must be maintained | Accepted |
 | 0022 | No physical deletes: audit and soft-delete columns on every table, no `DELETE` privilege, permanent deletion by anonymization and crypto-shredding | Hard delete with purge jobs | Full history and restore; erasure still guaranteed; tables grow (partitioning and archival handle it) | Accepted |
 | 0023 | Statuses as code enums stored as `text` + `CHECK`, display metadata in `enum_values` | PostgreSQL enum types; free text | Safe to extend, dynamic labels; migration needed for new values | Accepted |
+| 0024 | UI templates: shadcn/ui + official blocks (web, admin), React Native Reusables (mobile); three admin-selected light themes as variable sets | Hand-built design system; paid admin templates | Fast, popular, free (MIT), consistent across platforms; component code owned in the repo | Accepted |
 
 All ADRs are accepted (or changed) by the Product Owner and tech lead during Sprint 0.

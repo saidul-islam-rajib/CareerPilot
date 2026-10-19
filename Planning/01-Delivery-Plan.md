@@ -95,7 +95,7 @@ Epic details and requirement mapping are in [06-Product-Backlog.md](06-Product-B
 5. CI pipelines for backend, web, admin, mobile; deploy dev environment with Terraform.
 6. Keycloak realms for users and admins; sign-in working on web, mobile, and admin.
 7. API skeleton (user API and admin API), OpenAPI generation, typed TypeScript client.
-8. Design system: light-theme tokens, base components for web and mobile, English string catalogs ([16-UX-Design.md](16-UX-Design.md)).
+8. Design system: the three theme token sets (Sober, Horizon, Orchid), shadcn/ui blocks for web and admin, React Native Reusables for mobile, credits and licences pages, English string catalogs ([16-UX-Design.md](16-UX-Design.md)).
 9. Observability (OpenTelemetry, Grafana, Sentry for mobile crashes) and audit-log foundation ([11-Observability.md](11-Observability.md)).
 10. Resolve the blocking open decisions in [09-Risks-and-Decisions.md](09-Risks-and-Decisions.md).
 
