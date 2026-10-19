@@ -27,7 +27,7 @@
 | Password reset | Link expiry, single use, sessions revoked after reset |
 | Mobile and web auth logic | Token storage wrappers, biometric unlock flow logic, BFF cookie/session handling |
 | Admin | Realm separation, role permissions |
-| Account lifecycle | Suspend/reactivate, deletion request, cancellation in grace period, purge logic |
+| Account lifecycle | Suspend/reactivate, deletion request, cancellation in grace period, anonymization logic, soft delete and restore, audit columns set automatically |
 
 ## 3. Tools and conventions
 

@@ -39,7 +39,7 @@ Detailed schemas are designed per sprint. Core entities:
 | After applying | `assessment`, `interview`, `offer`, `academic_decision`, `follow_up_task`, `contact_person` |
 | Government | `govt_stage`, `admit_card`, `fee_payment` |
 | Notifications | `notification`, `delivery_attempt`, `digest`, `report` |
-| Operations | `audit_event`, `reconciliation_run`, `reconciliation_issue`, `support_ticket`, `incident`, `platform_setting`, `feature_flag` |
+| Operations | `audit_event`, `reconciliation_run`, `reconciliation_issue`, `support_ticket`, `incident`, `platform_setting`, `feature_flag`, `enum_value` |
 
 ## 3. Data rules
 
@@ -47,7 +47,9 @@ Detailed schemas are designed per sprint. Core entities:
 - **Immutable records.** `application_event`, `evidence`, `submitted_file`, `opportunity_version`, and `audit_event` are insert-only. Corrections are new rows (requirements Section 28.2).
 - **Status model.** `application.submission_status` and `application.outcome_status` use the enum from requirements Section 20.2 only.
 - **Change history.** All user-editable data writes a history row (old value, new value, who, when) to support undo and "changed by administrator" (requirements Sections 46.1 and 53.5).
-- **Soft delete, then hard delete.** Deleted items go to recently deleted, then are purged after the configured period; account deletion purges everything except legally required records (requirements Section 46.2).
+- **Audit columns on every table.** `created_at/by/by_type`, `updated_at/by/by_type`, `deleted_at/by/by_type`, `delete_reason`, and `version`, set automatically ([19-Development-Rules.md](19-Development-Rules.md) §5).
+- **No physical delete.** Deleting sets `deleted_at` (recently deleted, restorable); permanent deletion and account deletion irreversibly anonymize the rows and crypto-shred the user's files; the database roles have no `DELETE` privilege (requirements Sections 15 and 46).
+- **Statuses are enums.** Values from code enums with `CHECK` constraints; labels, colours, and order in the `enum_values` table ([19-Development-Rules.md](19-Development-Rules.md) §4).
 - **Money and dates.** Amounts are stored as integer minor units plus currency code. Timestamps are stored in UTC with the original time zone kept separately; date-only deadlines stay date-only (requirements Section 21.1).
 - **Original values kept.** Grades, scores, salaries, and dates keep their original scale and text alongside any converted value (requirements Section 15, localization).
 - **IDs.** UUIDv7 primary keys (sortable by time, safe to expose).

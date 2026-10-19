@@ -9,6 +9,8 @@ Every database table has seed data, so the whole platform can be explored and te
 - **Deterministic.** Generated data uses a fixed random seed, so every developer and agent gets the same data and tests are repeatable.
 - **Realistic.** Names, CVs, postings, and circulars look real (including Bangla circular PDFs and scanned images) but are synthetic; no real person's data except the accounts in §3.
 - **Safe.** Seeds that create users or credentials refuse to run when `APP_ENV` is `staging` or `production` (only reference data runs there).
+- **Audited like real data.** Seed rows fill all audit columns with the `system` actor (`created_by_type = system`); `demo` includes soft-deleted and anonymized rows so restore and recently-deleted screens can be tried.
+- **Enum metadata seeded.** Every enum value has an `enum_values` row (label key, colour token, order) in `base`; defaults come from `config/defaults`, not from seed code.
 - **Owned with the code.** Each bounded context keeps its seed factories in `services/core/src/careerpilot/<context>/seeds/`; shared files (PDFs, images, signatures, photos) live in `seeds/files/`.
 
 ## 2. Seed profiles

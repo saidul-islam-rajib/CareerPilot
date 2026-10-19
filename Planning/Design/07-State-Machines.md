@@ -162,7 +162,7 @@ stateDiagram-v2
   Suspended --> Active: admin reactivates
   Active --> PendingDeletion: user requests deletion
   PendingDeletion --> Active: user cancels in grace period
-  PendingDeletion --> Deleted: grace period ends, purge done
+  PendingDeletion --> Deleted: grace period ends, data anonymized
   Deleted --> [*]
 ```
 

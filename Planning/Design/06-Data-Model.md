@@ -10,12 +10,12 @@ Store choices are in [../04-Data-and-Storage.md](../04-Data-and-Storage.md). Thi
 | Primary keys | `id uuid` (UUIDv7, time-ordered) |
 | Tenancy | Every table has `tenant_id uuid not null` (single default tenant in v1) |
 | Ownership | User-owned tables have `user_id uuid not null`; row-level security on `(tenant_id, user_id)` |
-| Audit columns | `created_at`, `created_by`, `created_by_type` (`user` / `admin` / `system`), `updated_at`, `updated_by`, `updated_by_type` |
+| Audit columns | On every table, set automatically: `created_at`, `created_by`, `created_by_type` (`user` / `admin` / `system` / `agent`), `updated_at`, `updated_by`, `updated_by_type`, `deleted_at`, `deleted_by`, `deleted_by_type`, `delete_reason` ([../19-Development-Rules.md](../19-Development-Rules.md) §5) |
 | Concurrency | `version int` for optimistic locking (API uses ETag / If-Match) |
-| Soft delete | `deleted_at` + purge job; immutable tables don't soft delete (privacy deletion uses redaction) |
+| Deletion | Logical only: `deleted_at` set, restorable; no `DELETE` privilege for application roles; partial unique indexes `WHERE deleted_at IS NULL`; permanent deletion = irreversible anonymization + crypto-shredding of files |
 | Time | `timestamptz` in UTC; original time zone in a separate `*_tz` column; date-only values as `date` |
 | Money | `amount_minor bigint` + `currency char(3)` (+ `period` where relevant) |
-| Enums | PostgreSQL enums only for fixed models (status model); otherwise lookup tables or metadata |
+| Enums | Every status/type is a code enum (`StrEnum`) stored as `text` with a generated `CHECK` constraint; labels, colours, order, and activation in `enum_values` |
 | Flexible attributes | `attributes jsonb` validated against a versioned JSON Schema (`schema_key`, `schema_version`) |
 | Sensitive columns | Encrypted at field level (`*_enc bytea`) with key reference; searchable via blind index where needed |
 | Cross-context references | By ID only; no foreign keys across schemas (keeps contexts separable) |
@@ -321,5 +321,5 @@ erDiagram
 | Read models | Materialized views / projection tables for dashboards and admin metrics, refreshed by events or schedules, served from the read replica |
 | Search | PostgreSQL full-text (English + simple Bangla configuration) in v1; OpenSearch projection later |
 | Migrations | Alembic, expand-and-contract (add → backfill → switch → remove) so deploys never need downtime |
-| Retention | Purge and redaction jobs per data class; Object Lock retention aligned with retention policy |
+| Retention | Anonymization jobs per data class (no physical deletes); Object Lock retention aligned with retention policy |
 | Archival | Old partitions moved to cheaper storage (S3, Parquet) for analytics after the retention period, if retained |
