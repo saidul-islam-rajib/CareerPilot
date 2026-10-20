@@ -1,0 +1,33 @@
+@theme inline {
+  --color-background: var(--cp-background);
+  --color-surface: var(--cp-surface);
+  --color-card: var(--cp-card);
+  --color-border: var(--cp-border);
+  --color-input: var(--cp-input);
+  --color-foreground: var(--cp-text);
+  --color-muted: var(--cp-text-muted);
+  --color-primary: var(--cp-primary);
+  --color-primary-hover: var(--cp-primary-hover);
+  --color-primary-foreground: var(--cp-primary-foreground);
+  --color-primary-subtle: var(--cp-primary-subtle);
+  --color-accent: var(--cp-accent);
+  --color-accent-foreground: var(--cp-accent-foreground);
+  --color-success: var(--cp-success);
+  --color-success-subtle: var(--cp-success-subtle);
+  --color-warning: var(--cp-warning);
+  --color-warning-subtle: var(--cp-warning-subtle);
+  --color-danger: var(--cp-danger);
+  --color-danger-subtle: var(--cp-danger-subtle);
+  --color-info: var(--cp-info);
+  --color-info-subtle: var(--cp-info-subtle);
+  --color-neutral: var(--cp-neutral);
+  --color-neutral-subtle: var(--cp-neutral-subtle);
+  --color-overlay: var(--cp-overlay);
+  --color-focus: var(--cp-focus-ring);
+  --radius-control: var(--cp-radius-control);
+  --radius-card: var(--cp-radius-card);
+  --radius-pill: var(--cp-radius-pill);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+@source "./";
