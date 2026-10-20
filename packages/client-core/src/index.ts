@@ -2,6 +2,7 @@ export * from './api/create-api';
 export * from './config/client-config';
 export * from './config/public-config';
 export * from './format/use-format';
+export * from './hooks/pause-options';
 export * from './hooks/track-title';
 export * from './hooks/use-applications';
 export * from './hooks/use-approvals';

@@ -1,25 +1,8 @@
 import { useState } from 'react';
-import { useFormat, usePause, usePublicConfig, useSettings, useT } from '@careerpilot/client-core';
+import { pauseOptionKey, pauseOptionLabel, useFormat, usePause, usePublicConfig, useSettings, useT } from '@careerpilot/client-core';
 import { PauseCircle, PlayCircle } from 'lucide-react-native';
-import { PauseDuration, StatusTone } from '@careerpilot/domain-ui-logic';
-import type { PauseOption } from '@careerpilot/api-client';
-import type { Translate } from '@careerpilot/i18n';
+import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Banner, Button, ButtonVariant, Card, ErrorState, LoadingState, Screen, Segmented, Text, TextTone } from '@/ui';
-
-export function pauseOptionKey(option: PauseOption): string {
-  return `${option.duration}:${option.amount ?? ''}`;
-}
-
-export function pauseOptionLabel(option: PauseOption, t: Translate): string {
-  const labels: Record<PauseDuration, string> = {
-    days: t('settings.pauseDays', { count: option.amount ?? 0 }),
-    months: t('settings.pauseMonths', { count: option.amount ?? 0 }),
-    years: t('settings.pauseYears', { count: option.amount ?? 0 }),
-    indefinite: t('settings.pauseIndefinite'),
-    until: t('settings.pauseIndefinite'),
-  };
-  return labels[option.duration];
-}
 
 export function PauseScreen() {
   const t = useT();
