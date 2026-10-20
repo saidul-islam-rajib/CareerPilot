@@ -149,7 +149,7 @@ The profile is the centre of the product. Design goals: complete, fast to edit, 
 |---|---|---|
 | User web app | shadcn/ui + official blocks (sidebar layout, sign-in/sign-up, dashboard, data table, forms, charts) | MIT; components are copied into `packages/ui-web` and themed by variables |
 | Admin app | shadcn/ui dashboard blocks + TanStack Table data-table pattern | Same package as web; dense layouts for tables |
-| Mobile app | React Native Reusables (shadcn/ui for React Native) Expo starter with NativeWind | Same variable names as web, so one token file themes both |
+| Mobile app | Components following React Native Reusables (shadcn/ui for React Native), themed by a typed provider over `packages/ui-tokens` (ADR 0025) | Same token names as web, so one token file themes both |
 
 New screens start from the closest template block; custom components are added only when no block fits, and they use the same variables.
 
