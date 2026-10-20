@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ApprovalDetail } from '@careerpilot/api-client';
-import { queryKeys } from '@/core/query/query-keys';
-import { useApi } from '@/core/services/app-services';
+import { queryKeys } from '../query/query-keys';
+import { useApi } from '../services/app-services';
 
 export function useApprovals() {
   const api = useApi();

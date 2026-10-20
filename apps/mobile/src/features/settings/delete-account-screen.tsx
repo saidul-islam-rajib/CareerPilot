@@ -1,11 +1,8 @@
 import { useState } from 'react';
+import { useAccountDeletion, useFormat, usePublicConfig, useT } from '@careerpilot/client-core';
 import { AlertTriangle, CalendarX } from 'lucide-react-native';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
-import { usePublicConfig } from '@/core/config/public-config';
-import { useFormat } from '@/core/format/use-format';
-import { useT } from '@/core/i18n/i18n';
 import { Banner, Button, ButtonVariant, Card, Screen, TextField } from '@/ui';
-import { useAccountDeletion } from './use-settings';
 
 export function DeleteAccountScreen() {
   const t = useT();

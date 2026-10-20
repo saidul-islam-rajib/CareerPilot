@@ -1,9 +1,8 @@
 import { View } from 'react-native';
+import { usePublicConfig, useT } from '@careerpilot/client-core';
+import { getAppVersion } from '@/core/config/expo-config';
 import * as WebBrowser from 'expo-web-browser';
 import { ExternalLink } from 'lucide-react-native';
-import { usePublicConfig } from '@/core/config/public-config';
-import { useT } from '@/core/i18n/i18n';
-import { useServices } from '@/core/services/app-services';
 import { useTheme } from '@/core/theme/theme';
 import { BrandLockup, Card, Divider, ListRow, Screen, TeamSoberCredit, Text, TextTone } from '@/ui';
 
@@ -11,7 +10,6 @@ export function AboutScreen() {
   const t = useT();
   const theme = useTheme();
   const { config } = usePublicConfig();
-  const services = useServices();
   return (
     <Screen testID="about-screen">
       <Card>
@@ -20,7 +18,7 @@ export function AboutScreen() {
           <Text tone={TextTone.Muted} align="center">
             {t('app.tagline')}
           </Text>
-          <Text tone={TextTone.Muted}>{t('settings.version', { version: services.config.mobile.version })}</Text>
+          <Text tone={TextTone.Muted}>{t('settings.version', { version: getAppVersion() })}</Text>
         </View>
       </Card>
       <Card>

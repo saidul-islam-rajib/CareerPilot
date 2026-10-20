@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
+import { SessionStatus, createAppServices, useSession, useT } from '@careerpilot/client-core';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { getAppConfig } from '@/core/config/expo-config';
-import { useT } from '@/core/i18n/i18n';
 import { AppProviders } from '@/core/providers/app-providers';
-import { createAppServices } from '@/core/services/app-services';
-import { SessionStatus, useSession } from '@/core/session/session';
 import { secureStore } from '@/core/storage/key-value-store';
 import { useTheme } from '@/core/theme/theme';
 

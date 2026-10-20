@@ -1,15 +1,12 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useDecide, useFormat, useOpportunity, usePrepareApplication, usePublicConfig, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
 import { AlertTriangle, Archive, Bookmark, Check, CircleHelp, Minus, Plus, Send, X, type LucideIcon } from 'lucide-react-native';
 import { EnumKey, OpportunityDecision, RequirementCheck, StatusTone } from '@careerpilot/domain-ui-logic';
-import { usePublicConfig } from '@/core/config/public-config';
-import { useFormat } from '@/core/format/use-format';
-import { useT } from '@/core/i18n/i18n';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { Badge, Banner, Button, ButtonVariant, Card, EnumBadge, ErrorState, Icon, IconSize, ListRow, LoadingState, Row, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
 import { matchTone } from './opportunity-card';
-import { useDecide, useOpportunity, usePrepareApplication } from './use-opportunity';
 
 const CHECK_ICONS: Record<RequirementCheck, LucideIcon> = {
   met: Check,

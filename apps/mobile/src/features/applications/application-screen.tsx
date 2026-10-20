@@ -1,13 +1,11 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useApplication, useFormat, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
 import { Archive, FileText, Mail, ShieldCheck } from 'lucide-react-native';
 import { EnumKey, TimelineActor } from '@careerpilot/domain-ui-logic';
-import { useFormat } from '@/core/format/use-format';
-import { useT } from '@/core/i18n/i18n';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { Card, Divider, EmptyState, EnumBadge, ErrorState, ListRow, LoadingState, Row, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
-import { useApplication } from './use-applications';
 
 const KILOBYTE = 1024;
 

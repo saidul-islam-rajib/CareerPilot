@@ -1,9 +1,8 @@
 import { Image } from 'expo-image';
+import { usePublicConfig, useT } from '@careerpilot/client-core';
 import * as WebBrowser from 'expo-web-browser';
 import { Pressable, View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
-import { usePublicConfig } from '@/core/config/public-config';
-import { useT } from '@/core/i18n/i18n';
 import { useTheme } from '@/core/theme/theme';
 import { Text, TextTone, TextVariant } from './text';
 

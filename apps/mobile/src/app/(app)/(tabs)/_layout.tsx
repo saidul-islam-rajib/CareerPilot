@@ -1,11 +1,9 @@
 import { Tabs } from 'expo-router';
+import { queryKeys, useApi, useT } from '@careerpilot/client-core';
 import type { ColorValue } from 'react-native';
 import { Briefcase, CircleCheckBig, House, Menu, UserRound, type LucideIcon } from 'lucide-react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useT } from '@/core/i18n/i18n';
-import { queryKeys } from '@/core/query/query-keys';
-import { useApi } from '@/core/services/app-services';
 import { useTheme } from '@/core/theme/theme';
 
 function tabIcon(icon: LucideIcon) {

@@ -1,13 +1,11 @@
 import { useRouter } from 'expo-router';
+import { useApprovals, useFormat, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
 import { Clock } from 'lucide-react-native';
-import { useFormat } from '@/core/format/use-format';
-import { useT } from '@/core/i18n/i18n';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { OpportunityCard } from '@/features/opportunities/opportunity-card';
 import { EmptyState, ErrorState, Icon, IconSize, LoadingState, Row, Screen, Text, TextTone, TextVariant } from '@/ui';
-import { useApprovals } from './use-approvals';
 
 export function ApprovalsScreen() {
   const t = useT();

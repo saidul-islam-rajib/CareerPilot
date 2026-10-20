@@ -8,7 +8,7 @@ import {
   type CareerPilotApi,
   type Clock,
 } from '@careerpilot/api-client';
-import { ApiMode, publicConfigFromDefaults, type AppConfig } from '../config/app-config';
+import { ApiMode, publicConfigFromDefaults, type AppConfig } from '../config/client-config';
 
 export interface ApiDependencies {
   config: AppConfig;

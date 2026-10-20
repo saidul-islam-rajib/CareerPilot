@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/core/query/query-keys';
-import { useApi } from '@/core/services/app-services';
+import { queryKeys } from '../query/query-keys';
+import { useApi } from '../services/app-services';
 
 export function useDashboard() {
   const api = useApi();

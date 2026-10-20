@@ -6,6 +6,8 @@ configure({ asyncUtilTimeout: 5000 });
 jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
 jest.mock('react-native-worklets', () => require('react-native-worklets/lib/module/mock'));
 
+jest.mock('expo-constants', () => ({ __esModule: true, default: { expoConfig: { version: '1.0.0', extra: {} } } }));
+
 jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn(() => Promise.resolve()) }));
 
 jest.mock('expo-secure-store', () => {

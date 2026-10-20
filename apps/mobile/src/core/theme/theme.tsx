@@ -1,4 +1,5 @@
 import { createContext, useContext, useMemo, type PropsWithChildren } from 'react';
+import { useActiveTheme } from '@careerpilot/client-core';
 import { StyleSheet } from 'react-native';
 import {
   borderWidth,
@@ -58,4 +59,8 @@ export function makeStyles<T extends StyleSheet.NamedStyles<T>>(factory: (theme:
     const theme = useTheme();
     return useMemo(() => StyleSheet.create(factory(theme)), [theme]);
   };
+}
+
+export function ThemeFromConfig({ children }: PropsWithChildren) {
+  return <ThemeProvider theme={useActiveTheme()}>{children}</ThemeProvider>;
 }

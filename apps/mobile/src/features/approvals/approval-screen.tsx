@@ -1,16 +1,14 @@
 import { useState } from 'react';
+import { useApproval, useApprovalActions, useFormat, useT } from '@careerpilot/client-core';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View } from 'react-native';
 import { CheckCircle2, FileText, ShieldCheck, XCircle } from 'lucide-react-native';
 import { ApprovalState, EnumKey, StatusTone } from '@careerpilot/domain-ui-logic';
-import { useFormat } from '@/core/format/use-format';
-import { useT } from '@/core/i18n/i18n';
 import { useTheme } from '@/core/theme/theme';
 import { OpportunityCard } from '@/features/opportunities/opportunity-card';
 import { Routes } from '@/core/navigation/routes';
 import { Banner, Button, ButtonVariant, Card, Divider, EnumBadge, ErrorState, ListRow, LoadingState, Row, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
 import { AnswerEditor } from './answer-editor';
-import { useApproval, useApprovalActions } from './use-approvals';
 
 export function ApprovalScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

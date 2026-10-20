@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Contact, Profile } from '@careerpilot/api-client';
 import { moveItem } from '@careerpilot/domain-ui-logic';
-import { queryKeys } from '@/core/query/query-keys';
-import { useApi } from '@/core/services/app-services';
+import { queryKeys } from '../query/query-keys';
+import { useApi } from '../services/app-services';
 
 export function useProfile() {
   const api = useApi();

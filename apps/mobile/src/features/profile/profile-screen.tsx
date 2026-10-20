@@ -1,11 +1,10 @@
 import { useRouter } from 'expo-router';
+import { sortContacts, useFormat, useProfile, useReorderContacts, useSetPrimaryContact, useT } from '@careerpilot/client-core';
 import { Image } from 'expo-image';
 import { Pressable, View } from 'react-native';
 import { BadgeCheck, FileText, GraduationCap, Mail, Phone, Star } from 'lucide-react-native';
 import { ContactKind, StatusTone } from '@careerpilot/domain-ui-logic';
 import type { Contact } from '@careerpilot/api-client';
-import { useFormat } from '@/core/format/use-format';
-import { useT } from '@/core/i18n/i18n';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import {
@@ -26,7 +25,6 @@ import {
   TextTone,
   TextVariant,
 } from '@/ui';
-import { sortContacts, useProfile, useReorderContacts, useSetPrimaryContact } from './use-profile';
 
 const PERCENT = 100;
 

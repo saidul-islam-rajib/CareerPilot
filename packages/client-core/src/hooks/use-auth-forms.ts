@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { ApiErrorCode, isApiError, type Session } from '@careerpilot/api-client';
 import { createSchemas, validate, type FieldErrors, type RegisterInput, type SignInInput } from '@careerpilot/validation';
-import { usePublicConfig } from '@/core/config/public-config';
-import { useApi } from '@/core/services/app-services';
-import { useSession } from '@/core/session/session';
+import { usePublicConfig } from '../config/public-config';
+import { useApi } from '../services/app-services';
+import { useSession } from '../session/session';
 
 export function useSchemas() {
   const { config } = usePublicConfig();

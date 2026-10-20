@@ -1,17 +1,13 @@
 import { useRouter } from 'expo-router';
+import { trackTitle, useDashboard, useFormat, useResume, useSession, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PauseCircle } from 'lucide-react-native';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
-import { useFormat } from '@/core/format/use-format';
-import { useT } from '@/core/i18n/i18n';
 import { Routes } from '@/core/navigation/routes';
-import { useSession } from '@/core/session/session';
 import { useTheme } from '@/core/theme/theme';
 import { OpportunityCard } from '@/features/opportunities/opportunity-card';
 import { Banner, BrandMark, Button, ButtonVariant, Card, EmptyState, ErrorState, LoadingState, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
-import { trackTitle } from './track-title';
-import { useDashboard, useResume } from './use-dashboard';
 
 function StatTile({ label, value, onPress }: { label: string; value: number; onPress?: () => void }) {
   const theme = useTheme();

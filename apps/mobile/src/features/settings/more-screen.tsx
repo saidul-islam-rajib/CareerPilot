@@ -1,9 +1,7 @@
 import { useRouter } from 'expo-router';
+import { usePublicConfig, useSession, useT } from '@careerpilot/client-core';
 import { Clock, Info, ListOrdered, LogOut, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2 } from 'lucide-react-native';
-import { usePublicConfig } from '@/core/config/public-config';
-import { useT } from '@/core/i18n/i18n';
 import { Routes } from '@/core/navigation/routes';
-import { useSession } from '@/core/session/session';
 import { Card, Divider, ListRow, Screen, TeamSoberCredit, Text, TextTone, TextVariant } from '@/ui';
 
 export function MoreScreen() {

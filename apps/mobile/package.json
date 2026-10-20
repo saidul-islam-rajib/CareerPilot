@@ -5,6 +5,7 @@
   "dependencies": {
     "@careerpilot/api-client": "workspace:*",
     "@careerpilot/brand": "workspace:*",
+    "@careerpilot/client-core": "workspace:*",
     "@careerpilot/domain-ui-logic": "workspace:*",
     "@careerpilot/i18n": "workspace:*",
     "@careerpilot/ui-tokens": "workspace:*",

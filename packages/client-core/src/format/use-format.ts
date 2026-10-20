@@ -7,9 +7,9 @@ import {
   type FormatContext,
   type MoneyRange,
 } from '@careerpilot/domain-ui-logic';
-import { usePublicConfig } from '@/core/config/public-config';
-import { useT } from '@/core/i18n/i18n';
-import { useServices } from '@/core/services/app-services';
+import { usePublicConfig } from '../config/public-config';
+import { useT } from '../i18n/i18n';
+import { useServices } from '../services/app-services';
 
 export function useFormat() {
   const { config } = usePublicConfig();

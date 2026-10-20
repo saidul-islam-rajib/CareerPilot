@@ -1,9 +1,7 @@
 import { MonitorSmartphone, ShieldAlert } from 'lucide-react-native';
+import { useFormat, useSignInActivity, useT } from '@careerpilot/client-core';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
-import { useFormat } from '@/core/format/use-format';
-import { useT } from '@/core/i18n/i18n';
 import { Badge, Card, ErrorState, ListRow, LoadingState, Screen, Text, TextTone, TextVariant } from '@/ui';
-import { useSignInActivity } from './use-settings';
 
 export function ActivityScreen() {
   const t = useT();

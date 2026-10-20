@@ -1,10 +1,7 @@
 import { ApplicationMode, EnumKey, enumValues } from '@careerpilot/domain-ui-logic';
+import { trackTitle, useEnumDisplay, usePublicConfig, useSettings, useT, useUpdateTrack } from '@careerpilot/client-core';
 import type { Track } from '@careerpilot/api-client';
-import { usePublicConfig, useEnumDisplay } from '@/core/config/public-config';
-import { useT } from '@/core/i18n/i18n';
-import { trackTitle } from '@/features/home/track-title';
 import { Card, ErrorState, LoadingState, Screen, Segmented, Stepper, Text, TextTone, TextVariant } from '@/ui';
-import { useSettings, useUpdateTrack } from './use-settings';
 
 function TrackEditor({ track }: { track: Track }) {
   const t = useT();

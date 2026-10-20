@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { OpportunityDecision } from '@careerpilot/domain-ui-logic';
-import { queryKeys } from '@/core/query/query-keys';
-import { useApi } from '@/core/services/app-services';
+import { queryKeys } from '../query/query-keys';
+import { useApi } from '../services/app-services';
 
 export function useOpportunity(id: string) {
   const api = useApi();

@@ -1,5 +1,5 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
-const { loadConfig } = require('./config-loader') as { loadConfig: (env: string) => Record<string, unknown> };
+const { loadConfig } = require('../../scripts/config/load-config') as { loadConfig: (env: string) => Record<string, unknown> };
 
 const APP_ENV = process.env.APP_ENV ?? 'local';
 

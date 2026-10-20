@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router';
+import { useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BadgeCheck, FileSearch, ShieldCheck } from 'lucide-react-native';
 import { Routes } from '@/core/navigation/routes';
-import { useT } from '@/core/i18n/i18n';
 import { useTheme } from '@/core/theme/theme';
 import { BrandMark, Button, ButtonVariant, Icon, TeamSoberCredit, Text, TextTone, TextVariant } from '@/ui';
 

@@ -1,12 +1,10 @@
 import { useRouter } from 'expo-router';
+import { usePublicConfig, useRegisterForm, useT } from '@careerpilot/client-core';
 import * as WebBrowser from 'expo-web-browser';
 import { AlertCircle } from 'lucide-react-native';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
-import { usePublicConfig } from '@/core/config/public-config';
 import { Routes } from '@/core/navigation/routes';
-import { useT } from '@/core/i18n/i18n';
 import { Banner, Button, ButtonVariant, Card, Checkbox, LinkedText, Screen, Text, TextField, TextTone, TextVariant } from '@/ui';
-import { useRegisterForm } from './use-auth-forms';
 
 export function RegisterScreen() {
   const t = useT();

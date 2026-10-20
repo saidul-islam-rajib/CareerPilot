@@ -1,8 +1,7 @@
 import { MailCheck } from 'lucide-react-native';
+import { usePasswordReset, useT } from '@careerpilot/client-core';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
-import { useT } from '@/core/i18n/i18n';
 import { Banner, Button, Card, Screen, TextField } from '@/ui';
-import { usePasswordReset } from './use-auth-forms';
 
 export function ForgotPasswordScreen() {
   const t = useT();

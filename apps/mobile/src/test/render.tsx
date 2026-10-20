@@ -1,13 +1,11 @@
 import type { ReactElement } from 'react';
+import { type AppConfig, type AppServices, createAppServices, createMemoryStore, parseAppConfig, publicConfigFromDefaults, queryKeys } from '@careerpilot/client-core';
 import { QueryClient } from '@tanstack/react-query';
 import { render, type RenderResult } from '@testing-library/react-native';
 import type { Clock, Session } from '@careerpilot/api-client';
-import { parseAppConfig, type AppConfig } from '@/core/config/app-config';
 import { AppProviders } from '@/core/providers/app-providers';
-import { createAppServices, type AppServices } from '@/core/services/app-services';
-import { createMemoryStore } from '@/core/storage/memory-store';
 
-const { loadConfig } = require('../../config-loader') as { loadConfig: (env: string) => Record<string, unknown> };
+const { loadConfig } = require('../../../../scripts/config/load-config') as { loadConfig: (env: string) => Record<string, unknown> };
 
 export const testNow = new Date('2026-10-20T06:00:00Z');
 export const testClock: Clock = { now: () => new Date(testNow) };
@@ -40,6 +38,7 @@ export function renderWithProviders(ui: ReactElement, options: RenderOptions = {
   const store = createMemoryStore(options.signedIn === false ? {} : { 'careerpilot.session': JSON.stringify(demoSession) });
   const services = options.services ?? createAppServices(testConfig(), store, testClock);
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } } });
+  queryClient.setQueryData(queryKeys.config, publicConfigFromDefaults(services.config));
   const result = render(
     <AppProviders services={services} queryClient={queryClient} safeAreaMetrics={testWindowMetrics}>
       {ui}

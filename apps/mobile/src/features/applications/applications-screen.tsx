@@ -1,14 +1,12 @@
 import { useState } from 'react';
+import { useApplications, useFormat, useT } from '@careerpilot/client-core';
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 import { ApplicationFilter, type ApplicationSummary } from '@careerpilot/api-client';
 import { EnumKey } from '@careerpilot/domain-ui-logic';
-import { useFormat } from '@/core/format/use-format';
-import { useT } from '@/core/i18n/i18n';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { Card, EmptyState, EnumBadge, ErrorState, LoadingState, Row, Screen, Segmented, Text, TextTone, TextVariant } from '@/ui';
-import { useApplications } from './use-applications';
 
 function ApplicationCard({ application, onPress }: { application: ApplicationSummary; onPress: () => void }) {
   const t = useT();

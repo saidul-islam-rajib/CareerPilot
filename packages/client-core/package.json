@@ -1,0 +1,30 @@
+{
+  "name": "@careerpilot/client-core",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@careerpilot/api-client": "workspace:*",
+    "@careerpilot/domain-ui-logic": "workspace:*",
+    "@careerpilot/i18n": "workspace:*",
+    "@careerpilot/ui-tokens": "workspace:*",
+    "@careerpilot/validation": "workspace:*",
+    "zod": "^4.6.7"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5",
+    "react": "^19"
+  },
+  "devDependencies": {
+    "@tanstack/react-query": "^5.104.4",
+    "@types/react": "~19.2.2",
+    "react": "19.2.3",
+    "js-yaml": "^4.3.2"
+  }
+}

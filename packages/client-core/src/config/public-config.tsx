@@ -2,12 +2,11 @@ import { createContext, useContext, useMemo, type PropsWithChildren } from 'reac
 import { useQuery } from '@tanstack/react-query';
 import type { PublicConfig } from '@careerpilot/api-client';
 import { StatusTone, createEnumMetadataIndex, type EnumKey, type EnumMetadataIndex } from '@careerpilot/domain-ui-logic';
-import { resolveTheme } from '@careerpilot/ui-tokens';
+import { resolveTheme, type Theme } from '@careerpilot/ui-tokens';
 import { I18nProvider, useT } from '../i18n/i18n';
 import { queryKeys } from '../query/query-keys';
 import { useServices } from '../services/app-services';
-import { ThemeProvider } from '../theme/theme';
-import { publicConfigFromDefaults } from './app-config';
+import { publicConfigFromDefaults } from './client-config';
 
 interface PublicConfigValue {
   config: PublicConfig;
@@ -26,12 +25,9 @@ export function PublicConfigProvider({ children }: PropsWithChildren) {
   });
   const config = query.data ?? defaults;
   const value = useMemo(() => ({ config, enums: createEnumMetadataIndex(config.enumValues) }), [config]);
-  const theme = resolveTheme(config.theme, appConfig.ui.activeTheme);
   return (
     <PublicConfigContext.Provider value={value}>
-      <ThemeProvider theme={theme}>
-        <I18nProvider locale={config.locale}>{children}</I18nProvider>
-      </ThemeProvider>
+      <I18nProvider locale={config.locale}>{children}</I18nProvider>
     </PublicConfigContext.Provider>
   );
 }
@@ -42,6 +38,12 @@ export function usePublicConfig(): PublicConfigValue {
     throw new Error('PublicConfigProvider is missing');
   }
   return value;
+}
+
+export function useActiveTheme(): Theme {
+  const { config } = usePublicConfig();
+  const { config: appConfig } = useServices();
+  return resolveTheme(config.theme, appConfig.ui.activeTheme);
 }
 
 export interface EnumDisplay {

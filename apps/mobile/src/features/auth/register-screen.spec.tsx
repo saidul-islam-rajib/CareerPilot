@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
-import { useSession } from '@/core/session/session';
+import { useSession } from '@careerpilot/client-core';
 import { Text } from '@/ui';
 import { renderWithProviders } from '@/test/render';
 import { RegisterScreen } from './register-screen';

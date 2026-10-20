@@ -1,12 +1,11 @@
 import { useState } from 'react';
+import { useSchemas, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
 import { Pencil, Sparkles, UserRound } from 'lucide-react-native';
 import { AnswerSource, type QuestionAnswer } from '@careerpilot/api-client';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { validate } from '@careerpilot/validation';
-import { useT } from '@/core/i18n/i18n';
 import { useTheme } from '@/core/theme/theme';
-import { useSchemas } from '@/features/auth/use-auth-forms';
 import { Badge, Button, ButtonVariant, Icon, IconSize, Row, Text, TextField, TextTone, TextVariant } from '@/ui';
 
 export interface AnswerEditorProps {

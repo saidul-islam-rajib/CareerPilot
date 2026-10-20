@@ -1,6 +1,6 @@
 import { View } from 'react-native';
+import { useEnumDisplay } from '@careerpilot/client-core';
 import { StatusTone, type EnumKey } from '@careerpilot/domain-ui-logic';
-import { useEnumDisplay } from '@/core/config/public-config';
 import { useTheme, type AppTheme } from '@/core/theme/theme';
 import { Text, TextVariant } from './text';
 

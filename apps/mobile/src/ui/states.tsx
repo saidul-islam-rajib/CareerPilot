@@ -1,6 +1,6 @@
 import { ActivityIndicator, View } from 'react-native';
+import { useT } from '@careerpilot/client-core';
 import { AlertCircle, Inbox } from 'lucide-react-native';
-import { useT } from '@/core/i18n/i18n';
 import { useTheme } from '@/core/theme/theme';
 import { Button, ButtonVariant } from './button';
 import { Icon, IconSize } from './icon';

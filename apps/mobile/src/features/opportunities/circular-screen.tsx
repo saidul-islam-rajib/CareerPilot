@@ -1,11 +1,9 @@
 import { useLocalSearchParams } from 'expo-router';
+import { useFormat, useOpportunity, useT } from '@careerpilot/client-core';
 import * as WebBrowser from 'expo-web-browser';
 import { Archive, ExternalLink } from 'lucide-react-native';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
-import { useFormat } from '@/core/format/use-format';
-import { useT } from '@/core/i18n/i18n';
 import { Banner, Button, ButtonVariant, Card, ErrorState, LoadingState, Screen, Text } from '@/ui';
-import { useOpportunity } from './use-opportunity';
 
 export function CircularScreen() {
   const { opportunityId } = useLocalSearchParams<{ opportunityId: string }>();

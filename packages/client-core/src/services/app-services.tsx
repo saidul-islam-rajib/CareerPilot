@@ -1,7 +1,7 @@
 import { createContext, useContext, type PropsWithChildren } from 'react';
 import { systemClock, type CareerPilotApi, type Clock } from '@careerpilot/api-client';
 import { createApi } from '../api/create-api';
-import type { AppConfig } from '../config/app-config';
+import type { AppConfig } from '../config/client-config';
 import type { KeyValueStore } from '../storage/key-value-store';
 
 export interface TokenHolder {

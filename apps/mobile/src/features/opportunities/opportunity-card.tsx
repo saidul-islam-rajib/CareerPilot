@@ -1,10 +1,8 @@
 import { View } from 'react-native';
+import { useFormat, usePublicConfig, useT } from '@careerpilot/client-core';
 import { Building2, CalendarClock, MapPin } from 'lucide-react-native';
 import { EnumKey, StatusTone } from '@careerpilot/domain-ui-logic';
 import type { DisplaySettings, OpportunitySummary } from '@careerpilot/api-client';
-import { usePublicConfig } from '@/core/config/public-config';
-import { useFormat } from '@/core/format/use-format';
-import { useT } from '@/core/i18n/i18n';
 import { useTheme } from '@/core/theme/theme';
 import { Badge, Card, EnumBadge, Icon, IconSize, Row, Text, TextTone, TextVariant } from '@/ui';
 

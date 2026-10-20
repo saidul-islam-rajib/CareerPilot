@@ -1,11 +1,9 @@
 import { useState, type PropsWithChildren } from 'react';
+import { type AppServices, AppServicesProvider, PublicConfigProvider, SessionProvider, createQueryClient } from '@careerpilot/client-core';
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
-import { PublicConfigProvider } from '../config/public-config';
-import { createQueryClient } from '../query/query-client';
-import { AppServicesProvider, type AppServices } from '../services/app-services';
-import { SessionProvider } from '../session/session';
+import { ThemeFromConfig } from '../theme/theme';
 
 export interface AppProvidersProps {
   services: AppServices;
@@ -21,7 +19,9 @@ export function AppProviders({ services, queryClient, safeAreaMetrics, children 
         <AppServicesProvider services={services}>
           <QueryClientProvider client={client}>
             <PublicConfigProvider>
-              <SessionProvider>{children}</SessionProvider>
+              <ThemeFromConfig>
+                <SessionProvider>{children}</SessionProvider>
+              </ThemeFromConfig>
             </PublicConfigProvider>
           </QueryClientProvider>
         </AppServicesProvider>

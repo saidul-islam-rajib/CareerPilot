@@ -3,3 +3,7 @@ packages:
   - packages/*
 
 nodeLinker: hoisted
+
+allowBuilds:
+  sharp: false
+  unrs-resolver: false

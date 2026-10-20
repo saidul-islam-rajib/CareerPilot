@@ -1,8 +1,4 @@
-export interface KeyValueStore {
-  get(key: string): Promise<string | undefined>;
-  set(key: string, value: string): Promise<void>;
-  remove(key: string): Promise<void>;
-}
+import type { KeyValueStore } from '@careerpilot/client-core';
 
 function storage(): Storage | undefined {
   try {

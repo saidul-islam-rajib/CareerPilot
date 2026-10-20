@@ -1,10 +1,10 @@
 import { useState, type ReactNode } from 'react';
+import { useT } from '@careerpilot/client-core';
 import { Pressable, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import { ChevronDown, ChevronUp, GripVertical } from 'lucide-react-native';
-import { useT } from '@/core/i18n/i18n';
 import { useTheme } from '@/core/theme/theme';
 import { Icon } from './icon';
 

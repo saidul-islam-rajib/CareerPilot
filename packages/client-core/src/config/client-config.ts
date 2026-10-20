@@ -36,10 +36,6 @@ const appConfigSchema = z.object({
     developerName: z.string(),
     developerUrl: z.string().url(),
   }),
-  mobile: z.object({
-    appName: z.string(),
-    version: z.string(),
-  }),
   api: z.object({
     mode: z.enum([ApiMode.InMemory, ApiMode.Http]),
     baseUrl: z.string().url(),

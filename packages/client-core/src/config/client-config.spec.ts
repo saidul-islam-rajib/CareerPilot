@@ -1,7 +1,10 @@
+import { createRequire } from 'node:module';
+import { describe, expect, it } from 'vitest';
 import { ThemeKey } from '@careerpilot/ui-tokens';
-import { ApiMode, parseAppConfig, publicConfigFromDefaults } from './app-config';
+import { ApiMode, parseAppConfig, publicConfigFromDefaults } from './client-config';
 
-const { loadConfig } = require('../../../config-loader') as { loadConfig: (env: string) => Record<string, unknown> };
+const require = createRequire(import.meta.url);
+const { loadConfig } = require('../../../../scripts/config/load-config.js') as { loadConfig: (env: string) => Record<string, unknown> };
 
 describe('app config', () => {
   it('parses the repository YAML defaults', () => {

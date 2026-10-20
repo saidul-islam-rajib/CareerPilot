@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { useT } from '@/core/i18n/i18n';
+import { useT } from '@careerpilot/client-core';
 import { useTheme } from '@/core/theme/theme';
 
 export default function SignedInLayout() {
