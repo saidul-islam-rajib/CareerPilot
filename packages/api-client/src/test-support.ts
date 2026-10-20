@@ -11,6 +11,7 @@ export const fixedClock: Clock = { now: () => new Date(fixedNow) };
 
 export const testConfig: PublicConfig = {
   theme: ThemeKey.Sober,
+  display: { strongMatchScore: 80, fairMatchScore: 65, urgentDeadlineDays: 3 },
   locale: 'en',
   defaultTimeZone: 'Asia/Dhaka',
   enumValues: enumValueSeed,

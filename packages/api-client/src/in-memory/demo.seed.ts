@@ -23,6 +23,7 @@ import {
   type SignInEvent,
   type UserSummary,
 } from '../types';
+import { demoPhotoUri, demoSignatureUri } from './demo-media.seed';
 
 export interface DemoAccount {
   user: UserSummary;
@@ -383,6 +384,8 @@ export function buildDemoSeed(now: Date): DemoState {
     id: 'prf_demo',
     fullName: 'Ayesha Rahman',
     headline: 'Frontend engineer · 5 years · React, TypeScript, accessibility',
+    photoUrl: demoPhotoUri,
+    signatureUrl: demoSignatureUri,
     completeness: 86,
     contacts: [
       { id: 'c_email_work', kind: ContactKind.Email, value: 'admin@sober.com', label: 'Work', isPrimary: true, verified: true, position: 1 },

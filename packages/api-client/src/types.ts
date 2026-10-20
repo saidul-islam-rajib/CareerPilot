@@ -55,8 +55,15 @@ export interface OpenSourceComponent {
   url: string;
 }
 
+export interface DisplaySettings {
+  strongMatchScore: number;
+  fairMatchScore: number;
+  urgentDeadlineDays: number;
+}
+
 export interface PublicConfig {
   theme: ThemeKey;
+  display: DisplaySettings;
   locale: string;
   defaultTimeZone: string;
   enumValues: EnumValueMetadata[];
