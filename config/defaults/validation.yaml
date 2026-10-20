@@ -1,0 +1,17 @@
+validation:
+  password:
+    min_length: 10
+    max_length: 128
+    require_mixed_case: true
+    require_digit: true
+    require_symbol: true
+  name:
+    min_length: 2
+    max_length: 120
+  email:
+    max_length: 254
+  answer:
+    max_length: 4000
+  track:
+    min_result_count: 1
+    max_result_count: 50

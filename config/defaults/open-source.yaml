@@ -1,0 +1,12 @@
+open_source_components:
+  - { name: React Native, licence: MIT, url: https://github.com/facebook/react-native }
+  - { name: Expo, licence: MIT, url: https://github.com/expo/expo }
+  - { name: React Native Reusables, licence: MIT, url: https://github.com/founded-labs/react-native-reusables }
+  - { name: shadcn/ui, licence: MIT, url: https://github.com/shadcn-ui/ui }
+  - { name: Lucide, licence: ISC, url: https://github.com/lucide-icons/lucide }
+  - { name: TanStack Query, licence: MIT, url: https://github.com/TanStack/query }
+  - { name: Zod, licence: MIT, url: https://github.com/colinhacks/zod }
+  - { name: React Native Reanimated, licence: MIT, url: https://github.com/software-mansion/react-native-reanimated }
+  - { name: React Native Gesture Handler, licence: MIT, url: https://github.com/software-mansion/react-native-gesture-handler }
+  - { name: React Native SVG, licence: MIT, url: https://github.com/software-mansion/react-native-svg }
+  - { name: Inter, licence: OFL-1.1, url: https://github.com/rsms/inter }

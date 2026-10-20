@@ -1,0 +1,15 @@
+mobile:
+  app_name: CareerPilot
+  slug: careerpilot
+  scheme: careerpilot
+  android_package: com.teamsober.careerpilot
+  ios_bundle_identifier: com.teamsober.careerpilot
+  version: 1.0.0
+api:
+  mode: in_memory
+  base_url: http://localhost:8000
+  timeout_ms: 15000
+  demo_latency_ms: 250
+query:
+  stale_time_ms: 30000
+  retry_count: 2

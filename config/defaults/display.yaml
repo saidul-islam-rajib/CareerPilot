@@ -1,0 +1,4 @@
+display:
+  strong_match_score: 80
+  fair_match_score: 65
+  urgent_deadline_days: 3
