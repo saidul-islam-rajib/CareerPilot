@@ -51,3 +51,17 @@ export const fontFamily = {
   ui: 'Inter',
   bangla: 'Noto Sans Bengali',
 } as const;
+
+export const opacity = { disabled: 0.6, overlay: 0.55 } as const;
+
+export const iconStroke = 2;
+
+export const fontScaleMax = 2;
+
+export const borderWidth = { hairline: 1, focus: 2 } as const;
+
+export const contentMaxWidth = 720;
+
+export const zoom = { min: 1, max: 5, step: 1, doubleTap: 2.5 } as const;
+
+export const gesture = { longPressMs: 250, dragScale: 1.02, dragElevation: 6 } as const;

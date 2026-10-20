@@ -34,7 +34,18 @@
     "errorTitle": "Something went wrong",
     "errorBody": "We couldn't load this. Check your connection and try again.",
     "emptyTitle": "Nothing here yet",
-    "offlineBanner": "You're offline. Showing saved information."
+    "offlineBanner": "You're offline. Showing saved information.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "signedInAs": "Signed in as {email}",
+    "viewDetails": "View details",
+    "more": "More",
+    "kilobytes": "{value} KB",
+    "moveItem": "Move {item}",
+    "position": "Position {index} of {count}",
+    "decrease": "Decrease {name}",
+    "increase": "Increase {name}",
+    "valueOf": "{name}: {value}"
   },
   "nav": {
     "home": "Today",
@@ -64,7 +75,10 @@
     "sendResetLink": "Send reset link",
     "resetTitle": "Reset your password",
     "invalidCredentials": "Email or password is incorrect.",
-    "emailTaken": "An account with this email already exists."
+    "emailTaken": "An account with this email already exists.",
+    "pointMatches": "Jobs and programmes matched to you, with reasons",
+    "pointApproval": "You approve, CareerPilot completes the application",
+    "pointRecord": "Every application recorded with proof"
   },
   "validation": {
     "required": "This field is required.",
@@ -203,7 +217,8 @@
     "deleteAccountConfirm": "Type DELETE to confirm",
     "deleteKeyword": "DELETE",
     "deletionScheduled": "Account deletion scheduled for {date}.",
-    "version": "Version {version}"
+    "version": "Version {version}",
+    "timePlaceholder": "HH:MM"
   },
   "activity": {
     "title": "Sign-in activity",
