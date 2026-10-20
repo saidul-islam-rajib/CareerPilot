@@ -43,10 +43,10 @@ export function ApprovalScreen() {
         </Row>
       </View>
     ) : (
-      <Row>
-        <Button label={t('approvals.approveAndSend')} icon={CheckCircle2} onPress={() => setConfirming(true)} style={{ flex: 2 }} testID="approve" />
-        <Button label={t('approvals.reject')} icon={XCircle} variant={ButtonVariant.Outline} onPress={() => actions.reject.mutate()} loading={actions.reject.isPending} style={{ flex: 1 }} testID="reject" />
-      </Row>
+      <View style={{ gap: theme.space.sm }}>
+        <Button label={t('approvals.approveAndSend')} icon={CheckCircle2} onPress={() => setConfirming(true)} fullWidth testID="approve" />
+        <Button label={t('approvals.reject')} icon={XCircle} variant={ButtonVariant.Outline} onPress={() => actions.reject.mutate()} loading={actions.reject.isPending} fullWidth testID="reject" />
+      </View>
     )
   ) : undefined;
 

@@ -1,4 +1,4 @@
-import { Pressable, ScrollView } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useTheme } from '@/core/theme/theme';
 import { Text, TextVariant } from './text';
 
@@ -17,7 +17,7 @@ export interface SegmentedProps<T extends string> {
 export function Segmented<T extends string>({ options, value, onChange, accessibilityLabel }: SegmentedProps<T>) {
   const theme = useTheme();
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} accessibilityRole="tablist" accessibilityLabel={accessibilityLabel} contentContainerStyle={{ gap: theme.space.sm }}>
+    <View accessibilityRole="tablist" accessibilityLabel={accessibilityLabel} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm }}>
       {options.map((option) => {
         const selected = option.value === value;
         return (
@@ -43,6 +43,6 @@ export function Segmented<T extends string>({ options, value, onChange, accessib
           </Pressable>
         );
       })}
-    </ScrollView>
+    </View>
   );
 }

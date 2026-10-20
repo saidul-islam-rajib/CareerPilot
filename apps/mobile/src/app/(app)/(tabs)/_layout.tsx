@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import type { ColorValue } from 'react-native';
 import { Briefcase, CircleCheckBig, House, Menu, UserRound, type LucideIcon } from 'lucide-react-native';
 import { useQuery } from '@tanstack/react-query';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '@/core/i18n/i18n';
 import { queryKeys } from '@/core/query/query-keys';
 import { useApi } from '@/core/services/app-services';
@@ -18,6 +19,7 @@ export default function TabsLayout() {
   const t = useT();
   const theme = useTheme();
   const api = useApi();
+  const insets = useSafeAreaInsets();
   const approvals = useQuery({ queryKey: queryKeys.approvals, queryFn: () => api.approvals.listApprovals() });
   const pending = approvals.data?.length ?? 0;
   return (
@@ -25,7 +27,13 @@ export default function TabsLayout() {
       screenOptions={{
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textMuted,
-        tabBarStyle: { backgroundColor: theme.colors.background, borderTopColor: theme.colors.border },
+        tabBarStyle: {
+          backgroundColor: theme.colors.background,
+          borderTopColor: theme.colors.border,
+          height: theme.touchTarget + theme.space.xl + insets.bottom,
+          paddingTop: theme.space.xs,
+          paddingBottom: insets.bottom + theme.space.sm,
+        },
         tabBarLabelStyle: { fontSize: theme.fontSize.xs, fontWeight: theme.fontWeight.medium },
         headerStyle: { backgroundColor: theme.colors.background },
         headerTitleStyle: { color: theme.colors.text },
