@@ -320,6 +320,9 @@ importers:
       '@careerpilot/brand':
         specifier: workspace:*
         version: link:../../packages/brand
+      '@careerpilot/client-core':
+        specifier: workspace:*
+        version: link:../../packages/client-core
       '@careerpilot/domain-ui-logic':
         specifier: workspace:*
         version: link:../../packages/domain-ui-logic
@@ -329,6 +332,9 @@ importers:
       '@careerpilot/ui-tokens':
         specifier: workspace:*
         version: link:../../packages/ui-tokens
+      '@careerpilot/ui-web':
+        specifier: workspace:*
+        version: link:../../packages/ui-web
       '@careerpilot/validation':
         specifier: workspace:*
         version: link:../../packages/validation
