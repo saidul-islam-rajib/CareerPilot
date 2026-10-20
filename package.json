@@ -14,6 +14,7 @@
     "mobile:web": "pnpm --filter @careerpilot/mobile web"
   },
   "devDependencies": {
+    "playwright-core": "1.64.1",
     "typescript": "~6.0.3",
     "vitest": "^5.0.5"
   }
