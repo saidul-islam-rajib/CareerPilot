@@ -1,0 +1,85 @@
+import { useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
+import { AlertCircle } from 'lucide-react-native';
+import { StatusTone } from '@careerpilot/domain-ui-logic';
+import { usePublicConfig } from '@/core/config/public-config';
+import { Routes } from '@/core/navigation/routes';
+import { useT } from '@/core/i18n/i18n';
+import { Banner, Button, ButtonVariant, Card, Checkbox, LinkedText, Screen, Text, TextField, TextTone, TextVariant } from '@/ui';
+import { useRegisterForm } from './use-auth-forms';
+
+export function RegisterScreen() {
+  const t = useT();
+  const router = useRouter();
+  const { config } = usePublicConfig();
+  const form = useRegisterForm();
+  const nameParams = { min: form.policy.name.minLength, max: form.policy.name.maxLength };
+  const passwordParams = { min: form.policy.password.minLength };
+  const open = (url: string) => void WebBrowser.openBrowserAsync(url);
+  return (
+    <Screen testID="register-screen">
+      {form.formError ? <Banner tone={StatusTone.Danger} icon={AlertCircle} title={t(form.formError)} /> : null}
+      <Card>
+        <TextField
+          label={t('auth.fullName')}
+          value={form.values.fullName}
+          onChangeText={(v) => form.setField('fullName', v)}
+          error={form.errors.fullName}
+          errorParams={nameParams}
+          autoComplete="name"
+          textContentType="name"
+          testID="register-name"
+        />
+        <TextField
+          label={t('auth.email')}
+          value={form.values.email}
+          onChangeText={(v) => form.setField('email', v)}
+          error={form.errors.email}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          testID="register-email"
+        />
+        <TextField
+          label={t('auth.password')}
+          value={form.values.password}
+          onChangeText={(v) => form.setField('password', v)}
+          error={form.errors.password}
+          errorParams={passwordParams}
+          hint={t('validation.passwordLength', passwordParams)}
+          secret
+          autoComplete="new-password"
+          testID="register-password"
+        />
+        <TextField
+          label={t('auth.confirmPassword')}
+          value={form.values.confirmPassword}
+          onChangeText={(v) => form.setField('confirmPassword', v)}
+          error={form.errors.confirmPassword}
+          secret
+          autoComplete="new-password"
+          testID="register-confirm"
+        />
+        <Checkbox
+          checked={form.values.consent}
+          onChange={(v) => form.setField('consent', v)}
+          accessibilityLabel={t('auth.consentLabel', { terms: t('auth.terms'), privacy: t('auth.privacy') })}
+          error={form.errors.consent}
+        >
+          <LinkedText
+            template={t('auth.consentLabel')}
+            links={{
+              terms: { label: t('auth.terms'), onPress: () => open(config.legal.termsUrl) },
+              privacy: { label: t('auth.privacy'), onPress: () => open(config.legal.privacyUrl) },
+            }}
+          />
+        </Checkbox>
+        <Text variant={TextVariant.Caption} tone={TextTone.Muted}>
+          {t('auth.consentNote')}
+        </Text>
+        <Button label={t('auth.createAccount')} onPress={form.submit} loading={form.submitting} fullWidth testID="register-submit" />
+      </Card>
+      <Button label={`${t('auth.haveAccount')} ${t('auth.signIn')}`} variant={ButtonVariant.Ghost} onPress={() => router.replace(Routes.signIn)} />
+    </Screen>
+  );
+}
