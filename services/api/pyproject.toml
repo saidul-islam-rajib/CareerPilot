@@ -1,0 +1,16 @@
+[project]
+name = "careerpilot-api"
+version = "1.0.0"
+description = "CareerPilot user API and admin API entry points."
+requires-python = ">=3.11"
+dependencies = ["careerpilot-core"]
+
+[project.scripts]
+careerpilot-dev = "careerpilot_api.dev_server:main"
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
