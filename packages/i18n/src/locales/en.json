@@ -218,7 +218,8 @@
     "deleteKeyword": "DELETE",
     "deletionScheduled": "Account deletion scheduled for {date}.",
     "version": "Version {version}",
-    "timePlaceholder": "HH:MM"
+    "timePlaceholder": "HH:MM",
+    "windowRange": "{start}–{end}"
   },
   "activity": {
     "title": "Sign-in activity",
@@ -530,5 +531,9 @@
       "mfaOff": "Off",
       "you": "You"
     }
+  },
+  "timeline": {
+    "packagePrepared": "Application package prepared",
+    "youApproved": "You approved the application"
   }
 }
