@@ -11,7 +11,7 @@ export type ApiMode = (typeof ApiMode)[keyof typeof ApiMode];
 
 const themeKey = z.enum(THEME_KEYS as [ThemeKey, ...ThemeKey[]]);
 
-const appConfigSchema = z.object({
+export const appConfigSchema = z.object({
   account: z.object({
     locale: z.string(),
     defaultTimeZone: z.string(),
@@ -53,6 +53,7 @@ const appConfigSchema = z.object({
   }),
   ui: z.object({
     activeTheme: themeKey,
+    adminTheme: themeKey,
   }),
   validation: z.object({
     password: z.object({

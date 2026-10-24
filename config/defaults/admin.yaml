@@ -1,0 +1,6 @@
+admin:
+  base_url: http://localhost:8001
+  page_size: 10
+  chart_days: 14
+  complete_profile_percent: 80
+  session_timeout_minutes: 30
