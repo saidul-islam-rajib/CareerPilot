@@ -12,31 +12,58 @@ const height = Number(process.env.VIEWPORT_HEIGHT ?? 900);
 const settleMs = Number(process.env.SETTLE_MS ?? 900);
 const startTimeoutMs = Number(process.env.START_TIMEOUT_MS ?? 60000);
 
-const screens = [
-  ['home', '/'],
-  ['approvals', '/approvals'],
-  ['approval-detail', '/approvals/apr_frontend'],
-  ['applications', '/applications'],
-  ['application-record', '/applications/app_bay'],
-  ['opportunity', '/opportunities/opp_remote_frontend'],
-  ['opportunity-hard-failure', '/opportunities/opp_gov_programmer'],
-  ['circular', '/opportunities/opp_bd_dhaka/circular'],
-  ['profile', '/profile'],
-  ['settings', '/settings'],
-  ['tracks', '/settings/tracks'],
-  ['pause', '/settings/pause'],
-  ['window', '/settings/window'],
-  ['activity', '/settings/activity'],
-  ['about', '/settings/about'],
-  ['licences', '/settings/licences'],
-  ['delete-account', '/settings/delete-account'],
-];
+const profiles = {
+  web: {
+    signInPath: '/sign-in',
+    preSignIn: [
+      ['welcome', '/welcome'],
+      ['register-errors', '/register', 'Create account'],
+    ],
+    screens: [
+      ['home', '/'],
+      ['approvals', '/approvals'],
+      ['approval-detail', '/approvals/apr_frontend'],
+      ['applications', '/applications'],
+      ['application-record', '/applications/app_bay'],
+      ['opportunity', '/opportunities/opp_remote_frontend'],
+      ['opportunity-hard-failure', '/opportunities/opp_gov_programmer'],
+      ['circular', '/opportunities/opp_bd_dhaka/circular'],
+      ['profile', '/profile'],
+      ['settings', '/settings'],
+      ['tracks', '/settings/tracks'],
+      ['pause', '/settings/pause'],
+      ['window', '/settings/window'],
+      ['activity', '/settings/activity'],
+      ['about', '/settings/about'],
+      ['licences', '/settings/licences'],
+      ['delete-account', '/settings/delete-account'],
+    ],
+  },
+  admin: {
+    signInPath: '/sign-in',
+    preSignIn: [['sign-in', '/sign-in']],
+    screens: [
+      ['dashboard', '/'],
+      ['users', '/users'],
+      ['user-detail', '/users/usr_demo'],
+      ['opportunities', '/opportunities'],
+      ['sources', '/sources'],
+      ['applications', '/applications'],
+      ['settings', '/settings'],
+      ['audit', '/audit'],
+      ['admins', '/admins'],
+    ],
+  },
+};
+
+const profile = profiles[process.env.VALIDATION_PROFILE ?? 'web'];
+const screens = profile.screens;
 
 async function waitForServer() {
   const deadline = Date.now() + startTimeoutMs;
   while (Date.now() < deadline) {
     try {
-      const response = await fetch(`${base}/welcome`);
+      const response = await fetch(`${base}${profile.signInPath}`);
       if (response.ok) {
         return;
       }
@@ -62,12 +89,14 @@ try {
       await page.waitForTimeout(settleMs);
       await page.screenshot({ path: path.join(dir, `${name}.png`), fullPage: true });
     };
-    await page.goto(`${base}/welcome`);
-    await shot('welcome');
-    await page.goto(`${base}/register`);
-    await page.getByRole('button', { name: 'Create account' }).click();
-    await shot('register-errors');
-    await page.goto(`${base}/sign-in`);
+    for (const [name, route, submitLabel] of profile.preSignIn) {
+      await page.goto(`${base}${route}`);
+      if (submitLabel) {
+        await page.getByRole('button', { name: submitLabel }).click();
+      }
+      await shot(name);
+    }
+    await page.goto(`${base}${profile.signInPath}`);
     await page.getByLabel('Email').fill('admin@sober.com');
     await page.getByLabel('Password', { exact: true }).fill('admin@sober.com');
     await page.getByRole('button', { name: 'Sign in' }).click();
@@ -85,4 +114,4 @@ try {
 }
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(path.join(outDir, 'console-errors.txt'), errors.join('\n'));
-console.log(`widths: ${widths.join(', ')}, screens per width: ${screens.length + 2}, console errors: ${errors.length}`);
+console.log(`widths: ${widths.join(', ')}, screens per width: ${screens.length + profile.preSignIn.length}, console errors: ${errors.length}`);
