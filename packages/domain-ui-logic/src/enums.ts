@@ -151,6 +151,81 @@ export const StatusTone = {
 } as const;
 export type StatusTone = (typeof StatusTone)[keyof typeof StatusTone];
 
+export const UserAccountStatus = {
+  Active: 'active',
+  Paused: 'paused',
+  Suspended: 'suspended',
+  PendingDeletion: 'pending_deletion',
+  Deleted: 'deleted',
+} as const;
+export type UserAccountStatus = (typeof UserAccountStatus)[keyof typeof UserAccountStatus];
+
+export const SourceStatus = {
+  Healthy: 'healthy',
+  Degraded: 'degraded',
+  Failing: 'failing',
+  Disabled: 'disabled',
+} as const;
+export type SourceStatus = (typeof SourceStatus)[keyof typeof SourceStatus];
+
+export const OpportunityStatus = {
+  Active: 'active',
+  Expired: 'expired',
+  Flagged: 'flagged',
+  Duplicate: 'duplicate',
+} as const;
+export type OpportunityStatus = (typeof OpportunityStatus)[keyof typeof OpportunityStatus];
+
+export const AdminRole = {
+  SuperAdmin: 'super_admin',
+  Support: 'support',
+  Operations: 'operations',
+  ReadOnly: 'read_only',
+} as const;
+export type AdminRole = (typeof AdminRole)[keyof typeof AdminRole];
+
+export const AdminArea = {
+  Dashboard: 'dashboard',
+  Users: 'users',
+  Opportunities: 'opportunities',
+  Sources: 'sources',
+  Applications: 'applications',
+  Settings: 'settings',
+  Audit: 'audit',
+  Admins: 'admins',
+} as const;
+export type AdminArea = (typeof AdminArea)[keyof typeof AdminArea];
+
+export const PermissionAction = {
+  Read: 'read',
+  Create: 'create',
+  Update: 'update',
+  Delete: 'delete',
+} as const;
+export type PermissionAction = (typeof PermissionAction)[keyof typeof PermissionAction];
+
+export const EmergencyStopScope = {
+  AllUsers: 'all_users',
+  Source: 'source',
+  Route: 'route',
+} as const;
+export type EmergencyStopScope = (typeof EmergencyStopScope)[keyof typeof EmergencyStopScope];
+
+export const ServiceHealth = {
+  Up: 'up',
+  Degraded: 'degraded',
+  Down: 'down',
+} as const;
+export type ServiceHealth = (typeof ServiceHealth)[keyof typeof ServiceHealth];
+
+export const ActorType = {
+  User: 'user',
+  Admin: 'admin',
+  System: 'system',
+  Agent: 'agent',
+} as const;
+export type ActorType = (typeof ActorType)[keyof typeof ActorType];
+
 export const EnumKey = {
   SubmissionStatus: 'submission_status',
   OutcomeStatus: 'outcome_status',
@@ -163,6 +238,12 @@ export const EnumKey = {
   SponsorshipEvidence: 'sponsorship_evidence',
   RequirementCheck: 'requirement_check',
   ApprovalState: 'approval_state',
+  UserAccountStatus: 'user_account_status',
+  SourceStatus: 'source_status',
+  OpportunityStatus: 'opportunity_status',
+  AdminRole: 'admin_role',
+  ServiceHealth: 'service_health',
+  ActorType: 'actor_type',
 } as const;
 export type EnumKey = (typeof EnumKey)[keyof typeof EnumKey];
 
