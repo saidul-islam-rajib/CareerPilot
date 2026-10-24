@@ -225,7 +225,9 @@
     "title": "Sign-in activity",
     "thisDevice": "This device",
     "success": "Signed in",
-    "failed": "Failed attempt"
+    "failed": "Failed attempt",
+    "unknownLocation": "Location unknown",
+    "unknownDevice": "Unknown device"
   },
   "credits": {
     "developedBy": "Developed by Team Sober",

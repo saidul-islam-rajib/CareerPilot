@@ -101,6 +101,14 @@ class SecurityConfig(Strict):
     token_algorithm: str
 
 
+class HttpConfig(Strict):
+    user_api_port: int = Field(gt=0)
+    admin_api_port: int = Field(gt=0)
+    host: str
+    cors_origins: list[str]
+    trusted_proxy_hops: int = Field(ge=0)
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -111,6 +119,7 @@ class Settings(Strict):
     open_source_components: list[OpenSourceComponent]
     admin: AdminConfig
     security: SecurityConfig
+    http: HttpConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
