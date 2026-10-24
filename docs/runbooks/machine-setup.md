@@ -8,3 +8,4 @@ Claude never installs system-wide software or runs as administrator. When a task
 | Claude Code CLI | Autopilot (`scripts/autopilot.ps1`) | Installed |
 | Android Studio (SDK + emulator) or a phone with Expo Go | Running the mobile app natively; until then it is validated on the web build | Not installed |
 | Expo account (EAS) | Cloud builds for Android/iOS | Not set up |
+| uv (Python package manager) | Faster, locked Python installs (planned); until installed, `services/.venv` is created with `python -m venv` and pip | Optional |

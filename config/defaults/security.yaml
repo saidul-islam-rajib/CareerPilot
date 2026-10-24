@@ -1,0 +1,5 @@
+security:
+  token_ttl_minutes: 720
+  admin_token_ttl_minutes: 30
+  token_issuer: careerpilot
+  token_algorithm: HS256
