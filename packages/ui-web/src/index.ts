@@ -14,3 +14,5 @@ export * from './sortable-list';
 export * from './stepper';
 export * from './text-field';
 export * from './theme';
+export * from './charts';
+export * from './data-table';
