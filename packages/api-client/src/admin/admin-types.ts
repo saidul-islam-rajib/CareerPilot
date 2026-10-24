@@ -1,0 +1,198 @@
+import type {
+  ActorType,
+  AdminArea,
+  AdminRole,
+  ApplicationMode,
+  ApplicationRoute,
+  EmergencyStopScope,
+  OpportunityStatus,
+  OpportunityType,
+  OutcomeStatus,
+  PermissionAction,
+  ServiceHealth,
+  SourceStatus,
+  SubmissionStatus,
+  UserAccountStatus,
+} from '@careerpilot/domain-ui-logic';
+import type { ThemeKey } from '@careerpilot/ui-tokens';
+import type { IsoDateTime, SignInEvent, Track } from '../types';
+
+export interface AdminSummary {
+  id: string;
+  fullName: string;
+  email: string;
+  role: AdminRole;
+}
+
+export interface AdminSession {
+  accessToken: string;
+  admin: AdminSummary;
+  permissions: AdminPermission[];
+}
+
+export interface AdminPermission {
+  area: AdminArea;
+  actions: PermissionAction[];
+}
+
+export interface PageQuery {
+  search?: string;
+  status?: string;
+  page: number;
+  pageSize: number;
+}
+
+export interface Page<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface CountByKey {
+  key: string;
+  count: number;
+}
+
+export interface DailyCount {
+  date: string;
+  count: number;
+}
+
+export interface AdminDashboard {
+  generatedAt: IsoDateTime;
+  users: {
+    total: number;
+    newThisWeek: number;
+    active: number;
+    paused: number;
+    suspended: number;
+    pendingDeletion: number;
+    automaticEnabled: number;
+    incompleteProfiles: number;
+  };
+  applications: {
+    total: number;
+    bySubmissionStatus: CountByKey[];
+    byOutcomeStatus: CountByKey[];
+    byMode: CountByKey[];
+    approvalsWaiting: number;
+    failures: number;
+    outcomeUnknown: number;
+    perDay: DailyCount[];
+  };
+  opportunities: { discovered: number; active: number; expired: number; flagged: number; archivedCirculars: number };
+  sources: { total: number; healthy: number; degraded: number; failing: number; disabled: number };
+  notifications: { sent: number; delivered: number; failed: number };
+  health: Array<{ service: string; status: ServiceHealth }>;
+  emergencyStop: EmergencyStop;
+}
+
+export interface AdminUserRow {
+  id: string;
+  fullName: string;
+  email: string;
+  status: UserAccountStatus;
+  country: string;
+  createdAt: IsoDateTime;
+  lastSignInAt?: IsoDateTime;
+  applicationsCount: number;
+  automaticEnabled: boolean;
+  profileCompleteness: number;
+}
+
+export interface SecretMetadata {
+  kind: string;
+  label: string;
+  createdAt: IsoDateTime;
+  lastUsedAt?: IsoDateTime;
+}
+
+export interface AdminUserDetail extends AdminUserRow {
+  phone?: string;
+  tracks: Track[];
+  recentApplications: AdminApplicationRow[];
+  signIns: SignInEvent[];
+  secrets: SecretMetadata[];
+}
+
+export interface AdminOpportunityRow {
+  id: string;
+  title: string;
+  organization: string;
+  countryCode: string;
+  type: OpportunityType;
+  status: OpportunityStatus;
+  discoveredAt: IsoDateTime;
+  applicationsCount: number;
+}
+
+export interface AdminSourceRow {
+  id: string;
+  name: string;
+  status: SourceStatus;
+  enabled: boolean;
+  lastSuccessAt?: IsoDateTime;
+  failuresLast24h: number;
+  opportunitiesFound: number;
+}
+
+export interface AdminApplicationRow {
+  id: string;
+  userName: string;
+  opportunityTitle: string;
+  organization: string;
+  submissionStatus: SubmissionStatus;
+  outcomeStatus: OutcomeStatus;
+  route: ApplicationRoute;
+  mode: ApplicationMode;
+  updatedAt: IsoDateTime;
+}
+
+export interface EmergencyStop {
+  active: boolean;
+  scope?: EmergencyStopScope;
+  target?: string;
+  reason?: string;
+  since?: IsoDateTime;
+}
+
+export interface PlatformSettings {
+  activeTheme: ThemeKey;
+  emergencyStop: EmergencyStop;
+  dailyApplicationCap: number;
+  approvalValidityDays: number;
+  deletionGraceDays: number;
+}
+
+export interface PlatformSettingsUpdate {
+  activeTheme?: ThemeKey;
+  dailyApplicationCap?: number;
+  approvalValidityDays?: number;
+  deletionGraceDays?: number;
+}
+
+export interface EmergencyStopRequest {
+  scope: EmergencyStopScope;
+  target?: string;
+  reason: string;
+}
+
+export interface AuditEntry {
+  id: string;
+  at: IsoDateTime;
+  actorName: string;
+  actorType: ActorType;
+  action: string;
+  target: string;
+}
+
+export interface AdminAccount {
+  id: string;
+  fullName: string;
+  email: string;
+  role: AdminRole;
+  suspended: boolean;
+  mfaEnabled: boolean;
+  lastSignInAt?: IsoDateTime;
+}

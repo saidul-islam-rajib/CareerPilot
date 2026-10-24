@@ -12,6 +12,12 @@ import {
   ApplicationMode,
   TrackKind,
   OpportunityDecision,
+  UserAccountStatus,
+  SourceStatus,
+  OpportunityStatus,
+  AdminRole,
+  ServiceHealth,
+  ActorType,
   type EnumValueMetadata,
 } from '@careerpilot/domain-ui-logic';
 
@@ -115,5 +121,41 @@ export const enumValueSeed: EnumValueMetadata[] = [
     [OpportunityDecision.Dismissed, StatusTone.Neutral],
     [OpportunityDecision.NotEligible, StatusTone.Neutral],
     [OpportunityDecision.Irrelevant, StatusTone.Neutral],
+  ]),
+  ...rows(EnumKey.UserAccountStatus, [
+    [UserAccountStatus.Active, StatusTone.Success],
+    [UserAccountStatus.Paused, StatusTone.Warning],
+    [UserAccountStatus.Suspended, StatusTone.Danger],
+    [UserAccountStatus.PendingDeletion, StatusTone.Warning],
+    [UserAccountStatus.Deleted, StatusTone.Neutral, true],
+  ]),
+  ...rows(EnumKey.SourceStatus, [
+    [SourceStatus.Healthy, StatusTone.Success],
+    [SourceStatus.Degraded, StatusTone.Warning],
+    [SourceStatus.Failing, StatusTone.Danger],
+    [SourceStatus.Disabled, StatusTone.Neutral],
+  ]),
+  ...rows(EnumKey.OpportunityStatus, [
+    [OpportunityStatus.Active, StatusTone.Success],
+    [OpportunityStatus.Expired, StatusTone.Neutral, true],
+    [OpportunityStatus.Flagged, StatusTone.Danger],
+    [OpportunityStatus.Duplicate, StatusTone.Neutral],
+  ]),
+  ...rows(EnumKey.AdminRole, [
+    [AdminRole.SuperAdmin, StatusTone.Primary],
+    [AdminRole.Support, StatusTone.Info],
+    [AdminRole.Operations, StatusTone.Info],
+    [AdminRole.ReadOnly, StatusTone.Neutral],
+  ]),
+  ...rows(EnumKey.ServiceHealth, [
+    [ServiceHealth.Up, StatusTone.Success],
+    [ServiceHealth.Degraded, StatusTone.Warning],
+    [ServiceHealth.Down, StatusTone.Danger],
+  ]),
+  ...rows(EnumKey.ActorType, [
+    [ActorType.User, StatusTone.Info],
+    [ActorType.Admin, StatusTone.Primary],
+    [ActorType.System, StatusTone.Neutral],
+    [ActorType.Agent, StatusTone.Neutral],
   ]),
 ];
