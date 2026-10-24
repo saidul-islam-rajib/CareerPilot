@@ -1,0 +1,56 @@
+from collections.abc import Callable
+from typing import Any
+
+from careerpilot.platform.config import Settings
+from careerpilot.platform.enums import ThemeKey
+
+
+class PublicConfigService:
+    def __init__(self, settings: Settings, enum_values: list[dict[str, Any]], active_theme: Callable[[], ThemeKey]) -> None:
+        self._settings = settings
+        self._enum_values = enum_values
+        self._active_theme = active_theme
+
+    def get(self) -> dict[str, Any]:
+        s = self._settings
+        policy = s.validation
+        return {
+            "theme": self._active_theme().value,
+            "display": {
+                "strongMatchScore": s.display.strong_match_score,
+                "fairMatchScore": s.display.fair_match_score,
+                "urgentDeadlineDays": s.display.urgent_deadline_days,
+            },
+            "locale": s.account.locale,
+            "defaultTimeZone": s.account.default_time_zone,
+            "enumValues": self._enum_values,
+            "validationPolicy": {
+                "password": {
+                    "minLength": policy.password.min_length,
+                    "maxLength": policy.password.max_length,
+                    "requireMixedCase": policy.password.require_mixed_case,
+                    "requireDigit": policy.password.require_digit,
+                    "requireSymbol": policy.password.require_symbol,
+                },
+                "name": {"minLength": policy.name.min_length, "maxLength": policy.name.max_length},
+                "email": {"maxLength": policy.email.max_length},
+                "answer": {"maxLength": policy.answer.max_length},
+                "track": {"minResultCount": policy.track.min_result_count, "maxResultCount": policy.track.max_result_count},
+            },
+            "pauseOptions": [
+                {"duration": o.duration.value, **({"amount": o.amount} if o.amount is not None else {})} for o in s.account.pause_options
+            ],
+            "accountDeletionGraceDays": s.account.deletion_grace_days,
+            "legal": {
+                "termsUrl": str(s.legal.terms_url),
+                "privacyUrl": str(s.legal.privacy_url),
+                "termsVersion": s.legal.terms_version,
+                "privacyVersion": s.legal.privacy_version,
+            },
+            "branding": {
+                "productName": s.branding.product_name,
+                "developerName": s.branding.developer_name,
+                "developerUrl": str(s.branding.developer_url),
+            },
+            "openSourceComponents": [{"name": c.name, "licence": c.licence, "url": str(c.url)} for c in s.open_source_components],
+        }
