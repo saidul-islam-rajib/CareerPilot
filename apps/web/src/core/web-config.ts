@@ -6,3 +6,7 @@ export function getWebConfig(): AppConfig {
   cached ??= parseAppConfig({ careerpilot: JSON.parse(process.env.NEXT_PUBLIC_CAREERPILOT_CONFIG ?? '{}') });
   return cached;
 }
+
+export function getAppVersion(): string {
+  return process.env.NEXT_PUBLIC_APP_VERSION ?? '';
+}

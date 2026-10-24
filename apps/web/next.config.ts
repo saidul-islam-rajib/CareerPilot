@@ -2,6 +2,8 @@ import type { NextConfig } from 'next';
 
 const { loadConfig } = require('../../scripts/config/load-config.js') as { loadConfig: (env: string) => Record<string, unknown> };
 
+const { version } = require('./package.json') as { version: string };
+
 const appEnv = process.env.APP_ENV ?? 'local';
 
 const nextConfig: NextConfig = {
@@ -17,6 +19,7 @@ const nextConfig: NextConfig = {
   ],
   env: {
     NEXT_PUBLIC_CAREERPILOT_CONFIG: JSON.stringify(loadConfig(appEnv)),
+    NEXT_PUBLIC_APP_VERSION: version,
   },
   poweredByHeader: false,
   async headers() {
