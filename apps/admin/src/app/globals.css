@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@import "../../../../packages/ui-web/src/theme.css";
+
+@source "../../../../packages/ui-web/src";
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+}
