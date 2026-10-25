@@ -6,7 +6,7 @@ from typing import Any, Literal, cast
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
-from careerpilot.platform.enums import PauseDuration, ThemeKey
+from careerpilot.platform.enums import CompletenessKind, PauseDuration, ProfileFieldType, ThemeKey
 
 CONFIG_ROOT_ENV = "CAREERPILOT_CONFIG_ROOT"
 APP_ENV = "APP_ENV"
@@ -249,6 +249,82 @@ class WorkersConfig(Strict):
     activity_max_attempts: int = Field(gt=0)
 
 
+class ProfileFieldConfig(Strict):
+    key: str
+    type: ProfileFieldType
+    required: bool = False
+    max_length: int | None = Field(default=None, gt=0)
+    min: float | None = None
+    max: float | None = None
+    options: str | None = None
+
+
+class ProfileSectionConfig(Strict):
+    key: str
+    icon: str
+    title_field: str
+    subtitle_fields: list[str] = Field(default_factory=list[str])
+    start_field: str | None = None
+    end_field: str | None = None
+    ongoing_field: str | None = None
+    body_field: str | None = None
+    link_field: str | None = None
+    fields: list[ProfileFieldConfig]
+
+    def field(self, key: str) -> ProfileFieldConfig | None:
+        return next((f for f in self.fields if f.key == key), None)
+
+
+class ProfileLimits(Strict):
+    max_contacts: int = Field(gt=0)
+    max_skills: int = Field(gt=0)
+    max_skill_length: int = Field(gt=0)
+    max_entries_per_section: int = Field(gt=0)
+    max_documents: int = Field(gt=0)
+    headline_max_length: int = Field(gt=0)
+    location_max_length: int = Field(gt=0)
+    summary_max_length: int = Field(gt=0)
+    contact_label_max_length: int = Field(gt=0)
+    document_name_max_length: int = Field(gt=0)
+    phone_pattern: str
+    min_year: int
+    future_years: int = Field(ge=0)
+    min_skills_for_completeness: int = Field(ge=0)
+
+
+class UploadConfig(Strict):
+    max_document_bytes: int = Field(gt=0)
+    max_photo_bytes: int = Field(gt=0)
+    document_types: list[str]
+    photo_types: list[str]
+
+
+class StorageConfig(Strict):
+    local_root: str
+    signed_url_ttl_seconds: int = Field(gt=0)
+
+
+class CompletenessRule(Strict):
+    kind: CompletenessKind
+    weight: int = Field(ge=0)
+    section: str | None = None
+
+    @property
+    def key(self) -> str:
+        return self.section or self.kind.value
+
+
+class ProfileConfig(Strict):
+    limits: ProfileLimits
+    uploads: UploadConfig
+    storage: StorageConfig
+    completeness: list[CompletenessRule]
+    sections: list[ProfileSectionConfig]
+
+    def section(self, key: str) -> ProfileSectionConfig | None:
+        return next((s for s in self.sections if s.key == key), None)
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -266,6 +342,7 @@ class Settings(Strict):
     discovery: DiscoveryConfig
     matching: MatchingConfig
     workers: WorkersConfig
+    profile: ProfileConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

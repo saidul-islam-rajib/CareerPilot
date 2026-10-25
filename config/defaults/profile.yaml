@@ -1,0 +1,149 @@
+profile:
+  limits:
+    max_contacts: 12
+    max_skills: 60
+    max_skill_length: 60
+    max_entries_per_section: 40
+    max_documents: 30
+    headline_max_length: 160
+    location_max_length: 120
+    summary_max_length: 2000
+    contact_label_max_length: 40
+    document_name_max_length: 120
+    phone_pattern: "^\\+?[0-9][0-9 ()-]{5,19}$"
+    min_year: 1950
+    future_years: 10
+    min_skills_for_completeness: 3
+  uploads:
+    max_document_bytes: 10485760
+    max_photo_bytes: 5242880
+    document_types: [application/pdf]
+    photo_types: [image/jpeg, image/png, image/webp]
+  storage:
+    local_root: .data/files
+    signed_url_ttl_seconds: 900
+  completeness:
+    - kind: basics
+      weight: 10
+    - kind: photo
+      weight: 5
+    - kind: contacts
+      weight: 10
+    - kind: section
+      section: experience
+      weight: 20
+    - kind: section
+      section: education
+      weight: 15
+    - kind: skills
+      weight: 15
+    - kind: section
+      section: languages
+      weight: 5
+    - kind: documents
+      weight: 20
+  sections:
+    - key: experience
+      icon: briefcase
+      title_field: title
+      subtitle_fields: [organization, location]
+      start_field: start
+      end_field: end
+      ongoing_field: current
+      body_field: summary
+      fields:
+        - { key: title, type: text, required: true, max_length: 120 }
+        - { key: organization, type: text, required: true, max_length: 120 }
+        - { key: location, type: text, max_length: 120 }
+        - { key: start, type: month, required: true }
+        - { key: end, type: month }
+        - { key: current, type: boolean }
+        - { key: summary, type: textarea, max_length: 2000 }
+    - key: education
+      icon: graduation-cap
+      title_field: degree
+      subtitle_fields: [institution, result]
+      start_field: start_year
+      end_field: end_year
+      body_field: field_of_study
+      fields:
+        - { key: degree, type: text, required: true, max_length: 160 }
+        - { key: field_of_study, type: text, max_length: 120 }
+        - { key: institution, type: text, required: true, max_length: 160 }
+        - { key: start_year, type: year, required: true }
+        - { key: end_year, type: year }
+        - { key: result, type: text, max_length: 60 }
+    - key: languages
+      icon: languages
+      title_field: language
+      subtitle_fields: [proficiency]
+      fields:
+        - { key: language, type: text, required: true, max_length: 60 }
+        - { key: proficiency, type: select, required: true, options: language_proficiency }
+    - key: tests
+      icon: clipboard-check
+      title_field: test
+      subtitle_fields: [score]
+      start_field: taken_on
+      end_field: expires_on
+      fields:
+        - { key: test, type: text, required: true, max_length: 60 }
+        - { key: score, type: text, required: true, max_length: 40 }
+        - { key: taken_on, type: month }
+        - { key: expires_on, type: month }
+    - key: certifications
+      icon: award
+      title_field: name
+      subtitle_fields: [issuer]
+      start_field: issued_on
+      end_field: expires_on
+      link_field: credential_url
+      fields:
+        - { key: name, type: text, required: true, max_length: 160 }
+        - { key: issuer, type: text, required: true, max_length: 120 }
+        - { key: issued_on, type: month }
+        - { key: expires_on, type: month }
+        - { key: credential_url, type: url, max_length: 2048 }
+    - key: projects
+      icon: folder-git-2
+      title_field: name
+      subtitle_fields: [role]
+      start_field: start
+      end_field: end
+      link_field: url
+      body_field: summary
+      fields:
+        - { key: name, type: text, required: true, max_length: 120 }
+        - { key: role, type: text, max_length: 120 }
+        - { key: url, type: url, max_length: 2048 }
+        - { key: start, type: month }
+        - { key: end, type: month }
+        - { key: summary, type: textarea, max_length: 2000 }
+    - key: links
+      icon: link
+      title_field: label
+      link_field: url
+      fields:
+        - { key: label, type: text, required: true, max_length: 60 }
+        - { key: url, type: url, required: true, max_length: 2048 }
+    - key: awards
+      icon: trophy
+      title_field: title
+      subtitle_fields: [issuer]
+      start_field: date
+      body_field: summary
+      fields:
+        - { key: title, type: text, required: true, max_length: 160 }
+        - { key: issuer, type: text, max_length: 120 }
+        - { key: date, type: month }
+        - { key: summary, type: textarea, max_length: 1000 }
+    - key: referees
+      icon: users
+      title_field: name
+      subtitle_fields: [relationship, organization]
+      fields:
+        - { key: name, type: text, required: true, max_length: 120 }
+        - { key: relationship, type: text, required: true, max_length: 80 }
+        - { key: organization, type: text, max_length: 120 }
+        - { key: email, type: email, max_length: 254 }
+        - { key: phone, type: phone, max_length: 24 }

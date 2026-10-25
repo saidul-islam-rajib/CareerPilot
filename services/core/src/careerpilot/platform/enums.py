@@ -177,6 +177,45 @@ class SponsorshipEvidence(StrEnum):
     UNVERIFIED = "unverified"
 
 
+class ProfileFieldType(StrEnum):
+    TEXT = "text"
+    TEXTAREA = "textarea"
+    URL = "url"
+    EMAIL = "email"
+    PHONE = "phone"
+    MONTH = "month"
+    YEAR = "year"
+    NUMBER = "number"
+    SELECT = "select"
+    BOOLEAN = "boolean"
+
+
+class CompletenessKind(StrEnum):
+    BASICS = "basics"
+    PHOTO = "photo"
+    CONTACTS = "contacts"
+    SKILLS = "skills"
+    DOCUMENTS = "documents"
+    SECTION = "section"
+
+
+class LanguageProficiency(StrEnum):
+    NATIVE = "native"
+    FLUENT = "fluent"
+    PROFESSIONAL = "professional"
+    INTERMEDIATE = "intermediate"
+    BASIC = "basic"
+
+
+class DocumentKind(StrEnum):
+    CV = "cv"
+    COVER_LETTER = "cover_letter"
+    CERTIFICATE = "certificate"
+    TRANSCRIPT = "transcript"
+    IDENTITY = "identity"
+    OTHER = "other"
+
+
 class ThemeKey(StrEnum):
     SOBER = "sober"
     HORIZON = "horizon"

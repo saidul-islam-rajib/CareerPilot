@@ -17,3 +17,6 @@ coordination:
   environment: docker
 matching:
   mode: claude
+profile:
+  storage:
+    local_root: /data/files

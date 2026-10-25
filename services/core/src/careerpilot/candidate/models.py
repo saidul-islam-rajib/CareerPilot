@@ -1,8 +1,14 @@
+from collections.abc import Callable
+from typing import Any, cast
+
+from pydantic import Field, model_validator
+
 from careerpilot.platform.enums import (
     AnswerSource,
     ApplicationMode,
     ApprovalState,
     ContactKind,
+    DocumentKind,
     OpportunityDecision,
     OutcomeStatus,
     PauseScope,
@@ -10,6 +16,7 @@ from careerpilot.platform.enums import (
     SubmissionWindowKind,
     TimelineActor,
 )
+from careerpilot.platform.files import PDF, SAMPLE_PREFIX
 from careerpilot.platform.model import CamelModel
 
 
@@ -188,6 +195,12 @@ class ApplicationRecord(ApplicationSummary):
         return ApplicationSummary.model_validate(self.model_dump(include=set(ApplicationSummary.model_fields)))
 
 
+EntryValue = str | int | float | bool | None
+LEGACY_EDUCATION = "education"
+LEGACY_EXPERIENCE = "experience"
+MONTH_LENGTH = 7
+
+
 class Contact(CamelModel):
     id: str
     kind: ContactKind
@@ -196,45 +209,145 @@ class Contact(CamelModel):
     is_primary: bool
     verified: bool
     position: int
+    deleted_at: str | None = None
 
 
-class Education(CamelModel):
+class ProfileEntry(CamelModel):
     id: str
-    degree: str
-    institution: str
-    start_year: int
-    end_year: int | None = None
-    result: str | None = None
+    position: int
+    values: dict[str, EntryValue]
+    updated_at: str
+    deleted_at: str | None = None
+
+    def text(self, key: str) -> str:
+        value = self.values.get(key)
+        return "" if value is None else str(value)
 
 
-class Experience(CamelModel):
-    id: str
-    title: str
-    organization: str
-    start: str
-    end: str | None = None
-    summary: str
+class StoredFile(CamelModel):
+    key: str
+    file_name: str
+    content_type: str
+    size_bytes: int
+    uploaded_at: str
+
+
+class DocumentVersion(StoredFile):
+    version: int
 
 
 class ProfileDocument(CamelModel):
     id: str
     name: str
-    version: int
+    kind: DocumentKind
+    position: int
+    versions: list[DocumentVersion]
     updated_at: str
+    deleted_at: str | None = None
+
+    @property
+    def current(self) -> DocumentVersion:
+        return self.versions[-1]
+
+
+class CompletenessItem(CamelModel):
+    key: str
+    weight: int
+    done: bool
+
+
+def _legacy_entries(
+    items: list[dict[str, Any]], convert: Callable[[dict[str, Any]], dict[str, EntryValue]], at: str
+) -> list[dict[str, Any]]:
+    return [{"id": str(item["id"]), "position": index + 1, "values": convert(item), "updatedAt": at} for index, item in enumerate(items)]
+
+
+def _legacy_education(item: dict[str, Any]) -> dict[str, EntryValue]:
+    keys = {"degree": "degree", "institution": "institution", "startYear": "start_year", "endYear": "end_year", "result": "result"}
+    return {target: item[source] for source, target in keys.items() if item.get(source) is not None}
+
+
+def _legacy_experience(item: dict[str, Any]) -> dict[str, EntryValue]:
+    values: dict[str, EntryValue] = {
+        "title": item.get("title"),
+        "organization": item.get("organization"),
+        "start": str(item.get("start", ""))[:MONTH_LENGTH] or None,
+        "end": str(item["end"])[:MONTH_LENGTH] if item.get("end") else None,
+        "current": not item.get("end"),
+        "summary": item.get("summary"),
+    }
+    return {k: v for k, v in values.items() if v is not None}
+
+
+def _legacy_documents(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    upgraded: list[dict[str, Any]] = []
+    for index, item in enumerate(items):
+        if "versions" in item:
+            upgraded.append(item)
+            continue
+        version = int(item.get("version", 1))
+        slug = str(item["id"]).replace("_", "-")
+        upgraded.append(
+            {
+                "id": item["id"],
+                "name": item["name"],
+                "kind": item.get("kind", DocumentKind.CV.value),
+                "position": index + 1,
+                "updatedAt": item["updatedAt"],
+                "versions": [
+                    {
+                        "key": f"{SAMPLE_PREFIX}{slug}-v{version}.pdf",
+                        "fileName": f"{slug}-v{version}.pdf",
+                        "contentType": PDF,
+                        "sizeBytes": int(item.get("sizeBytes", 0)),
+                        "uploadedAt": item["updatedAt"],
+                        "version": version,
+                    }
+                ],
+            }
+        )
+    return upgraded
 
 
 class Profile(CamelModel):
     id: str
     full_name: str
     headline: str
+    location: str = ""
+    summary: str = ""
+    photo: StoredFile | None = None
     photo_url: str | None = None
     signature_url: str | None = None
-    completeness: int
+    completeness: int = 0
     contacts: list[Contact]
-    education: list[Education]
-    experience: list[Experience]
     skills: list[str]
+    sections: dict[str, list[ProfileEntry]] = Field(default_factory=dict[str, list[ProfileEntry]])
     documents: list[ProfileDocument]
+
+    @model_validator(mode="before")
+    @classmethod
+    def upgrade_legacy(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        document = dict(cast("dict[str, Any]", data))
+        at = str(document.get("updatedAt", ""))
+        sections = dict(cast("dict[str, Any]", document.get("sections") or {}))
+        if LEGACY_EXPERIENCE in document:
+            sections.setdefault(LEGACY_EXPERIENCE, _legacy_entries(document.pop(LEGACY_EXPERIENCE), _legacy_experience, at))
+        if LEGACY_EDUCATION in document:
+            sections.setdefault(LEGACY_EDUCATION, _legacy_entries(document.pop(LEGACY_EDUCATION), _legacy_education, at))
+        document["sections"] = sections
+        document["documents"] = _legacy_documents(list(document.get("documents") or []))
+        return document
+
+    def active_contacts(self) -> list[Contact]:
+        return sorted((c for c in self.contacts if c.deleted_at is None), key=lambda c: c.position)
+
+    def active_entries(self, section: str) -> list[ProfileEntry]:
+        return sorted((e for e in self.sections.get(section, []) if e.deleted_at is None), key=lambda e: e.position)
+
+    def active_documents(self) -> list[ProfileDocument]:
+        return sorted((d for d in self.documents if d.deleted_at is None), key=lambda d: d.position)
 
 
 class SubmissionWindow(CamelModel):
