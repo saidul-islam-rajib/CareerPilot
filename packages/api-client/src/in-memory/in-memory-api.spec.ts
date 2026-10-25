@@ -126,8 +126,9 @@ describe('in-memory profile and settings', () => {
 
   it('keeps one primary contact per kind', async () => {
     const updated = await createTestApi().profile.setPrimaryContact('c_email_personal');
-    const primaries = updated.contacts.filter((c) => c.isPrimary).map((c) => c.id);
-    expect(primaries).toEqual(['c_email_personal']);
+    const primaries = (kind: string) => updated.contacts.filter((c) => c.kind === kind && c.isPrimary).map((c) => c.id);
+    expect(primaries('email')).toEqual(['c_email_personal']);
+    expect(primaries('phone')).toEqual(['c_phone_mobile']);
   });
 
   it('validates track updates against policy', async () => {

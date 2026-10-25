@@ -1,13 +1,20 @@
 import type { OpportunityDecision } from '@careerpilot/domain-ui-logic';
+import type { EntryValue } from '@careerpilot/dynamic-forms';
 import type {
   ApplicationFilter,
   ApplicationRecord,
   ApplicationSummary,
   ApprovalDetail,
   ApprovalSummary,
+  BasicsChanges,
+  ContactChanges,
+  ContactInput,
   DashboardSummary,
   DeletionRequest,
+  DocumentChanges,
+  DocumentInput,
   OpportunityDetail,
+  PasswordChange,
   PauseOption,
   Profile,
   PublicConfig,
@@ -19,6 +26,7 @@ import type {
   SubmissionWindow,
   Track,
   TrackUpdate,
+  UploadSource,
 } from './types';
 
 export interface AuthApi {
@@ -57,8 +65,27 @@ export interface ApplicationApi {
 
 export interface ProfileApi {
   getProfile(): Promise<Profile>;
+  updateBasics(changes: BasicsChanges): Promise<Profile>;
+  setPhoto(file: UploadSource): Promise<Profile>;
+  removePhoto(): Promise<Profile>;
+  addContact(input: ContactInput): Promise<Profile>;
+  updateContact(id: string, changes: ContactChanges): Promise<Profile>;
+  removeContact(id: string): Promise<Profile>;
+  restoreContact(id: string): Promise<Profile>;
   reorderContacts(orderedIds: string[]): Promise<Profile>;
   setPrimaryContact(id: string): Promise<Profile>;
+  setSkills(skills: string[]): Promise<Profile>;
+  addEntry(section: string, values: Record<string, EntryValue>): Promise<Profile>;
+  updateEntry(section: string, id: string, values: Record<string, EntryValue>): Promise<Profile>;
+  removeEntry(section: string, id: string): Promise<Profile>;
+  restoreEntry(section: string, id: string): Promise<Profile>;
+  reorderEntries(section: string, orderedIds: string[]): Promise<Profile>;
+  uploadDocument(input: DocumentInput): Promise<Profile>;
+  uploadDocumentVersion(id: string, file: UploadSource): Promise<Profile>;
+  updateDocument(id: string, changes: DocumentChanges): Promise<Profile>;
+  removeDocument(id: string): Promise<Profile>;
+  restoreDocument(id: string): Promise<Profile>;
+  reorderDocuments(orderedIds: string[]): Promise<Profile>;
 }
 
 export interface SettingsApi {
@@ -69,6 +96,7 @@ export interface SettingsApi {
   updateSubmissionWindow(window: SubmissionWindow): Promise<Settings>;
   listSignInActivity(): Promise<SignInEvent[]>;
   requestAccountDeletion(): Promise<DeletionRequest>;
+  changePassword(change: PasswordChange): Promise<void>;
 }
 
 export interface CareerPilotApi {

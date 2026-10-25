@@ -5,12 +5,14 @@ export const HttpMethod = {
   Post: 'POST',
   Put: 'PUT',
   Patch: 'PATCH',
+  Delete: 'DELETE',
 } as const;
 export type HttpMethod = (typeof HttpMethod)[keyof typeof HttpMethod];
 
 export interface HttpClientOptions {
   baseUrl: string;
   timeoutMs: number;
+  uploadTimeoutMs?: number;
   fetchFn: typeof fetch;
   getAccessToken: () => string | undefined;
   onUnauthorized?: () => void;
@@ -44,11 +46,12 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
   const fetchFn = options.fetchFn;
   return {
     async request<T>(method: HttpMethod, path: string, body?: unknown): Promise<T> {
+      const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), options.timeoutMs);
+      const timer = setTimeout(() => controller.abort(), isForm ? (options.uploadTimeoutMs ?? options.timeoutMs) : options.timeoutMs);
       const token = options.getAccessToken();
       const headers: Record<string, string> = { Accept: 'application/json' };
-      if (body !== undefined) {
+      if (body !== undefined && !isForm) {
         headers['Content-Type'] = 'application/json';
       }
       if (token) {
@@ -58,7 +61,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
         const response = await fetchFn(`${baseUrl}${path}`, {
           method,
           headers,
-          body: body === undefined ? undefined : JSON.stringify(body),
+          body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
           signal: controller.signal,
         });
         if (!response.ok) {

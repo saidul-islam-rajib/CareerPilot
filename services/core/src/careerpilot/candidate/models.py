@@ -279,31 +279,35 @@ def _legacy_experience(item: dict[str, Any]) -> dict[str, EntryValue]:
     return {k: v for k, v in values.items() if v is not None}
 
 
+def _sample_version(slug: str, item: dict[str, Any], fallback_at: str) -> dict[str, Any]:
+    if "key" in item:
+        return item
+    version = int(item.get("version", 1))
+    return {
+        "key": f"{SAMPLE_PREFIX}{slug}-v{version}.pdf",
+        "fileName": item.get("fileName") or f"{slug}-v{version}.pdf",
+        "contentType": item.get("contentType", PDF),
+        "sizeBytes": int(item.get("sizeBytes", 0)),
+        "uploadedAt": item.get("uploadedAt") or fallback_at,
+        "version": version,
+    }
+
+
 def _legacy_documents(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     upgraded: list[dict[str, Any]] = []
     for index, item in enumerate(items):
-        if "versions" in item:
-            upgraded.append(item)
-            continue
-        version = int(item.get("version", 1))
         slug = str(item["id"]).replace("_", "-")
+        versions = item.get("versions") or [{"version": item.get("version", 1), "sizeBytes": item.get("sizeBytes", 0)}]
+        domain_versions = sorted((_sample_version(slug, v, item["updatedAt"]) for v in versions), key=lambda v: int(v["version"]))
         upgraded.append(
             {
                 "id": item["id"],
                 "name": item["name"],
                 "kind": item.get("kind", DocumentKind.CV.value),
-                "position": index + 1,
+                "position": item.get("position", index + 1),
                 "updatedAt": item["updatedAt"],
-                "versions": [
-                    {
-                        "key": f"{SAMPLE_PREFIX}{slug}-v{version}.pdf",
-                        "fileName": f"{slug}-v{version}.pdf",
-                        "contentType": PDF,
-                        "sizeBytes": int(item.get("sizeBytes", 0)),
-                        "uploadedAt": item["updatedAt"],
-                        "version": version,
-                    }
-                ],
+                "versions": domain_versions,
+                **({"deletedAt": item["deletedAt"]} if item.get("deletedAt") else {}),
             }
         )
     return upgraded

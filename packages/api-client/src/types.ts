@@ -2,7 +2,9 @@ import type {
   ApplicationMode,
   ApplicationRoute,
   ApprovalState,
+  CompletenessKind,
   ContactKind,
+  DocumentKind,
   EnumValueMetadata,
   Money,
   MoneyRange,
@@ -19,6 +21,7 @@ import type {
   TrackKind,
   WorkArrangement,
 } from '@careerpilot/domain-ui-logic';
+import type { EntryValue, FormLimits, SectionDefinition } from '@careerpilot/dynamic-forms';
 import type { ThemeKey } from '@careerpilot/ui-tokens';
 import type { ValidationPolicy } from '@careerpilot/validation';
 
@@ -73,6 +76,7 @@ export interface PublicConfig {
   legal: { termsUrl: string; privacyUrl: string; termsVersion: string; privacyVersion: string };
   branding: { productName: string; developerName: string; developerUrl: string };
   openSourceComponents: OpenSourceComponent[];
+  profile: ProfileSettings;
 }
 
 export interface PauseOption {
@@ -244,43 +248,133 @@ export interface Contact {
   position: number;
 }
 
-export interface Education {
+export interface ProfileEntry {
   id: string;
-  degree: string;
-  institution: string;
-  startYear: number;
-  endYear?: number;
-  result?: string;
+  position: number;
+  values: Record<string, EntryValue>;
+  updatedAt: IsoDateTime;
 }
 
-export interface Experience {
-  id: string;
-  title: string;
-  organization: string;
-  start: IsoDateTime;
-  end?: IsoDateTime;
-  summary: string;
+export interface FileInfo {
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  uploadedAt: IsoDateTime;
+  url: string;
+}
+
+export interface DocumentVersion extends FileInfo {
+  version: number;
 }
 
 export interface ProfileDocument {
   id: string;
   name: string;
+  kind: DocumentKind;
+  position: number;
   version: number;
   updatedAt: IsoDateTime;
+  file: DocumentVersion;
+  versions: DocumentVersion[];
+}
+
+export interface CompletenessItem {
+  key: string;
+  weight: number;
+  done: boolean;
 }
 
 export interface Profile {
   id: string;
   fullName: string;
   headline: string;
+  location: string;
+  summary: string;
   photoUrl?: string;
   signatureUrl?: string;
   completeness: number;
+  completenessItems: CompletenessItem[];
   contacts: Contact[];
-  education: Education[];
-  experience: Experience[];
   skills: string[];
+  sections: Record<string, ProfileEntry[]>;
   documents: ProfileDocument[];
+}
+
+export interface ProfileLimits extends FormLimits {
+  maxContacts: number;
+  maxSkills: number;
+  maxSkillLength: number;
+  maxEntriesPerSection: number;
+  maxDocuments: number;
+  headlineMaxLength: number;
+  locationMaxLength: number;
+  summaryMaxLength: number;
+  contactLabelMaxLength: number;
+  documentNameMaxLength: number;
+  minSkillsForCompleteness: number;
+}
+
+export interface UploadLimits {
+  maxDocumentBytes: number;
+  maxPhotoBytes: number;
+  documentTypes: string[];
+  photoTypes: string[];
+}
+
+export interface CompletenessRule {
+  kind: CompletenessKind;
+  weight: number;
+  section?: string;
+}
+
+export interface ProfileSettings {
+  pageOrder: string[];
+  sections: SectionDefinition[];
+  limits: ProfileLimits;
+  uploads: UploadLimits;
+  completeness: CompletenessRule[];
+}
+
+export interface UploadSource {
+  name: string;
+  type: string;
+  size: number;
+  blob?: Blob;
+  uri?: string;
+}
+
+export interface BasicsChanges {
+  fullName?: string;
+  headline?: string;
+  location?: string;
+  summary?: string;
+}
+
+export interface ContactInput {
+  kind: ContactKind;
+  value: string;
+  label: string;
+}
+
+export interface ContactChanges {
+  value?: string;
+  label?: string;
+}
+
+export interface DocumentInput {
+  file: UploadSource;
+  name?: string;
+  kind: DocumentKind;
+}
+
+export interface DocumentChanges {
+  name?: string;
+  kind?: DocumentKind;
+}
+
+export interface PasswordChange {
+  currentPassword: string;
+  newPassword: string;
 }
 
 export interface SubmissionWindow {

@@ -104,13 +104,13 @@ def test_section_entries_follow_their_definitions(container: Container) -> None:
     assert unknown.value.code is ErrorCode.NOT_FOUND
 
     languages = container.profile.add_entry(DEMO_USER, "languages", {"language": "Bangla", "proficiency": "native"})
-    assert languages.active_entries("languages")[0].values == {"language": "Bangla", "proficiency": "native"}
+    assert languages.active_entries("languages")[-1].values == {"language": "Bangla", "proficiency": "native"}
     with pytest.raises(DomainError):
         container.profile.add_entry(DEMO_USER, "languages", {"language": "English", "proficiency": "excellent"})
     with pytest.raises(DomainError):
         container.profile.add_entry(DEMO_USER, "links", {"label": "Site", "url": "javascript:alert(1)"})
     links = container.profile.add_entry(DEMO_USER, "links", {"label": "GitHub", "url": "https://github.com/ayesha"})
-    assert links.active_entries("links")[0].text("url") == "https://github.com/ayesha"
+    assert links.active_entries("links")[-1].text("url") == "https://github.com/ayesha"
 
 
 def test_entries_can_be_edited_removed_restored_and_reordered(container: Container) -> None:

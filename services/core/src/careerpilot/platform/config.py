@@ -315,6 +315,7 @@ class CompletenessRule(Strict):
 
 
 class ProfileConfig(Strict):
+    page_order: list[str]
     limits: ProfileLimits
     uploads: UploadConfig
     storage: StorageConfig

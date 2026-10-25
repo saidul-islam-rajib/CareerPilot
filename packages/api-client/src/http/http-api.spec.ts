@@ -76,3 +76,34 @@ describe('http api', () => {
     await expect(api.config.getPublicConfig()).resolves.toEqual({});
   });
 });
+
+describe('http profile api', () => {
+  it('uploads documents as multipart form data without a JSON content type', async () => {
+    const { api, fetchFn } = setup(jsonResponse(200, {}), 'tok');
+    const blob = new Blob(['%PDF-1.4'], { type: 'application/pdf' });
+    await api.profile.uploadDocument({ file: { name: 'cv.pdf', type: 'application/pdf', size: blob.size, blob }, name: 'My CV', kind: 'cv' });
+    const [url, init] = fetchFn.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://api.example.com/v1/profile/documents');
+    expect(init.method).toBe('POST');
+    expect((init.headers as Record<string, string>)['Content-Type']).toBeUndefined();
+    const form = init.body as FormData;
+    expect(form.get('name')).toBe('My CV');
+    expect(form.get('kind')).toBe('cv');
+    expect((form.get('file') as File).name).toBe('cv.pdf');
+  });
+
+  it('removes with DELETE and encodes section paths', async () => {
+    const removal = setup(jsonResponse(200, {}));
+    const update = setup(jsonResponse(200, {}));
+    await removal.api.profile.removeEntry('tests', 'pe 1');
+    await update.api.profile.updateEntry('languages', 'pe/2', { language: 'Bangla' });
+    const [removeUrl, removeInit] = removal.fetchFn.mock.calls[0] as unknown as [string, RequestInit];
+    const [updateUrl, updateInit] = update.fetchFn.mock.calls[0] as unknown as [string, RequestInit];
+    expect([removeUrl, removeInit.method]).toEqual(['https://api.example.com/v1/profile/sections/tests/pe%201', 'DELETE']);
+    expect([updateUrl, updateInit.method, updateInit.body]).toEqual([
+      'https://api.example.com/v1/profile/sections/languages/pe%2F2',
+      'PATCH',
+      JSON.stringify({ values: { language: 'Bangla' } }),
+    ]);
+  });
+});

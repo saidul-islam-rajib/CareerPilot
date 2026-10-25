@@ -8,7 +8,7 @@ from careerpilot.platform.coordination import MetadataCache
 from careerpilot.platform.enums import ThemeKey
 
 PUBLIC_CONFIG_CACHE = "public-config"
-PUBLIC_PROFILE_KEYS = {"sections", "limits", "uploads"}
+PUBLIC_PROFILE_KEYS = {"page_order", "sections", "limits", "uploads", "completeness"}
 
 
 def camel_keys(value: Any) -> Any:

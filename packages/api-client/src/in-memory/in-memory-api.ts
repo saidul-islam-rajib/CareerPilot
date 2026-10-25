@@ -22,6 +22,7 @@ import {
   type Settings,
 } from '../types';
 import type { DemoState } from './demo.seed';
+import { createProfileStore } from './profile-store';
 
 export interface InMemoryApiOptions {
   config: PublicConfig;
@@ -71,8 +72,10 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
   const { clock, ids, config } = options;
   const respond = <T>(value: T): Promise<T> =>
     new Promise((resolve) => setTimeout(() => resolve(clone(value)), options.latencyMs));
-  const fail = (code: ApiErrorCode): Promise<never> =>
-    new Promise((_, reject) => setTimeout(() => reject(new ApiError(code)), options.latencyMs));
+  const failWith = (code: ApiErrorCode, detail?: string): Promise<never> =>
+    new Promise((_, reject) => setTimeout(() => reject(new ApiError(code, undefined, detail)), options.latencyMs));
+  const fail = (code: ApiErrorCode): Promise<never> => failWith(code);
+  let signedInId: string | undefined;
   const nowIso = () => clock.now().toISOString();
   const addDays = (days: number) => new Date(clock.now().getTime() + days * DAY_MS).toISOString();
 
@@ -139,6 +142,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
           success: account !== undefined,
           current: account !== undefined,
         });
+        signedInId = account?.user.id ?? signedInId;
         return account ? respond({ accessToken: ids.next('token'), user: account.user }) : fail(ApiErrorCode.InvalidCredentials);
       },
       async register(request) {
@@ -151,6 +155,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
         }
         const user = { id: ids.next('usr'), fullName: request.fullName.trim(), email };
         state.accounts.push({ user, password: request.password });
+        signedInId = user.id;
         return respond({ accessToken: ids.next('token'), user });
       },
       requestPasswordReset: () => respond(undefined),
@@ -261,22 +266,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
         ),
       getApplication: async (id) => respond(state.applications.find((a) => a.id === id) ?? notFound()),
     },
-    profile: {
-      getProfile: async () => respond(state.profile),
-      async reorderContacts(orderedIds) {
-        const contacts = state.profile.contacts;
-        if (orderedIds.length !== contacts.length || !contacts.every((c) => orderedIds.includes(c.id))) {
-          return fail(ApiErrorCode.Validation);
-        }
-        state.profile.contacts = orderedIds.map((id, index) => ({ ...(contacts.find((c) => c.id === id) ?? notFound()), position: index + 1 }));
-        return respond(state.profile);
-      },
-      async setPrimaryContact(id) {
-        const target = state.profile.contacts.find((c) => c.id === id) ?? notFound();
-        state.profile.contacts = state.profile.contacts.map((c) => (c.kind === target.kind ? { ...c, isPrimary: c.id === id } : c));
-        return respond(state.profile);
-      },
-    },
+    profile: createProfileStore({ profile: state.profile, config, clock, ids, respond, reject: failWith }),
     settings: {
       getSettings: async () => respond(state.settings),
       async updateTrack(id, update) {
@@ -304,6 +294,18 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
         return respond(state.settings);
       },
       listSignInActivity: async () => respond([...state.signInEvents].sort((a, b) => b.at.localeCompare(a.at))),
+      async changePassword(change) {
+        const account = state.accounts.find((a) => a.user.id === signedInId) ?? state.accounts[0];
+        if (!account || account.password !== change.currentPassword) {
+          return fail(ApiErrorCode.InvalidCredentials);
+        }
+        const policy = config.validationPolicy.password;
+        if (change.newPassword.length < policy.minLength || change.newPassword.length > policy.maxLength) {
+          return failWith(ApiErrorCode.Validation, 'password');
+        }
+        account.password = change.newPassword;
+        return respond(undefined);
+      },
       requestAccountDeletion: async () => respond({ scheduledFor: addDays(config.accountDeletionGraceDays) }),
     },
   };

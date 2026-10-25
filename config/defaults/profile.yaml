@@ -1,4 +1,5 @@
 profile:
+  page_order: [about, contacts, experience, education, skills, documents, languages, tests, certifications, projects, links, awards, referees]
   limits:
     max_contacts: 12
     max_skills: 60

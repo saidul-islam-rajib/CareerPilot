@@ -3,6 +3,8 @@ import {
   ApplicationRoute,
   ApprovalState,
   ContactKind,
+  DocumentKind,
+  LanguageProficiency,
   OpportunityType,
   OutcomeStatus,
   RequirementCheck,
@@ -17,13 +19,19 @@ import {
   AnswerSource,
   type ApplicationRecord,
   type ApprovalDetail,
+  type DocumentVersion,
   type OpportunityDetail,
   type Profile,
+  type ProfileDocument,
+  type ProfileEntry,
   type Settings,
   type SignInEvent,
   type UserSummary,
 } from '../types';
 import { demoPhotoUri, demoSignatureUri } from './demo-media.seed';
+import { samplePdfDataUri } from './sample-pdf';
+
+const PDF_MEDIA_TYPE = 'application/pdf';
 
 export interface DemoAccount {
   user: UserSummary;
@@ -380,32 +388,67 @@ export function buildDemoSeed(now: Date): DemoState {
     }),
   ];
 
+  const pdf = (id: string, title: string, version: number, days: number, sizeBytes: number): DocumentVersion => ({
+    fileName: `${id}-v${version}.pdf`,
+    contentType: PDF_MEDIA_TYPE,
+    sizeBytes,
+    uploadedAt: at(days),
+    url: samplePdfDataUri(`${title} (version ${version})`),
+    version,
+  });
+  const document = (id: string, name: string, kind: DocumentKind, position: number, versions: DocumentVersion[]): ProfileDocument => ({
+    id,
+    name,
+    kind,
+    position,
+    version: versions[0]?.version ?? 1,
+    updatedAt: versions[0]?.uploadedAt ?? at(0),
+    file: versions[0] as DocumentVersion,
+    versions,
+  });
+  const entry = (id: string, position: number, values: ProfileEntry['values']): ProfileEntry => ({ id, position, values, updatedAt: at(-30) });
+
   const profile: Profile = {
     id: 'prf_demo',
     fullName: 'Ayesha Rahman',
     headline: 'Frontend engineer · 5 years · React, TypeScript, accessibility',
+    location: 'Dhaka, Bangladesh',
+    summary: 'Frontend engineer who builds accessible design systems and fast React apps. Looking for remote or sponsored roles abroad, or a funded master’s in Europe.',
     photoUrl: demoPhotoUri,
     signatureUrl: demoSignatureUri,
     completeness: 86,
+    completenessItems: [],
     contacts: [
       { id: 'c_email_work', kind: ContactKind.Email, value: 'admin@sober.com', label: 'Work', isPrimary: true, verified: true, position: 1 },
-      { id: 'c_phone_mobile', kind: ContactKind.Phone, value: '+8801712345678', label: 'Mobile', isPrimary: false, verified: true, position: 2 },
+      { id: 'c_phone_mobile', kind: ContactKind.Phone, value: '+8801712345678', label: 'Mobile', isPrimary: true, verified: true, position: 2 },
       { id: 'c_email_personal', kind: ContactKind.Email, value: 'ayesha.personal@example.com', label: 'Personal', isPrimary: false, verified: false, position: 3 },
       { id: 'c_phone_whatsapp', kind: ContactKind.Phone, value: '+8801812345678', label: 'WhatsApp', isPrimary: false, verified: true, position: 4 },
     ],
-    education: [
-      { id: 'ed_bsc', degree: 'BSc in Computer Science and Engineering', institution: 'Eastern University of Technology', startYear: 2016, endYear: 2020, result: 'CGPA 3.60 / 4.00' },
-      { id: 'ed_hsc', degree: 'Higher Secondary Certificate (Science)', institution: 'City College, Dhaka', startYear: 2013, endYear: 2015, result: 'GPA 5.00 / 5.00' },
-    ],
-    experience: [
-      { id: 'ex_lumen', title: 'Frontend Engineer', organization: 'Lumen Health', start: '2022-03-01T00:00:00Z', summary: 'Led the design system used by six product teams; WCAG 2.2 AA audits.' },
-      { id: 'ex_bay', title: 'Software Engineer', organization: 'Riverstone Software', start: '2020-08-01T00:00:00Z', end: '2022-02-28T00:00:00Z', summary: 'Built React dashboards for logistics clients.' },
-    ],
     skills: ['React', 'TypeScript', 'Next.js', 'React Native', 'Accessibility', 'Node.js', 'PostgreSQL', 'Design systems'],
+    sections: {
+      experience: [
+        entry('ex_lumen', 1, { title: 'Frontend Engineer', organization: 'Lumen Health', location: 'Remote', start: '2022-03', current: true, summary: 'Led the design system used by six product teams; WCAG 2.2 AA audits.' }),
+        entry('ex_bay', 2, { title: 'Software Engineer', organization: 'Riverstone Software', location: 'Dhaka', start: '2020-08', end: '2022-02', summary: 'Built React dashboards for logistics clients.' }),
+      ],
+      education: [
+        entry('ed_bsc', 1, { degree: 'BSc in Computer Science and Engineering', institution: 'Eastern University of Technology', start_year: 2016, end_year: 2020, result: 'CGPA 3.60 / 4.00' }),
+        entry('ed_hsc', 2, { degree: 'Higher Secondary Certificate (Science)', institution: 'City College, Dhaka', start_year: 2013, end_year: 2015, result: 'GPA 5.00 / 5.00' }),
+      ],
+      languages: [
+        entry('lang_bn', 1, { language: 'Bangla', proficiency: LanguageProficiency.Native }),
+        entry('lang_en', 2, { language: 'English', proficiency: LanguageProficiency.Fluent }),
+      ],
+      tests: [entry('test_ielts', 1, { test: 'IELTS Academic', score: '7.5', taken_on: '2025-06', expires_on: '2027-06' })],
+      certifications: [entry('cert_aws', 1, { name: 'AWS Certified Developer – Associate', issuer: 'Amazon Web Services', issued_on: '2024-02', expires_on: '2027-02' })],
+      links: [
+        entry('link_github', 1, { label: 'GitHub', url: 'https://github.com/' }),
+        entry('link_portfolio', 2, { label: 'Portfolio', url: 'https://example.com/' }),
+      ],
+    },
     documents: [
-      { id: 'doc_cv', name: 'Frontend CV', version: 3, updatedAt: at(-10) },
-      { id: 'doc_cv_intl', name: 'International CV', version: 2, updatedAt: at(-20) },
-      { id: 'doc_transcript', name: 'BSc transcript', version: 1, updatedAt: at(-200) },
+      document('doc_cv', 'Frontend CV', DocumentKind.Cv, 1, [pdf('doc-cv', 'Frontend CV', 3, -10, 182_400), pdf('doc-cv', 'Frontend CV', 2, -60, 176_100), pdf('doc-cv', 'Frontend CV', 1, -150, 171_300)]),
+      document('doc_cv_intl', 'International CV', DocumentKind.Cv, 2, [pdf('doc-cv-intl', 'International CV', 2, -20, 190_200), pdf('doc-cv-intl', 'International CV', 1, -90, 188_000)]),
+      document('doc_transcript', 'BSc transcript', DocumentKind.Transcript, 3, [pdf('doc-transcript', 'BSc transcript', 1, -200, 96_400)]),
     ],
   };
 

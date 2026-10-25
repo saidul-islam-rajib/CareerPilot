@@ -106,13 +106,13 @@ def test_basics_contacts_skills_and_sections_round_trip(client: TestClient, head
     entry = client.post(
         "/v1/profile/sections/languages", headers=headers, json={"values": {"language": "English", "proficiency": "fluent"}}
     )
-    language = entry.json()["sections"]["languages"][0]
+    language = entry.json()["sections"]["languages"][-1]
     assert language["values"] == {"language": "English", "proficiency": "fluent"}
     invalid = client.post("/v1/profile/sections/languages", headers=headers, json={"values": {"language": ""}})
     assert (invalid.status_code, invalid.json()["detail"]) == (422, "languages.language")
     assert client.post("/v1/profile/sections/nope", headers=headers, json={"values": {}}).status_code == 404
     gone = client.delete(f"/v1/profile/sections/languages/{language['id']}", headers=headers)
-    assert gone.json()["sections"]["languages"] == []
+    assert language["id"] not in {e["id"] for e in gone.json()["sections"]["languages"]}
 
 
 def test_password_change_endpoint(client: TestClient, headers: dict[str, str]) -> None:
