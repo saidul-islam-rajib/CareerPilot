@@ -7,7 +7,7 @@ mobile:
   version: 1.0.0
 api:
   mode: in_memory
-  base_url: http://localhost:8000
+  base_url: http://127.0.0.1:8000
   timeout_ms: 15000
   demo_latency_ms: 250
 query:

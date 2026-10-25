@@ -1,5 +1,5 @@
 admin:
-  base_url: http://localhost:8001
+  base_url: http://127.0.0.1:8001
   page_size: 10
   chart_days: 14
   complete_profile_percent: 80
