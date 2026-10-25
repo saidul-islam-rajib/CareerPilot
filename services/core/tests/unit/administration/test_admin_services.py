@@ -45,7 +45,7 @@ def test_dashboard_is_computed_from_data(container: Container) -> None:
     dashboard = container.admin_dashboard.get(actor(container))
     assert dashboard.users.total == 14
     assert dashboard.sources.failing == 1
-    assert dashboard.opportunities.flagged == 1
+    assert dashboard.opportunities.flagged == 2
     assert len(dashboard.applications.per_day) == container.settings.admin.chart_days
     assert sum(c.count for c in dashboard.applications.by_submission_status) == dashboard.applications.total
 
@@ -92,7 +92,10 @@ def test_catalog_actions(container: Container) -> None:
     with pytest.raises(DomainError) as disabled:
         container.admin_catalog.run_source_check(admin, "src_university")
     assert disabled.value.code is ErrorCode.CONFLICT
-    assert container.admin_catalog.run_source_check(admin, "src_gov_notices").status is SourceStatus.HEALTHY
+    assert container.admin_catalog.run_source_check(admin, "src_company_pages").status is SourceStatus.HEALTHY
+    with pytest.raises(DomainError) as unconfigured:
+        container.admin_catalog.run_source_check(admin, "src_gov_notices")
+    assert unconfigured.value.detail == "source_not_configured"
     assert container.admin_catalog.cancel_application(admin, "app_admin_1").submission_status is SubmissionStatus.CANCELLED
     with pytest.raises(DomainError):
         container.admin_catalog.cancel_application(admin, "app_bay")

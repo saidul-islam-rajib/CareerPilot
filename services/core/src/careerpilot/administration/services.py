@@ -3,6 +3,7 @@ from collections.abc import Callable
 from datetime import timedelta
 
 from careerpilot.administration.context import ADMIN_AUDIENCE, AdminActor, AdminContext, PageRequest, paginate
+from careerpilot.administration.discovery_sync import apply_check
 from careerpilot.administration.models import (
     AdminAccount,
     AdminApplicationRow,
@@ -22,6 +23,7 @@ from careerpilot.administration.models import (
     ServiceStatus,
 )
 from careerpilot.administration.permissions import permissions_for_role
+from careerpilot.discovery.service import DiscoveryService
 from careerpilot.platform.clock import iso, parse_iso
 from careerpilot.platform.coordination import GuardScope, SignInGuard
 from careerpilot.platform.enums import (
@@ -238,8 +240,9 @@ class AdminUserService:
 
 
 class AdminCatalogService:
-    def __init__(self, context: AdminContext) -> None:
+    def __init__(self, context: AdminContext, discovery: DiscoveryService) -> None:
         self._ctx = context
+        self._discovery = discovery
 
     def opportunities(self, actor: AdminActor, request: PageRequest) -> Page[AdminOpportunityRow]:
         actor.require(AdminArea.OPPORTUNITIES, PermissionAction.READ)
@@ -281,11 +284,9 @@ class AdminCatalogService:
         row = self._source(source_id)
         if not row.enabled:
             raise conflict("source_disabled")
-        updated = row.model_copy(
-            update={"last_success_at": iso(self._ctx.clock.now()), "failures_last24h": 0, "status": SourceStatus.HEALTHY}
-        )
-        self._ctx.directory.save_source(updated)
-        actor.record("source.checked", updated.name)
+        check = self._discovery.run(source_id)
+        updated = apply_check(self._ctx.directory, row, check, self._ctx.settings.discovery.failing_after_failures)
+        actor.record("source.checked", f"{updated.name} · {check.outcome.value}")
         return updated
 
     def applications(self, actor: AdminActor, request: PageRequest) -> Page[AdminApplicationRow]:

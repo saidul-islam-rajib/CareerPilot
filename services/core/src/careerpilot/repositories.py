@@ -32,6 +32,9 @@ from careerpilot.candidate.adapters.in_memory import (
 )
 from careerpilot.candidate.adapters.sql import SqlAccountRepository, SqlOpportunityRepository, SqlWorkspaceRepository, UserAccountRow
 from careerpilot.candidate.ports import AccountRepository, CandidateWorkspace, OpportunityRepository, WorkspaceRepository
+from careerpilot.discovery.adapters.in_memory import InMemoryListingCatalog
+from careerpilot.discovery.adapters.sql import SqlListingCatalog
+from careerpilot.discovery.ports import ListingCatalog
 from careerpilot.platform.persistence import Database
 from careerpilot.platform.security import PasswordHasher
 
@@ -45,6 +48,7 @@ class Repositories:
     platform: PlatformSettingsRepository
     audit: AuditLog
     directory: Directory
+    listings: ListingCatalog
 
 
 def _seed_workspaces(workspaces: WorkspaceRepository, user_seed: dict[str, Any]) -> None:
@@ -66,6 +70,7 @@ def in_memory_repositories(demo: dict[str, Any], hasher: PasswordHasher, empty: 
         platform=InMemoryPlatformSettingsRepository(platform_settings_from_seed(demo["admin"])),
         audit=InMemoryAuditLog(audit_from_seed(demo["admin"])),
         directory=InMemoryDirectory(demo["admin"]),
+        listings=InMemoryListingCatalog(),
     )
 
 
@@ -111,6 +116,7 @@ def sql_repositories(
         platform=SqlPlatformSettingsRepository(database),
         audit=SqlAuditLog(database),
         directory=directory,
+        listings=SqlListingCatalog(database),
     )
     if database_is_empty(database):
         seed_database(repositories, directory, demo, hasher)

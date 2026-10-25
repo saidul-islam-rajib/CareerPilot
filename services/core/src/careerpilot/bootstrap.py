@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from careerpilot.administration.context import AdminContext
+from careerpilot.administration.discovery_sync import seed_discovery
 from careerpilot.administration.services import (
     AdminAccountService,
     AdminAuditService,
@@ -25,6 +26,10 @@ from careerpilot.candidate.services.opportunities import OpportunityService
 from careerpilot.candidate.services.preferences import PreferencesService
 from careerpilot.candidate.services.profile import ProfileService
 from careerpilot.candidate.services.public_config import PublicConfigService
+from careerpilot.discovery.connectors.registry import ConnectorRegistry, first_party_connectors
+from careerpilot.discovery.fetchers import fetcher_for
+from careerpilot.discovery.ports import Fetcher
+from careerpilot.discovery.service import DiscoveryContext, DiscoveryService
 from careerpilot.platform.clock import Clock, IdGenerator, SystemClock, UuidIdGenerator, iso
 from careerpilot.platform.config import CoordinationMode, PersistenceMode, Settings, load_settings
 from careerpilot.platform.coordination import KeySpace, MetadataCache, SignInGuard
@@ -57,6 +62,7 @@ class Container:
     admin_settings: PlatformSettingsService
     admin_audit: AdminAuditService
     admin_accounts: AdminAccountService
+    discovery: DiscoveryService
 
 
 def empty_workspace_factory(settings: Settings, clock: Clock, demo: dict[str, Any]) -> Callable[[str], CandidateWorkspace]:
@@ -103,6 +109,8 @@ class ContainerOverrides:
     database: Database | None = None
     cache_store: KeyValueStore | None = None
     coord_store: KeyValueStore | None = None
+    fetcher: Fetcher | None = None
+    connectors: ConnectorRegistry | None = None
 
 
 def _redis_store(settings: Settings, url_env: str) -> KeyValueStore:
@@ -161,6 +169,17 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     cache_store, coord_store = _stores(cfg, clk, options)
     keys = KeySpace(cfg.coordination)
     guard = SignInGuard(coord_store, keys, cfg.coordination)
+    discovery = DiscoveryService(
+        DiscoveryContext(
+            config=cfg.discovery,
+            clock=clk,
+            ids=gen,
+            registry=options.connectors or first_party_connectors(),
+            fetcher=options.fetcher or fetcher_for(cfg.discovery),
+            catalog=repos.listings,
+        )
+    )
+    seed_discovery(discovery, repos.directory, cfg.discovery.failing_after_failures)
     opportunity_service = OpportunityService(candidate)
     public_config = PublicConfigService(
         cfg, demo["enumValues"], lambda: repos.platform.get().active_theme, MetadataCache(cache_store, keys, cfg.coordination)
@@ -180,8 +199,9 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         admin_auth=AdminAuthService(admin, guard),
         admin_dashboard=AdminDashboardService(admin),
         admin_users=AdminUserService(admin),
-        admin_catalog=AdminCatalogService(admin),
+        admin_catalog=AdminCatalogService(admin, discovery),
         admin_settings=admin_settings,
         admin_audit=AdminAuditService(admin),
         admin_accounts=AdminAccountService(admin),
+        discovery=discovery,
     )

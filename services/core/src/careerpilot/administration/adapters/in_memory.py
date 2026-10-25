@@ -60,6 +60,8 @@ Row = TypeVar("Row", AdminUserRow, AdminApplicationRow, AdminOpportunityRow, Adm
 
 
 def _replace(rows: list[Row], row: Row) -> list[Row]:
+    if all(r.id != row.id for r in rows):
+        return [*rows, row]
     return [row if r.id == row.id else r for r in rows]
 
 
