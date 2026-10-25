@@ -50,8 +50,8 @@ function useBlocks(profile: Profile): PageBlock[] {
 function SectionIndex({ blocks }: { blocks: PageBlock[] }) {
   const t = useT();
   return (
-    <nav aria-label={t('profile.sectionIndex')} className="lg:sticky lg:top-6 lg:self-start">
-      <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0">
+    <nav aria-label={t('profile.sectionIndex')} className="min-w-0 lg:sticky lg:top-6 lg:self-start">
+      <ul className="relative -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0">
         {blocks.map((block) => {
           const Glyph = block.filled ? CheckCircle2 : Circle;
           return (
@@ -93,7 +93,7 @@ function ProfileContent({ profile, signatureLabel, zoomLabel }: { profile: Profi
   return (
     <div className="flex flex-col gap-6">
       <ProfileHeader profile={profile} />
-      <div className="grid gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">
         <SectionIndex blocks={blocks} />
         <div className="flex min-w-0 flex-col gap-6">
           {blocks.map((block) => (

@@ -73,7 +73,7 @@ export function AppShell({ children }: PropsWithChildren) {
           </Link>
           <span className="text-lg font-bold">{t('app.name')}</span>
         </header>
-        <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 pb-28 md:px-8 lg:pb-10">{children}</main>
+        <main className="mx-auto flex w-full min-w-0 max-w-5xl flex-1 flex-col gap-6 px-4 py-6 pb-28 [overflow-wrap:anywhere] md:px-8 lg:pb-10">{children}</main>
         <footer className="hidden justify-center border-t border-border py-4 lg:flex">
           <TeamSoberCredit logoSrc={teamSoberLogoSrc} compact />
         </footer>

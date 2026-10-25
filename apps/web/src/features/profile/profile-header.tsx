@@ -93,6 +93,9 @@ function PhotoEditor({ profile }: { profile: Profile }) {
         {profile.photoUrl ? (
           <OverflowMenu
             label={t('profile.changePhoto')}
+            icon={Camera}
+            variant="primary"
+            triggerClassName="rounded-full shadow-md"
             items={[
               { label: t('profile.changePhoto'), icon: Camera, onSelect: () => picker.current?.click() },
               { label: t('profile.removePhoto'), icon: Trash2, onSelect: () => removePhoto.mutate(undefined, { onError: (error) => feedback.failed(error) }), destructive: true },

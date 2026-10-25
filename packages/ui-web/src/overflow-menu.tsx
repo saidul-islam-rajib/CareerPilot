@@ -11,11 +11,19 @@ export interface MenuItem {
   destructive?: boolean;
 }
 
-export function OverflowMenu({ label, items }: { label: string; items: MenuItem[] }) {
+export interface OverflowMenuProps {
+  label: string;
+  items: MenuItem[];
+  icon?: LucideIcon;
+  variant?: 'ghost' | 'primary';
+  triggerClassName?: string;
+}
+
+export function OverflowMenu({ label, items, icon = MoreVertical, variant = 'ghost', triggerClassName }: OverflowMenuProps) {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <Button variant="ghost" size="icon" icon={MoreVertical} aria-label={label} />
+        <Button variant={variant} size="icon" icon={icon} aria-label={label} className={triggerClassName} />
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content align="end" sideOffset={4} className="z-50 min-w-48 rounded-card border border-border bg-card p-1 shadow-xl">
