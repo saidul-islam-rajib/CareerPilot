@@ -370,11 +370,17 @@ class PauseState(CamelModel):
     started_at: str
 
 
+class NotificationPreferences(CamelModel):
+    digest_enabled: bool = True
+    digest_time: str | None = None
+
+
 class Preferences(CamelModel):
     tracks: list[Track]
     submission_window: SubmissionWindow
     pause: PauseState | None = None
     time_zone: str
+    notifications: NotificationPreferences = Field(default_factory=NotificationPreferences)
 
 
 class SignInEvent(CamelModel):

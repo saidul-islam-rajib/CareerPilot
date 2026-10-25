@@ -141,6 +141,7 @@ def workspace_to_document(workspace: CandidateWorkspace) -> dict[str, object]:
         "decisions": {k: v.value for k, v in workspace.decisions.items()},
         "deletionScheduledFor": workspace.deletion_scheduled_for,
         "matches": {k: v.to_json() for k, v in workspace.matches.items()},
+        "lastDigestOn": workspace.last_digest_on,
     }
 
 
@@ -156,6 +157,7 @@ def workspace_from_document(document: dict[str, Any]) -> CandidateWorkspace:
         decisions={k: OpportunityDecision(v) for k, v in document.get("decisions", {}).items()},
         deletion_scheduled_for=document.get("deletionScheduledFor"),
         matches={k: OpportunityMatch.model_validate(v) for k, v in document.get("matches", {}).items()},
+        last_digest_on=document.get("lastDigestOn"),
     )
 
 

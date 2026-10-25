@@ -35,6 +35,7 @@ class CandidateWorkspace:
     decisions: dict[str, OpportunityDecision] = field(default_factory=dict[str, OpportunityDecision])
     deletion_scheduled_for: str | None = None
     matches: dict[str, OpportunityMatch] = field(default_factory=dict[str, OpportunityMatch])
+    last_digest_on: str | None = None
 
 
 class AccountRepository(Protocol):

@@ -11,3 +11,6 @@ workers:
   submission_workflow_id: submission-queue
   submission_schedule_id: submission-schedule
   submission_interval_minutes: 10
+  digest_workflow_id: daily-digests
+  digest_schedule_id: digest-schedule
+  digest_interval_minutes: 15

@@ -467,7 +467,11 @@
     "newPassword": "New password",
     "confirmNewPassword": "Confirm new password",
     "passwordChanged": "Your password has been changed.",
-    "wrongPassword": "Your current password is incorrect."
+    "wrongPassword": "Your current password is incorrect.",
+    "notifications": "Notifications",
+    "digestEnabled": "Daily digest email",
+    "digestBody": "A summary of new matches, approvals, and applications, once a day.",
+    "digestTime": "Send at"
   },
   "activity": {
     "title": "Sign-in activity",
@@ -832,5 +836,22 @@
     },
     "evidenceAccepted": "Email accepted by the mail server (message {messageId})",
     "evidenceConfirmed": "No bounce received within {hours} hours"
+  },
+  "digest": {
+    "subject": "Your CareerPilot update for {date}",
+    "greeting": "Hello {name},",
+    "newMatches": "New matches ({count})",
+    "approvals": "Waiting for your approval ({count})",
+    "sent": "Applications sent ({count})",
+    "attention": "Needs your attention ({count})",
+    "closingSoon": "Closing soon ({count})",
+    "matchLine": "{title} at {organization} – {score}% match",
+    "approvalLine": "{title} at {organization} – approve by {date}",
+    "applicationLine": "{title} at {organization} – {status}",
+    "deadlineLine": "{title} at {organization} – closes {date}",
+    "more": "and {count} more",
+    "openApp": "Open CareerPilot: {url}",
+    "footer": "You get this email because the daily digest is on. Change it in Settings.",
+    "credit": "Developed by Team Sober – {url}"
   }
 }

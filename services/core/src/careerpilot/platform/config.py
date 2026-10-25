@@ -251,6 +251,9 @@ class WorkersConfig(Strict):
     submission_workflow_id: str
     submission_schedule_id: str
     submission_interval_minutes: int = Field(gt=0)
+    digest_workflow_id: str
+    digest_schedule_id: str
+    digest_interval_minutes: int = Field(gt=0)
 
 
 class ProfileFieldConfig(Strict):
@@ -345,6 +348,12 @@ class SubmissionConfig(Strict):
     stuck_after_minutes: int = Field(gt=0)
 
 
+class NotificationsConfig(Strict):
+    default_digest_time: str
+    web_base_url: str
+    max_items_per_section: int = Field(gt=0)
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -364,6 +373,7 @@ class Settings(Strict):
     workers: WorkersConfig
     profile: ProfileConfig
     submission: SubmissionConfig
+    notifications: NotificationsConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

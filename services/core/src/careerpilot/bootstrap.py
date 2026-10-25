@@ -25,6 +25,7 @@ from careerpilot.candidate.services.applications import ApplicationService
 from careerpilot.candidate.services.approvals import ApprovalService
 from careerpilot.candidate.services.auth import AuthService
 from careerpilot.candidate.services.dashboard import DashboardService
+from careerpilot.candidate.services.digest import DigestContext, DigestService
 from careerpilot.candidate.services.opportunities import OpportunityService
 from careerpilot.candidate.services.preferences import PreferencesService
 from careerpilot.candidate.services.profile import ProfileService
@@ -78,6 +79,7 @@ class Container:
     files: FileStorage
     file_links: FileLinkSigner
     submissions: SubmissionService
+    digests: DigestService
     source_checks: SourceCheckRunner
 
 
@@ -241,6 +243,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     seed_discovery(discovery, repos.directory, cfg.discovery.failing_after_failures)
     recommendations.refresh_all()
     source_checks = SourceCheckRunner(discovery, repos.directory, cfg.discovery.failing_after_failures, recommendations.refresh_all)
+    digests = DigestService(DigestContext(candidate=candidate, sender=options.email_sender or email_sender_for(cfg)))
     submissions = SubmissionService(
         SubmissionContext(
             candidate=candidate, platform=repos.platform.get, sender=options.email_sender or email_sender_for(cfg), storage=storage
@@ -275,4 +278,5 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         files=storage,
         file_links=file_links,
         submissions=submissions,
+        digests=digests,
     )

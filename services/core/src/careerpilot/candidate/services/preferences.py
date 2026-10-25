@@ -1,7 +1,15 @@
 from datetime import datetime, timedelta
 
 from careerpilot.candidate.context import CandidateContext
-from careerpilot.candidate.models import DeletionRequest, PauseState, Preferences, SignInEvent, SubmissionWindow, Track
+from careerpilot.candidate.models import (
+    DeletionRequest,
+    NotificationPreferences,
+    PauseState,
+    Preferences,
+    SignInEvent,
+    SubmissionWindow,
+    Track,
+)
 from careerpilot.platform.clock import iso
 from careerpilot.platform.enums import ApplicationMode, PauseDuration, PauseScope, SubmissionWindowKind
 from careerpilot.platform.errors import not_found, validation_error
@@ -33,7 +41,12 @@ class PreferencesService:
         self._ctx = context
 
     def get(self, user_id: str) -> Preferences:
-        return self._ctx.workspaces.get(user_id).preferences
+        return self._view(self._ctx.workspaces.get(user_id).preferences)
+
+    def _view(self, preferences: Preferences) -> Preferences:
+        notifications = preferences.notifications
+        effective = notifications.digest_time or self._ctx.settings.notifications.default_digest_time
+        return preferences.model_copy(update={"notifications": notifications.model_copy(update={"digest_time": effective})})
 
     def update_track(self, user_id: str, track_id: str, result_count: int | None, mode: ApplicationMode | None) -> Track:
         workspace = self._ctx.workspaces.get(user_id)
@@ -56,13 +69,23 @@ class PreferencesService:
         workspace = self._ctx.workspaces.get(user_id)
         workspace.preferences.pause = PauseState(scope=PauseScope.ALL, started_at=iso(now), until=iso(until) if until else None)
         self._ctx.workspaces.save(user_id, workspace)
-        return workspace.preferences
+        return self._view(workspace.preferences)
 
     def resume(self, user_id: str) -> Preferences:
         workspace = self._ctx.workspaces.get(user_id)
         workspace.preferences.pause = None
         self._ctx.workspaces.save(user_id, workspace)
-        return workspace.preferences
+        return self._view(workspace.preferences)
+
+    def update_notifications(self, user_id: str, digest_enabled: bool | None, digest_time: str | None) -> Preferences:
+        workspace = self._ctx.workspaces.get(user_id)
+        current = workspace.preferences.notifications
+        workspace.preferences.notifications = NotificationPreferences(
+            digest_enabled=current.digest_enabled if digest_enabled is None else digest_enabled,
+            digest_time=current.digest_time if digest_time is None else require_time(digest_time),
+        )
+        self._ctx.workspaces.save(user_id, workspace)
+        return self._view(workspace.preferences)
 
     def update_submission_window(self, user_id: str, window: SubmissionWindow) -> Preferences:
         if window.kind is SubmissionWindowKind.DAILY_WINDOW:
@@ -72,7 +95,7 @@ class PreferencesService:
         workspace = self._ctx.workspaces.get(user_id)
         workspace.preferences.submission_window = window
         self._ctx.workspaces.save(user_id, workspace)
-        return workspace.preferences
+        return self._view(workspace.preferences)
 
     def sign_in_activity(self, user_id: str) -> list[SignInEvent]:
         return sorted(self._ctx.workspaces.get(user_id).sign_in_events, key=lambda e: e.at, reverse=True)

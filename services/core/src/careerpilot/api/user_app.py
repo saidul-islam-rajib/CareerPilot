@@ -50,6 +50,11 @@ class AnswerBody(CamelModel):
     answer: str
 
 
+class NotificationsBody(CamelModel):
+    digest_enabled: bool | None = None
+    digest_time: str | None = None
+
+
 class PasswordBody(CamelModel):
     current_password: str
     new_password: str
@@ -175,6 +180,11 @@ def pause(body: PauseBody, user: CurrentUser, services: Services) -> JSONRespons
 @router.post("/settings/resume")
 def resume(user: CurrentUser, services: Services) -> JSONResponse:
     return ok(services.preferences.resume(user.id))
+
+
+@router.patch("/settings/notifications")
+def update_notifications(body: NotificationsBody, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.preferences.update_notifications(user.id, body.digest_enabled, body.digest_time))
 
 
 @router.put("/settings/submission-window")

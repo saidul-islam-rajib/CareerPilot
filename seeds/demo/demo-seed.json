@@ -2014,6 +2014,10 @@
         "start": "00:00",
         "end": "01:00"
       },
+      "notifications": {
+        "digestEnabled": true,
+        "digestTime": "08:00"
+      },
       "tracks": [
         {
           "id": "trk_remote",
