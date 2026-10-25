@@ -49,6 +49,8 @@ services:
       CAREERPILOT_MIGRATION_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       CAREERPILOT_DATABASE_URL: postgresql+psycopg://${CAREERPILOT_APP_DB_USER}:${CAREERPILOT_APP_DB_PASSWORD}@postgres:5432/${POSTGRES_DB}
       CAREERPILOT_TOKEN_SECRET: ${CAREERPILOT_TOKEN_SECRET}
+      CAREERPILOT_REDIS_CACHE_URL: redis://redis-cache:6379/0
+      CAREERPILOT_REDIS_COORD_URL: redis://redis-coord:6379/0
     depends_on:
       postgres:
         condition: service_healthy
