@@ -5,7 +5,9 @@
       "title": "Senior Frontend Engineer",
       "absolute_url": "https://boards.greenhouse.io/northwindlabs/jobs/4012001",
       "updated_at": "2026-10-22T09:00:00-04:00",
-      "location": { "name": "Dhaka, Bangladesh" },
+      "location": {
+        "name": "Dhaka, Bangladesh"
+      },
       "content": "&lt;p&gt;Lead our React and Next.js front end. Visa sponsorship is not available for this role.&lt;/p&gt;"
     },
     {
@@ -13,8 +15,20 @@
       "title": "Platform Engineer",
       "absolute_url": "https://boards.greenhouse.io/northwindlabs/jobs/4012002",
       "updated_at": "2026-10-24T11:15:00-04:00",
-      "location": { "name": "Dhaka, Bangladesh" },
+      "location": {
+        "name": "Dhaka, Bangladesh"
+      },
       "content": "&lt;p&gt;Run Kubernetes, Terraform, and our observability stack.&lt;/p&gt;"
+    },
+    {
+      "id": 4012003,
+      "title": "Frontend Developer (React)",
+      "absolute_url": "https://boards.greenhouse.io/northwindlabs/jobs/4012003",
+      "updated_at": "2026-10-25T09:30:00-04:00",
+      "location": {
+        "name": "Dhaka, Bangladesh"
+      },
+      "content": "&lt;p&gt;Build accessible React and TypeScript interfaces for our design system. Apply by email to talent@northwind.example.com with your CV.&lt;/p&gt;"
     }
   ]
 }

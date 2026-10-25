@@ -88,7 +88,7 @@ def test_rss_connector_rejects_unsafe_or_broken_xml(config: DiscoveryConfig) -> 
 
 def test_greenhouse_connector_uses_board_defaults(config: DiscoveryConfig) -> None:
     feed = GreenhouseConnector().parse(fixture_text(config, COMPANY), config.sources[COMPANY])
-    assert [item.title for item in feed.listings] == ["Senior Frontend Engineer", "Platform Engineer"]
+    assert [item.title for item in feed.listings] == ["Senior Frontend Engineer", "Platform Engineer", "Frontend Developer (React)"]
     assert {item.organization for item in feed.listings} == {"Northwind Labs"}
     assert feed.listings[0].location == "Dhaka, Bangladesh"
     with pytest.raises(FetchError):
