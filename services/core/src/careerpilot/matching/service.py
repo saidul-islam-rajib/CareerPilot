@@ -30,15 +30,22 @@ class RecommendationService:
     def refresh(self, user_id: str) -> int:
         workspace = self._ctx.workspaces.get(user_id)
         listings = self._ctx.listings()
+        assessed_before = len(workspace.matches)
         added = sum(self._refresh_track(workspace, track, listings) for track in workspace.preferences.tracks)
-        if added:
+        if added or len(workspace.matches) != assessed_before:
             self._ctx.workspaces.save(user_id, workspace)
         return added
 
     def _refresh_track(self, workspace: CandidateWorkspace, track: Track, listings: list[Listing]) -> int:
         current = workspace.track_opportunities.get(track.id, [])
-        candidates = [item for item in listings if item.id not in current and is_eligible(item, track, self._ctx.config)]
+        candidates = [
+            item
+            for item in listings
+            if item.id not in current and item.id not in workspace.matches and is_eligible(item, track, self._ctx.config)
+        ]
         assessed = [(item, self._ctx.matcher.assess(workspace.profile, track, item)) for item in candidates]
+        for item, match in assessed:
+            workspace.matches[item.id] = match
         qualified = sorted(
             ((item, match) for item, match in assessed if match.score >= self._ctx.config.min_score),
             key=lambda pair: pair[1].score,
@@ -46,7 +53,6 @@ class RecommendationService:
         )[: max(0, track.result_count - len(current))]
         for listing, match in qualified:
             self._publish(listing, match)
-            workspace.matches[listing.id] = match
         workspace.track_opportunities[track.id] = [*current, *(listing.id for listing, _ in qualified)]
         return len(qualified)
 

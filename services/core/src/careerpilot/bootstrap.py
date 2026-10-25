@@ -206,8 +206,8 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
             workspaces=repos.workspaces,
         )
     )
-    if seed_discovery(discovery, repos.directory, cfg.discovery.failing_after_failures):
-        recommendations.refresh_all()
+    seed_discovery(discovery, repos.directory, cfg.discovery.failing_after_failures)
+    recommendations.refresh_all()
     opportunity_service = OpportunityService(candidate)
     public_config = PublicConfigService(
         cfg, demo["enumValues"], lambda: repos.platform.get().active_theme, MetadataCache(cache_store, keys, cfg.coordination)
