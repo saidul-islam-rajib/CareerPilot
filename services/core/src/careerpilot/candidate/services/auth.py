@@ -1,17 +1,16 @@
 from dataclasses import dataclass
 
 from careerpilot.candidate.context import USER_AUDIENCE, CandidateContext
-from careerpilot.candidate.models import Contact, Session, SignInEvent, UserSummary
+from careerpilot.candidate.models import Session, SignInEvent, UserSummary
 from careerpilot.candidate.ports import Account
+from careerpilot.candidate.services.profile import start_profile
 from careerpilot.platform.clock import iso
 from careerpilot.platform.coordination import GuardScope, SignInGuard
-from careerpilot.platform.enums import ContactKind, UserAccountStatus
+from careerpilot.platform.enums import UserAccountStatus
 from careerpilot.platform.errors import DomainError, ErrorCode, validation_error
-from careerpilot.platform.messages import translate
 from careerpilot.platform.validation import require_email, require_name, require_password
 
 BLOCKED_STATUSES = frozenset({UserAccountStatus.SUSPENDED, UserAccountStatus.DELETED})
-FIRST_POSITION = 1
 
 
 @dataclass(frozen=True)
@@ -84,18 +83,7 @@ class AuthService:
 
     def _start_profile(self, user: UserSummary) -> None:
         workspace = self._ctx.workspaces.get(user.id)
-        workspace.profile.full_name = user.full_name
-        workspace.profile.contacts = [
-            Contact(
-                id=self._ctx.ids.next("c"),
-                kind=ContactKind.EMAIL,
-                value=user.email,
-                label=translate("profile.accountEmailLabel"),
-                is_primary=True,
-                verified=False,
-                position=FIRST_POSITION,
-            )
-        ]
+        start_profile(workspace.profile, user, self._ctx.ids.next("c"))
         self._ctx.workspaces.save(user.id, workspace)
 
     def request_password_reset(self, email: str, client: ClientInfo) -> None:

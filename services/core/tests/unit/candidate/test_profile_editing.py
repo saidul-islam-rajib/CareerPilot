@@ -222,3 +222,15 @@ def test_password_change_requires_the_current_password(container: Container) -> 
     assert detail_of(weak) == "password"
     container.auth.change_password(DEMO_USER, "admin@sober.com", "N3w!Password99")
     assert container.auth.sign_in("admin@sober.com", "N3w!Password99", CLIENT).access_token
+
+
+def test_profiles_created_before_registration_filled_them_are_started_on_read(container: Container) -> None:
+    registration = Registration("Rafiq Karim", "rafiq@example.com", "Str0ng!Passw0rd", True, "1.0", "1.0")
+    user_id = container.auth.register(registration, CLIENT).user.id
+    workspace = container.profile._ctx.workspaces.get(user_id)
+    workspace.profile.full_name = ""
+    workspace.profile.contacts = []
+    container.profile._ctx.workspaces.save(user_id, workspace)
+    started = container.profile.get(user_id)
+    assert started.full_name == "Rafiq Karim"
+    assert [(c.value, c.is_primary) for c in started.active_contacts()] == [("rafiq@example.com", True)]

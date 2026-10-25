@@ -11,6 +11,7 @@ from careerpilot.candidate.models import (
     ProfileDocument,
     ProfileEntry,
     StoredFile,
+    UserSummary,
 )
 from careerpilot.candidate.ports import CandidateWorkspace
 from careerpilot.candidate.profile_rules import FieldRules, as_mapping, clean_multiline, clean_text, normalize_skills, require_length
@@ -20,12 +21,14 @@ from careerpilot.platform.config import ProfileConfig, ProfileSectionConfig
 from careerpilot.platform.enums import CompletenessKind, ContactKind, DocumentKind
 from careerpilot.platform.errors import conflict, not_found, validation_error
 from careerpilot.platform.files import EXTENSIONS, FileLinkSigner, FileStorage, detect_content_type
+from careerpilot.platform.messages import translate
 from careerpilot.platform.validation import require_email, require_name
 
 PERCENT = 100
 FIRST_VERSION = 1
 FIRST_POSITION = 1
 FILE_NAME_FALLBACK = "document"
+ACCOUNT_EMAIL_LABEL = "profile.accountEmailLabel"
 
 
 @dataclass(frozen=True)
@@ -40,6 +43,21 @@ class BasicsChanges:
     headline: str | None = None
     location: str | None = None
     summary: str | None = None
+
+
+def start_profile(profile: Profile, user: UserSummary, contact_id: str) -> None:
+    profile.full_name = user.full_name
+    profile.contacts = [
+        Contact(
+            id=contact_id,
+            kind=ContactKind.EMAIL,
+            value=user.email,
+            label=translate(ACCOUNT_EMAIL_LABEL),
+            is_primary=True,
+            verified=False,
+            position=FIRST_POSITION,
+        )
+    ]
 
 
 def display_file_name(file_name: str, max_length: int) -> str:
@@ -75,7 +93,13 @@ class ProfileService:
         self._config = context.settings.profile
 
     def get(self, user_id: str) -> Profile:
-        return self._ctx.workspaces.get(user_id).profile
+        workspace = self._ctx.workspaces.get(user_id)
+        account = self._ctx.accounts.get(user_id)
+        if account is not None and not workspace.profile.full_name and not workspace.profile.contacts:
+            start_profile(workspace.profile, account.user, self._ctx.ids.next("c"))
+            workspace.profile.completeness = completeness(workspace.profile, self._config)[0]
+            self._ctx.workspaces.save(user_id, workspace)
+        return workspace.profile
 
     def view(self, profile: Profile, base_url: str) -> ProfileView:
         score, items = completeness(profile, self._config)
