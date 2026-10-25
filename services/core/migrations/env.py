@@ -5,12 +5,13 @@ from sqlalchemy import create_engine, pool
 
 import careerpilot.administration.adapters.sql
 import careerpilot.candidate.adapters.sql
+import careerpilot.discovery.adapters.sql
 from careerpilot.platform.persistence import Base
 
 MIGRATION_URL_ENV = "CAREERPILOT_MIGRATION_DATABASE_URL"
 
 target_metadata = Base.metadata
-registered_modules = (careerpilot.administration.adapters.sql, careerpilot.candidate.adapters.sql)
+registered_modules = (careerpilot.administration.adapters.sql, careerpilot.candidate.adapters.sql, careerpilot.discovery.adapters.sql)
 
 
 def database_url() -> str:
