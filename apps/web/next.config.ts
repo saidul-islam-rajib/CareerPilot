@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
     '@careerpilot/brand',
     '@careerpilot/client-core',
     '@careerpilot/domain-ui-logic',
+    '@careerpilot/dynamic-forms',
     '@careerpilot/i18n',
     '@careerpilot/ui-tokens',
     '@careerpilot/ui-web',

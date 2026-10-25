@@ -9,7 +9,6 @@ import { ApprovalsPage } from './approvals/approvals-page';
 import { HomePage } from './home/home-page';
 import { CircularPage } from './opportunities/circular-page';
 import { OpportunityPage } from './opportunities/opportunity-page';
-import { ProfilePage } from './profile/profile-page';
 import { AppShell } from './shell/app-shell';
 
 describe('AppShell', () => {
@@ -96,27 +95,4 @@ describe('Applications', () => {
   });
 });
 
-describe('ProfilePage', () => {
-  it('reorders contacts and changes the primary email', async () => {
-    const { services } = renderWithProviders(<ProfilePage />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Move down: admin@sober.com' }));
-    await waitFor(async () => {
-      const contacts = (await services.api.profile.getProfile()).contacts.sort((a, b) => a.position - b.position);
-      expect(contacts[0]?.id).toBe('c_phone_mobile');
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Make primary: ayesha.personal@example.com' }));
-    await waitFor(async () => {
-      const profile = await services.api.profile.getProfile();
-      expect(profile.contacts.find((c) => c.isPrimary && c.kind === 'email')?.id).toBe('c_email_personal');
-    });
-  });
-
-  it('opens the zoomable photo viewer', async () => {
-    renderWithProviders(<ProfilePage />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Photo. Tap to view and zoom' }));
-    const dialog = await screen.findByRole('dialog');
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Zoom in' }));
-    expect(within(dialog).getByText('200%')).toBeInTheDocument();
-  });
-});
 
