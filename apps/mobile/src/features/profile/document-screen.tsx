@@ -97,7 +97,7 @@ function DocumentForm({ document }: { document: ProfileDocument }) {
               key={version.version}
               icon={FileText}
               title={t('profile.versionUploaded', { version: version.version, date: format.date(version.uploadedAt) })}
-              subtitle={`${version.fileName} · ${format.fileSize(version.sizeBytes)}`}
+              subtitle={[version.fileName, format.fileSize(version.sizeBytes)].filter(Boolean).join(' · ')}
               onPress={() => void WebBrowser.openBrowserAsync(version.url)}
             />
           ))}

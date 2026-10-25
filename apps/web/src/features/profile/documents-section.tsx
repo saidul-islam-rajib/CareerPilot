@@ -63,7 +63,7 @@ function DocumentDialog({ document, open, onOpenChange }: { document: ProfileDoc
               <span className="min-w-0 flex-1 text-sm">
                 {t('profile.versionUploaded', { version: version.version, date: format.date(version.uploadedAt) })}
                 <span className="block text-xs text-muted">
-                  {version.fileName} · {format.fileSize(version.sizeBytes)}
+                  {[version.fileName, format.fileSize(version.sizeBytes)].filter(Boolean).join(' · ')}
                 </span>
               </span>
               <DocumentViewer url={version.url} title={document.name} subtitle={t('profile.version', { version: version.version })} trigger={<Button variant="ghost" size="sm" icon={Eye}>{t('profile.viewDocument')}</Button>} />
@@ -116,7 +116,7 @@ function DocumentRow({ document, index, count, onEdit }: { document: ProfileDocu
           <EnumBadge enumKey={EnumKey.DocumentKind} value={document.kind} />
         </div>
         <span className="text-xs text-muted">
-          {t('profile.version', { version: document.version })} · {format.fileSize(document.file.sizeBytes)} · {t('common.updatedAt', { date: format.date(document.updatedAt) })}
+          {[t('profile.version', { version: document.version }), format.fileSize(document.file.sizeBytes), t('common.updatedAt', { date: format.date(document.updatedAt) })].filter(Boolean).join(' · ')}
         </span>
       </div>
       <DocumentViewer

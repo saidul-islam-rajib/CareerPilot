@@ -144,7 +144,7 @@ function DocumentRow({ document, onPress }: { document: ProfileDocument; onPress
           <EnumBadge enumKey={EnumKey.DocumentKind} value={document.kind} />
         </Row>
         <Text variant={TextVariant.Caption} tone={TextTone.Muted}>
-          {t('profile.version', { version: document.version })} · {format.fileSize(document.file.sizeBytes)} · {t('common.updatedAt', { date: format.date(document.updatedAt) })}
+          {[t('profile.version', { version: document.version }), format.fileSize(document.file.sizeBytes), t('common.updatedAt', { date: format.date(document.updatedAt) })].filter(Boolean).join(' · ')}
         </Text>
       </View>
       <Icon icon={ChevronRight} color={theme.colors.textMuted} />

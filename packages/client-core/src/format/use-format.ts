@@ -45,7 +45,9 @@ export function useFormat() {
         return [start, end].filter(Boolean).join(' – ');
       },
       fileSize: (bytes: number) =>
-        bytes < BYTES_PER_MEGABYTE
+        bytes <= 0
+          ? ''
+          : bytes < BYTES_PER_MEGABYTE
           ? t('common.kilobytes', { value: formatDecimal(Math.max(1, Math.round(bytes / BYTES_PER_KILOBYTE)), ctx) })
           : t('common.megabytes', { value: formatDecimal(bytes / BYTES_PER_MEGABYTE, ctx) }),
     };
