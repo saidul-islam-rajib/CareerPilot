@@ -12,4 +12,6 @@ api:
   demo_latency_ms: 250
 query:
   stale_time_ms: 30000
-  retry_count: 2
+  retry_count: 6
+  retry_base_delay_ms: 1000
+  retry_max_delay_ms: 8000

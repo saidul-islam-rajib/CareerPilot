@@ -45,6 +45,8 @@ export const appConfigSchema = z.object({
   query: z.object({
     staleTimeMs: z.number().int().nonnegative(),
     retryCount: z.number().int().nonnegative(),
+    retryBaseDelayMs: z.number().int().positive(),
+    retryMaxDelayMs: z.number().int().positive(),
   }),
   display: z.object({
     strongMatchScore: z.number().int().min(0).max(100),
