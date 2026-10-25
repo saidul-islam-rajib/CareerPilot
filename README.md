@@ -47,14 +47,20 @@ make mobile     # optional: start the Expo dev server for Android/iOS
 
 Other commands: `make test` (unit tests), `make logs`, `make down`, `make reset`.
 
-## Run the backend locally (without Docker)
+## Run the backend locally
 
 ```bash
+cp .env.example .env                      # local-only defaults
+docker compose up -d postgres             # PostgreSQL 17 with a restricted app role
 cd services
 python -m venv .venv
 .venv/Scripts/python -m pip install -e "core[dev]" -e api
-APP_ENV=http .venv/Scripts/python -m careerpilot_api.dev_server   # user API :8000, admin API :8001
+set -a; . ../.env; set +a
+(cd core && ../.venv/Scripts/alembic upgrade head)
+APP_ENV=http .venv/Scripts/python -m careerpilot_api.dev_server   # user API :8000, admin API :8001, seeds an empty database
 ```
+
+`APP_ENV=local` keeps everything in memory (no database needed).
 
 Build the web or admin app with `APP_ENV=http` to use the backend instead of the built-in demo data. Backend tests: `cd services/core && ../.venv/Scripts/python -m pytest`.
 
