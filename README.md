@@ -41,10 +41,11 @@ Stop with `docker compose down` (add `-v` to wipe local data). The mobile app ru
 | Admin API docs | http://localhost:8001/docs |
 | Mailpit (all local email) | http://localhost:8025 |
 | Grafana (with the observability overlay, `admin` / `admin`) | http://localhost:3100 |
+| Temporal UI (scheduled discovery) | http://localhost:8233 |
 
 To add logs, traces, and metrics: `docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d`. The CareerPilot dashboards are provisioned from `observability/dashboards/`.
 
-Unit tests: `pnpm test` (TypeScript) and `cd services/core && ../.venv/Scripts/python -m pytest` (Python). Keycloak, Temporal, and MinIO join the Compose stack in later increments.
+Unit tests: `pnpm test` (TypeScript) and `cd services/core && ../.venv/Scripts/python -m pytest` (Python). Keycloak and MinIO join the Compose stack in later increments.
 
 ## Run the backend locally
 

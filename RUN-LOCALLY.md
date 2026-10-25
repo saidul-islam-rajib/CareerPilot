@@ -30,6 +30,7 @@ The first build takes about 10 minutes; later starts take seconds. Leave out `-f
 | Admin API docs | http://localhost:8001/docs | — |
 | Mailpit (all local email) | http://localhost:8025 | — |
 | Grafana (logs, traces, metrics) | http://localhost:3100 → Dashboards → CareerPilot | `admin` / `admin` |
+| Temporal (scheduled discovery runs) | http://localhost:8233 | — |
 
 `127.0.0.1` works as well as `localhost`.
 
@@ -91,6 +92,7 @@ cd services/core && ../.venv/Scripts/python -m pytest       # backend tests
 
 | Problem | Fix |
 |---|---|
+| "We couldn't load this" right after a rebuild | The API restarts for about 30 seconds after `--build`; the apps retry automatically. If it persists, see the next row. |
 | "We couldn't load this" on sign-in | Run `docker compose ps`: `user-api` and `admin-api` must be `Up`. If not, check `docker compose logs migrate`. |
 | Port already in use | Stop the other program, or stop old containers with `docker compose down`. |
 | "Too many attempts" | Wait 15 minutes or run the Redis `FLUSHDB` command above. |
