@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
@@ -109,8 +109,11 @@ try {
   }
   await browser.close();
 } finally {
-  server.kill();
-  spawn('taskkill', ['/pid', String(server.pid), '/T', '/F'], { shell: true, stdio: 'ignore' });
+  if (process.platform === 'win32') {
+    spawnSync('taskkill', ['/pid', String(server.pid), '/T', '/F'], { stdio: 'ignore' });
+  } else {
+    server.kill();
+  }
 }
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(path.join(outDir, 'console-errors.txt'), errors.join('\n'));
