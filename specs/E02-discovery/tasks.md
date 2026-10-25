@@ -8,6 +8,6 @@
 - [x] Admin source check runs real discovery and updates source health
 - [ ] Scheduled checks per source (Temporal worker) and daily digest
 - [ ] Connectors for Bangladesh job portal, government notices, university pages (PDF and Bangla extraction, §7.6)
-- [ ] Turn discovered listings into per-user recommendations (AI extraction and matching, E03)
+- [x] Turn discovered listings into per-user recommendations (E03)
 - [ ] User reports: dead link, inaccurate detail, false merge, fraud confirmation
 - [x] Admin UI message for `source_not_configured`
