@@ -1,17 +1,9 @@
+import os
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from careerpilot.administration.adapters.in_memory import (
-    InMemoryAdminAccountRepository,
-    InMemoryAuditLog,
-    InMemoryDirectory,
-    InMemoryPlatformSettingsRepository,
-    admin_credentials_from_seed,
-    audit_from_seed,
-    platform_settings_from_seed,
-)
 from careerpilot.administration.context import AdminContext
 from careerpilot.administration.services import (
     AdminAccountService,
@@ -21,14 +13,6 @@ from careerpilot.administration.services import (
     AdminDashboardService,
     AdminUserService,
     PlatformSettingsService,
-)
-from careerpilot.candidate.adapters.in_memory import (
-    InMemoryAccountRepository,
-    InMemoryOpportunityRepository,
-    InMemoryWorkspaceRepository,
-    accounts_from_seed,
-    opportunities_from_seed,
-    workspace_from_seed,
 )
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import Preferences, Profile, SubmissionWindow, Track
@@ -42,10 +26,12 @@ from careerpilot.candidate.services.preferences import PreferencesService
 from careerpilot.candidate.services.profile import ProfileService
 from careerpilot.candidate.services.public_config import PublicConfigService
 from careerpilot.platform.clock import Clock, IdGenerator, SystemClock, UuidIdGenerator, iso
-from careerpilot.platform.config import Settings, load_settings
+from careerpilot.platform.config import PersistenceMode, Settings, load_settings
 from careerpilot.platform.enums import ApplicationMode, SubmissionWindowKind
+from careerpilot.platform.persistence import Database, create_database
 from careerpilot.platform.security import Argon2PasswordHasher, PasswordHasher, TokenService, token_secret_from_environment
 from careerpilot.platform.seed import load_demo_seed
+from careerpilot.repositories import in_memory_repositories, sql_repositories
 
 EMPTY_PROFILE_COMPLETENESS = 0
 
@@ -110,6 +96,15 @@ class ContainerOverrides:
     hasher: PasswordHasher | None = None
     token_secret: str | None = None
     seed_path: Path | None = None
+    database_url: str | None = None
+    database: Database | None = None
+
+
+def _database_url(settings: Settings, options: ContainerOverrides) -> str:
+    url = options.database_url or os.environ.get(settings.persistence.database_url_env)
+    if not url:
+        raise RuntimeError(settings.persistence.database_url_env)
+    return url
 
 
 def build_container(overrides: ContainerOverrides | None = None) -> Container:
@@ -121,26 +116,24 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     tokens = TokenService(cfg.security, clk, options.token_secret or token_secret_from_environment())
     demo = load_demo_seed(clk.now(), options.seed_path)
 
-    accounts = InMemoryAccountRepository()
-    for account in accounts_from_seed(demo["user"], pwd):
-        accounts.add(account)
-    workspaces = InMemoryWorkspaceRepository(empty_workspace_factory(cfg, clk, demo))
-    for account in demo["user"]["accounts"]:
-        workspaces.save(str(account["user"]["id"]), workspace_from_seed(demo["user"]))
-    opportunities = InMemoryOpportunityRepository(opportunities_from_seed(demo["user"]))
-    platform = InMemoryPlatformSettingsRepository(platform_settings_from_seed(demo["admin"]))
+    empty = empty_workspace_factory(cfg, clk, demo)
+    repos = (
+        sql_repositories(options.database or create_database(_database_url(cfg, options), clk), demo, pwd, empty)
+        if cfg.persistence.mode is PersistenceMode.DATABASE
+        else in_memory_repositories(demo, pwd, empty)
+    )
 
-    candidate = CandidateContext(cfg, clk, gen, accounts, opportunities, workspaces, pwd, tokens)
+    candidate = CandidateContext(cfg, clk, gen, repos.accounts, repos.opportunities, repos.workspaces, pwd, tokens)
     admin = AdminContext(
         settings=cfg,
         clock=clk,
         ids=gen,
-        admins=InMemoryAdminAccountRepository(admin_credentials_from_seed(demo["admin"], pwd)),
-        platform=platform,
-        audit=InMemoryAuditLog(audit_from_seed(demo["admin"])),
-        directory=InMemoryDirectory(demo["admin"]),
-        accounts=accounts,
-        workspaces=workspaces,
+        admins=repos.admins,
+        platform=repos.platform,
+        audit=repos.audit,
+        directory=repos.directory,
+        accounts=repos.accounts,
+        workspaces=repos.workspaces,
         hasher=pwd,
         tokens=tokens,
     )
