@@ -76,7 +76,7 @@ describe('profile editors', () => {
     fireEvent.changeText(screen.getByLabelText('Start'), '2025-01');
     fireEvent.press(screen.getByLabelText('Save'));
     await waitFor(async () => expect((await services.api.profile.getProfile()).sections.experience?.map((e) => e.values.title)).toContain('Staff Engineer'));
-    expect(mockRouter.back).toHaveBeenCalled();
+    await waitFor(() => expect(mockRouter.back).toHaveBeenCalled());
   });
 
   it('removes an entry and restores it with undo', async () => {
