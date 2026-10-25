@@ -13,6 +13,8 @@ from careerpilot.platform.keyvalue import KeyValueStore, StoreUnavailableError
 SEPARATOR = ":"
 FINGERPRINT_LENGTH = 32
 CACHE_SCHEMA_VERSION = 1
+RELEASE_LENGTH = 16
+RELEASE_SEPARATOR = "|"
 logger = logging.getLogger(__name__)
 ResultT = TypeVar("ResultT")
 
@@ -26,6 +28,10 @@ class KeyNamespace(StrEnum):
     META = "meta"
     SIGN_IN_FAILURES = "auth:fail"
     AUTH_REQUESTS = "rl:auth"
+
+
+def release_fingerprint(*parts: str) -> str:
+    return hashlib.sha256(RELEASE_SEPARATOR.join(parts).encode()).hexdigest()[:RELEASE_LENGTH]
 
 
 def fingerprint(value: str) -> str:
@@ -77,10 +83,16 @@ class SignInGuard:
 
 class MetadataCache:
     def __init__(
-        self, store: KeyValueStore, keys: KeySpace, config: CoordinationConfig, jitter: Callable[[float, float], float] = random.uniform
+        self,
+        store: KeyValueStore,
+        keys: KeySpace,
+        config: CoordinationConfig,
+        jitter: Callable[[float, float], float] = random.uniform,
+        release: str = "",
     ) -> None:
         self._store = store
         self._keys = keys
+        self._version = f"v{CACHE_SCHEMA_VERSION}-{release}" if release else f"v{CACHE_SCHEMA_VERSION}"
         self._ttl = config.metadata_ttl_seconds
         self._jitter_ratio = config.ttl_jitter_ratio
         self._jitter = jitter
@@ -98,7 +110,7 @@ class MetadataCache:
         self._fail_open(lambda: self._store.remove(self._key(name)))
 
     def _key(self, name: str) -> str:
-        return self._keys.key(KeyNamespace.META, name, f"v{CACHE_SCHEMA_VERSION}")
+        return self._keys.key(KeyNamespace.META, name, self._version)
 
     def _ttl_with_jitter(self) -> int:
         spread = self._ttl * self._jitter_ratio

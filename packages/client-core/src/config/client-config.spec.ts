@@ -2,6 +2,7 @@ import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
 import { ThemeKey } from '@careerpilot/ui-tokens';
 import { ApiMode, parseAppConfig, publicConfigFromDefaults } from './client-config';
+import { mergePublicConfig } from './public-config';
 
 const require = createRequire(import.meta.url);
 const { loadConfig } = require('../../../../scripts/config/load-config.js') as { loadConfig: (env: string) => Record<string, unknown> };
@@ -26,5 +27,16 @@ describe('app config', () => {
     expect(publicConfig.theme).toBe(ThemeKey.Sober);
     expect(publicConfig.enumValues.length).toBeGreaterThan(0);
     expect(publicConfig.openSourceComponents.map((c) => c.name)).toContain('React Native Reusables');
+  });
+});
+
+describe('mergePublicConfig', () => {
+  it('keeps app defaults for keys an older server does not send', () => {
+    const defaults = publicConfigFromDefaults(parseAppConfig({ careerpilot: loadConfig('local') }));
+    const { profile, ...olderServer } = defaults;
+    const merged = mergePublicConfig(defaults, { ...olderServer, locale: 'en-GB' });
+    expect(merged.profile).toBe(profile);
+    expect(merged.locale).toBe('en-GB');
+    expect(mergePublicConfig(defaults, undefined)).toBe(defaults);
   });
 });

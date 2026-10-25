@@ -1,6 +1,7 @@
 import os
 from collections.abc import Callable
 from dataclasses import dataclass
+from importlib.metadata import version
 from pathlib import Path
 from typing import Any
 
@@ -38,7 +39,7 @@ from careerpilot.matching.rules import RuleBasedMatcher
 from careerpilot.matching.service import RecommendationContext, RecommendationService
 from careerpilot.platform.clock import Clock, IdGenerator, SystemClock, UuidIdGenerator, iso
 from careerpilot.platform.config import CoordinationMode, MatchingMode, PersistenceMode, Settings, load_settings, repository_root
-from careerpilot.platform.coordination import KeySpace, MetadataCache, SignInGuard
+from careerpilot.platform.coordination import KeySpace, MetadataCache, SignInGuard, release_fingerprint
 from careerpilot.platform.enums import ApplicationMode, SubmissionWindowKind
 from careerpilot.platform.files import FileLinkSigner, FileStorage, LocalFileStorage, SampleAwareStorage
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore
@@ -48,6 +49,7 @@ from careerpilot.platform.seed import load_demo_seed
 from careerpilot.repositories import in_memory_repositories, sql_repositories
 
 EMPTY_PROFILE_COMPLETENESS = 0
+PACKAGE = "careerpilot-core"
 
 
 @dataclass(frozen=True)
@@ -221,9 +223,10 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     recommendations.refresh_all()
     source_checks = SourceCheckRunner(discovery, repos.directory, cfg.discovery.failing_after_failures, recommendations.refresh_all)
     opportunity_service = OpportunityService(candidate)
-    public_config = PublicConfigService(
-        cfg, demo["enumValues"], lambda: repos.platform.get().active_theme, MetadataCache(cache_store, keys, cfg.coordination)
-    )
+    release = release_fingerprint(cfg.model_dump_json(), version(PACKAGE))
+    metadata = MetadataCache(cache_store, keys, cfg.coordination, release=release)
+    public_config = PublicConfigService(cfg, demo["enumValues"], lambda: repos.platform.get().active_theme, metadata)
+    public_config.invalidate()
     admin_settings = PlatformSettingsService(admin, public_config.invalidate)
     return Container(
         settings=cfg,

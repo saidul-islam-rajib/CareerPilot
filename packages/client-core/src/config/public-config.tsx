@@ -15,6 +15,10 @@ interface PublicConfigValue {
 
 const PublicConfigContext = createContext<PublicConfigValue | undefined>(undefined);
 
+export function mergePublicConfig(defaults: PublicConfig, server: Partial<PublicConfig> | undefined): PublicConfig {
+  return server ? { ...defaults, ...server } : defaults;
+}
+
 export function PublicConfigProvider({ children }: PropsWithChildren) {
   const { api, config: appConfig } = useServices();
   const defaults = useMemo(() => publicConfigFromDefaults(appConfig), [appConfig]);
@@ -23,7 +27,7 @@ export function PublicConfigProvider({ children }: PropsWithChildren) {
     queryFn: () => api.config.getPublicConfig(),
     placeholderData: defaults,
   });
-  const config = query.data ?? defaults;
+  const config = useMemo(() => mergePublicConfig(defaults, query.data), [defaults, query.data]);
   const value = useMemo(() => ({ config, enums: createEnumMetadataIndex(config.enumValues) }), [config]);
   return (
     <PublicConfigContext.Provider value={value}>

@@ -8,7 +8,15 @@ import pytest
 from careerpilot.bootstrap import Container, ContainerOverrides, build_container
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
 from careerpilot.platform.config import CoordinationConfig, load_settings
-from careerpilot.platform.coordination import GuardScope, KeyNamespace, KeySpace, MetadataCache, SignInGuard, fingerprint
+from careerpilot.platform.coordination import (
+    GuardScope,
+    KeyNamespace,
+    KeySpace,
+    MetadataCache,
+    SignInGuard,
+    fingerprint,
+    release_fingerprint,
+)
 from careerpilot.platform.errors import DomainError, ErrorCode
 from careerpilot.platform.files import InMemoryFileStorage
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore, StoreUnavailableError
@@ -178,3 +186,18 @@ def test_admin_theme_change_refreshes_cached_public_config(redis_container: Cont
     admin = redis_container.admin_auth.authenticate(redis_container.admin_auth.sign_in(EMAIL, "admin@sober.com", CLIENT.ip).access_token)
     redis_container.admin_settings.update(admin, {"active_theme": "orchid"})
     assert redis_container.public_config.get()["theme"] == "orchid"
+
+
+def test_metadata_cache_releases_do_not_share_entries(config: CoordinationConfig, clock: FixedClock) -> None:
+    store = InMemoryKeyValueStore(clock)
+    old_load, old_calls = counting_loader({"shape": "old"})
+    new_load, new_calls = counting_loader({"shape": "new"})
+    MetadataCache(store, KeySpace(config), config, release=release_fingerprint("settings-a", "1.0.0")).get_or_load(
+        "public-config", old_load
+    )
+    fresh = MetadataCache(store, KeySpace(config), config, release=release_fingerprint("settings-b", "1.0.0")).get_or_load(
+        "public-config", new_load
+    )
+    assert fresh == {"shape": "new"}
+    assert (len(old_calls), len(new_calls)) == (1, 1)
+    assert release_fingerprint("a", "b") == release_fingerprint("a", "b") != release_fingerprint("a", "c")
