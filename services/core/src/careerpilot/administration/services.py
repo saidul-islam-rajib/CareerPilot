@@ -23,6 +23,7 @@ from careerpilot.administration.models import (
     ServiceStatus,
 )
 from careerpilot.administration.permissions import permissions_for_role
+from careerpilot.discovery.models import ListingChange
 from careerpilot.discovery.service import DiscoveryService
 from careerpilot.platform.clock import iso, parse_iso
 from careerpilot.platform.coordination import GuardScope, SignInGuard
@@ -240,9 +241,10 @@ class AdminUserService:
 
 
 class AdminCatalogService:
-    def __init__(self, context: AdminContext, discovery: DiscoveryService) -> None:
+    def __init__(self, context: AdminContext, discovery: DiscoveryService, on_new_listings: Callable[[], object]) -> None:
         self._ctx = context
         self._discovery = discovery
+        self._on_new_listings = on_new_listings
 
     def opportunities(self, actor: AdminActor, request: PageRequest) -> Page[AdminOpportunityRow]:
         actor.require(AdminArea.OPPORTUNITIES, PermissionAction.READ)
@@ -286,6 +288,8 @@ class AdminCatalogService:
             raise conflict("source_disabled")
         check = self._discovery.run(source_id)
         updated = apply_check(self._ctx.directory, row, check, self._ctx.settings.discovery.failing_after_failures)
+        if check.listings(ListingChange.NEW):
+            self._on_new_listings()
         actor.record("source.checked", f"{updated.name} · {check.outcome.value}")
         return updated
 

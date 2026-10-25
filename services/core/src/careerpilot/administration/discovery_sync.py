@@ -40,9 +40,10 @@ def apply_check(directory: Directory, row: AdminSourceRow, check: SourceCheck, f
     return updated
 
 
-def seed_discovery(discovery: DiscoveryService, directory: Directory, failing_after: int) -> None:
+def seed_discovery(discovery: DiscoveryService, directory: Directory, failing_after: int) -> bool:
     if discovery.listings():
-        return
+        return False
     for row in directory.sources():
         if row.enabled and discovery.is_configured(row.id):
             apply_check(directory, row, discovery.run(row.id), failing_after)
+    return True

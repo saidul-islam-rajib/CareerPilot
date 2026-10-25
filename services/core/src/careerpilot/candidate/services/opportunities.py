@@ -10,17 +10,25 @@ class OpportunityService:
         self._ctx = context
 
     def detail(self, user_id: str, opportunity_id: str) -> OpportunityDetail:
-        opportunity = self._ctx.opportunities.get(opportunity_id)
-        if opportunity is None:
-            raise not_found("opportunity")
-        decision = self._ctx.workspaces.get(user_id).decisions.get(opportunity_id)
-        return opportunity.model_copy(update={"decision": decision})
+        return self._personalized(self._ctx.workspaces.get(user_id), opportunity_id)
 
     def summary(self, workspace: CandidateWorkspace, opportunity_id: str) -> OpportunitySummary:
+        return self._personalized(workspace, opportunity_id).summary()
+
+    def _personalized(self, workspace: CandidateWorkspace, opportunity_id: str) -> OpportunityDetail:
         opportunity = self._ctx.opportunities.get(opportunity_id)
         if opportunity is None:
             raise not_found("opportunity")
-        return opportunity.summary().model_copy(update={"decision": workspace.decisions.get(opportunity_id)})
+        update: dict[str, object] = {"decision": workspace.decisions.get(opportunity_id)}
+        match = workspace.matches.get(opportunity_id)
+        if match is not None:
+            update |= {
+                "match_score": match.score,
+                "match_factors": match.factors,
+                "requirements": match.requirements,
+                "has_hard_failure": match.has_hard_failure,
+            }
+        return opportunity.model_copy(update=update)
 
     def decide(self, user_id: str, opportunity_id: str, decision: OpportunityDecision) -> None:
         if self._ctx.opportunities.get(opportunity_id) is None:

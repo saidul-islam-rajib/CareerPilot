@@ -8,6 +8,7 @@ from careerpilot.candidate.models import (
     ApplicationRecord,
     ApprovalDetail,
     OpportunityDetail,
+    OpportunityMatch,
     Preferences,
     Profile,
     SignInEvent,
@@ -85,6 +86,11 @@ class SqlAccountRepository:
             for key, value in self._values(account).items():
                 setattr(row, key, value)
 
+    def active_ids(self) -> list[str]:
+        with self._db.unit_of_work() as session:
+            query = active(UserAccountRow).where(UserAccountRow.status == UserAccountStatus.ACTIVE.value)
+            return [row.id for row in session.scalars(query)]
+
     @staticmethod
     def _values(account: Account) -> dict[str, Any]:
         return {
@@ -112,8 +118,15 @@ class SqlOpportunityRepository:
             return [OpportunityDetail.model_validate(r.document) for r in session.scalars(active(OpportunityRow))]
 
     def add(self, opportunity: OpportunityDetail) -> None:
+        self.save(opportunity)
+
+    def save(self, opportunity: OpportunityDetail) -> None:
         with self._db.unit_of_work() as session:
-            session.add(OpportunityRow(id=opportunity.id, document=opportunity.to_json()))
+            row = session.get(OpportunityRow, opportunity.id)
+            if row is None:
+                session.add(OpportunityRow(id=opportunity.id, document=opportunity.to_json()))
+            else:
+                row.document = opportunity.to_json()
 
 
 def workspace_to_document(workspace: CandidateWorkspace) -> dict[str, object]:
@@ -127,6 +140,7 @@ def workspace_to_document(workspace: CandidateWorkspace) -> dict[str, object]:
         "lastCheckedAt": workspace.last_checked_at,
         "decisions": {k: v.value for k, v in workspace.decisions.items()},
         "deletionScheduledFor": workspace.deletion_scheduled_for,
+        "matches": {k: v.to_json() for k, v in workspace.matches.items()},
     }
 
 
@@ -141,6 +155,7 @@ def workspace_from_document(document: dict[str, Any]) -> CandidateWorkspace:
         last_checked_at=str(document["lastCheckedAt"]),
         decisions={k: OpportunityDecision(v) for k, v in document.get("decisions", {}).items()},
         deletion_scheduled_for=document.get("deletionScheduledFor"),
+        matches={k: OpportunityMatch.model_validate(v) for k, v in document.get("matches", {}).items()},
     )
 
 

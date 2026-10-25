@@ -5,6 +5,7 @@ from careerpilot.candidate.models import (
     ApplicationRecord,
     ApprovalDetail,
     OpportunityDetail,
+    OpportunityMatch,
     Preferences,
     Profile,
     SignInEvent,
@@ -33,6 +34,7 @@ class CandidateWorkspace:
     last_checked_at: str
     decisions: dict[str, OpportunityDecision] = field(default_factory=dict[str, OpportunityDecision])
     deletion_scheduled_for: str | None = None
+    matches: dict[str, OpportunityMatch] = field(default_factory=dict[str, OpportunityMatch])
 
 
 class AccountRepository(Protocol):
@@ -44,11 +46,15 @@ class AccountRepository(Protocol):
 
     def save(self, account: Account) -> None: ...
 
+    def active_ids(self) -> list[str]: ...
+
 
 class OpportunityRepository(Protocol):
     def get(self, opportunity_id: str) -> OpportunityDetail | None: ...
 
     def list_all(self) -> list[OpportunityDetail]: ...
+
+    def save(self, opportunity: OpportunityDetail) -> None: ...
 
 
 class WorkspaceRepository(Protocol):

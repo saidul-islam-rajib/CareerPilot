@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import anthropic
+
 from careerpilot.administration.context import AdminContext
 from careerpilot.administration.discovery_sync import seed_discovery
 from careerpilot.administration.services import (
@@ -30,8 +32,12 @@ from careerpilot.discovery.connectors.registry import ConnectorRegistry, first_p
 from careerpilot.discovery.fetchers import fetcher_for
 from careerpilot.discovery.ports import Fetcher
 from careerpilot.discovery.service import DiscoveryContext, DiscoveryService
+from careerpilot.matching.claude import ClaudeMatcher
+from careerpilot.matching.ports import Matcher
+from careerpilot.matching.rules import RuleBasedMatcher
+from careerpilot.matching.service import RecommendationContext, RecommendationService
 from careerpilot.platform.clock import Clock, IdGenerator, SystemClock, UuidIdGenerator, iso
-from careerpilot.platform.config import CoordinationMode, PersistenceMode, Settings, load_settings
+from careerpilot.platform.config import CoordinationMode, MatchingMode, PersistenceMode, Settings, load_settings
 from careerpilot.platform.coordination import KeySpace, MetadataCache, SignInGuard
 from careerpilot.platform.enums import ApplicationMode, SubmissionWindowKind
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore
@@ -63,6 +69,7 @@ class Container:
     admin_audit: AdminAuditService
     admin_accounts: AdminAccountService
     discovery: DiscoveryService
+    recommendations: RecommendationService
 
 
 def empty_workspace_factory(settings: Settings, clock: Clock, demo: dict[str, Any]) -> Callable[[str], CandidateWorkspace]:
@@ -111,6 +118,7 @@ class ContainerOverrides:
     coord_store: KeyValueStore | None = None
     fetcher: Fetcher | None = None
     connectors: ConnectorRegistry | None = None
+    matcher: Matcher | None = None
 
 
 def _redis_store(settings: Settings, url_env: str) -> KeyValueStore:
@@ -128,6 +136,14 @@ def _stores(settings: Settings, clock: Clock, options: ContainerOverrides) -> tu
             options.coord_store or _redis_store(settings, coordination.coord_url_env),
         )
     return options.cache_store or InMemoryKeyValueStore(clock), options.coord_store or InMemoryKeyValueStore(clock)
+
+
+def matcher_for(settings: Settings, clock: Clock) -> Matcher:
+    rules = RuleBasedMatcher(settings.matching, clock)
+    api_key = os.environ.get(settings.matching.api_key_env)
+    if settings.matching.mode is MatchingMode.CLAUDE and api_key:
+        return ClaudeMatcher(settings.matching, clock, anthropic.Anthropic(api_key=api_key), rules)
+    return rules
 
 
 def _database_url(settings: Settings, options: ContainerOverrides) -> str:
@@ -179,7 +195,19 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
             catalog=repos.listings,
         )
     )
-    seed_discovery(discovery, repos.directory, cfg.discovery.failing_after_failures)
+    recommendations = RecommendationService(
+        RecommendationContext(
+            config=cfg.matching,
+            matcher=options.matcher or matcher_for(cfg, clk),
+            listings=discovery.listings,
+            source_name=lambda source_id: next((s.name for s in repos.directory.sources() if s.id == source_id), source_id),
+            accounts=repos.accounts,
+            opportunities=repos.opportunities,
+            workspaces=repos.workspaces,
+        )
+    )
+    if seed_discovery(discovery, repos.directory, cfg.discovery.failing_after_failures):
+        recommendations.refresh_all()
     opportunity_service = OpportunityService(candidate)
     public_config = PublicConfigService(
         cfg, demo["enumValues"], lambda: repos.platform.get().active_theme, MetadataCache(cache_store, keys, cfg.coordination)
@@ -199,9 +227,10 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         admin_auth=AdminAuthService(admin, guard),
         admin_dashboard=AdminDashboardService(admin),
         admin_users=AdminUserService(admin),
-        admin_catalog=AdminCatalogService(admin, discovery),
+        admin_catalog=AdminCatalogService(admin, discovery, recommendations.refresh_all),
         admin_settings=admin_settings,
         admin_audit=AdminAuditService(admin),
         admin_accounts=AdminAccountService(admin),
         discovery=discovery,
+        recommendations=recommendations,
     )

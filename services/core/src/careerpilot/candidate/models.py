@@ -84,6 +84,15 @@ class SourceRef(CamelModel):
     checked_at: str
 
 
+class OpportunityMatch(CamelModel):
+    score: int
+    factors: list[MatchFactor]
+    requirements: list[RequirementItem]
+    has_hard_failure: bool
+    matcher: str
+    matched_at: str
+
+
 class OpportunityDetail(OpportunitySummary):
     description: str
     match_factors: list[MatchFactor]

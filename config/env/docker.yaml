@@ -15,3 +15,5 @@ observability:
 coordination:
   mode: redis
   environment: docker
+matching:
+  mode: claude
