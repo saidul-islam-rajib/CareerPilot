@@ -155,6 +155,44 @@ class CoordinationConfig(Strict):
     auth_requests: RateLimitPolicy
 
 
+class FetchMode(StrEnum):
+    FIXTURE = "fixture"
+    LIVE = "live"
+
+
+class ListingDefaults(Strict):
+    type: str
+    work_arrangement: str
+    country_code: str
+    location: str = ""
+    organization: str = ""
+
+
+class SourceDefinition(Strict):
+    connector: str
+    url: str
+    fixture: str
+    defaults: ListingDefaults
+
+
+class WarningSignConfig(Strict):
+    upfront_fee: list[str]
+    guaranteed_offer: list[str]
+    sensitive_data_request: list[str]
+    free_mail_domains: list[str]
+
+
+class DiscoveryConfig(Strict):
+    fetch_mode: FetchMode
+    fixture_root: str
+    user_agent: str
+    timeout_seconds: float = Field(gt=0)
+    max_listings_per_check: int = Field(gt=0)
+    failing_after_failures: int = Field(gt=0)
+    sources: dict[str, SourceDefinition]
+    warning_signs: WarningSignConfig
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -169,6 +207,7 @@ class Settings(Strict):
     persistence: PersistenceConfig
     observability: ObservabilityConfig
     coordination: CoordinationConfig
+    discovery: DiscoveryConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
@@ -187,11 +226,15 @@ def _read_yaml(path: Path) -> dict[str, Any]:
     return cast("dict[str, Any]", loaded) if isinstance(loaded, dict) else {}
 
 
+def repository_root() -> Path:
+    return Path(__file__).resolve().parents[5]
+
+
 def default_config_root() -> Path:
     configured = os.environ.get(CONFIG_ROOT_ENV)
     if configured:
         return Path(configured)
-    return Path(__file__).resolve().parents[5] / "config"
+    return repository_root() / "config"
 
 
 def load_raw_config(app_env: str, root: Path) -> dict[str, Any]:
