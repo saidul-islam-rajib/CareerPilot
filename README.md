@@ -20,18 +20,16 @@ Documentation: [Requirements](Requirement%20Analysis/Requirements.md) · [Planni
 
 ## Run locally with Docker
 
-> The code and Docker setup are created in the Foundation increment (Sprint 0). These are the commands the project provides once that is done.
-
-Requirements: Docker Desktop (or Docker Engine + Compose), Git, Make. For mobile: Node.js LTS and an Android emulator (Android Studio) or the Expo Go / development build on a phone; iOS Simulator needs a Mac.
+Requirements: Docker Desktop (running) and Git. For mobile: Node.js LTS and an Android emulator or Expo Go on a phone.
 
 ```bash
 git clone <repository-url> CareerPilot
 cd CareerPilot
-make setup      # copy .env.example to .env, install tools and git hooks
-make up         # start all services, mocks, and Grafana in Docker
-make seed       # load reference and demo data for every table
-make mobile     # optional: start the Expo dev server for Android/iOS
+cp .env.example .env          # local-only defaults, never used outside your machine
+docker compose up -d --build  # PostgreSQL, Redis, Mailpit, migrations + demo seed, user API, admin API, web, admin
 ```
+
+Stop with `docker compose down` (add `-v` to wipe local data). The mobile app runs with `pnpm install && pnpm --filter @careerpilot/mobile start`.
 
 | Service | URL |
 |---|---|
@@ -39,13 +37,9 @@ make mobile     # optional: start the Expo dev server for Android/iOS
 | Admin web app | http://localhost:3001 |
 | User API docs | http://localhost:8000/docs |
 | Admin API docs | http://localhost:8001/docs |
-| Keycloak (sign-in) | http://localhost:8080 |
-| Temporal UI | http://localhost:8233 |
-| Grafana (logs, traces, metrics) | http://localhost:3100 |
 | Mailpit (all local email) | http://localhost:8025 |
-| MinIO console (files) | http://localhost:9001 |
 
-Other commands: `make test` (unit tests), `make logs`, `make down`, `make reset`.
+Unit tests: `pnpm test` (TypeScript) and `cd services/core && ../.venv/Scripts/python -m pytest` (Python). Keycloak, Temporal, MinIO, and Grafana join the Compose stack in later increments.
 
 ## Run the backend locally
 
