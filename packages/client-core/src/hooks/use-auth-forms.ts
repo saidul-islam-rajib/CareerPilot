@@ -11,14 +11,16 @@ export function useSchemas() {
   return useMemo(() => createSchemas(config.validationPolicy), [config.validationPolicy]);
 }
 
-function errorKey(error: unknown): string {
-  if (isApiError(error, ApiErrorCode.InvalidCredentials)) {
-    return 'auth.invalidCredentials';
-  }
-  if (isApiError(error, ApiErrorCode.EmailTaken)) {
-    return 'auth.emailTaken';
-  }
-  return 'common.errorBody';
+const AUTH_ERROR_KEYS: ReadonlyArray<[ApiErrorCode, string]> = [
+  [ApiErrorCode.InvalidCredentials, 'auth.invalidCredentials'],
+  [ApiErrorCode.EmailTaken, 'auth.emailTaken'],
+  [ApiErrorCode.TooManyAttempts, 'auth.tooManyAttempts'],
+  [ApiErrorCode.ServiceUnavailable, 'auth.serviceUnavailable'],
+];
+const FALLBACK_ERROR_KEY = 'common.errorBody';
+
+export function authErrorKey(error: unknown): string {
+  return AUTH_ERROR_KEYS.find(([code]) => isApiError(error, code))?.[1] ?? FALLBACK_ERROR_KEY;
 }
 
 export function useSignInForm() {
@@ -46,7 +48,7 @@ export function useSignInForm() {
     setField: (field: keyof SignInInput, value: string) => setValues((v) => ({ ...v, [field]: value })),
     submit,
     submitting: mutation.isPending,
-    formError: mutation.error ? errorKey(mutation.error) : undefined,
+    formError: mutation.error ? authErrorKey(mutation.error) : undefined,
   };
 }
 
@@ -84,7 +86,7 @@ export function useRegisterForm() {
     setField: <K extends keyof RegisterInput>(field: K, value: RegisterInput[K]) => setValues((v) => ({ ...v, [field]: value })),
     submit,
     submitting: mutation.isPending,
-    formError: mutation.error ? errorKey(mutation.error) : undefined,
+    formError: mutation.error ? authErrorKey(mutation.error) : undefined,
   };
 }
 

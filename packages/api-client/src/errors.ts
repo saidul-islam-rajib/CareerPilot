@@ -5,6 +5,8 @@ export const ApiErrorCode = {
   NotFound: 'not_found',
   Conflict: 'conflict',
   Validation: 'validation',
+  TooManyAttempts: 'too_many_attempts',
+  ServiceUnavailable: 'service_unavailable',
   Network: 'network',
   Timeout: 'timeout',
   Server: 'server',
@@ -31,6 +33,8 @@ const STATUS_CODES: ReadonlyArray<[number, ApiErrorCode]> = [
   [404, ApiErrorCode.NotFound],
   [409, ApiErrorCode.Conflict],
   [422, ApiErrorCode.Validation],
+  [429, ApiErrorCode.TooManyAttempts],
+  [503, ApiErrorCode.ServiceUnavailable],
 ];
 
 export function errorCodeForStatus(status: number): ApiErrorCode {

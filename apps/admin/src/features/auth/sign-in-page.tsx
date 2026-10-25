@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { AlertCircle, ShieldCheck } from 'lucide-react';
-import { ApiErrorCode, isApiError, type SignInRequest } from '@careerpilot/api-client';
-import { useSchemas, useT } from '@careerpilot/client-core';
+import { type SignInRequest } from '@careerpilot/api-client';
+import { authErrorKey, useSchemas, useT } from '@careerpilot/client-core';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { validate, type FieldErrors } from '@careerpilot/validation';
 import { Banner, BrandMark, Button, Card, TeamSoberCredit, TextField } from '@careerpilot/ui-web';
@@ -45,7 +45,7 @@ export function SignInPage() {
         </p>
       </div>
       {signIn.error ? (
-        <Banner tone={StatusTone.Danger} icon={AlertCircle} title={t(isApiError(signIn.error, ApiErrorCode.InvalidCredentials) ? 'auth.invalidCredentials' : 'common.errorBody')} />
+        <Banner tone={StatusTone.Danger} icon={AlertCircle} title={t(authErrorKey(signIn.error))} />
       ) : null}
       <Card>
         <form

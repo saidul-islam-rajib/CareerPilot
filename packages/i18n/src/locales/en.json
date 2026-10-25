@@ -76,6 +76,8 @@
     "resetTitle": "Reset your password",
     "invalidCredentials": "Email or password is incorrect.",
     "emailTaken": "An account with this email already exists.",
+    "tooManyAttempts": "Too many attempts. Wait a few minutes, then try again.",
+    "serviceUnavailable": "Signing in is unavailable right now. Please try again shortly.",
     "pointMatches": "Jobs and programmes matched to you, with reasons",
     "pointApproval": "You approve, CareerPilot completes the application",
     "pointRecord": "Every application recorded with proof"
