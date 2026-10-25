@@ -1,4 +1,5 @@
 import os
+from enum import StrEnum
 from pathlib import Path
 from typing import Any, cast
 
@@ -109,6 +110,16 @@ class HttpConfig(Strict):
     trusted_proxy_hops: int = Field(ge=0)
 
 
+class PersistenceMode(StrEnum):
+    MEMORY = "memory"
+    DATABASE = "database"
+
+
+class PersistenceConfig(Strict):
+    mode: PersistenceMode
+    database_url_env: str
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -120,6 +131,7 @@ class Settings(Strict):
     admin: AdminConfig
     security: SecurityConfig
     http: HttpConfig
+    persistence: PersistenceConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
