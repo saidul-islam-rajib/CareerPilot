@@ -1,0 +1,15 @@
+{
+  "name": "@careerpilot/dynamic-forms",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@careerpilot/domain-ui-logic": "workspace:*"
+  }
+}

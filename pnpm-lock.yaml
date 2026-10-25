@@ -589,6 +589,12 @@ importers:
 
   packages/domain-ui-logic: {}
 
+  packages/dynamic-forms:
+    dependencies:
+      '@careerpilot/domain-ui-logic':
+        specifier: workspace:*
+        version: link:../domain-ui-logic
+
   packages/i18n: {}
 
   packages/ui-tokens: {}
