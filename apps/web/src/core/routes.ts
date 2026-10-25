@@ -15,6 +15,8 @@ export const Routes = {
   tracks: '/settings/tracks',
   pause: '/settings/pause',
   submissionWindow: '/settings/window',
+  notifications: '/settings/notifications',
+  changePassword: '/settings/password',
   activity: '/settings/activity',
   about: '/settings/about',
   licences: '/settings/licences',

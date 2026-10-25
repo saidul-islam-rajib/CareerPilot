@@ -4,6 +4,7 @@ export * from './config/public-config';
 export * from './format/use-format';
 export * from './hooks/pause-options';
 export * from './hooks/track-title';
+export * from './hooks/use-account-forms';
 export * from './hooks/use-applications';
 export * from './hooks/use-approvals';
 export * from './hooks/use-auth-forms';

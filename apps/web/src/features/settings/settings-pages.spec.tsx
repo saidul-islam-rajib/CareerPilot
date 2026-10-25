@@ -5,6 +5,8 @@ import { AboutPage } from './about-page';
 import { ActivityPage } from './activity-page';
 import { DeleteAccountPage } from './delete-account-page';
 import { LicencesPage } from './licences-page';
+import { NotificationsPage } from './notifications-page';
+import { PasswordPage } from './password-page';
 import { PausePage } from './pause-page';
 import { SettingsPage } from './settings-page';
 import { TracksPage } from './tracks-page';
@@ -16,6 +18,48 @@ describe('SettingsPage', () => {
     expect(screen.getByText('Current theme: Sober')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Pause applications/ })).toHaveAttribute('href', '/settings/pause');
     expect(screen.getByRole('link', { name: /Delete account/ })).toHaveAttribute('href', '/settings/delete-account');
+    expect(screen.getByRole('link', { name: /Notifications/ })).toHaveAttribute('href', '/settings/notifications');
+    expect(screen.getByRole('link', { name: /Change password/ })).toHaveAttribute('href', '/settings/password');
+  });
+});
+
+describe('NotificationsPage', () => {
+  it('validates the time and saves the digest choice', async () => {
+    const { services } = renderWithProviders(<NotificationsPage />);
+    const time = await screen.findByLabelText('Send at');
+    await waitFor(() => expect(time).toHaveValue('08:00'));
+    fireEvent.change(time, { target: { value: '7pm' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(await screen.findByText('Enter a time as HH:MM.')).toBeInTheDocument();
+    fireEvent.change(time, { target: { value: '07:30' } });
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Daily digest email' }));
+    expect(time).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(await screen.findByText('Saved')).toBeInTheDocument();
+    expect((await services.api.settings.getSettings()).notifications).toEqual({ digestEnabled: false, digestTime: '07:30' });
+  });
+});
+
+describe('PasswordPage', () => {
+  it('reports a wrong current password and then changes it', async () => {
+    renderWithProviders(<PasswordPage />);
+    fireEvent.change(screen.getByLabelText('Current password'), { target: { value: 'not-my-password' } });
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'N3w!Password99' } });
+    fireEvent.change(screen.getByLabelText('Confirm new password'), { target: { value: 'N3w!Password99' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Change password' }));
+    expect(await screen.findByText('Your current password is incorrect.')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Current password'), { target: { value: 'admin@sober.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Change password' }));
+    expect(await screen.findByText('Your password has been changed.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Current password')).toHaveValue('');
+  });
+
+  it('checks the new password before sending it', async () => {
+    renderWithProviders(<PasswordPage />);
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'short' } });
+    fireEvent.change(screen.getByLabelText('Confirm new password'), { target: { value: 'other' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Change password' }));
+    expect(await screen.findByText("Passwords don't match.")).toBeInTheDocument();
   });
 });
 

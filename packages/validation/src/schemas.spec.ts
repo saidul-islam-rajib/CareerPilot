@@ -80,7 +80,7 @@ describe('account schemas', () => {
   });
 
   it('accepts times of day only', () => {
-    expect(validate(schemas.timeOfDay, '07:30').ok).toBe(true);
-    expect(validate(schemas.timeOfDay, '7pm').ok).toBe(false);
+    expect(validate(schemas.notifications, { digestEnabled: true, digestTime: '07:30' }).ok).toBe(true);
+    expect(validate(schemas.notifications, { digestEnabled: false, digestTime: '7pm' })).toEqual({ ok: false, errors: { digestTime: ValidationMessage.Time } });
   });
 });

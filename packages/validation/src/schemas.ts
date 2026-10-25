@@ -78,9 +78,12 @@ export function createSchemas(policy: ValidationPolicy) {
       path: ['confirmPassword'],
     });
 
-  const timeOfDay = z.string().regex(TIME_PATTERN, ValidationMessage.Time);
+  const notifications = z.object({
+    digestEnabled: z.boolean(),
+    digestTime: z.string().regex(TIME_PATTERN, ValidationMessage.Time),
+  });
 
-  return { signIn, register, forgotPassword, email, phone, answer, resultCount, submissionWindow, changePassword, timeOfDay };
+  return { signIn, register, forgotPassword, email, phone, answer, resultCount, submissionWindow, changePassword, notifications };
 }
 
 export type Schemas = ReturnType<typeof createSchemas>;
@@ -88,6 +91,7 @@ export type SignInInput = z.infer<Schemas['signIn']>;
 export type RegisterInput = z.infer<Schemas['register']>;
 export type ForgotPasswordInput = z.infer<Schemas['forgotPassword']>;
 export type ChangePasswordInput = z.infer<Schemas['changePassword']>;
+export type NotificationsInput = z.infer<Schemas['notifications']>;
 
 export interface FieldErrors {
   [field: string]: string | undefined;
