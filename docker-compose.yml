@@ -60,11 +60,17 @@ services:
     environment: &api-env
       CAREERPILOT_DATABASE_URL: postgresql+psycopg://${CAREERPILOT_APP_DB_USER}:${CAREERPILOT_APP_DB_PASSWORD}@postgres:5432/${POSTGRES_DB}
       CAREERPILOT_TOKEN_SECRET: ${CAREERPILOT_TOKEN_SECRET}
+      CAREERPILOT_REDIS_CACHE_URL: redis://redis-cache:6379/0
+      CAREERPILOT_REDIS_COORD_URL: redis://redis-coord:6379/0
     ports:
       - "127.0.0.1:8000:8000"
     depends_on: &api-deps
       migrate:
         condition: service_completed_successfully
+      redis-cache:
+        condition: service_started
+      redis-coord:
+        condition: service_started
 
   admin-api:
     build:
