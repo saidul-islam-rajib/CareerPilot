@@ -29,6 +29,7 @@ from careerpilot.candidate.services.opportunities import OpportunityService
 from careerpilot.candidate.services.preferences import PreferencesService
 from careerpilot.candidate.services.profile import ProfileService
 from careerpilot.candidate.services.public_config import PublicConfigService
+from careerpilot.candidate.services.submission import SubmissionContext, SubmissionService
 from careerpilot.discovery.connectors.registry import ConnectorRegistry, first_party_connectors
 from careerpilot.discovery.fetchers import fetcher_for
 from careerpilot.discovery.ports import Fetcher
@@ -40,6 +41,7 @@ from careerpilot.matching.service import RecommendationContext, RecommendationSe
 from careerpilot.platform.clock import Clock, IdGenerator, SystemClock, UuidIdGenerator, iso
 from careerpilot.platform.config import CoordinationMode, MatchingMode, PersistenceMode, Settings, load_settings, repository_root
 from careerpilot.platform.coordination import KeySpace, MetadataCache, SignInGuard, release_fingerprint
+from careerpilot.platform.email_delivery import EmailSender, SmtpEmailSender, SmtpSettings
 from careerpilot.platform.enums import ApplicationMode, SubmissionWindowKind
 from careerpilot.platform.files import FileLinkSigner, FileStorage, LocalFileStorage, SampleAwareStorage
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore
@@ -75,6 +77,7 @@ class Container:
     recommendations: RecommendationService
     files: FileStorage
     file_links: FileLinkSigner
+    submissions: SubmissionService
     source_checks: SourceCheckRunner
 
 
@@ -124,6 +127,7 @@ class ContainerOverrides:
     connectors: ConnectorRegistry | None = None
     matcher: Matcher | None = None
     file_storage: FileStorage | None = None
+    email_sender: EmailSender | None = None
 
 
 def _redis_store(settings: Settings, url_env: str) -> KeyValueStore:
@@ -141,6 +145,18 @@ def _stores(settings: Settings, clock: Clock, options: ContainerOverrides) -> tu
             options.coord_store or _redis_store(settings, coordination.coord_url_env),
         )
     return options.cache_store or InMemoryKeyValueStore(clock), options.coord_store or InMemoryKeyValueStore(clock)
+
+
+def email_sender_for(settings: Settings) -> EmailSender:
+    config = settings.submission
+    smtp = SmtpSettings(
+        host=os.environ.get(config.smtp_host_env, config.smtp_default_host),
+        port=config.smtp_port,
+        timeout_seconds=config.smtp_timeout_seconds,
+        mode=config.delivery_mode,
+        sandbox_hosts=frozenset(config.sandbox_hosts),
+    )
+    return SmtpEmailSender(smtp)
 
 
 def storage_root(settings: Settings) -> Path:
@@ -208,6 +224,8 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
             catalog=repos.listings,
         )
     )
+    opportunity_service = OpportunityService(candidate)
+    approvals = ApprovalService(candidate, opportunity_service)
     recommendations = RecommendationService(
         RecommendationContext(
             config=cfg.matching,
@@ -217,12 +235,17 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
             accounts=repos.accounts,
             opportunities=repos.opportunities,
             workspaces=repos.workspaces,
+            apply_by_rule=approvals.approve_by_rule,
         )
     )
     seed_discovery(discovery, repos.directory, cfg.discovery.failing_after_failures)
     recommendations.refresh_all()
     source_checks = SourceCheckRunner(discovery, repos.directory, cfg.discovery.failing_after_failures, recommendations.refresh_all)
-    opportunity_service = OpportunityService(candidate)
+    submissions = SubmissionService(
+        SubmissionContext(
+            candidate=candidate, platform=repos.platform.get, sender=options.email_sender or email_sender_for(cfg), storage=storage
+        )
+    )
     release = release_fingerprint(cfg.model_dump_json(), version(PACKAGE))
     metadata = MetadataCache(cache_store, keys, cfg.coordination, release=release)
     public_config = PublicConfigService(cfg, demo["enumValues"], lambda: repos.platform.get().active_theme, metadata)
@@ -234,7 +257,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         auth=AuthService(candidate, guard),
         public_config=public_config,
         opportunities=opportunity_service,
-        approvals=ApprovalService(candidate, opportunity_service),
+        approvals=approvals,
         applications=ApplicationService(candidate),
         profile=ProfileService(candidate, storage, file_links),
         preferences=PreferencesService(candidate),
@@ -251,4 +274,5 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         source_checks=source_checks,
         files=storage,
         file_links=file_links,
+        submissions=submissions,
     )

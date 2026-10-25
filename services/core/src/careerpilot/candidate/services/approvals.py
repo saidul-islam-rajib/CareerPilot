@@ -1,3 +1,5 @@
+import re
+from dataclasses import dataclass
 from datetime import timedelta
 
 from careerpilot.candidate.context import CandidateContext
@@ -7,6 +9,8 @@ from careerpilot.candidate.models import (
     ApprovalMaterials,
     ApprovalSummary,
     CvRef,
+    OpportunityDetail,
+    Profile,
     SentFile,
     TimelineEntry,
 )
@@ -16,6 +20,7 @@ from careerpilot.platform.clock import iso
 from careerpilot.platform.enums import (
     AnswerSource,
     ApprovalState,
+    ContactKind,
     DocumentKind,
     OpportunityDecision,
     OutcomeStatus,
@@ -29,6 +34,43 @@ from careerpilot.platform.validation import require_text
 
 FIRST_CV_VERSION = 1
 CV_FILE_EXTENSION = ".pdf"
+COVER_LETTER = "applications.coverLetter"
+COVER_LETTER_SKILLS = "applications.coverLetterSkills"
+CONTACT_SEPARATOR = " · "
+SKILL_SEPARATOR = ", "
+LINE_BREAK = "\n"
+PARAGRAPH_BREAK = LINE_BREAK * 2
+EXTRA_BLANK_LINES = re.compile(r"\n{3,}")
+TRAILING_SPACES = re.compile(r"[ \t]+\n")
+
+
+YOU_APPROVED = "timeline.youApproved"
+APPROVED_BY_RULE = "timeline.approvedByRule"
+
+
+@dataclass(frozen=True)
+class Approver:
+    actor: TimelineActor
+    message: str
+
+
+def cover_letter(profile: Profile, opportunity: OpportunityDetail, skill_count: int) -> str:
+    contacts = profile.active_contacts()
+    primary = [next((c.value for c in contacts if c.kind is kind and c.is_primary), "") for kind in ContactKind]
+    text = translate(
+        COVER_LETTER,
+        {
+            "organization": opportunity.organization,
+            "title": opportunity.title,
+            "headline": profile.headline,
+            "skillsSentence": translate(COVER_LETTER_SKILLS, {"skills": SKILL_SEPARATOR.join(profile.skills[:skill_count])})
+            if profile.skills
+            else "",
+            "fullName": profile.full_name,
+            "contact": CONTACT_SEPARATOR.join(value for value in primary if value),
+        },
+    )
+    return EXTRA_BLANK_LINES.sub(PARAGRAPH_BREAK, TRAILING_SPACES.sub(LINE_BREAK, text)).strip()
 
 
 def window_label(workspace: CandidateWorkspace) -> str | None:
@@ -72,8 +114,9 @@ class ApprovalService:
                 cv=CvRef(
                     name=document.name if document else workspace.profile.full_name,
                     version=document.current.version if document else FIRST_CV_VERSION,
+                    document_id=document.id if document else None,
                 ),
-                cover_letter="",
+                cover_letter=cover_letter(workspace.profile, detail, self._ctx.settings.submission.cover_letter_skills),
                 answers=[],
             ),
         )
@@ -96,9 +139,19 @@ class ApprovalService:
         workspace = self._ctx.workspaces.get(user_id)
         approval = self._pending(workspace, approval_id)
         approval.state = ApprovalState.APPROVED
-        workspace.applications.insert(0, self._queued_application(workspace, approval))
+        workspace.applications.insert(0, self._queued_application(workspace, approval, Approver(TimelineActor.USER, YOU_APPROVED)))
         self._ctx.workspaces.save(user_id, workspace)
         return approval.model_copy(update={"submission_window_label": window_label(workspace)})
+
+    def approve_by_rule(self, user_id: str, opportunity_id: str) -> None:
+        approval_id = self.prepare(user_id, opportunity_id).id
+        workspace = self._ctx.workspaces.get(user_id)
+        approval = self._find(workspace, approval_id)
+        if approval.state is not ApprovalState.PENDING:
+            return
+        approval.state = ApprovalState.APPROVED
+        workspace.applications.insert(0, self._queued_application(workspace, approval, Approver(TimelineActor.SYSTEM, APPROVED_BY_RULE)))
+        self._ctx.workspaces.save(user_id, workspace)
 
     def reject(self, user_id: str, approval_id: str) -> ApprovalDetail:
         workspace = self._ctx.workspaces.get(user_id)
@@ -119,7 +172,7 @@ class ApprovalService:
             raise conflict("approval_not_pending")
         return approval
 
-    def _queued_application(self, workspace: CandidateWorkspace, approval: ApprovalDetail) -> ApplicationRecord:
+    def _queued_application(self, workspace: CandidateWorkspace, approval: ApprovalDetail, approver: Approver) -> ApplicationRecord:
         opportunity = self._ctx.opportunities.get(approval.opportunity.id)
         if opportunity is None:
             raise not_found("opportunity")
@@ -138,13 +191,12 @@ class ApprovalService:
                     text=translate("timeline.packagePrepared"),
                     status=SubmissionStatus.AWAITING_APPROVAL,
                 ),
-                TimelineEntry(
-                    at=now, actor=TimelineActor.USER, text=translate("timeline.youApproved"), status=SubmissionStatus.APPROVED_QUEUED
-                ),
+                TimelineEntry(at=now, actor=approver.actor, text=translate(approver.message), status=SubmissionStatus.APPROVED_QUEUED),
             ],
             questions=[a.model_copy() for a in approval.materials.answers],
             emails=[],
             files=[SentFile(name=f"{approval.materials.cv.name}{CV_FILE_EXTENSION}", version=approval.materials.cv.version, size_bytes=0)],
             evidence=[],
             circular=opportunity.circular,
+            materials=approval.materials.model_copy(deep=True),
         )

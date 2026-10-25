@@ -7,6 +7,8 @@ from careerpilot.discovery.models import Listing
 from careerpilot.matching.ports import Matcher
 from careerpilot.matching.rules import is_eligible, sponsorship_evidence
 from careerpilot.platform.config import MatchingConfig
+from careerpilot.platform.enums import ApplicationMode, ApplicationRoute
+from careerpilot.platform.validation import EMAIL_IN_TEXT
 
 
 @dataclass(frozen=True)
@@ -18,6 +20,7 @@ class RecommendationContext:
     accounts: AccountRepository
     opportunities: OpportunityRepository
     workspaces: WorkspaceRepository
+    apply_by_rule: Callable[[str, str], None]
 
 
 class RecommendationService:
@@ -31,12 +34,15 @@ class RecommendationService:
         workspace = self._ctx.workspaces.get(user_id)
         listings = self._ctx.listings()
         assessed_before = len(workspace.matches)
-        added = sum(self._refresh_track(workspace, track, listings) for track in workspace.preferences.tracks)
+        automatic: list[str] = []
+        added = sum(self._refresh_track(workspace, track, listings, automatic) for track in workspace.preferences.tracks)
         if added or len(workspace.matches) != assessed_before:
             self._ctx.workspaces.save(user_id, workspace)
+        for opportunity_id in automatic:
+            self._ctx.apply_by_rule(user_id, opportunity_id)
         return added
 
-    def _refresh_track(self, workspace: CandidateWorkspace, track: Track, listings: list[Listing]) -> int:
+    def _refresh_track(self, workspace: CandidateWorkspace, track: Track, listings: list[Listing], automatic: list[str]) -> int:
         current = workspace.track_opportunities.get(track.id, [])
         candidates = [
             item
@@ -53,6 +59,8 @@ class RecommendationService:
         )[: max(0, track.result_count - len(current))]
         for listing, match in qualified:
             self._publish(listing, match)
+            if track.mode is ApplicationMode.AUTOMATIC and not match.has_hard_failure:
+                automatic.append(listing.id)
         workspace.track_opportunities[track.id] = [*current, *(listing.id for listing, _ in qualified)]
         return len(qualified)
 
@@ -67,6 +75,8 @@ def opportunity_from_listing(
 ) -> OpportunityDetail:
     source = listing.sources[0]
     original = listing.versions[0]
+    found = EMAIL_IN_TEXT.search(listing.description)
+    email = found.group(0) if found else None
     return OpportunityDetail(
         id=listing.id,
         type=listing.type,
@@ -84,5 +94,6 @@ def opportunity_from_listing(
         requirements=match.requirements,
         source=SourceRef(name=source_name(source.source_id), url=source.url, checked_at=listing.last_checked_at),
         circular=ArchivedCircular(archived_at=original.observed_at, original_url=source.url, text=original.text),
-        route=config.default_route,
+        route=ApplicationRoute.EMAIL.value if email else config.default_route,
+        application_email=email,
     )

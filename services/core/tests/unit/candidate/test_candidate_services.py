@@ -99,7 +99,19 @@ def test_prepare_is_idempotent_per_opportunity(container: Container) -> None:
 def test_application_filters(container: Container) -> None:
     attention = {a.submission_status for a in container.applications.list(DEMO_USER, ApplicationFilter.ATTENTION)}
     assert attention == {SubmissionStatus.MANUAL_ACTION_REQUIRED, SubmissionStatus.OUTCOME_UNKNOWN}
-    assert len(container.applications.list(DEMO_USER, ApplicationFilter.ALL)) == 4
+    everything = container.applications.list(DEMO_USER, ApplicationFilter.ALL)
+    queued_by_rule = [a for a in everything if a.submission_status is SubmissionStatus.APPROVED_QUEUED]
+    assert len(everything) == 4 + len(queued_by_rule)
+
+
+def test_automatic_tracks_approve_new_matches_by_rule(container: Container) -> None:
+    queued = [
+        a for a in container.applications.list(DEMO_USER, ApplicationFilter.ALL) if a.submission_status is SubmissionStatus.APPROVED_QUEUED
+    ]
+    assert {a.opportunity.organization for a in queued} == {"Northwind Labs"}
+    record = container.applications.get(DEMO_USER, queued[0].id)
+    assert record.timeline[-1].text == "Approved by your automatic rule"
+    assert record.materials is not None and "Northwind Labs" in record.materials.cover_letter
 
 
 def test_profile_reorder_and_primary(container: Container) -> None:

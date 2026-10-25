@@ -973,7 +973,8 @@
           "originalUrl": "https://careers.example.com/northwind/senior-frontend",
           "text": "Senior Frontend Engineer\nNorthwind Labs\n\nWe are hiring a senior frontend engineer to lead our dashboard team. You will own the design system, mentor two engineers, and ship weekly.\n\nRequirements: 5+ years with React, strong TypeScript, accessibility knowledge.\nNice to have: GraphQL, data visualisation.\n\nApply by email with your CV and a short note."
         },
-        "route": "email"
+        "route": "email",
+        "applicationEmail": "careers@northwind.example.com"
       },
       {
         "id": "opp_remote_fullstack",
@@ -1130,7 +1131,8 @@
           "originalUrl": "https://jobs.example.com/harbourline/react",
           "text": "React Developer\nHarbourline\n\nInternational team, hybrid in Amsterdam."
         },
-        "route": "email"
+        "route": "email",
+        "applicationEmail": "jobs@harbourline.example.com"
       },
       {
         "id": "opp_bd_dhaka",
@@ -1182,7 +1184,8 @@
           "originalUrl": "https://jobs.example.com/bd/bay-digital",
           "text": "Software Engineer\nBay Digital Ltd\n\nSalary: BDT 120,000–160,000 per month. Apply by email to careers@baydigital.example.com."
         },
-        "route": "email"
+        "route": "email",
+        "applicationEmail": "careers@baydigital.example.com"
       },
       {
         "id": "opp_bd_ctg",
@@ -1350,7 +1353,8 @@
             },
             "period": "year"
           },
-          "hasHardFailure": false
+          "hasHardFailure": false,
+          "applicationEmail": "careers@northwind.example.com"
         },
         "state": "pending",
         "createdAt": "2026-10-20T04:00:00.000Z",
@@ -1359,9 +1363,10 @@
         "materials": {
           "cv": {
             "name": "Ayesha Rahman – Frontend CV",
-            "version": 3
+            "version": 3,
+            "documentId": "doc_cv"
           },
-          "coverLetter": "Dear Northwind Labs hiring team,\n\nI have spent five years building accessible React and TypeScript interfaces, most recently leading the design system at Lumen Health. Your dashboard team’s focus on accessibility and weekly releases matches how I like to work.\n\nI would welcome the chance to talk.\n\nAyesha Rahman",
+          "coverLetter": "Dear Northwind Labs hiring team,\n\nI am applying for the Senior Frontend Engineer role. I have spent five years building accessible React and TypeScript interfaces, most recently leading the design system at Lumen Health. Your dashboard team’s focus on accessibility and weekly releases matches how I like to work.\n\nI would welcome the chance to talk.\n\nAyesha Rahman",
           "answers": [
             {
               "id": "q_notice",
@@ -1417,7 +1422,8 @@
         "materials": {
           "cv": {
             "name": "Ayesha Rahman – International CV",
-            "version": 2
+            "version": 2,
+            "documentId": "doc_cv_intl"
           },
           "coverLetter": "Dear Nordlys Systems team,\n\nI am excited by your energy-grid work and ready to relocate to Oslo.\n\nAyesha Rahman",
           "answers": [
@@ -1461,7 +1467,8 @@
             },
             "period": "month"
           },
-          "hasHardFailure": false
+          "hasHardFailure": false,
+          "applicationEmail": "careers@baydigital.example.com"
         },
         "submissionStatus": "confirmed",
         "outcomeStatus": "interview",
@@ -1676,7 +1683,8 @@
           "matchScore": 71,
           "deadline": "2026-10-22T06:00:00.000Z",
           "sponsorship": "unverified",
-          "hasHardFailure": false
+          "hasHardFailure": false,
+          "applicationEmail": "jobs@harbourline.example.com"
         },
         "submissionStatus": "manual_action_required",
         "outcomeStatus": "no_response_yet",

@@ -95,6 +95,7 @@ export function buildDemoSeed(now: Date): DemoState {
         'https://careers.example.com/northwind/senior-frontend',
       ),
       route: ApplicationRoute.Email,
+      applicationEmail: 'careers@northwind.example.com',
     },
     {
       id: 'opp_remote_fullstack',
@@ -168,6 +169,7 @@ export function buildDemoSeed(now: Date): DemoState {
       source: { name: 'International job board', url: 'https://jobs.example.com/harbourline/react', checkedAt: at(0, -2) },
       circular: circular('React Developer', 'Harbourline', 'International team, hybrid in Amsterdam.', 'https://jobs.example.com/harbourline/react'),
       route: ApplicationRoute.Email,
+      applicationEmail: 'jobs@harbourline.example.com',
     },
     {
       id: 'opp_bd_dhaka',
@@ -190,6 +192,7 @@ export function buildDemoSeed(now: Date): DemoState {
       source: { name: 'Bangladesh job portal', url: 'https://jobs.example.com/bd/bay-digital', checkedAt: at(0, -1) },
       circular: circular('Software Engineer', 'Bay Digital Ltd', 'Salary: BDT 120,000–160,000 per month. Apply by email to careers@baydigital.example.com.', 'https://jobs.example.com/bd/bay-digital'),
       route: ApplicationRoute.Email,
+      applicationEmail: 'careers@baydigital.example.com',
     },
     {
       id: 'opp_bd_ctg',
@@ -291,9 +294,9 @@ export function buildDemoSeed(now: Date): DemoState {
       expiresAt: at(3),
       route: ApplicationRoute.Email,
       materials: {
-        cv: { name: 'Ayesha Rahman – Frontend CV', version: 3 },
+        cv: { name: 'Ayesha Rahman – Frontend CV', version: 3, documentId: 'doc_cv' },
         coverLetter:
-          'Dear Northwind Labs hiring team,\n\nI have spent five years building accessible React and TypeScript interfaces, most recently leading the design system at Lumen Health. Your dashboard team’s focus on accessibility and weekly releases matches how I like to work.\n\nI would welcome the chance to talk.\n\nAyesha Rahman',
+          'Dear Northwind Labs hiring team,\n\nI am applying for the Senior Frontend Engineer role. I have spent five years building accessible React and TypeScript interfaces, most recently leading the design system at Lumen Health. Your dashboard team’s focus on accessibility and weekly releases matches how I like to work.\n\nI would welcome the chance to talk.\n\nAyesha Rahman',
         answers: [
           { id: 'q_notice', question: 'What is your notice period?', answer: '30 days', source: AnswerSource.Profile },
           { id: 'q_salary', question: 'What are your salary expectations (USD per year)?', answer: '80,000', source: AnswerSource.Profile },
@@ -309,7 +312,7 @@ export function buildDemoSeed(now: Date): DemoState {
       expiresAt: at(2),
       route: ApplicationRoute.EmployerPortal,
       materials: {
-        cv: { name: 'Ayesha Rahman – International CV', version: 2 },
+        cv: { name: 'Ayesha Rahman – International CV', version: 2, documentId: 'doc_cv_intl' },
         coverLetter: 'Dear Nordlys Systems team,\n\nI am excited by your energy-grid work and ready to relocate to Oslo.\n\nAyesha Rahman',
         answers: [
           { id: 'q_permit', question: 'Do you require visa sponsorship?', answer: 'Yes', source: AnswerSource.Profile },

@@ -133,6 +133,7 @@ export interface OpportunityDetail extends OpportunitySummary {
   source: { name: string; url: string; checkedAt: IsoDateTime };
   circular: ArchivedCircular;
   route: ApplicationRoute;
+  applicationEmail?: string;
 }
 
 export interface TrackDigest {
@@ -178,7 +179,7 @@ export interface ApprovalSummary {
 export interface ApprovalDetail extends ApprovalSummary {
   route: ApplicationRoute;
   materials: {
-    cv: { name: string; version: number };
+    cv: { name: string; version: number; documentId?: string };
     coverLetter: string;
     answers: QuestionAnswer[];
   };

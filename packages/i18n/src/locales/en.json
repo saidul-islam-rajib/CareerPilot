@@ -214,7 +214,11 @@
     "outcome": "Outcome",
     "submission": "Submission",
     "noEvidence": "No confirmation received yet.",
-    "lastContact": "Last contact {date}"
+    "lastContact": "Last contact {date}",
+    "coverLetter": "Dear {organization} hiring team,\n\nI am writing to apply for the {title} position. {headline}\n\n{skillsSentence}Please find my CV attached.\n\nThank you for considering my application. I look forward to hearing from you.\n\nKind regards,\n{fullName}\n{contact}",
+    "emailSubject": "Application for {title} – {fullName}",
+    "senderName": "{fullName} via CareerPilot",
+    "coverLetterSkills": "My key skills include {skills}. "
   },
   "profile": {
     "title": "Profile",
@@ -802,6 +806,31 @@
   },
   "timeline": {
     "packagePrepared": "Application package prepared",
-    "youApproved": "You approved the application"
+    "youApproved": "You approved the application",
+    "approvedByRule": "Approved by your automatic rule",
+    "submitting": "Sending your application",
+    "emailSent": "Email sent to {to} with {attachment}",
+    "emailConfirmed": "No bounce received within {hours} hours – confirmed",
+    "portalManual": "This employer takes applications through their own portal. Open the posting, sign in, and submit there – only you can complete portal sign-in and checks.",
+    "retryScheduled": "Sending failed ({reason}). We will try again.",
+    "sendFailed": "Sending failed after {attempts} attempts ({reason}).",
+    "outcomeUnknown": "We can't tell whether the email was sent, so we will not resend it. Please check with the employer.",
+    "checkFailed": "Stopped before sending: {reason}"
+  },
+  "submission": {
+    "failures": {
+      "missing_document": "Your CV is missing. Upload a CV, then approve again.",
+      "unreadable_document": "Your CV file can't be opened. Upload it again.",
+      "missing_recipient": "The posting has no application email address.",
+      "invalid_recipient": "The application email address isn't valid.",
+      "missing_contact": "Add an email address to your profile so the employer can reply.",
+      "placeholder_text": "The cover letter still contains placeholder text.",
+      "wrong_target": "The cover letter doesn't name this employer and role.",
+      "other_employer_text": "The cover letter mentions another employer.",
+      "deadline_passed": "The deadline has passed.",
+      "already_applied": "You have already applied to this opening."
+    },
+    "evidenceAccepted": "Email accepted by the mail server (message {messageId})",
+    "evidenceConfirmed": "No bounce received within {hours} hours"
   }
 }

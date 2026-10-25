@@ -107,6 +107,7 @@ class OpportunityDetail(OpportunitySummary):
     source: SourceRef
     circular: ArchivedCircular
     route: str
+    application_email: str | None = None
 
     def summary(self) -> OpportunitySummary:
         return OpportunitySummary.model_validate(self.model_dump(include=set(OpportunitySummary.model_fields)))
@@ -122,6 +123,7 @@ class QuestionAnswer(CamelModel):
 class CvRef(CamelModel):
     name: str
     version: int
+    document_id: str | None = None
 
 
 class ApprovalMaterials(CamelModel):
@@ -190,6 +192,8 @@ class ApplicationRecord(ApplicationSummary):
     files: list[SentFile]
     evidence: list[Evidence]
     circular: ArchivedCircular
+    materials: ApprovalMaterials | None = None
+    attempts: int = 0
 
     def summary(self) -> ApplicationSummary:
         return ApplicationSummary.model_validate(self.model_dump(include=set(ApplicationSummary.model_fields)))

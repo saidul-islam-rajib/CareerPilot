@@ -6,6 +6,7 @@ from careerpilot.bootstrap import Container, ContainerOverrides, build_container
 from careerpilot.candidate.services.auth import ClientInfo
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
 from careerpilot.platform.config import load_settings
+from careerpilot.platform.email_delivery import InMemoryEmailSender
 from careerpilot.platform.files import InMemoryFileStorage
 
 NOW = datetime(2026, 10, 20, 6, 0, tzinfo=UTC)
@@ -36,5 +37,6 @@ def container(clock: FixedClock) -> Container:
         hasher=FakeHasher(),
         token_secret=TEST_SECRET,
         file_storage=InMemoryFileStorage(),
+        email_sender=InMemoryEmailSender(),
     )
     return build_container(overrides)
