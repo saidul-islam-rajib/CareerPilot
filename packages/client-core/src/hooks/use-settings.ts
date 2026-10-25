@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { PauseOption, Settings, SubmissionWindow, TrackUpdate } from '@careerpilot/api-client';
+import type { NotificationPreferences, PasswordChange, PauseOption, Settings, SubmissionWindow, TrackUpdate } from '@careerpilot/api-client';
 import { queryKeys } from '../query/query-keys';
 import { useApi } from '../services/app-services';
 
@@ -25,6 +25,16 @@ export function usePause() {
     pause: useSettingsMutation((option: PauseOption) => api.settings.pause(option)),
     resume: useSettingsMutation(() => api.settings.resume()),
   };
+}
+
+export function useUpdateNotifications() {
+  const api = useApi();
+  return useSettingsMutation((changes: Partial<NotificationPreferences>) => api.settings.updateNotifications(changes));
+}
+
+export function useChangePassword() {
+  const api = useApi();
+  return useMutation({ mutationFn: (change: PasswordChange) => api.settings.changePassword(change) });
 }
 
 export function useUpdateWindow() {

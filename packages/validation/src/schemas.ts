@@ -67,13 +67,27 @@ export function createSchemas(policy: ValidationPolicy) {
       end: z.string().regex(TIME_PATTERN, ValidationMessage.Time),
     });
 
-  return { signIn, register, forgotPassword, email, phone, answer, resultCount, submissionWindow };
+  const changePassword = z
+    .object({
+      currentPassword: z.string().min(1, ValidationMessage.Required),
+      newPassword: password,
+      confirmPassword: z.string().min(1, ValidationMessage.Required),
+    })
+    .refine((value) => value.newPassword === value.confirmPassword, {
+      message: ValidationMessage.PasswordMismatch,
+      path: ['confirmPassword'],
+    });
+
+  const timeOfDay = z.string().regex(TIME_PATTERN, ValidationMessage.Time);
+
+  return { signIn, register, forgotPassword, email, phone, answer, resultCount, submissionWindow, changePassword, timeOfDay };
 }
 
 export type Schemas = ReturnType<typeof createSchemas>;
 export type SignInInput = z.infer<Schemas['signIn']>;
 export type RegisterInput = z.infer<Schemas['register']>;
 export type ForgotPasswordInput = z.infer<Schemas['forgotPassword']>;
+export type ChangePasswordInput = z.infer<Schemas['changePassword']>;
 
 export interface FieldErrors {
   [field: string]: string | undefined;

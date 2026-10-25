@@ -259,6 +259,7 @@ export function buildDemoSeed(now: Date): DemoState {
   const settings: Settings = {
     timeZone: 'Asia/Dhaka',
     submissionWindow: { kind: SubmissionWindowKind.DailyWindow, start: '00:00', end: '01:00' },
+    notifications: { digestEnabled: true, digestTime: '08:00' },
     tracks: [
       { id: 'trk_remote', kind: TrackKind.Remote, resultCount: 5, mode: ApplicationMode.ApproveEach, position: 1 },
       { id: 'trk_intl', kind: TrackKind.InternationalSponsored, resultCount: 5, mode: ApplicationMode.ApproveEach, position: 2 },

@@ -384,11 +384,17 @@ export interface SubmissionWindow {
   end?: string;
 }
 
+export interface NotificationPreferences {
+  digestEnabled: boolean;
+  digestTime?: string;
+}
+
 export interface Settings {
   tracks: Track[];
   submissionWindow: SubmissionWindow;
   pause?: PauseState;
   timeZone: string;
+  notifications: NotificationPreferences;
 }
 
 export interface TrackUpdate {

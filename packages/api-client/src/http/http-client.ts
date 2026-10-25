@@ -66,10 +66,11 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
         });
         if (!response.ok) {
           const problem = await readProblem(response);
-          if (response.status === 401) {
+          const code = knownCode(problem.code) ?? errorCodeForStatus(response.status);
+          if (code === ApiErrorCode.Unauthorized) {
             options.onUnauthorized?.();
           }
-          throw new ApiError(knownCode(problem.code) ?? errorCodeForStatus(response.status), response.status, problem.detail);
+          throw new ApiError(code, response.status, problem.detail);
         }
         return response.status === NO_CONTENT ? (undefined as T) : ((await response.json()) as T);
       } catch (error) {

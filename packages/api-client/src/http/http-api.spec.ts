@@ -60,6 +60,13 @@ describe('http api', () => {
     expect(onUnauthorized).toHaveBeenCalledOnce();
   });
 
+  it('keeps the session when only the current password is wrong', async () => {
+    const { api, onUnauthorized } = setup(jsonResponse(401, { code: 'invalid_credentials' }));
+    const error = await api.settings.changePassword({ currentPassword: 'old', newPassword: 'new-password-1' }).catch((e: unknown) => e);
+    expect(isApiError(error, ApiErrorCode.InvalidCredentials)).toBe(true);
+    expect(onUnauthorized).not.toHaveBeenCalled();
+  });
+
   it('maps network failures', async () => {
     const { api } = setup(new TypeError('offline'));
     expect(isApiError(await api.config.getPublicConfig().catch((e: unknown) => e), ApiErrorCode.Network)).toBe(true);

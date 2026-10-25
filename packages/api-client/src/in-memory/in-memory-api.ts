@@ -35,6 +35,7 @@ export interface InMemoryApiOptions {
 }
 
 const DAY_MS = 86_400_000;
+const TIME_OF_DAY = /^([01]\d|2[0-3]):[0-5]\d$/;
 const MONTHS_PER_YEAR = 12;
 
 const STATUS_GROUPS: Record<Exclude<ApplicationFilter, 'all'>, readonly SubmissionStatus[]> = {
@@ -305,6 +306,13 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
         }
         account.password = change.newPassword;
         return respond(undefined);
+      },
+      async updateNotifications(changes) {
+        if (changes.digestTime !== undefined && !TIME_OF_DAY.test(changes.digestTime)) {
+          return failWith(ApiErrorCode.Validation, 'time');
+        }
+        state.settings.notifications = { ...state.settings.notifications, ...changes };
+        return respond(state.settings);
       },
       requestAccountDeletion: async () => respond({ scheduledFor: addDays(config.accountDeletionGraceDays) }),
     },

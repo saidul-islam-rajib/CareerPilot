@@ -65,3 +65,22 @@ describe('other schemas', () => {
     expect(validate(schemas.submissionWindow, { start: '24:00', end: '01:30' }).ok).toBe(false);
   });
 });
+
+describe('account schemas', () => {
+  it('requires the current password and a matching strong new password', () => {
+    expect(validate(schemas.changePassword, { currentPassword: '', newPassword: 'weak', confirmPassword: 'other' })).toEqual({
+      ok: false,
+      errors: { currentPassword: ValidationMessage.Required, newPassword: ValidationMessage.PasswordLength, confirmPassword: ValidationMessage.PasswordMismatch },
+    });
+    expect(validate(schemas.changePassword, { currentPassword: 'old', newPassword: 'N3w!Password99', confirmPassword: 'N3w!Password99' }).ok).toBe(true);
+    expect(validate(schemas.changePassword, { currentPassword: 'old', newPassword: 'N3w!Password99', confirmPassword: 'N3w!Password98' })).toEqual({
+      ok: false,
+      errors: { confirmPassword: 'validation.passwordMismatch' },
+    });
+  });
+
+  it('accepts times of day only', () => {
+    expect(validate(schemas.timeOfDay, '07:30').ok).toBe(true);
+    expect(validate(schemas.timeOfDay, '7pm').ok).toBe(false);
+  });
+});

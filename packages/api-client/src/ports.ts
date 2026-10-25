@@ -13,6 +13,7 @@ import type {
   DeletionRequest,
   DocumentChanges,
   DocumentInput,
+  NotificationPreferences,
   OpportunityDetail,
   PasswordChange,
   PauseOption,
@@ -97,6 +98,7 @@ export interface SettingsApi {
   listSignInActivity(): Promise<SignInEvent[]>;
   requestAccountDeletion(): Promise<DeletionRequest>;
   changePassword(change: PasswordChange): Promise<void>;
+  updateNotifications(changes: Partial<NotificationPreferences>): Promise<Settings>;
 }
 
 export interface CareerPilotApi {

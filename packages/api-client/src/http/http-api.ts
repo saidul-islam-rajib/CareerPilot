@@ -91,6 +91,7 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       listSignInActivity: () => get('/v1/account/sign-in-activity'),
       requestAccountDeletion: () => post('/v1/account/deletion'),
       changePassword: (change) => post('/v1/account/password', change),
+      updateNotifications: (changes) => patch('/v1/settings/notifications', changes),
     },
   };
 }
