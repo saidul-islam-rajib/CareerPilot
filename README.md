@@ -45,7 +45,7 @@ Stop with `docker compose down` (add `-v` to wipe local data). The mobile app ru
 
 To add logs, traces, and metrics: `docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d`. The CareerPilot dashboards are provisioned from `observability/dashboards/`.
 
-Unit tests: `pnpm test` (TypeScript) and `cd services/core && ../.venv/Scripts/python -m pytest` (Python). Keycloak and MinIO join the Compose stack in later increments.
+Unit tests: `pnpm test` (TypeScript) and `cd services/core && ../.venv/Scripts/python -m pytest` (Python). Enable the git hooks once with `sh scripts/hooks/install.sh`: every commit runs format, lint, type, and unit-test checks for the packages you changed, and every push runs everything. GitHub Actions (`.github/workflows/ci.yml`) runs the same checks plus a secret scan. Keycloak and MinIO join the Compose stack in later increments.
 
 ## Run the backend locally
 

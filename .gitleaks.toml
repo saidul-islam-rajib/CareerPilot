@@ -1,0 +1,19 @@
+title = "CareerPilot secret scan"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Local-only demo credentials and test fixtures that are documented as non-secret"
+paths = [
+  '''\.env\.example$''',
+  '''seeds/demo/demo-seed\.json$''',
+  '''packages/api-client/src/.*\.seed\.ts$''',
+  '''packages/api-client/src/test-support\.ts$''',
+  '''(^|/)tests/''',
+  '''\.spec\.tsx?$''',
+  '''README\.md$''',
+  '''RUN-LOCALLY\.md$''',
+  '''Planning/18-Seed-Data\.md$''',
+  '''CLAUDE\.md$''',
+]

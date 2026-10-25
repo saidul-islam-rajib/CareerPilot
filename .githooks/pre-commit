@@ -1,0 +1,28 @@
+#!/bin/sh
+set -e
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$staged" ] && exit 0
+if [ -d services/.venv/Scripts ]; then bin="$root/services/.venv/Scripts"; else bin="$root/services/.venv/bin"; fi
+
+python_checks() {
+  for service in core workers; do
+    (cd "services/$service" && "$bin/ruff" check . && "$bin/ruff" format --check . && "$bin/pyright" && "$bin/pytest" -q)
+  done
+}
+
+if echo "$staged" | grep -qE '^(services/|config/|seeds/|packages/i18n/src/locales/)'; then
+  echo "pre-commit: Python lint, format, types, and unit tests"
+  python_checks
+fi
+
+if echo "$staged" | grep -qE '^(config/|pnpm-lock\.yaml|packages/(i18n|ui-tokens|domain-ui-logic)/)'; then
+  echo "pre-commit: shared config changed, running all TypeScript checks"
+  pnpm run typecheck
+  pnpm test
+elif echo "$staged" | grep -qE '^(apps|packages)/'; then
+  echo "pre-commit: TypeScript checks for changed packages and their dependents"
+  pnpm --filter "...[HEAD]" run typecheck
+  pnpm --filter "...[HEAD]" --workspace-concurrency=1 run test
+fi
