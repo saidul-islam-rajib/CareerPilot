@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: CareerPilot
+    folder: CareerPilot
+    type: file
+    options:
+      path: /careerpilot/dashboards
