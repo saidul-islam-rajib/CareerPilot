@@ -145,10 +145,10 @@ export function buildAdminDemoSeed(now: Date, userState: DemoState): AdminDemoSt
   ];
 
   const audit: AuditEntry[] = [
-    { id: 'aud_1', at: at(-1), actorName: 'Super Admin', actorType: ActorType.Admin, action: 'source.disabled', target: 'Legacy RSS feed' },
-    { id: 'aud_2', at: at(-2), actorName: 'Support Agent', actorType: ActorType.Admin, action: 'user.viewed_sensitive', target: 'Tanvir Hossain' },
-    { id: 'aud_3', at: at(-3), actorName: 'System', actorType: ActorType.System, action: 'application.outcome_unknown', target: 'Lead QA Engineer · Meghna Tech' },
-    { id: 'aud_4', at: at(-4), actorName: 'Ayesha Rahman', actorType: ActorType.User, action: 'application.approved', target: 'Software Engineer · Bay Digital Ltd' },
+    { id: 'aud_seed_1', at: at(-1), actorName: 'Super Admin', actorType: ActorType.Admin, action: 'source.disabled', target: 'Legacy RSS feed' },
+    { id: 'aud_seed_2', at: at(-2), actorName: 'Support Agent', actorType: ActorType.Admin, action: 'user.viewed_sensitive', target: 'Tanvir Hossain' },
+    { id: 'aud_seed_3', at: at(-3), actorName: 'System', actorType: ActorType.System, action: 'application.outcome_unknown', target: 'Lead QA Engineer · Meghna Tech' },
+    { id: 'aud_seed_4', at: at(-4), actorName: 'Ayesha Rahman', actorType: ActorType.User, action: 'application.approved', target: 'Software Engineer · Bay Digital Ltd' },
   ];
 
   return {
