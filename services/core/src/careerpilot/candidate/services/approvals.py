@@ -16,6 +16,7 @@ from careerpilot.platform.clock import iso
 from careerpilot.platform.enums import (
     AnswerSource,
     ApprovalState,
+    DocumentKind,
     OpportunityDecision,
     OutcomeStatus,
     SubmissionStatus,
@@ -57,7 +58,8 @@ class ApprovalService:
             return existing.summary()
         detail = self._opportunities.detail(user_id, opportunity_id)
         workspace.decisions[opportunity_id] = OpportunityDecision.INTERESTED
-        document = workspace.profile.documents[0] if workspace.profile.documents else None
+        documents = workspace.profile.active_documents()
+        document = next((d for d in documents if d.kind is DocumentKind.CV), documents[0] if documents else None)
         now = self._ctx.clock.now()
         approval = ApprovalDetail(
             id=self._ctx.ids.next("apr"),
@@ -69,7 +71,7 @@ class ApprovalService:
             materials=ApprovalMaterials(
                 cv=CvRef(
                     name=document.name if document else workspace.profile.full_name,
-                    version=document.version if document else FIRST_CV_VERSION,
+                    version=document.current.version if document else FIRST_CV_VERSION,
                 ),
                 cover_letter="",
                 answers=[],

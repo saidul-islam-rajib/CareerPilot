@@ -10,6 +10,7 @@ from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
 from careerpilot.platform.config import CoordinationConfig, load_settings
 from careerpilot.platform.coordination import GuardScope, KeyNamespace, KeySpace, MetadataCache, SignInGuard, fingerprint
 from careerpilot.platform.errors import DomainError, ErrorCode
+from careerpilot.platform.files import InMemoryFileStorage
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore, StoreUnavailableError
 from tests.unit.conftest import CLIENT, TEST_SECRET, FakeHasher
 
@@ -150,6 +151,7 @@ def test_metadata_cache_fails_open_when_store_is_unavailable(config: Coordinatio
 @pytest.fixture
 def redis_container(clock: FixedClock) -> Container:
     overrides = ContainerOverrides(
+        file_storage=InMemoryFileStorage(),
         settings=load_settings("local"),
         clock=clock,
         ids=SequentialIdGenerator(),

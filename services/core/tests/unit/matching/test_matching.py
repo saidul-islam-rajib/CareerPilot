@@ -6,7 +6,7 @@ import httpx
 import pytest
 
 from careerpilot.bootstrap import Container
-from careerpilot.candidate.models import Experience, OpportunityMatch, Profile, Track
+from careerpilot.candidate.models import OpportunityMatch, Profile, ProfileEntry, Track
 from careerpilot.discovery.models import CircularVersion, Listing, ListingSource, WarningSign
 from careerpilot.matching.claude import AssessedFactor, AssessedRequirement, Assessment, ClaudeMatcher
 from careerpilot.matching.rules import RuleBasedMatcher, is_eligible
@@ -30,8 +30,16 @@ def profile() -> Profile:
         headline="Frontend engineer",
         completeness=80,
         contacts=[],
-        education=[],
-        experience=[Experience(id="ex_1", title="Frontend Engineer", organization="Lumen", start=AT, summary="Design systems")],
+        sections={
+            "experience": [
+                ProfileEntry(
+                    id="ex_1",
+                    position=1,
+                    values={"title": "Frontend Engineer", "organization": "Lumen", "start": "2022-03", "summary": "Design systems"},
+                    updated_at=AT,
+                )
+            ]
+        },
         skills=["React", "TypeScript", "Next.js", "PostgreSQL"],
         documents=[],
     )

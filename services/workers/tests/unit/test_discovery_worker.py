@@ -7,6 +7,7 @@ from temporalio.testing import ActivityEnvironment
 from careerpilot.bootstrap import Container, ContainerOverrides, build_container
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
 from careerpilot.platform.config import load_settings
+from careerpilot.platform.files import InMemoryFileStorage
 from careerpilot_workers.activities import DiscoveryActivities
 from careerpilot_workers.main import discovery_plan, discovery_schedule
 from careerpilot_workers.workflows import DiscoveryPlan
@@ -25,6 +26,7 @@ class FakeHasher:
 @pytest.fixture
 def container() -> Container:
     overrides = ContainerOverrides(
+        file_storage=InMemoryFileStorage(),
         settings=load_settings("local"),
         clock=FixedClock(datetime(2026, 10, 20, 6, 0, tzinfo=UTC)),
         ids=SequentialIdGenerator(),

@@ -103,8 +103,10 @@ def test_application_filters(container: Container) -> None:
 
 
 def test_profile_reorder_and_primary(container: Container) -> None:
-    ids = [c.id for c in container.profile.get(DEMO_USER).contacts][::-1]
-    assert [c.position for c in container.profile.reorder_contacts(DEMO_USER, ids).contacts] == [1, 2, 3, 4]
+    ids = [c.id for c in container.profile.get(DEMO_USER).active_contacts()][::-1]
+    reordered = container.profile.reorder_contacts(DEMO_USER, ids).active_contacts()
+    assert [c.id for c in reordered] == ids
+    assert [c.position for c in reordered] == [1, 2, 3, 4]
     with pytest.raises(DomainError):
         container.profile.reorder_contacts(DEMO_USER, ids[:1])
     contacts = container.profile.set_primary_contact(DEMO_USER, "c_email_personal").contacts

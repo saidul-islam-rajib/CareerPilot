@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, FastAPI, Query, Request
 from fastapi.responses import JSONResponse, Response
 
+from careerpilot.api import profile_routes
 from careerpilot.api.common import client_info, configure, no_content, ok
 from careerpilot.api.dependencies import CurrentUser, Services
 from careerpilot.api.instrumentation import instrument
@@ -49,8 +50,9 @@ class AnswerBody(CamelModel):
     answer: str
 
 
-class ContactOrderBody(CamelModel):
-    ordered_ids: list[str]
+class PasswordBody(CamelModel):
+    current_password: str
+    new_password: str
 
 
 class TrackUpdateBody(CamelModel):
@@ -155,21 +157,6 @@ def application(application_id: str, user: CurrentUser, services: Services) -> J
     return ok(services.applications.get(user.id, application_id))
 
 
-@router.get("/profile")
-def profile(user: CurrentUser, services: Services) -> JSONResponse:
-    return ok(services.profile.get(user.id))
-
-
-@router.put("/profile/contacts/order")
-def reorder_contacts(body: ContactOrderBody, user: CurrentUser, services: Services) -> JSONResponse:
-    return ok(services.profile.reorder_contacts(user.id, body.ordered_ids))
-
-
-@router.post("/profile/contacts/{contact_id}/primary")
-def primary_contact(contact_id: str, user: CurrentUser, services: Services) -> JSONResponse:
-    return ok(services.profile.set_primary_contact(user.id, contact_id))
-
-
 @router.get("/settings")
 def settings(user: CurrentUser, services: Services) -> JSONResponse:
     return ok(services.preferences.get(user.id))
@@ -200,6 +187,12 @@ def sign_in_activity(user: CurrentUser, services: Services) -> JSONResponse:
     return ok(services.preferences.sign_in_activity(user.id))
 
 
+@router.post("/account/password")
+def change_password(body: PasswordBody, user: CurrentUser, services: Services) -> Response:
+    services.auth.change_password(user.id, body.current_password, body.new_password)
+    return no_content()
+
+
 @router.post("/account/deletion")
 def deletion(user: CurrentUser, services: Services) -> JSONResponse:
     return ok(services.preferences.request_account_deletion(user.id))
@@ -210,5 +203,6 @@ def create_user_app(container: Container) -> FastAPI:
     app.state.container = container
     configure(app, container.settings)
     app.include_router(router)
+    app.include_router(profile_routes.router)
     instrument(app, container, container.settings.observability.user_api_service)
     return app

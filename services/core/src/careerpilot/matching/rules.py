@@ -7,6 +7,8 @@ from careerpilot.platform.enums import OpportunityStatus, RequirementCheck, Spon
 from careerpilot.platform.messages import translate
 
 MAX_SCORE = 100
+EXPERIENCE_SECTION = "experience"
+EXPERIENCE_TITLE = "title"
 LIST_SEPARATOR = ", "
 
 
@@ -77,11 +79,12 @@ class RuleBasedMatcher:
     def _best_title(profile: Profile, listing: Listing) -> tuple[float, str]:
         wanted = set(normalized(listing.title).split())
         best: tuple[float, str] = (0.0, "")
-        for experience in profile.experience:
-            words = set(normalized(experience.title).split())
+        for experience in profile.active_entries(EXPERIENCE_SECTION):
+            title = experience.text(EXPERIENCE_TITLE)
+            words = set(normalized(title).split())
             overlap = len(words & wanted) / len(words | wanted) if words | wanted else 0.0
             if overlap > best[0]:
-                best = (overlap, experience.title)
+                best = (overlap, title)
         return best
 
     @staticmethod

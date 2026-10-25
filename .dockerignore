@@ -11,3 +11,4 @@
 .validation
 .env
 apps/mobile
+.data

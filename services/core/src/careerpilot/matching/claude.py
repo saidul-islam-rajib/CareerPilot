@@ -6,7 +6,7 @@ import anthropic
 from anthropic.types import OutputConfigParam
 from pydantic import BaseModel, Field
 
-from careerpilot.candidate.models import MatchFactor, OpportunityMatch, Profile, RequirementItem, Track
+from careerpilot.candidate.models import EntryValue, MatchFactor, OpportunityMatch, Profile, RequirementItem, Track
 from careerpilot.discovery.models import Listing
 from careerpilot.matching.ports import Matcher
 from careerpilot.platform.clock import Clock, iso
@@ -46,14 +46,19 @@ class ParsedResponse(Protocol):
     def parsed_output(self) -> Assessment | None: ...
 
 
+def entry_text(section: str, values: dict[str, EntryValue]) -> str:
+    return f"{section}: " + "; ".join(f"{key}: {value}" for key, value in values.items() if value not in (None, ""))
+
+
 def profile_text(profile: Profile) -> str:
     lines = [
         f"Headline: {profile.headline}",
+        f"Location: {profile.location}",
+        f"Summary: {profile.summary}",
         f"Skills: {', '.join(profile.skills)}",
-        *(f"Experience: {e.title} at {e.organization} ({e.start} to {e.end or 'present'}). {e.summary}" for e in profile.experience),
-        *(f"Education: {e.degree}, {e.institution} ({e.start_year}-{e.end_year or 'present'})" for e in profile.education),
+        *(entry_text(section, entry.values) for section in profile.sections for entry in profile.active_entries(section)),
     ]
-    return LINE.join(lines)
+    return LINE.join(line for line in lines if not line.endswith(": "))
 
 
 def listing_text(listing: Listing) -> str:

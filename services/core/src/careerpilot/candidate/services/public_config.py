@@ -1,11 +1,22 @@
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
+
+from pydantic.alias_generators import to_camel
 
 from careerpilot.platform.config import Settings
 from careerpilot.platform.coordination import MetadataCache
 from careerpilot.platform.enums import ThemeKey
 
 PUBLIC_CONFIG_CACHE = "public-config"
+PUBLIC_PROFILE_KEYS = {"sections", "limits", "uploads"}
+
+
+def camel_keys(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {to_camel(str(k)): camel_keys(v) for k, v in cast("dict[str, Any]", value).items()}
+    if isinstance(value, list):
+        return [camel_keys(v) for v in cast("list[Any]", value)]
+    return value
 
 
 class PublicConfigService:
@@ -65,4 +76,5 @@ class PublicConfigService:
                 "developerUrl": str(s.branding.developer_url),
             },
             "openSourceComponents": [{"name": c.name, "licence": c.licence, "url": str(c.url)} for c in s.open_source_components],
+            "profile": camel_keys(s.profile.model_dump(mode="json", include=PUBLIC_PROFILE_KEYS, exclude_none=True)),
         }

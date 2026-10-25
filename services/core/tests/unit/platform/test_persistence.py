@@ -10,6 +10,7 @@ from careerpilot.candidate.ports import Account
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
 from careerpilot.platform.config import PersistenceMode, load_settings
 from careerpilot.platform.enums import ActorType, ApplicationFilter, ThemeKey, UserAccountStatus
+from careerpilot.platform.files import InMemoryFileStorage
 from careerpilot.platform.persistence import SQLITE_MEMORY_URL, Actor, Base, PhysicalDeleteError, acting_as, active, create_database
 from tests.unit.conftest import CLIENT, DEMO_USER, TEST_SECRET, FakeHasher
 
@@ -73,7 +74,13 @@ def database_container(clock: FixedClock) -> Container:
     database = create_database(SQLITE_MEMORY_URL, clock)
     Base.metadata.create_all(database.engine)
     overrides = ContainerOverrides(
-        settings=settings, clock=clock, ids=SequentialIdGenerator(), hasher=FakeHasher(), token_secret=TEST_SECRET, database=database
+        file_storage=InMemoryFileStorage(),
+        settings=settings,
+        clock=clock,
+        ids=SequentialIdGenerator(),
+        hasher=FakeHasher(),
+        token_secret=TEST_SECRET,
+        database=database,
     )
     return build_container(overrides)
 

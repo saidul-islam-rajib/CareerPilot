@@ -6,6 +6,7 @@ from careerpilot.bootstrap import Container, ContainerOverrides, build_container
 from careerpilot.candidate.services.auth import ClientInfo
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
 from careerpilot.platform.config import load_settings
+from careerpilot.platform.files import InMemoryFileStorage
 
 NOW = datetime(2026, 10, 20, 6, 0, tzinfo=UTC)
 DEMO_USER = "usr_demo"
@@ -29,6 +30,11 @@ def clock() -> FixedClock:
 @pytest.fixture
 def container(clock: FixedClock) -> Container:
     overrides = ContainerOverrides(
-        settings=load_settings("local"), clock=clock, ids=SequentialIdGenerator(), hasher=FakeHasher(), token_secret=TEST_SECRET
+        settings=load_settings("local"),
+        clock=clock,
+        ids=SequentialIdGenerator(),
+        hasher=FakeHasher(),
+        token_secret=TEST_SECRET,
+        file_storage=InMemoryFileStorage(),
     )
     return build_container(overrides)

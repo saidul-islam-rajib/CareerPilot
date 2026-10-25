@@ -37,9 +37,10 @@ from careerpilot.matching.ports import Matcher
 from careerpilot.matching.rules import RuleBasedMatcher
 from careerpilot.matching.service import RecommendationContext, RecommendationService
 from careerpilot.platform.clock import Clock, IdGenerator, SystemClock, UuidIdGenerator, iso
-from careerpilot.platform.config import CoordinationMode, MatchingMode, PersistenceMode, Settings, load_settings
+from careerpilot.platform.config import CoordinationMode, MatchingMode, PersistenceMode, Settings, load_settings, repository_root
 from careerpilot.platform.coordination import KeySpace, MetadataCache, SignInGuard
 from careerpilot.platform.enums import ApplicationMode, SubmissionWindowKind
+from careerpilot.platform.files import FileLinkSigner, FileStorage, LocalFileStorage, SampleAwareStorage
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore
 from careerpilot.platform.persistence import Database, create_database
 from careerpilot.platform.security import Argon2PasswordHasher, PasswordHasher, TokenService, token_secret_from_environment
@@ -70,6 +71,8 @@ class Container:
     admin_accounts: AdminAccountService
     discovery: DiscoveryService
     recommendations: RecommendationService
+    files: FileStorage
+    file_links: FileLinkSigner
     source_checks: SourceCheckRunner
 
 
@@ -85,8 +88,6 @@ def empty_workspace_factory(settings: Settings, clock: Clock, demo: dict[str, An
                 headline="",
                 completeness=EMPTY_PROFILE_COMPLETENESS,
                 contacts=[],
-                education=[],
-                experience=[],
                 skills=[],
                 documents=[],
             ),
@@ -120,6 +121,7 @@ class ContainerOverrides:
     fetcher: Fetcher | None = None
     connectors: ConnectorRegistry | None = None
     matcher: Matcher | None = None
+    file_storage: FileStorage | None = None
 
 
 def _redis_store(settings: Settings, url_env: str) -> KeyValueStore:
@@ -137,6 +139,11 @@ def _stores(settings: Settings, clock: Clock, options: ContainerOverrides) -> tu
             options.coord_store or _redis_store(settings, coordination.coord_url_env),
         )
     return options.cache_store or InMemoryKeyValueStore(clock), options.coord_store or InMemoryKeyValueStore(clock)
+
+
+def storage_root(settings: Settings) -> Path:
+    root = Path(settings.profile.storage.local_root)
+    return root if root.is_absolute() else repository_root() / root
 
 
 def matcher_for(settings: Settings, clock: Clock) -> Matcher:
@@ -160,7 +167,10 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     clk = options.clock or SystemClock()
     gen = options.ids or UuidIdGenerator()
     pwd = options.hasher or Argon2PasswordHasher()
-    tokens = TokenService(cfg.security, clk, options.token_secret or token_secret_from_environment())
+    secret = options.token_secret or token_secret_from_environment()
+    tokens = TokenService(cfg.security, clk, secret)
+    storage = SampleAwareStorage(options.file_storage or LocalFileStorage(storage_root(cfg)))
+    file_links = FileLinkSigner(secret, clk, cfg.profile.storage.signed_url_ttl_seconds)
     demo = load_demo_seed(clk.now(), options.seed_path)
 
     empty = empty_workspace_factory(cfg, clk, demo)
@@ -223,7 +233,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         opportunities=opportunity_service,
         approvals=ApprovalService(candidate, opportunity_service),
         applications=ApplicationService(candidate),
-        profile=ProfileService(candidate),
+        profile=ProfileService(candidate, storage, file_links),
         preferences=PreferencesService(candidate),
         dashboard=DashboardService(candidate, opportunity_service),
         admin_auth=AdminAuthService(admin, guard),
@@ -236,4 +246,6 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         discovery=discovery,
         recommendations=recommendations,
         source_checks=source_checks,
+        files=storage,
+        file_links=file_links,
     )

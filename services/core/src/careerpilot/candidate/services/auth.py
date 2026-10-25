@@ -1,15 +1,17 @@
 from dataclasses import dataclass
 
 from careerpilot.candidate.context import USER_AUDIENCE, CandidateContext
-from careerpilot.candidate.models import Session, SignInEvent, UserSummary
+from careerpilot.candidate.models import Contact, Session, SignInEvent, UserSummary
 from careerpilot.candidate.ports import Account
 from careerpilot.platform.clock import iso
 from careerpilot.platform.coordination import GuardScope, SignInGuard
-from careerpilot.platform.enums import UserAccountStatus
+from careerpilot.platform.enums import ContactKind, UserAccountStatus
 from careerpilot.platform.errors import DomainError, ErrorCode, validation_error
+from careerpilot.platform.messages import translate
 from careerpilot.platform.validation import require_email, require_name, require_password
 
 BLOCKED_STATUSES = frozenset({UserAccountStatus.SUSPENDED, UserAccountStatus.DELETED})
+FIRST_POSITION = 1
 
 
 @dataclass(frozen=True)
@@ -68,8 +70,33 @@ class AuthService:
                 consent_privacy_version=registration.privacy_version,
             )
         )
+        self._start_profile(user)
         self._record_sign_in(user.id, client, success=True)
         return self._session(user)
+
+    def change_password(self, user_id: str, current_password: str, new_password: str) -> None:
+        account = self._ctx.accounts.get(user_id)
+        if account is None or not self._ctx.hasher.verify(account.password_hash, current_password):
+            raise DomainError(ErrorCode.INVALID_CREDENTIALS)
+        password = require_password(new_password, self._ctx.settings.validation.password)
+        account.password_hash = self._ctx.hasher.hash(password)
+        self._ctx.accounts.save(account)
+
+    def _start_profile(self, user: UserSummary) -> None:
+        workspace = self._ctx.workspaces.get(user.id)
+        workspace.profile.full_name = user.full_name
+        workspace.profile.contacts = [
+            Contact(
+                id=self._ctx.ids.next("c"),
+                kind=ContactKind.EMAIL,
+                value=user.email,
+                label=translate("profile.accountEmailLabel"),
+                is_primary=True,
+                verified=False,
+                position=FIRST_POSITION,
+            )
+        ]
+        self._ctx.workspaces.save(user.id, workspace)
 
     def request_password_reset(self, email: str, client: ClientInfo) -> None:
         self._guard.throttle(GuardScope.USER, client.ip)
