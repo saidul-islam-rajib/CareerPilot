@@ -1,0 +1,26 @@
+services:
+  lgtm:
+    image: grafana/otel-lgtm:0.11.10
+    ports:
+      - "127.0.0.1:3100:3000"
+      - "127.0.0.1:4318:4318"
+      - "127.0.0.1:3200:3200"
+    volumes:
+      - lgtm-data:/data
+      - ./observability/provisioning/careerpilot-dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/careerpilot.yaml:ro
+      - ./observability/dashboards:/careerpilot/dashboards:ro
+
+  user-api:
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4318
+    depends_on:
+      - lgtm
+
+  admin-api:
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4318
+    depends_on:
+      - lgtm
+
+volumes:
+  lgtm-data:

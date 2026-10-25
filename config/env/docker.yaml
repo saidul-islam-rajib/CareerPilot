@@ -7,3 +7,6 @@ http:
     - http://localhost:3001
 persistence:
   mode: database
+observability:
+  enabled: true
+  trace_sample_ratio: 1.0
