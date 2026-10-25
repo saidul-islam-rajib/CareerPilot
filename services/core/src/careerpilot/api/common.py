@@ -12,6 +12,7 @@ from careerpilot.platform.config import Settings
 from careerpilot.platform.errors import DomainError, ErrorCode
 from careerpilot.platform.messages import translate
 from careerpilot.platform.model import CamelModel
+from careerpilot.platform.user_agent import describe_device
 
 FORWARDED_FOR = "x-forwarded-for"
 USER_AGENT = "user-agent"
@@ -78,6 +79,6 @@ def client_info(request: Request, settings: Settings) -> ClientInfo:
     ip = forwarded[-hops] if hops and len(forwarded) >= hops else (request.client.host if request.client else "")
     return ClientInfo(
         ip=ip,
-        device=request.headers.get(USER_AGENT) or translate("activity.unknownDevice"),
+        device=describe_device(request.headers.get(USER_AGENT)),
         approximate_location=translate("activity.unknownLocation"),
     )

@@ -227,7 +227,8 @@
     "success": "Signed in",
     "failed": "Failed attempt",
     "unknownLocation": "Location unknown",
-    "unknownDevice": "Unknown device"
+    "unknownDevice": "Unknown device",
+    "deviceOn": "{browser} on {system}"
   },
   "credits": {
     "developedBy": "Developed by Team Sober",
