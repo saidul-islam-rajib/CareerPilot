@@ -84,3 +84,16 @@ class SubmissionWorkflow:
             reports.append(report)
         confirmed: int = await workflow.execute_activity(CONFIRM_SENT, start_to_close_timeout=timeout, retry_policy=once, result_type=int)
         return SubmissionRun(reports=reports, confirmed=confirmed)
+
+
+SEND_DIGESTS = "send_digests"
+
+
+@workflow.defn(name="DigestWorkflow")
+class DigestWorkflow:
+    @workflow.run
+    async def run(self, plan: ActivityPlan) -> int:
+        timeout = timedelta(seconds=plan.activity_timeout_seconds)
+        return await workflow.execute_activity(
+            SEND_DIGESTS, start_to_close_timeout=timeout, retry_policy=RetryPolicy(maximum_attempts=1), result_type=int
+        )

@@ -9,8 +9,8 @@ from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
 from careerpilot.platform.config import load_settings
 from careerpilot.platform.email_delivery import InMemoryEmailSender
 from careerpilot.platform.files import InMemoryFileStorage
-from careerpilot_workers.activities import DiscoveryActivities, SubmissionActivities
-from careerpilot_workers.main import activity_plan, discovery_schedule, submission_schedule
+from careerpilot_workers.activities import DigestActivities, DiscoveryActivities, SubmissionActivities
+from careerpilot_workers.main import activity_plan, digest_schedule, discovery_schedule, submission_schedule
 from careerpilot_workers.workflows import ActivityPlan, QueuedItem
 
 TEST_SECRET = "unit-test-secret-that-is-long-enough-for-hmac"
@@ -80,3 +80,11 @@ def test_submission_runs_on_its_own_schedule_and_queue() -> None:
     action = schedule.action
     assert isinstance(action, ScheduleActionStartWorkflow)
     assert action.task_queue == config.submission_task_queue != config.discovery_task_queue
+
+
+def test_digests_run_on_the_email_queue(container: Container) -> None:
+    config = load_settings("local").workers
+    action = digest_schedule(config).action
+    assert isinstance(action, ScheduleActionStartWorkflow)
+    assert action.task_queue == config.submission_task_queue
+    assert ActivityEnvironment().run(DigestActivities(container).send_digests) >= 0

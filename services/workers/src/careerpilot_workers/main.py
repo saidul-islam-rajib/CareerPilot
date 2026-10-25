@@ -16,8 +16,8 @@ from temporalio.worker import Worker
 from careerpilot.bootstrap import build_container
 from careerpilot.platform.config import WorkersConfig
 from careerpilot.platform.telemetry import configure_telemetry
-from careerpilot_workers.activities import DiscoveryActivities, SubmissionActivities
-from careerpilot_workers.workflows import ActivityPlan, DiscoveryWorkflow, SubmissionWorkflow
+from careerpilot_workers.activities import DigestActivities, DiscoveryActivities, SubmissionActivities
+from careerpilot_workers.workflows import ActivityPlan, DigestWorkflow, DiscoveryWorkflow, SubmissionWorkflow
 
 WORKER_SERVICE = "careerpilot-workers"
 SEQUENTIAL = 1
@@ -45,6 +45,15 @@ def submission_schedule(config: WorkersConfig) -> Schedule:
     )
 
 
+def digest_schedule(config: WorkersConfig) -> Schedule:
+    return Schedule(
+        action=ScheduleActionStartWorkflow(
+            DigestWorkflow.run, activity_plan(config), id=config.digest_workflow_id, task_queue=config.submission_task_queue
+        ),
+        spec=ScheduleSpec(intervals=[ScheduleIntervalSpec(every=timedelta(minutes=config.digest_interval_minutes))]),
+    )
+
+
 async def ensure_schedule(client: Client, schedule_id: str, schedule: Schedule) -> None:
     try:
         await client.create_schedule(schedule_id, schedule)
@@ -63,8 +72,10 @@ async def serve() -> None:
     workers = settings.workers
     await ensure_schedule(client, workers.discovery_schedule_id, discovery_schedule(workers))
     await ensure_schedule(client, workers.submission_schedule_id, submission_schedule(workers))
+    await ensure_schedule(client, workers.digest_schedule_id, digest_schedule(workers))
     discovery = DiscoveryActivities(container)
     submission = SubmissionActivities(container)
+    digests = DigestActivities(container)
     with ThreadPoolExecutor() as executor:
         discovery_worker = Worker(
             client,
@@ -76,8 +87,8 @@ async def serve() -> None:
         submission_worker = Worker(
             client,
             task_queue=workers.submission_task_queue,
-            workflows=[SubmissionWorkflow],
-            activities=[submission.due_applications, submission.submit_application, submission.confirm_sent],
+            workflows=[SubmissionWorkflow, DigestWorkflow],
+            activities=[submission.due_applications, submission.submit_application, submission.confirm_sent, digests.send_digests],
             activity_executor=executor,
             max_concurrent_activities=SEQUENTIAL,
         )

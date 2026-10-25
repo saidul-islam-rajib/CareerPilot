@@ -8,6 +8,7 @@ from careerpilot_workers.workflows import (
     CONFIRM_SENT,
     DUE_APPLICATIONS,
     DUE_SOURCES,
+    SEND_DIGESTS,
     SUBMIT_APPLICATION,
     QueuedItem,
     SourceCheckResult,
@@ -55,3 +56,12 @@ class SubmissionActivities:
     @activity.defn(name=CONFIRM_SENT)
     def confirm_sent(self) -> int:
         return self._container.submissions.confirm_sent()
+
+
+class DigestActivities:
+    def __init__(self, container: Container) -> None:
+        self._container = container
+
+    @activity.defn(name=SEND_DIGESTS)
+    def send_digests(self) -> int:
+        return self._container.digests.send_due()
