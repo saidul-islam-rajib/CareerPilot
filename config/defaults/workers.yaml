@@ -7,3 +7,7 @@ workers:
   discovery_interval_minutes: 60
   activity_timeout_seconds: 300
   activity_max_attempts: 3
+  submission_task_queue: submission
+  submission_workflow_id: submission-queue
+  submission_schedule_id: submission-schedule
+  submission_interval_minutes: 10

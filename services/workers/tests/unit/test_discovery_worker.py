@@ -7,10 +7,11 @@ from temporalio.testing import ActivityEnvironment
 from careerpilot.bootstrap import Container, ContainerOverrides, build_container
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
 from careerpilot.platform.config import load_settings
+from careerpilot.platform.email_delivery import InMemoryEmailSender
 from careerpilot.platform.files import InMemoryFileStorage
-from careerpilot_workers.activities import DiscoveryActivities
-from careerpilot_workers.main import discovery_plan, discovery_schedule
-from careerpilot_workers.workflows import DiscoveryPlan
+from careerpilot_workers.activities import DiscoveryActivities, SubmissionActivities
+from careerpilot_workers.main import activity_plan, discovery_schedule, submission_schedule
+from careerpilot_workers.workflows import ActivityPlan, QueuedItem
 
 TEST_SECRET = "unit-test-secret-that-is-long-enough-for-hmac"
 
@@ -32,6 +33,7 @@ def container() -> Container:
         ids=SequentialIdGenerator(),
         hasher=FakeHasher(),
         token_secret=TEST_SECRET,
+        email_sender=InMemoryEmailSender(),
     )
     return build_container(overrides)
 
@@ -58,4 +60,23 @@ def test_schedule_runs_discovery_on_configured_interval() -> None:
     action = schedule.action
     assert isinstance(action, ScheduleActionStartWorkflow)
     assert action.task_queue == config.discovery_task_queue
-    assert discovery_plan(config) == DiscoveryPlan(config.activity_timeout_seconds, config.activity_max_attempts)
+    assert activity_plan(config) == ActivityPlan(config.activity_timeout_seconds, config.activity_max_attempts)
+
+
+def test_submission_activities_process_the_queue(container: Container) -> None:
+    activities = SubmissionActivities(container)
+    queued = ActivityEnvironment().run(activities.due_applications)
+    assert queued and all(isinstance(item, QueuedItem) for item in queued)
+    report = ActivityEnvironment().run(activities.submit_application, queued[0])
+    assert report.application_id == queued[0].application_id
+    assert report.status in {"approved_queued", "manual_action_required", "submitted_awaiting_confirmation", "awaiting_user_information"}
+    assert ActivityEnvironment().run(activities.confirm_sent) >= 0
+
+
+def test_submission_runs_on_its_own_schedule_and_queue() -> None:
+    config = load_settings("local").workers
+    schedule = submission_schedule(config)
+    assert schedule.spec.intervals[0].every == timedelta(minutes=config.submission_interval_minutes)
+    action = schedule.action
+    assert isinstance(action, ScheduleActionStartWorkflow)
+    assert action.task_queue == config.submission_task_queue != config.discovery_task_queue

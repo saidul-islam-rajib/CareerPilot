@@ -16,28 +16,38 @@ from temporalio.worker import Worker
 from careerpilot.bootstrap import build_container
 from careerpilot.platform.config import WorkersConfig
 from careerpilot.platform.telemetry import configure_telemetry
-from careerpilot_workers.activities import DiscoveryActivities
-from careerpilot_workers.workflows import DiscoveryPlan, DiscoveryWorkflow
+from careerpilot_workers.activities import DiscoveryActivities, SubmissionActivities
+from careerpilot_workers.workflows import ActivityPlan, DiscoveryWorkflow, SubmissionWorkflow
 
 WORKER_SERVICE = "careerpilot-workers"
+SEQUENTIAL = 1
 
 
-def discovery_plan(config: WorkersConfig) -> DiscoveryPlan:
-    return DiscoveryPlan(activity_timeout_seconds=config.activity_timeout_seconds, activity_max_attempts=config.activity_max_attempts)
+def activity_plan(config: WorkersConfig) -> ActivityPlan:
+    return ActivityPlan(activity_timeout_seconds=config.activity_timeout_seconds, activity_max_attempts=config.activity_max_attempts)
 
 
 def discovery_schedule(config: WorkersConfig) -> Schedule:
     return Schedule(
         action=ScheduleActionStartWorkflow(
-            DiscoveryWorkflow.run, discovery_plan(config), id=config.discovery_workflow_id, task_queue=config.discovery_task_queue
+            DiscoveryWorkflow.run, activity_plan(config), id=config.discovery_workflow_id, task_queue=config.discovery_task_queue
         ),
         spec=ScheduleSpec(intervals=[ScheduleIntervalSpec(every=timedelta(minutes=config.discovery_interval_minutes))]),
     )
 
 
-async def ensure_schedule(client: Client, config: WorkersConfig) -> None:
+def submission_schedule(config: WorkersConfig) -> Schedule:
+    return Schedule(
+        action=ScheduleActionStartWorkflow(
+            SubmissionWorkflow.run, activity_plan(config), id=config.submission_workflow_id, task_queue=config.submission_task_queue
+        ),
+        spec=ScheduleSpec(intervals=[ScheduleIntervalSpec(every=timedelta(minutes=config.submission_interval_minutes))]),
+    )
+
+
+async def ensure_schedule(client: Client, schedule_id: str, schedule: Schedule) -> None:
     try:
-        await client.create_schedule(config.discovery_schedule_id, discovery_schedule(config))
+        await client.create_schedule(schedule_id, schedule)
     except ScheduleAlreadyRunningError:
         return
 
@@ -50,17 +60,28 @@ async def serve() -> None:
     if not address:
         raise RuntimeError(settings.workers.temporal_address_env)
     client = await Client.connect(address, namespace=settings.workers.namespace)
-    await ensure_schedule(client, settings.workers)
-    activities = DiscoveryActivities(container)
+    workers = settings.workers
+    await ensure_schedule(client, workers.discovery_schedule_id, discovery_schedule(workers))
+    await ensure_schedule(client, workers.submission_schedule_id, submission_schedule(workers))
+    discovery = DiscoveryActivities(container)
+    submission = SubmissionActivities(container)
     with ThreadPoolExecutor() as executor:
-        worker = Worker(
+        discovery_worker = Worker(
             client,
-            task_queue=settings.workers.discovery_task_queue,
+            task_queue=workers.discovery_task_queue,
             workflows=[DiscoveryWorkflow],
-            activities=[activities.due_sources, activities.check_source],
+            activities=[discovery.due_sources, discovery.check_source],
             activity_executor=executor,
         )
-        await worker.run()
+        submission_worker = Worker(
+            client,
+            task_queue=workers.submission_task_queue,
+            workflows=[SubmissionWorkflow],
+            activities=[submission.due_applications, submission.submit_application, submission.confirm_sent],
+            activity_executor=executor,
+            max_concurrent_activities=SEQUENTIAL,
+        )
+        await asyncio.gather(discovery_worker.run(), submission_worker.run())
 
 
 def main() -> None:

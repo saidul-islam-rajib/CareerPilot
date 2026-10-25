@@ -9,7 +9,7 @@ CHECK_SOURCE = "check_source"
 
 
 @dataclass(frozen=True)
-class DiscoveryPlan:
+class ActivityPlan:
     activity_timeout_seconds: int
     activity_max_attempts: int
 
@@ -25,7 +25,7 @@ class SourceCheckResult:
 @workflow.defn(name="DiscoveryWorkflow")
 class DiscoveryWorkflow:
     @workflow.run
-    async def run(self, plan: DiscoveryPlan) -> list[SourceCheckResult]:
+    async def run(self, plan: ActivityPlan) -> list[SourceCheckResult]:
         timeout = timedelta(seconds=plan.activity_timeout_seconds)
         retry = RetryPolicy(maximum_attempts=plan.activity_max_attempts)
         sources: list[str] = await workflow.execute_activity(
@@ -38,3 +38,49 @@ class DiscoveryWorkflow:
             )
             results.append(result)
         return results
+
+
+DUE_APPLICATIONS = "due_applications"
+SUBMIT_APPLICATION = "submit_application"
+CONFIRM_SENT = "confirm_sent"
+
+
+@dataclass(frozen=True)
+class QueuedItem:
+    user_id: str
+    application_id: str
+
+
+@dataclass(frozen=True)
+class SubmissionReport:
+    application_id: str
+    status: str
+    hold: str | None
+
+
+@dataclass(frozen=True)
+class SubmissionRun:
+    reports: list[SubmissionReport]
+    confirmed: int
+
+
+@workflow.defn(name="SubmissionWorkflow")
+class SubmissionWorkflow:
+    @workflow.run
+    async def run(self, plan: ActivityPlan) -> SubmissionRun:
+        timeout = timedelta(seconds=plan.activity_timeout_seconds)
+        once = RetryPolicy(maximum_attempts=1)
+        queued: list[QueuedItem] = await workflow.execute_activity(
+            DUE_APPLICATIONS,
+            start_to_close_timeout=timeout,
+            retry_policy=RetryPolicy(maximum_attempts=plan.activity_max_attempts),
+            result_type=list[QueuedItem],
+        )
+        reports: list[SubmissionReport] = []
+        for item in queued:
+            report: SubmissionReport = await workflow.execute_activity(
+                SUBMIT_APPLICATION, item, start_to_close_timeout=timeout, retry_policy=once, result_type=SubmissionReport
+            )
+            reports.append(report)
+        confirmed: int = await workflow.execute_activity(CONFIRM_SENT, start_to_close_timeout=timeout, retry_policy=once, result_type=int)
+        return SubmissionRun(reports=reports, confirmed=confirmed)
