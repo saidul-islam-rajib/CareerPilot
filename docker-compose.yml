@@ -85,6 +85,48 @@ services:
       - "127.0.0.1:8001:8001"
     depends_on: *api-deps
 
+  temporal:
+    image: temporalio/auto-setup:1.27.2
+    environment:
+      DB: postgres12
+      DB_PORT: "5432"
+      POSTGRES_SEEDS: postgres
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PWD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:7233:7233"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  temporal-ui:
+    image: temporalio/ui:2.36.0
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+    ports:
+      - "127.0.0.1:8233:8080"
+    depends_on:
+      - temporal
+
+  workers:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    command: ["careerpilot-workers"]
+    restart: on-failure
+    environment:
+      <<: *api-env
+      CAREERPILOT_TEMPORAL_ADDRESS: temporal:7233
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis-cache:
+        condition: service_started
+      redis-coord:
+        condition: service_started
+      temporal:
+        condition: service_started
+
   web:
     build:
       context: .
