@@ -6,7 +6,8 @@ import { chromium } from 'playwright-core';
 const appDir = path.resolve(process.argv[2] ?? 'apps/web');
 const outDir = path.resolve(process.argv[3] ?? '.validation/web');
 const port = Number(process.env.VALIDATION_PORT ?? 4320);
-const base = `http://localhost:${port}`;
+const external = process.env.VALIDATION_BASE_URL;
+const base = external ?? `http://localhost:${port}`;
 const widths = (process.env.VIEWPORT_WIDTHS ?? '390,1280').split(',').map(Number);
 const height = Number(process.env.VIEWPORT_HEIGHT ?? 900);
 const settleMs = Number(process.env.SETTLE_MS ?? 900);
@@ -74,7 +75,7 @@ async function waitForServer() {
   throw new Error('Web server did not start');
 }
 
-const server = spawn('npx', ['next', 'start', '--port', String(port)], { cwd: appDir, shell: true, stdio: 'ignore' });
+const server = external ? undefined : spawn('npx', ['next', 'start', '--port', String(port)], { cwd: appDir, shell: true, stdio: 'ignore' });
 const errors = [];
 try {
   await waitForServer();
@@ -109,9 +110,9 @@ try {
   }
   await browser.close();
 } finally {
-  if (process.platform === 'win32') {
+  if (server && process.platform === 'win32') {
     spawnSync('taskkill', ['/pid', String(server.pid), '/T', '/F'], { stdio: 'ignore' });
-  } else {
+  } else if (server) {
     server.kill();
   }
 }
