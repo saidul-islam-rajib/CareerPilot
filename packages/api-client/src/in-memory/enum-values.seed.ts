@@ -18,6 +18,8 @@ import {
   AdminRole,
   ServiceHealth,
   ActorType,
+  DocumentKind,
+  LanguageProficiency,
   type EnumValueMetadata,
 } from '@careerpilot/domain-ui-logic';
 
@@ -157,5 +159,20 @@ export const enumValueSeed: EnumValueMetadata[] = [
     [ActorType.Admin, StatusTone.Primary],
     [ActorType.System, StatusTone.Neutral],
     [ActorType.Agent, StatusTone.Neutral],
+  ]),
+  ...rows(EnumKey.LanguageProficiency, [
+    [LanguageProficiency.Native, StatusTone.Success],
+    [LanguageProficiency.Fluent, StatusTone.Success],
+    [LanguageProficiency.Professional, StatusTone.Primary],
+    [LanguageProficiency.Intermediate, StatusTone.Neutral],
+    [LanguageProficiency.Basic, StatusTone.Neutral],
+  ]),
+  ...rows(EnumKey.DocumentKind, [
+    [DocumentKind.Cv, StatusTone.Primary],
+    [DocumentKind.CoverLetter, StatusTone.Neutral],
+    [DocumentKind.Certificate, StatusTone.Success],
+    [DocumentKind.Transcript, StatusTone.Neutral],
+    [DocumentKind.Identity, StatusTone.Warning],
+    [DocumentKind.Other, StatusTone.Neutral],
   ]),
 ];

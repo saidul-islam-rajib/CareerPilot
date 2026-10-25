@@ -226,6 +226,49 @@ export const ActorType = {
 } as const;
 export type ActorType = (typeof ActorType)[keyof typeof ActorType];
 
+export const ProfileFieldType = {
+  Text: 'text',
+  Textarea: 'textarea',
+  Url: 'url',
+  Email: 'email',
+  Phone: 'phone',
+  Month: 'month',
+  Year: 'year',
+  Number: 'number',
+  Select: 'select',
+  Boolean: 'boolean',
+} as const;
+export type ProfileFieldType = (typeof ProfileFieldType)[keyof typeof ProfileFieldType];
+
+export const CompletenessKind = {
+  Basics: 'basics',
+  Photo: 'photo',
+  Contacts: 'contacts',
+  Skills: 'skills',
+  Documents: 'documents',
+  Section: 'section',
+} as const;
+export type CompletenessKind = (typeof CompletenessKind)[keyof typeof CompletenessKind];
+
+export const LanguageProficiency = {
+  Native: 'native',
+  Fluent: 'fluent',
+  Professional: 'professional',
+  Intermediate: 'intermediate',
+  Basic: 'basic',
+} as const;
+export type LanguageProficiency = (typeof LanguageProficiency)[keyof typeof LanguageProficiency];
+
+export const DocumentKind = {
+  Cv: 'cv',
+  CoverLetter: 'cover_letter',
+  Certificate: 'certificate',
+  Transcript: 'transcript',
+  Identity: 'identity',
+  Other: 'other',
+} as const;
+export type DocumentKind = (typeof DocumentKind)[keyof typeof DocumentKind];
+
 export const EnumKey = {
   SubmissionStatus: 'submission_status',
   OutcomeStatus: 'outcome_status',
@@ -244,6 +287,8 @@ export const EnumKey = {
   AdminRole: 'admin_role',
   ServiceHealth: 'service_health',
   ActorType: 'actor_type',
+  LanguageProficiency: 'language_proficiency',
+  DocumentKind: 'document_kind',
 } as const;
 export type EnumKey = (typeof EnumKey)[keyof typeof EnumKey];
 
