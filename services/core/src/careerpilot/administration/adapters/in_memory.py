@@ -1,6 +1,7 @@
 import copy
 from typing import Any, TypeVar
 
+from careerpilot.administration.adapters.documents import operations_from_document
 from careerpilot.administration.models import (
     AdminAccount,
     AdminApplicationRow,
@@ -8,10 +9,7 @@ from careerpilot.administration.models import (
     AdminSourceRow,
     AdminUserRow,
     AuditEntry,
-    NotificationCounts,
     PlatformSettings,
-    SecretMetadata,
-    ServiceStatus,
 )
 from careerpilot.administration.ports import AdminCredential, OperationsSnapshot
 from careerpilot.platform.security import PasswordHasher
@@ -71,13 +69,7 @@ class InMemoryDirectory:
         self._applications = [AdminApplicationRow.model_validate(a) for a in seed["applications"]]
         self._opportunities = [AdminOpportunityRow.model_validate(o) for o in seed["opportunities"]]
         self._sources = [AdminSourceRow.model_validate(s) for s in seed["sources"]]
-        self._operations = OperationsSnapshot(
-            services=[ServiceStatus.model_validate(s) for s in seed["services"]],
-            notifications=NotificationCounts.model_validate(seed["notifications"]),
-            archived_circulars=int(seed["archivedCirculars"]),
-            user_phones={k: str(v) for k, v in seed["userPhones"].items()},
-            user_secrets={k: [SecretMetadata.model_validate(s) for s in v] for k, v in seed["secrets"].items()},
-        )
+        self._operations = operations_from_document(seed)
 
     def users(self) -> list[AdminUserRow]:
         return [u.model_copy() for u in self._users]
