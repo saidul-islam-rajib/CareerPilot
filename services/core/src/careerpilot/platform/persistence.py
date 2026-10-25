@@ -123,5 +123,5 @@ def create_database(url: str, clock: Clock) -> Database:
 ModelT = TypeVar("ModelT", bound=Audited)
 
 
-def active(model: type[ModelT]) -> Select[ModelT]:
+def active(model: type[ModelT]) -> Select[tuple[ModelT]]:
     return select(model).where(model.deleted_at.is_(None))

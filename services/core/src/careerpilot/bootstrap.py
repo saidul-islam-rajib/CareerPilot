@@ -39,6 +39,7 @@ EMPTY_PROFILE_COMPLETENESS = 0
 @dataclass(frozen=True)
 class Container:
     settings: Settings
+    database: Database | None
     auth: AuthService
     public_config: PublicConfigService
     opportunities: OpportunityService
@@ -117,11 +118,10 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     demo = load_demo_seed(clk.now(), options.seed_path)
 
     empty = empty_workspace_factory(cfg, clk, demo)
-    repos = (
-        sql_repositories(options.database or create_database(_database_url(cfg, options), clk), demo, pwd, empty)
-        if cfg.persistence.mode is PersistenceMode.DATABASE
-        else in_memory_repositories(demo, pwd, empty)
+    database = (
+        options.database or create_database(_database_url(cfg, options), clk) if cfg.persistence.mode is PersistenceMode.DATABASE else None
     )
+    repos = sql_repositories(database, demo, pwd, empty) if database else in_memory_repositories(demo, pwd, empty)
 
     candidate = CandidateContext(cfg, clk, gen, repos.accounts, repos.opportunities, repos.workspaces, pwd, tokens)
     admin = AdminContext(
@@ -141,6 +141,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     admin_settings = PlatformSettingsService(admin)
     return Container(
         settings=cfg,
+        database=database,
         auth=AuthService(candidate),
         public_config=PublicConfigService(cfg, demo["enumValues"], admin_settings.active_theme),
         opportunities=opportunity_service,

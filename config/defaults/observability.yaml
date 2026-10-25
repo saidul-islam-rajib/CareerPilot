@@ -1,0 +1,19 @@
+observability:
+  enabled: false
+  otlp_endpoint_env: OTEL_EXPORTER_OTLP_ENDPOINT
+  trace_sample_ratio: 0.2
+  metric_export_interval_ms: 15000
+  log_level: INFO
+  user_api_service: careerpilot-user-api
+  admin_api_service: careerpilot-admin-api
+  redacted: "[redacted]"
+  scrub_keys:
+    - password
+    - password_hash
+    - passwordHash
+    - token
+    - accessToken
+    - access_token
+    - secret
+    - authorization
+    - cookie

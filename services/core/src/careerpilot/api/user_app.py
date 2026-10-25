@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse, Response
 
 from careerpilot.api.common import client_info, configure, no_content, ok
 from careerpilot.api.dependencies import CurrentUser, Services
+from careerpilot.api.instrumentation import instrument
 from careerpilot.bootstrap import Container
 from careerpilot.candidate.models import SubmissionWindow
 from careerpilot.candidate.services.auth import Registration
@@ -209,4 +210,5 @@ def create_user_app(container: Container) -> FastAPI:
     app.state.container = container
     configure(app, container.settings)
     app.include_router(router)
+    instrument(app, container, container.settings.observability.user_api_service)
     return app

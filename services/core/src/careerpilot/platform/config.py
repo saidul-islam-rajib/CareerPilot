@@ -120,6 +120,18 @@ class PersistenceConfig(Strict):
     database_url_env: str
 
 
+class ObservabilityConfig(Strict):
+    enabled: bool
+    otlp_endpoint_env: str
+    trace_sample_ratio: float = Field(ge=0, le=1)
+    metric_export_interval_ms: int = Field(gt=0)
+    log_level: str
+    user_api_service: str
+    admin_api_service: str
+    redacted: str
+    scrub_keys: list[str]
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -132,6 +144,7 @@ class Settings(Strict):
     security: SecurityConfig
     http: HttpConfig
     persistence: PersistenceConfig
+    observability: ObservabilityConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse, Response
 
 from careerpilot.api.common import configure, no_content, ok
 from careerpilot.api.dependencies import CurrentAdmin, Paging, Services
+from careerpilot.api.instrumentation import instrument
 from careerpilot.bootstrap import Container
 from careerpilot.platform.enums import AdminRole, EmergencyStopScope, OpportunityStatus, ThemeKey, UserAccountStatus
 from careerpilot.platform.messages import translate
@@ -166,4 +167,5 @@ def create_admin_app(container: Container) -> FastAPI:
     app.state.container = container
     configure(app, container.settings)
     app.include_router(router)
+    instrument(app, container, container.settings.observability.admin_api_service)
     return app
