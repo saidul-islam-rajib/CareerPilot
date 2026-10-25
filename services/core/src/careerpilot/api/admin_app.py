@@ -1,9 +1,9 @@
 from importlib.metadata import version
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, Request
 from fastapi.responses import JSONResponse, Response
 
-from careerpilot.api.common import configure, no_content, ok
+from careerpilot.api.common import client_info, configure, no_content, ok
 from careerpilot.api.dependencies import CurrentAdmin, Paging, Services
 from careerpilot.api.instrumentation import instrument
 from careerpilot.bootstrap import Container
@@ -48,8 +48,8 @@ class AdminUpdateBody(CamelModel):
 
 
 @router.post("/auth/sign-in")
-def sign_in(body: SignInBody, services: Services) -> JSONResponse:
-    return ok(services.admin_auth.sign_in(body.email, body.password))
+def sign_in(body: SignInBody, request: Request, services: Services) -> JSONResponse:
+    return ok(services.admin_auth.sign_in(body.email, body.password, client_info(request, services.settings).ip))
 
 
 @router.post("/auth/sign-out")

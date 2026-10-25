@@ -25,7 +25,7 @@ REGISTRATION = Registration(
 
 
 def admin_actor(container: Container):  # type: ignore[no-untyped-def]
-    return container.admin_auth.authenticate(container.admin_auth.sign_in("admin@sober.com", "admin@sober.com").access_token)
+    return container.admin_auth.authenticate(container.admin_auth.sign_in("admin@sober.com", "admin@sober.com", CLIENT.ip).access_token)
 
 
 def test_sign_in_records_activity_and_issues_a_verifiable_token(container: Container) -> None:

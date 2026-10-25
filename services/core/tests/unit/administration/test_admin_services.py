@@ -15,12 +15,13 @@ from careerpilot.platform.enums import (
     UserAccountStatus,
 )
 from careerpilot.platform.errors import DomainError, ErrorCode
+from tests.unit.conftest import CLIENT
 
 PASSWORD = "admin@sober.com"
 
 
 def actor(container: Container, email: str = "admin@sober.com") -> AdminActor:
-    return container.admin_auth.authenticate(container.admin_auth.sign_in(email, PASSWORD).access_token)
+    return container.admin_auth.authenticate(container.admin_auth.sign_in(email, PASSWORD, CLIENT.ip).access_token)
 
 
 def test_role_permissions() -> None:
@@ -33,9 +34,9 @@ def test_role_permissions() -> None:
 
 def test_admin_sign_in_rejects_wrong_password_and_admin_tokens_are_not_user_tokens(container: Container) -> None:
     with pytest.raises(DomainError) as error:
-        container.admin_auth.sign_in("admin@sober.com", "wrong")
+        container.admin_auth.sign_in("admin@sober.com", "wrong", CLIENT.ip)
     assert error.value.code is ErrorCode.INVALID_CREDENTIALS
-    token = container.admin_auth.sign_in("admin@sober.com", PASSWORD).access_token
+    token = container.admin_auth.sign_in("admin@sober.com", PASSWORD, CLIENT.ip).access_token
     with pytest.raises(DomainError):
         container.auth.authenticate(token)
 
@@ -118,4 +119,4 @@ def test_admin_accounts_cannot_change_themselves(container: Container) -> None:
         container.admin_accounts.update(admin, "adm_super", None, True)
     assert self_change.value.code is ErrorCode.CONFLICT
     with pytest.raises(DomainError):
-        container.admin_auth.sign_in("operations@sober.com", PASSWORD)
+        container.admin_auth.sign_in("operations@sober.com", PASSWORD, CLIENT.ip)

@@ -1,0 +1,15 @@
+coordination:
+  mode: memory
+  cache_url_env: CAREERPILOT_REDIS_CACHE_URL
+  coord_url_env: CAREERPILOT_REDIS_COORD_URL
+  key_prefix: cp
+  environment: local
+  socket_timeout_seconds: 0.5
+  metadata_ttl_seconds: 3600
+  ttl_jitter_ratio: 0.1
+  sign_in_failures:
+    limit: 5
+    window_seconds: 900
+  auth_requests:
+    limit: 30
+    window_seconds: 60

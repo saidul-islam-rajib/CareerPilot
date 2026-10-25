@@ -1,4 +1,5 @@
 from collections import Counter
+from collections.abc import Callable
 from datetime import timedelta
 
 from careerpilot.administration.context import ADMIN_AUDIENCE, AdminActor, AdminContext, PageRequest, paginate
@@ -22,6 +23,7 @@ from careerpilot.administration.models import (
 )
 from careerpilot.administration.permissions import permissions_for_role
 from careerpilot.platform.clock import iso, parse_iso
+from careerpilot.platform.coordination import GuardScope, SignInGuard
 from careerpilot.platform.enums import (
     AdminArea,
     AdminRole,
@@ -96,13 +98,17 @@ def count_by(values: list[str]) -> list[CountByKey]:
 
 
 class AdminAuthService:
-    def __init__(self, context: AdminContext) -> None:
+    def __init__(self, context: AdminContext, guard: SignInGuard) -> None:
         self._ctx = context
+        self._guard = guard
 
-    def sign_in(self, email: str, password: str) -> AdminSession:
+    def sign_in(self, email: str, password: str, client_ip: str) -> AdminSession:
+        self._guard.ensure_allowed(GuardScope.ADMIN, email, client_ip)
         credential = self._ctx.admins.find_by_email(email)
         if credential is None or credential.account.suspended or not self._ctx.hasher.verify(credential.password_hash, password):
+            self._guard.record_failure(GuardScope.ADMIN, email)
             raise DomainError(ErrorCode.INVALID_CREDENTIALS)
+        self._guard.clear(GuardScope.ADMIN, email)
         credential.account.last_sign_in_at = iso(self._ctx.clock.now())
         self._ctx.admins.save(credential)
         summary = self._summary(credential.account)
@@ -313,8 +319,9 @@ class AdminCatalogService:
 
 
 class PlatformSettingsService:
-    def __init__(self, context: AdminContext) -> None:
+    def __init__(self, context: AdminContext, on_change: Callable[[], None]) -> None:
         self._ctx = context
+        self._on_change = on_change
 
     def get(self, actor: AdminActor) -> PlatformSettings:
         actor.require(AdminArea.SETTINGS, PermissionAction.READ)
@@ -331,7 +338,7 @@ class PlatformSettingsService:
         if any(isinstance(v, int) and v <= 0 for v in applied.values()):
             raise validation_error("settings")
         updated = PlatformSettings.model_validate({**current.model_dump(), **applied})
-        self._ctx.platform.save(updated)
+        self._save(updated)
         actor.record("settings.updated", ", ".join(sorted(applied)))
         return updated
 
@@ -341,14 +348,18 @@ class PlatformSettingsService:
         current = self._ctx.platform.get()
         stop = EmergencyStop(active=True, scope=scope, target=target, reason=text, since=iso(self._ctx.clock.now()))
         updated = current.model_copy(update={"emergency_stop": stop})
-        self._ctx.platform.save(updated)
+        self._save(updated)
         actor.record("emergency_stop.started", text)
         return updated
+
+    def _save(self, updated: PlatformSettings) -> None:
+        self._ctx.platform.save(updated)
+        self._on_change()
 
     def end_emergency_stop(self, actor: AdminActor) -> PlatformSettings:
         actor.require(AdminArea.SETTINGS, PermissionAction.UPDATE)
         updated = self._ctx.platform.get().model_copy(update={"emergency_stop": EmergencyStop(active=False)})
-        self._ctx.platform.save(updated)
+        self._save(updated)
         actor.record("emergency_stop.ended", "")
         return updated
 

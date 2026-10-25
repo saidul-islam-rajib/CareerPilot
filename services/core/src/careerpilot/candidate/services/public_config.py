@@ -2,16 +2,28 @@ from collections.abc import Callable
 from typing import Any
 
 from careerpilot.platform.config import Settings
+from careerpilot.platform.coordination import MetadataCache
 from careerpilot.platform.enums import ThemeKey
+
+PUBLIC_CONFIG_CACHE = "public-config"
 
 
 class PublicConfigService:
-    def __init__(self, settings: Settings, enum_values: list[dict[str, Any]], active_theme: Callable[[], ThemeKey]) -> None:
+    def __init__(
+        self, settings: Settings, enum_values: list[dict[str, Any]], active_theme: Callable[[], ThemeKey], cache: MetadataCache
+    ) -> None:
         self._settings = settings
         self._enum_values = enum_values
         self._active_theme = active_theme
+        self._cache = cache
 
     def get(self) -> dict[str, Any]:
+        return self._cache.get_or_load(PUBLIC_CONFIG_CACHE, self._build)
+
+    def invalidate(self) -> None:
+        self._cache.invalidate(PUBLIC_CONFIG_CACHE)
+
+    def _build(self) -> dict[str, Any]:
         s = self._settings
         policy = s.validation
         return {

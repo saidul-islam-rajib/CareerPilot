@@ -85,7 +85,7 @@ def test_services_work_on_the_database(database_container: Container) -> None:
     assert container.dashboard.get(DEMO_USER).counts.awaiting_approval == 2
     container.approvals.approve(DEMO_USER, "apr_frontend")
     assert any(a.opportunity.id == "opp_remote_frontend" for a in container.applications.list(DEMO_USER, ApplicationFilter.ACTIVE))
-    admin = container.admin_auth.authenticate(container.admin_auth.sign_in("admin@sober.com", "admin@sober.com").access_token)
+    admin = container.admin_auth.authenticate(container.admin_auth.sign_in("admin@sober.com", "admin@sober.com", CLIENT.ip).access_token)
     assert container.admin_dashboard.get(admin).users.total == 14
     container.admin_settings.update(admin, {"active_theme": ThemeKey.ORCHID})
     assert container.public_config.get()["theme"] == "orchid"

@@ -82,8 +82,8 @@ def register(body: RegisterBody, request: Request, services: Services) -> JSONRe
 
 
 @router.post("/auth/password-reset")
-def password_reset(body: EmailBody, services: Services) -> Response:
-    services.auth.request_password_reset(body.email)
+def password_reset(body: EmailBody, request: Request, services: Services) -> Response:
+    services.auth.request_password_reset(body.email, client_info(request, services.settings))
     return no_content()
 
 

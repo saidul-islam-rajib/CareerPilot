@@ -26,8 +26,10 @@ from careerpilot.candidate.services.preferences import PreferencesService
 from careerpilot.candidate.services.profile import ProfileService
 from careerpilot.candidate.services.public_config import PublicConfigService
 from careerpilot.platform.clock import Clock, IdGenerator, SystemClock, UuidIdGenerator, iso
-from careerpilot.platform.config import PersistenceMode, Settings, load_settings
+from careerpilot.platform.config import CoordinationMode, PersistenceMode, Settings, load_settings
+from careerpilot.platform.coordination import KeySpace, MetadataCache, SignInGuard
 from careerpilot.platform.enums import ApplicationMode, SubmissionWindowKind
+from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore
 from careerpilot.platform.persistence import Database, create_database
 from careerpilot.platform.security import Argon2PasswordHasher, PasswordHasher, TokenService, token_secret_from_environment
 from careerpilot.platform.seed import load_demo_seed
@@ -99,6 +101,25 @@ class ContainerOverrides:
     seed_path: Path | None = None
     database_url: str | None = None
     database: Database | None = None
+    cache_store: KeyValueStore | None = None
+    coord_store: KeyValueStore | None = None
+
+
+def _redis_store(settings: Settings, url_env: str) -> KeyValueStore:
+    url = os.environ.get(url_env)
+    if not url:
+        raise RuntimeError(url_env)
+    return RedisKeyValueStore.from_url(url, settings.coordination.socket_timeout_seconds)
+
+
+def _stores(settings: Settings, clock: Clock, options: ContainerOverrides) -> tuple[KeyValueStore, KeyValueStore]:
+    coordination = settings.coordination
+    if coordination.mode is CoordinationMode.REDIS:
+        return (
+            options.cache_store or _redis_store(settings, coordination.cache_url_env),
+            options.coord_store or _redis_store(settings, coordination.coord_url_env),
+        )
+    return options.cache_store or InMemoryKeyValueStore(clock), options.coord_store or InMemoryKeyValueStore(clock)
 
 
 def _database_url(settings: Settings, options: ContainerOverrides) -> str:
@@ -137,20 +158,26 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         hasher=pwd,
         tokens=tokens,
     )
+    cache_store, coord_store = _stores(cfg, clk, options)
+    keys = KeySpace(cfg.coordination)
+    guard = SignInGuard(coord_store, keys, cfg.coordination)
     opportunity_service = OpportunityService(candidate)
-    admin_settings = PlatformSettingsService(admin)
+    public_config = PublicConfigService(
+        cfg, demo["enumValues"], lambda: repos.platform.get().active_theme, MetadataCache(cache_store, keys, cfg.coordination)
+    )
+    admin_settings = PlatformSettingsService(admin, public_config.invalidate)
     return Container(
         settings=cfg,
         database=database,
-        auth=AuthService(candidate),
-        public_config=PublicConfigService(cfg, demo["enumValues"], admin_settings.active_theme),
+        auth=AuthService(candidate, guard),
+        public_config=public_config,
         opportunities=opportunity_service,
         approvals=ApprovalService(candidate, opportunity_service),
         applications=ApplicationService(candidate),
         profile=ProfileService(candidate),
         preferences=PreferencesService(candidate),
         dashboard=DashboardService(candidate, opportunity_service),
-        admin_auth=AdminAuthService(admin),
+        admin_auth=AdminAuthService(admin, guard),
         admin_dashboard=AdminDashboardService(admin),
         admin_users=AdminUserService(admin),
         admin_catalog=AdminCatalogService(admin),

@@ -132,6 +132,29 @@ class ObservabilityConfig(Strict):
     scrub_keys: list[str]
 
 
+class CoordinationMode(StrEnum):
+    MEMORY = "memory"
+    REDIS = "redis"
+
+
+class RateLimitPolicy(Strict):
+    limit: int = Field(gt=0)
+    window_seconds: int = Field(gt=0)
+
+
+class CoordinationConfig(Strict):
+    mode: CoordinationMode
+    cache_url_env: str
+    coord_url_env: str
+    key_prefix: str
+    environment: str
+    socket_timeout_seconds: float = Field(gt=0)
+    metadata_ttl_seconds: int = Field(gt=0)
+    ttl_jitter_ratio: float = Field(ge=0, lt=1)
+    sign_in_failures: RateLimitPolicy
+    auth_requests: RateLimitPolicy
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -145,6 +168,7 @@ class Settings(Strict):
     http: HttpConfig
     persistence: PersistenceConfig
     observability: ObservabilityConfig
+    coordination: CoordinationConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

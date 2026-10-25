@@ -4,6 +4,7 @@ from careerpilot.candidate.context import USER_AUDIENCE, CandidateContext
 from careerpilot.candidate.models import Session, SignInEvent, UserSummary
 from careerpilot.candidate.ports import Account
 from careerpilot.platform.clock import iso
+from careerpilot.platform.coordination import GuardScope, SignInGuard
 from careerpilot.platform.enums import UserAccountStatus
 from careerpilot.platform.errors import DomainError, ErrorCode, validation_error
 from careerpilot.platform.validation import require_email, require_name, require_password
@@ -29,19 +30,24 @@ class Registration:
 
 
 class AuthService:
-    def __init__(self, context: CandidateContext) -> None:
+    def __init__(self, context: CandidateContext, guard: SignInGuard) -> None:
         self._ctx = context
+        self._guard = guard
 
     def sign_in(self, email: str, password: str, client: ClientInfo) -> Session:
+        self._guard.ensure_allowed(GuardScope.USER, email, client.ip)
         account = self._ctx.accounts.find_by_email(email)
         valid = account is not None and account.status not in BLOCKED_STATUSES and self._ctx.hasher.verify(account.password_hash, password)
         if account is not None:
             self._record_sign_in(account.user.id, client, success=valid)
         if account is None or not valid:
+            self._guard.record_failure(GuardScope.USER, email)
             raise DomainError(ErrorCode.INVALID_CREDENTIALS)
+        self._guard.clear(GuardScope.USER, email)
         return self._session(account.user)
 
     def register(self, registration: Registration, client: ClientInfo) -> Session:
+        self._guard.throttle(GuardScope.USER, client.ip)
         policy = self._ctx.settings.validation
         if not registration.consent:
             raise validation_error("consent")
@@ -65,7 +71,8 @@ class AuthService:
         self._record_sign_in(user.id, client, success=True)
         return self._session(user)
 
-    def request_password_reset(self, email: str) -> None:
+    def request_password_reset(self, email: str, client: ClientInfo) -> None:
+        self._guard.throttle(GuardScope.USER, client.ip)
         require_email(email, self._ctx.settings.validation.email)
 
     def authenticate(self, token: str) -> UserSummary:

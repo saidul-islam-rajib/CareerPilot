@@ -10,6 +10,8 @@ class ErrorCode(StrEnum):
     NOT_FOUND = "not_found"
     CONFLICT = "conflict"
     VALIDATION = "validation"
+    TOO_MANY_ATTEMPTS = "too_many_attempts"
+    SERVICE_UNAVAILABLE = "service_unavailable"
 
 
 HTTP_STATUS_BY_CODE: dict[ErrorCode, HTTPStatus] = {
@@ -20,6 +22,8 @@ HTTP_STATUS_BY_CODE: dict[ErrorCode, HTTPStatus] = {
     ErrorCode.NOT_FOUND: HTTPStatus.NOT_FOUND,
     ErrorCode.CONFLICT: HTTPStatus.CONFLICT,
     ErrorCode.VALIDATION: HTTPStatus.UNPROCESSABLE_ENTITY,
+    ErrorCode.TOO_MANY_ATTEMPTS: HTTPStatus.TOO_MANY_REQUESTS,
+    ErrorCode.SERVICE_UNAVAILABLE: HTTPStatus.SERVICE_UNAVAILABLE,
 }
 
 
