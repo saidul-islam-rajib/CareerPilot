@@ -9,6 +9,7 @@ api:
   mode: in_memory
   base_url: http://127.0.0.1:8000
   timeout_ms: 15000
+  upload_timeout_ms: 120000
   demo_latency_ms: 250
 query:
   stale_time_ms: 30000

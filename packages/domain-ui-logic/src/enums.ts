@@ -250,6 +250,14 @@ export const CompletenessKind = {
 } as const;
 export type CompletenessKind = (typeof CompletenessKind)[keyof typeof CompletenessKind];
 
+export const ProfileBlock = {
+  About: 'about',
+  Contacts: 'contacts',
+  Skills: 'skills',
+  Documents: 'documents',
+} as const;
+export type ProfileBlock = (typeof ProfileBlock)[keyof typeof ProfileBlock];
+
 export const LanguageProficiency = {
   Native: 'native',
   Fluent: 'fluent',

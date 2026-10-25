@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PauseDuration, enumValues } from '@careerpilot/domain-ui-logic';
+import { CompletenessKind, EnumKey, PauseDuration, ProfileFieldType, enumValues } from '@careerpilot/domain-ui-logic';
 import { THEME_KEYS, type ThemeKey } from '@careerpilot/ui-tokens';
 import { enumValueSeed, type PublicConfig } from '@careerpilot/api-client';
 
@@ -10,6 +10,63 @@ export const ApiMode = {
 export type ApiMode = (typeof ApiMode)[keyof typeof ApiMode];
 
 const themeKey = z.enum(THEME_KEYS as [ThemeKey, ...ThemeKey[]]);
+
+function enumSchema<T extends string>(values: T[]) {
+  return z.enum(values as [T, ...T[]]);
+}
+
+const fieldSchema = z.object({
+  key: z.string(),
+  type: enumSchema(enumValues(ProfileFieldType)),
+  required: z.boolean().optional(),
+  maxLength: z.number().int().positive().optional(),
+  min: z.number().optional(),
+  max: z.number().optional(),
+  options: enumSchema(enumValues(EnumKey)).optional(),
+});
+
+const sectionSchema = z.object({
+  key: z.string(),
+  icon: z.string(),
+  titleField: z.string(),
+  subtitleFields: z.array(z.string()).optional(),
+  startField: z.string().optional(),
+  endField: z.string().optional(),
+  ongoingField: z.string().optional(),
+  bodyField: z.string().optional(),
+  linkField: z.string().optional(),
+  fields: z.array(fieldSchema),
+});
+
+const positiveInt = z.number().int().positive();
+
+const profileSchema = z.object({
+  pageOrder: z.array(z.string()),
+  sections: z.array(sectionSchema),
+  limits: z.object({
+    maxContacts: positiveInt,
+    maxSkills: positiveInt,
+    maxSkillLength: positiveInt,
+    maxEntriesPerSection: positiveInt,
+    maxDocuments: positiveInt,
+    headlineMaxLength: positiveInt,
+    locationMaxLength: positiveInt,
+    summaryMaxLength: positiveInt,
+    contactLabelMaxLength: positiveInt,
+    documentNameMaxLength: positiveInt,
+    phonePattern: z.string(),
+    minYear: z.number().int(),
+    futureYears: z.number().int().nonnegative(),
+    minSkillsForCompleteness: z.number().int().nonnegative(),
+  }),
+  uploads: z.object({
+    maxDocumentBytes: positiveInt,
+    maxPhotoBytes: positiveInt,
+    documentTypes: z.array(z.string()),
+    photoTypes: z.array(z.string()),
+  }),
+  completeness: z.array(z.object({ kind: enumSchema(enumValues(CompletenessKind)), weight: z.number().int().nonnegative(), section: z.string().optional() })),
+});
 
 export const appConfigSchema = z.object({
   account: z.object({
@@ -40,6 +97,7 @@ export const appConfigSchema = z.object({
     mode: z.enum([ApiMode.InMemory, ApiMode.Http]),
     baseUrl: z.string().url(),
     timeoutMs: z.number().int().positive(),
+    uploadTimeoutMs: z.number().int().positive(),
     demoLatencyMs: z.number().int().nonnegative(),
   }),
   query: z.object({
@@ -71,6 +129,7 @@ export const appConfigSchema = z.object({
     track: z.object({ minResultCount: z.number().int().positive(), maxResultCount: z.number().int().positive() }),
   }),
   openSourceComponents: z.array(z.object({ name: z.string(), licence: z.string(), url: z.string().url() })),
+  profile: profileSchema,
 });
 
 export type AppConfig = z.infer<typeof appConfigSchema>;
@@ -93,5 +152,6 @@ export function publicConfigFromDefaults(config: AppConfig): PublicConfig {
     legal: config.legal,
     branding: config.branding,
     openSourceComponents: config.openSourceComponents,
+    profile: config.profile,
   };
 }

@@ -25,6 +25,7 @@ export function createApi(deps: ApiDependencies): CareerPilotApi {
       createHttpClient({
         baseUrl: deps.config.api.baseUrl,
         timeoutMs: deps.config.api.timeoutMs,
+        uploadTimeoutMs: deps.config.api.uploadTimeoutMs,
         fetchFn: deps.fetchFn ?? fetch,
         getAccessToken: deps.getAccessToken,
         onUnauthorized: deps.onUnauthorized,

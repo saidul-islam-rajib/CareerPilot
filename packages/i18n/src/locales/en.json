@@ -45,7 +45,25 @@
     "position": "Position {index} of {count}",
     "decrease": "Decrease {name}",
     "increase": "Increase {name}",
-    "valueOf": "{name}: {value}"
+    "valueOf": "{name}: {value}",
+    "undo": "Undo",
+    "remove": "Remove",
+    "upload": "Upload",
+    "open": "Open",
+    "saving": "Saving…",
+    "saveFailed": "We couldn't save that. Check the highlighted fields or try again.",
+    "removed": "{item} removed",
+    "moreActions": "More actions for {item}",
+    "fixErrors": "Please fix {count} highlighted fields.",
+    "megabytes": "{value} MB",
+    "fileTypes": {
+      "application/pdf": "PDF",
+      "image/jpeg": "JPEG",
+      "image/png": "PNG",
+      "image/webp": "WebP"
+    },
+    "listSeparator": ", ",
+    "choose": "Choose…"
   },
   "nav": {
     "home": "Today",
@@ -108,7 +126,20 @@
     "nameLength": "Enter between {min} and {max} characters.",
     "phone": "Enter a valid phone number with country code.",
     "range": "Enter a number from {min} to {max}.",
-    "time": "Enter a time as HH:MM."
+    "time": "Enter a time as HH:MM.",
+    "tooLong": "Use {max} characters or fewer.",
+    "url": "Enter a full web address starting with https://.",
+    "month": "Choose a month and year.",
+    "year": "Enter a year from {min} to {max}.",
+    "number": "Enter a valid number.",
+    "option": "Choose one of the options.",
+    "endBeforeStart": "The end can't be before the start.",
+    "fileType": "Choose a {types} file.",
+    "fileTooLarge": "This file is larger than {size}.",
+    "fileEmpty": "This file is empty.",
+    "skillTooLong": "Skills can be at most {max} characters: {skills}",
+    "skillLimit": "You can add up to {max} skills.",
+    "duplicateContact": "You've already added this contact."
   },
   "home": {
     "greeting": "Hello, {name}",
@@ -202,7 +233,195 @@
     "zoomOut": "Zoom out",
     "resetZoom": "Reset zoom",
     "orderSaved": "Order saved",
-    "present": "Present"
+    "present": "Present",
+    "edit": "Edit",
+    "basics": "Basics",
+    "editBasics": "Edit basics",
+    "fullName": "Full name",
+    "headline": "Headline",
+    "headlineHint": "One line about you, for example your role and years of experience.",
+    "location": "Location",
+    "locationHint": "City and country, for example Dhaka, Bangladesh.",
+    "summary": "About you",
+    "summaryHint": "A short summary employers read first.",
+    "noHeadline": "Add a headline so employers know what you do.",
+    "addPhoto": "Add photo",
+    "changePhoto": "Change photo",
+    "removePhoto": "Remove photo",
+    "photoHint": "JPEG, PNG, or WebP, up to {size}.",
+    "photoUpdated": "Photo updated",
+    "accountEmailLabel": "Account",
+    "addContact": "Add email or phone",
+    "editContact": "Edit contact",
+    "contactKind": "Type",
+    "contactEmail": "Email address",
+    "contactPhone": "Phone number with country code",
+    "contactLabel": "Label",
+    "contactLabelHint": "For example Work, Personal, or WhatsApp.",
+    "verified": "Verified",
+    "notVerified": "Not verified",
+    "contactsEmpty": "Add an email address and a phone number employers can use.",
+    "skillsHint": "Type a skill and press Enter. Put the skills you want to be matched on first.",
+    "addSkill": "Add skill",
+    "skillPlaceholder": "For example TypeScript",
+    "removeSkill": "Remove {skill}",
+    "skillsEmpty": "Add the skills you want to be matched on.",
+    "uploadDocument": "Upload PDF",
+    "dropDocument": "Drag a PDF here, or choose a file",
+    "documentHint": "PDF only, up to {size}.",
+    "documentName": "Document name",
+    "documentKind": "Type",
+    "newVersion": "Upload new version",
+    "versions": "Versions",
+    "versionUploaded": "Version {version} uploaded {date}",
+    "viewDocument": "View",
+    "renameDocument": "Edit details",
+    "removeDocument": "Remove document",
+    "uploading": "Uploading {name}…",
+    "uploaded": "{name} uploaded",
+    "documentsEmpty": "Upload your CV as a PDF so it can be attached to applications.",
+    "documentViewer": "Document viewer",
+    "openInNewTab": "Open in a new tab",
+    "sectionIndex": "Profile sections",
+    "completenessNext": "Next: {item}",
+    "completenessGain": "+{weight}%",
+    "completenessDone": "Your profile is complete. Keep it up to date for the best matches.",
+    "completenessItems": {
+      "basics": "Add your name and headline",
+      "photo": "Add a profile photo",
+      "contacts": "Add an email and a phone number",
+      "skills": "Add at least 3 skills",
+      "documents": "Upload your CV",
+      "experience": "Add your experience",
+      "education": "Add your education",
+      "languages": "Add the languages you speak"
+    },
+    "sections": {
+      "experience": {
+        "title": "Experience",
+        "add": "Add experience",
+        "empty": "Add your jobs and internships, most recent first.",
+        "edit": "Edit experience"
+      },
+      "education": {
+        "title": "Education",
+        "add": "Add education",
+        "empty": "Add your degrees and qualifications.",
+        "edit": "Edit education"
+      },
+      "languages": {
+        "title": "Languages",
+        "add": "Add language",
+        "empty": "Add the languages you speak and how well.",
+        "edit": "Edit language"
+      },
+      "tests": {
+        "title": "Tests and scores",
+        "add": "Add test score",
+        "empty": "Add IELTS, TOEFL, GRE, or other scores. Many programmes require them.",
+        "edit": "Edit test score"
+      },
+      "certifications": {
+        "title": "Certifications",
+        "add": "Add certification",
+        "empty": "Add professional certifications and licences.",
+        "edit": "Edit certification"
+      },
+      "projects": {
+        "title": "Projects",
+        "add": "Add project",
+        "empty": "Show work you're proud of.",
+        "edit": "Edit project"
+      },
+      "links": {
+        "title": "Links",
+        "add": "Add link",
+        "empty": "Add your portfolio, GitHub, or LinkedIn.",
+        "edit": "Edit link"
+      },
+      "awards": {
+        "title": "Awards and publications",
+        "add": "Add award or publication",
+        "empty": "Add honours, awards, and publications.",
+        "edit": "Edit award or publication"
+      },
+      "referees": {
+        "title": "Referees",
+        "add": "Add referee",
+        "empty": "Add people who can give you a reference.",
+        "edit": "Edit referee"
+      }
+    },
+    "fields": {
+      "experience": {
+        "title": "Job title",
+        "organization": "Company or organization",
+        "location": "Location",
+        "start": "Start",
+        "end": "End",
+        "current": "I currently work here",
+        "summary": "What you did"
+      },
+      "education": {
+        "degree": "Degree or qualification",
+        "field_of_study": "Field of study",
+        "institution": "Institution",
+        "start_year": "Start year",
+        "end_year": "End year (or expected)",
+        "result": "Result, for example CGPA 3.60 / 4.00"
+      },
+      "languages": {
+        "language": "Language",
+        "proficiency": "Proficiency"
+      },
+      "tests": {
+        "test": "Test",
+        "score": "Score",
+        "taken_on": "Taken",
+        "expires_on": "Valid until"
+      },
+      "certifications": {
+        "name": "Certification",
+        "issuer": "Issued by",
+        "issued_on": "Issued",
+        "expires_on": "Valid until",
+        "credential_url": "Credential link"
+      },
+      "projects": {
+        "name": "Project name",
+        "role": "Your role",
+        "url": "Link",
+        "start": "Start",
+        "end": "End",
+        "summary": "What it is and what you did"
+      },
+      "links": {
+        "label": "Label",
+        "url": "Web address"
+      },
+      "awards": {
+        "title": "Award or publication",
+        "issuer": "Issuer or publisher",
+        "date": "Date",
+        "summary": "Details"
+      },
+      "referees": {
+        "name": "Name",
+        "relationship": "Relationship to you",
+        "organization": "Organization",
+        "email": "Email",
+        "phone": "Phone"
+      }
+    },
+    "about": "About",
+    "aboutEmpty": "Add a short summary about you.",
+    "sectionDone": "Complete",
+    "entryCount": "{count} items",
+    "photoPermission": "CareerPilot uses your photos only when you choose a profile photo.",
+    "uploadPdf": "Upload PDF",
+    "editSkills": "Edit skills",
+    "openDocument": "Open document",
+    "monthHint": "Use YYYY-MM, for example 2024-03."
   },
   "settings": {
     "title": "More",
@@ -237,7 +456,14 @@
     "deletionScheduled": "Account deletion scheduled for {date}.",
     "version": "Version {version}",
     "timePlaceholder": "HH:MM",
-    "windowRange": "{start}–{end}"
+    "windowRange": "{start}–{end}",
+    "account": "Account",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password",
+    "passwordChanged": "Your password has been changed.",
+    "wrongPassword": "Your current password is incorrect."
   },
   "activity": {
     "title": "Sign-in activity",
@@ -388,6 +614,25 @@
       "admin": "Admin",
       "system": "System",
       "agent": "Agent"
+    },
+    "language_proficiency": {
+      "native": "Native",
+      "fluent": "Fluent",
+      "professional": "Professional working",
+      "intermediate": "Intermediate",
+      "basic": "Basic"
+    },
+    "document_kind": {
+      "cv": "CV",
+      "cover_letter": "Cover letter",
+      "certificate": "Certificate",
+      "transcript": "Transcript",
+      "identity": "Identity document",
+      "other": "Other"
+    },
+    "contact_kind": {
+      "email": "Email",
+      "phone": "Phone"
     }
   },
   "admin": {

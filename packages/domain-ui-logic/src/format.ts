@@ -87,3 +87,19 @@ export function moveItem<T>(items: readonly T[], from: number, to: number): T[] 
   }
   return copy;
 }
+
+const MONTH_VALUE = /^(\d{4})-(\d{2})$/;
+const UTC = 'UTC';
+
+export function formatMonth(value: string, ctx: FormatContext): string {
+  const match = MONTH_VALUE.exec(value);
+  if (!match) {
+    return value;
+  }
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, 1));
+  return new Intl.DateTimeFormat(ctx.locale, { timeZone: UTC, month: 'short', year: 'numeric' }).format(date);
+}
+
+export function formatDecimal(value: number, ctx: FormatContext, maximumFractionDigits = 1): string {
+  return new Intl.NumberFormat(ctx.locale, { maximumFractionDigits }).format(value);
+}
