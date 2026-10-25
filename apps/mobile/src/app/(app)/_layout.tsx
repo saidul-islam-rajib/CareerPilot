@@ -21,6 +21,11 @@ export default function SignedInLayout() {
       <Stack.Screen name="application/[id]" options={{ title: t('applications.record') }} />
       <Stack.Screen name="circular/[opportunityId]" options={{ title: t('applications.circular'), presentation: 'modal' }} />
       <Stack.Screen name="viewer" options={{ headerShown: false, presentation: 'fullScreenModal', animation: 'fade' }} />
+      <Stack.Screen name="profile/basics" options={{ title: t('profile.editBasics') }} />
+      <Stack.Screen name="profile/contact" options={{ title: t('profile.contacts') }} />
+      <Stack.Screen name="profile/entry" options={{ title: t('profile.title') }} />
+      <Stack.Screen name="profile/skills" options={{ title: t('profile.editSkills') }} />
+      <Stack.Screen name="profile/document" options={{ title: t('profile.documents') }} />
       <Stack.Screen name="settings/tracks" options={{ title: t('settings.tracks') }} />
       <Stack.Screen name="settings/pause" options={{ title: t('settings.pause') }} />
       <Stack.Screen name="settings/window" options={{ title: t('settings.submissionWindow') }} />

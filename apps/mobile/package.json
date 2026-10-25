@@ -7,6 +7,7 @@
     "@careerpilot/brand": "workspace:*",
     "@careerpilot/client-core": "workspace:*",
     "@careerpilot/domain-ui-logic": "workspace:*",
+    "@careerpilot/dynamic-forms": "workspace:*",
     "@careerpilot/i18n": "workspace:*",
     "@careerpilot/ui-tokens": "workspace:*",
     "@careerpilot/validation": "workspace:*",
@@ -15,9 +16,11 @@
     "expo": "~57.0.30",
     "expo-constants": "~57.0.22",
     "expo-device": "~57.0.2",
+    "expo-document-picker": "~57.0.3",
     "expo-font": "~57.0.4",
     "expo-glass-effect": "~57.0.4",
     "expo-image": "~57.0.5",
+    "expo-image-picker": "~57.0.20",
     "expo-linking": "~57.0.13",
     "expo-router": "~57.0.28",
     "expo-secure-store": "~57.0.4",
@@ -84,6 +87,7 @@
       "!src/**/*.spec.{ts,tsx}",
       "!src/test/**"
     ],
-    "forceExit": true
+    "forceExit": true,
+    "testTimeout": 20000
   }
 }

@@ -305,6 +305,9 @@ importers:
       '@careerpilot/domain-ui-logic':
         specifier: workspace:*
         version: link:../../packages/domain-ui-logic
+      '@careerpilot/dynamic-forms':
+        specifier: workspace:*
+        version: link:../../packages/dynamic-forms
       '@careerpilot/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
@@ -329,6 +332,9 @@ importers:
       expo-device:
         specifier: ~57.0.2
         version: 57.0.2(expo@57.0.30)
+      expo-document-picker:
+        specifier: ~57.0.3
+        version: 57.0.3(expo@57.0.30)
       expo-font:
         specifier: ~57.0.4
         version: 57.0.4(expo@57.0.30)(react-native@0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/jest-preset@0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)
@@ -338,6 +344,9 @@ importers:
       expo-image:
         specifier: ~57.0.5
         version: 57.0.5(expo@57.0.30)(react-native-web@0.21.4(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-native@0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/jest-preset@0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)
+      expo-image-picker:
+        specifier: ~57.0.20
+        version: 57.0.20(expo@57.0.30)
       expo-linking:
         specifier: ~57.0.13
         version: 57.0.13(expo@57.0.30)(react-native@0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/jest-preset@0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1)
@@ -441,6 +450,9 @@ importers:
       '@careerpilot/domain-ui-logic':
         specifier: workspace:*
         version: link:../../packages/domain-ui-logic
+      '@careerpilot/dynamic-forms':
+        specifier: workspace:*
+        version: link:../../packages/dynamic-forms
       '@careerpilot/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
@@ -544,6 +556,9 @@ importers:
       '@careerpilot/domain-ui-logic':
         specifier: workspace:*
         version: link:../domain-ui-logic
+      '@careerpilot/dynamic-forms':
+        specifier: workspace:*
+        version: link:../dynamic-forms
       '@careerpilot/ui-tokens':
         specifier: workspace:*
         version: link:../ui-tokens
@@ -561,6 +576,9 @@ importers:
       '@careerpilot/domain-ui-logic':
         specifier: workspace:*
         version: link:../domain-ui-logic
+      '@careerpilot/dynamic-forms':
+        specifier: workspace:*
+        version: link:../dynamic-forms
       '@careerpilot/i18n':
         specifier: workspace:*
         version: link:../i18n
@@ -4378,6 +4396,11 @@ packages:
     peerDependencies:
       expo: '*'
 
+  expo-document-picker@57.0.3:
+    resolution: {integrity: sha512-XlxdZ0zzv44JRD8O15DISgIO8FTaZ581oc4kQp6MJoR7vdahjcY+2qCuDt5k1J8/lc0YR+bXon/v81norciuxw==}
+    peerDependencies:
+      expo: '*'
+
   expo-file-system@57.0.7:
     resolution: {integrity: sha512-1vkZRadOsIputFDBcclqBa1pO3iXOO6iIsdqJipQWw4V5TSnWgmRTuOF7ro8IzrVue+PHbum++KCG3Tawem4cg==}
     peerDependencies:
@@ -4397,6 +4420,16 @@ packages:
       expo: '*'
       react: '*'
       react-native: '*'
+
+  expo-image-loader@57.0.1:
+    resolution: {integrity: sha512-uhrZKLT/cTl2mXyR28kPpVkS5O+PK9N1QA/07IFM4f5T4g0lTW1JHT3NEWwEEsGFldPmVX4j7LwUVVZxE+woug==}
+    peerDependencies:
+      expo: '*'
+
+  expo-image-picker@57.0.20:
+    resolution: {integrity: sha512-plgcGuMZMWqDchjXQW6S/WepYLB5KqfbZOzwC6xe0+j5IhY4ipvVuRZcXeP/0NgKgU0Jiu/XoTK4Bi8crtZ+sQ==}
+    peerDependencies:
+      expo: '*'
 
   expo-image@57.0.5:
     resolution: {integrity: sha512-jOm5lofaIKXhQ7i0Hz3I5JuNULw/aghmpIPZXddwQcEtw8+wUhlozq3M7LbsOrcsBEapcG4jFs85DsfuFoz1tQ==}
@@ -12251,6 +12284,10 @@ snapshots:
       expo: 57.0.30(5724e3348a6bd906d6f2b35cb4fd6bdd)
       ua-parser-js: 0.7.41
 
+  expo-document-picker@57.0.3(expo@57.0.30):
+    dependencies:
+      expo: 57.0.30(5724e3348a6bd906d6f2b35cb4fd6bdd)
+
   expo-file-system@57.0.7(expo@57.0.30)(react-native@0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/jest-preset@0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.3)(supports-color@8.1.1)):
     dependencies:
       expo: 57.0.30(5724e3348a6bd906d6f2b35cb4fd6bdd)
@@ -12268,6 +12305,15 @@ snapshots:
       expo: 57.0.30(5724e3348a6bd906d6f2b35cb4fd6bdd)
       react: 19.2.3
       react-native: 0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/jest-preset@0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.3)(supports-color@8.1.1)
+
+  expo-image-loader@57.0.1(expo@57.0.30):
+    dependencies:
+      expo: 57.0.30(5724e3348a6bd906d6f2b35cb4fd6bdd)
+
+  expo-image-picker@57.0.20(expo@57.0.30):
+    dependencies:
+      expo: 57.0.30(5724e3348a6bd906d6f2b35cb4fd6bdd)
+      expo-image-loader: 57.0.1(expo@57.0.30)
 
   expo-image@57.0.5(expo@57.0.30)(react-native-web@0.21.4(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-native@0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/jest-preset@0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3):
     dependencies:

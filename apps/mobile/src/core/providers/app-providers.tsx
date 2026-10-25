@@ -3,6 +3,7 @@ import { type AppServices, AppServicesProvider, PublicConfigProvider, SessionPro
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
+import { SnackbarProvider } from '@/ui/snackbar';
 import { ThemeFromConfig } from '../theme/theme';
 
 export interface AppProvidersProps {
@@ -20,7 +21,9 @@ export function AppProviders({ services, queryClient, safeAreaMetrics, children 
           <QueryClientProvider client={client}>
             <PublicConfigProvider>
               <ThemeFromConfig>
-                <SessionProvider>{children}</SessionProvider>
+                <SnackbarProvider>
+                  <SessionProvider>{children}</SessionProvider>
+                </SnackbarProvider>
               </ThemeFromConfig>
             </PublicConfigProvider>
           </QueryClientProvider>

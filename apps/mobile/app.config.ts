@@ -1,6 +1,8 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 const { loadConfig } = require('../../scripts/config/load-config') as { loadConfig: (env: string) => Record<string, unknown> };
 
+const catalog = require('../../packages/i18n/src/locales/en.json') as { profile: { photoPermission: string } };
+
 const APP_ENV = process.env.APP_ENV ?? 'local';
 
 interface MobileSection {
@@ -45,6 +47,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     plugins: [
       'expo-router',
       'expo-secure-store',
+      ['expo-image-picker', { photosPermission: catalog.profile.photoPermission, cameraPermission: false, microphonePermission: false }],
+      'expo-document-picker',
       [
         'expo-splash-screen',
         {

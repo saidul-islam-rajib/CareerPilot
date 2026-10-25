@@ -10,6 +10,7 @@ import {
   zoom,
   gesture,
   breakpoints,
+  feedback,
   fontSize,
   fontWeight,
   iconSize,
@@ -37,10 +38,11 @@ export interface AppTheme extends Theme {
   contentMaxWidth: number;
   zoom: typeof zoom;
   gesture: typeof gesture;
+  feedback: typeof feedback;
 }
 
 export function buildAppTheme(theme: Theme): AppTheme {
-  return { ...theme, space, fontSize, lineHeight, fontWeight, iconSize, motion, touchTarget, breakpoints, opacity, iconStroke, fontScaleMax, borderWidth, contentMaxWidth, zoom, gesture };
+  return { ...theme, space, fontSize, lineHeight, fontWeight, iconSize, motion, touchTarget, breakpoints, opacity, iconStroke, fontScaleMax, borderWidth, contentMaxWidth, zoom, gesture, feedback };
 }
 
 const ThemeContext = createContext<AppTheme>(buildAppTheme(themes.sober));

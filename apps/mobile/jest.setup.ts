@@ -10,6 +10,10 @@ jest.mock('expo-constants', () => ({ __esModule: true, default: { expoConfig: { 
 
 jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn(() => Promise.resolve()) }));
 
+jest.mock('expo-document-picker', () => ({ getDocumentAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })) }));
+
+jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })) }));
+
 jest.mock('expo-secure-store', () => {
   const values = new Map<string, string>();
   return {
