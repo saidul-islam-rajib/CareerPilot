@@ -1,5 +1,6 @@
 import json
 import re
+from collections.abc import Mapping
 from functools import cache
 from pathlib import Path
 from typing import Any, cast
@@ -17,7 +18,7 @@ def load_catalog(path: Path | None = None) -> dict[str, Any]:
     return cast("dict[str, Any]", json.loads((path or default_catalog_path()).read_text(encoding="utf-8")))
 
 
-def translate(key: str, params: dict[str, str | int] | None = None) -> str:
+def translate(key: str, params: Mapping[str, str | int] | None = None) -> str:
     node: Any = load_catalog()
     for part in key.split("."):
         if not isinstance(node, dict):

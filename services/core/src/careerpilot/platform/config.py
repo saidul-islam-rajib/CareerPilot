@@ -6,7 +6,7 @@ from typing import Any, Literal, cast
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
-from careerpilot.platform.enums import CompletenessKind, PauseDuration, ProfileFieldType, ThemeKey
+from careerpilot.platform.enums import ApplicationRoute, CompletenessKind, DeliveryMode, PauseDuration, ProfileFieldType, ThemeKey
 
 CONFIG_ROOT_ENV = "CAREERPILOT_CONFIG_ROOT"
 APP_ENV = "APP_ENV"
@@ -247,6 +247,10 @@ class WorkersConfig(Strict):
     discovery_interval_minutes: int = Field(gt=0)
     activity_timeout_seconds: int = Field(gt=0)
     activity_max_attempts: int = Field(gt=0)
+    submission_task_queue: str
+    submission_workflow_id: str
+    submission_schedule_id: str
+    submission_interval_minutes: int = Field(gt=0)
 
 
 class ProfileFieldConfig(Strict):
@@ -326,6 +330,21 @@ class ProfileConfig(Strict):
         return next((s for s in self.sections if s.key == key), None)
 
 
+class SubmissionConfig(Strict):
+    delivery_mode: DeliveryMode
+    smtp_host_env: str
+    smtp_default_host: str
+    smtp_port: int = Field(gt=0)
+    smtp_timeout_seconds: float = Field(gt=0)
+    sandbox_hosts: list[str]
+    sender_address: str
+    bounce_window_hours: int = Field(gt=0)
+    max_attempts: int = Field(gt=0)
+    automatable_routes: list[ApplicationRoute]
+    cover_letter_skills: int = Field(gt=0)
+    stuck_after_minutes: int = Field(gt=0)
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -344,6 +363,7 @@ class Settings(Strict):
     matching: MatchingConfig
     workers: WorkersConfig
     profile: ProfileConfig
+    submission: SubmissionConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

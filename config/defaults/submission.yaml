@@ -1,0 +1,13 @@
+submission:
+  delivery_mode: sandbox
+  smtp_host_env: CAREERPILOT_SMTP_HOST
+  smtp_default_host: 127.0.0.1
+  smtp_port: 1025
+  smtp_timeout_seconds: 15
+  sandbox_hosts: [127.0.0.1, localhost, mailpit]
+  sender_address: applications@careerpilot.example
+  bounce_window_hours: 48
+  max_attempts: 3
+  automatable_routes: [email]
+  cover_letter_skills: 5
+  stuck_after_minutes: 30

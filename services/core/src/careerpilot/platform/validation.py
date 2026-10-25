@@ -4,6 +4,7 @@ from careerpilot.platform.config import LengthPolicy, PasswordPolicy, TrackPolic
 from careerpilot.platform.errors import validation_error
 
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+EMAIL_IN_TEXT = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 TIME_PATTERN = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 LOWER = re.compile(r"[a-z]")
 UPPER = re.compile(r"[A-Z]")

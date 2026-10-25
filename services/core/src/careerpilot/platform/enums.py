@@ -216,6 +216,39 @@ class DocumentKind(StrEnum):
     OTHER = "other"
 
 
+class ApplicationRoute(StrEnum):
+    EMAIL = "email"
+    ATS_PORTAL = "ats_portal"
+    EMPLOYER_PORTAL = "employer_portal"
+    GOVERNMENT_PORTAL = "government_portal"
+    GUIDED_MANUAL = "guided_manual"
+
+
+class DeliveryMode(StrEnum):
+    SANDBOX = "sandbox"
+    LIVE = "live"
+
+
+class CheckFailure(StrEnum):
+    MISSING_DOCUMENT = "missing_document"
+    UNREADABLE_DOCUMENT = "unreadable_document"
+    MISSING_RECIPIENT = "missing_recipient"
+    INVALID_RECIPIENT = "invalid_recipient"
+    MISSING_CONTACT = "missing_contact"
+    PLACEHOLDER_TEXT = "placeholder_text"
+    WRONG_TARGET = "wrong_target"
+    OTHER_EMPLOYER_TEXT = "other_employer_text"
+    DEADLINE_PASSED = "deadline_passed"
+    ALREADY_APPLIED = "already_applied"
+
+
+class SubmissionHold(StrEnum):
+    EMERGENCY_STOP = "emergency_stop"
+    PAUSED = "paused"
+    OUTSIDE_WINDOW = "outside_window"
+    DAILY_LIMIT = "daily_limit"
+
+
 class ThemeKey(StrEnum):
     SOBER = "sober"
     HORIZON = "horizon"
