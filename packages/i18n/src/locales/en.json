@@ -494,7 +494,9 @@
       "enable": "Enable",
       "disable": "Disable",
       "check": "Run check",
-      "never": "Never"
+      "never": "Never",
+      "notConfigured": "This source has no connector yet, so it can't be checked automatically.",
+      "checkFailed": "The check couldn't run. Try again."
     },
     "applications": {
       "title": "Applications",

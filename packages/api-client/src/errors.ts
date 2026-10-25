@@ -13,6 +13,11 @@ export const ApiErrorCode = {
 } as const;
 export type ApiErrorCode = (typeof ApiErrorCode)[keyof typeof ApiErrorCode];
 
+export const ApiErrorDetail = {
+  SourceNotConfigured: 'source_not_configured',
+} as const;
+export type ApiErrorDetail = (typeof ApiErrorDetail)[keyof typeof ApiErrorDetail];
+
 export class ApiError extends Error {
   constructor(
     readonly code: ApiErrorCode,

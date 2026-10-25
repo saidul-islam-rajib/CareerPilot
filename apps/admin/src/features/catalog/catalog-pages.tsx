@@ -1,15 +1,20 @@
 'use client';
 
-import type { AdminApplicationRow, AdminOpportunityRow, AdminSourceRow, AuditEntry } from '@careerpilot/api-client';
+import { AlertCircle } from 'lucide-react';
+import { ApiErrorDetail, isApiError, type AdminApplicationRow, type AdminOpportunityRow, type AdminSourceRow, type AuditEntry } from '@careerpilot/api-client';
 import { useFormat, useT } from '@careerpilot/client-core';
-import { AdminArea, ActorType, EnumKey, OpportunityStatus, PermissionAction, SourceStatus, SubmissionStatus, enumValues } from '@careerpilot/domain-ui-logic';
-import { Button, ConfirmDialog, EnumBadge } from '@careerpilot/ui-web';
+import { AdminArea, ActorType, EnumKey, OpportunityStatus, PermissionAction, SourceStatus, StatusTone, SubmissionStatus, enumValues } from '@careerpilot/domain-ui-logic';
+import { Banner, Button, ConfirmDialog, EnumBadge } from '@careerpilot/ui-web';
 import { useAdminMutation } from '@/core/admin-queries';
 import { useAdminApi } from '@/core/admin-services';
 import { useCan } from '@/core/admin-session';
 import { ListPage } from '@/features/common/list-page';
 
 const CANCELLABLE: readonly SubmissionStatus[] = [SubmissionStatus.ApprovedQueued, SubmissionStatus.AwaitingApproval];
+
+export function sourceCheckErrorKey(error: unknown): string {
+  return isApiError(error) && error.detail === ApiErrorDetail.SourceNotConfigured ? 'admin.sources.notConfigured' : 'admin.sources.checkFailed';
+}
 
 export function OpportunitiesPage() {
   const t = useT();
@@ -68,35 +73,38 @@ export function SourcesPage() {
   const toggle = useAdminMutation(({ id, enabled }: { id: string; enabled: boolean }) => api.sources.setSourceEnabled(id, enabled));
   const check = useAdminMutation((id: string) => api.sources.runSourceCheck(id));
   return (
-    <ListPage<AdminSourceRow>
-      title={t('admin.sources.title')}
-      resource="sources"
-      fetcher={(query) => api.sources.listSources(query)}
-      rowKey={(s) => s.id}
-      statusEnum={{ key: EnumKey.SourceStatus, values: enumValues(SourceStatus) }}
-      columns={[
-        { key: 'name', header: t('admin.columns.source'), cell: (s) => <span className="font-semibold">{s.name}</span> },
-        { key: 'status', header: t('admin.columns.status'), cell: (s) => <EnumBadge enumKey={EnumKey.SourceStatus} value={s.status} /> },
-        { key: 'lastSuccess', header: t('admin.columns.lastSuccess'), cell: (s) => (s.lastSuccessAt ? format.dateTime(s.lastSuccessAt) : t('admin.sources.never')) },
-        { key: 'failures', header: t('admin.columns.failures'), cell: (s) => s.failuresLast24h, className: 'text-right tabular-nums' },
-        { key: 'found', header: t('admin.columns.found'), cell: (s) => s.opportunitiesFound, className: 'text-right tabular-nums' },
-        {
-          key: 'actions',
-          header: t('admin.actions'),
-          cell: (s) =>
-            canUpdate ? (
-              <span className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => toggle.mutate({ id: s.id, enabled: !s.enabled })}>
-                  {s.enabled ? t('admin.sources.disable') : t('admin.sources.enable')}
-                </Button>
-                <Button size="sm" variant="ghost" disabled={!s.enabled} onClick={() => check.mutate(s.id)}>
-                  {t('admin.sources.check')}
-                </Button>
-              </span>
-            ) : null,
-        },
-      ]}
-    />
+    <div className="flex flex-col gap-4">
+      {check.error ? <Banner tone={StatusTone.Danger} icon={AlertCircle} title={t(sourceCheckErrorKey(check.error))} /> : null}
+      <ListPage<AdminSourceRow>
+        title={t('admin.sources.title')}
+        resource="sources"
+        fetcher={(query) => api.sources.listSources(query)}
+        rowKey={(s) => s.id}
+        statusEnum={{ key: EnumKey.SourceStatus, values: enumValues(SourceStatus) }}
+        columns={[
+          { key: 'name', header: t('admin.columns.source'), cell: (s) => <span className="font-semibold">{s.name}</span> },
+          { key: 'status', header: t('admin.columns.status'), cell: (s) => <EnumBadge enumKey={EnumKey.SourceStatus} value={s.status} /> },
+          { key: 'lastSuccess', header: t('admin.columns.lastSuccess'), cell: (s) => (s.lastSuccessAt ? format.dateTime(s.lastSuccessAt) : t('admin.sources.never')) },
+          { key: 'failures', header: t('admin.columns.failures'), cell: (s) => s.failuresLast24h, className: 'text-right tabular-nums' },
+          { key: 'found', header: t('admin.columns.found'), cell: (s) => s.opportunitiesFound, className: 'text-right tabular-nums' },
+          {
+            key: 'actions',
+            header: t('admin.actions'),
+            cell: (s) =>
+              canUpdate ? (
+                <span className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => toggle.mutate({ id: s.id, enabled: !s.enabled })}>
+                    {s.enabled ? t('admin.sources.disable') : t('admin.sources.enable')}
+                  </Button>
+                  <Button size="sm" variant="ghost" disabled={!s.enabled} onClick={() => check.mutate(s.id)}>
+                    {t('admin.sources.check')}
+                  </Button>
+                </span>
+              ) : null,
+          },
+        ]}
+      />
+    </div>
   );
 }
 
