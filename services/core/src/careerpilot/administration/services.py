@@ -3,7 +3,7 @@ from collections.abc import Callable
 from datetime import timedelta
 
 from careerpilot.administration.context import ADMIN_AUDIENCE, AdminActor, AdminContext, PageRequest, paginate
-from careerpilot.administration.discovery_sync import apply_check
+from careerpilot.administration.discovery_sync import SourceCheckRunner
 from careerpilot.administration.models import (
     AdminAccount,
     AdminApplicationRow,
@@ -23,8 +23,6 @@ from careerpilot.administration.models import (
     ServiceStatus,
 )
 from careerpilot.administration.permissions import permissions_for_role
-from careerpilot.discovery.models import ListingChange
-from careerpilot.discovery.service import DiscoveryService
 from careerpilot.platform.clock import iso, parse_iso
 from careerpilot.platform.coordination import GuardScope, SignInGuard
 from careerpilot.platform.enums import (
@@ -241,10 +239,9 @@ class AdminUserService:
 
 
 class AdminCatalogService:
-    def __init__(self, context: AdminContext, discovery: DiscoveryService, on_new_listings: Callable[[], object]) -> None:
+    def __init__(self, context: AdminContext, checks: SourceCheckRunner) -> None:
         self._ctx = context
-        self._discovery = discovery
-        self._on_new_listings = on_new_listings
+        self._checks = checks
 
     def opportunities(self, actor: AdminActor, request: PageRequest) -> Page[AdminOpportunityRow]:
         actor.require(AdminArea.OPPORTUNITIES, PermissionAction.READ)
@@ -283,13 +280,7 @@ class AdminCatalogService:
 
     def run_source_check(self, actor: AdminActor, source_id: str) -> AdminSourceRow:
         actor.require(AdminArea.SOURCES, PermissionAction.UPDATE)
-        row = self._source(source_id)
-        if not row.enabled:
-            raise conflict("source_disabled")
-        check = self._discovery.run(source_id)
-        updated = apply_check(self._ctx.directory, row, check, self._ctx.settings.discovery.failing_after_failures)
-        if check.listings(ListingChange.NEW):
-            self._on_new_listings()
+        updated, check = self._checks.check(source_id)
         actor.record("source.checked", f"{updated.name} · {check.outcome.value}")
         return updated
 

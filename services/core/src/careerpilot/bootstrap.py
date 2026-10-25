@@ -7,7 +7,7 @@ from typing import Any
 import anthropic
 
 from careerpilot.administration.context import AdminContext
-from careerpilot.administration.discovery_sync import seed_discovery
+from careerpilot.administration.discovery_sync import SourceCheckRunner, seed_discovery
 from careerpilot.administration.services import (
     AdminAccountService,
     AdminAuditService,
@@ -70,6 +70,7 @@ class Container:
     admin_accounts: AdminAccountService
     discovery: DiscoveryService
     recommendations: RecommendationService
+    source_checks: SourceCheckRunner
 
 
 def empty_workspace_factory(settings: Settings, clock: Clock, demo: dict[str, Any]) -> Callable[[str], CandidateWorkspace]:
@@ -208,6 +209,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     )
     seed_discovery(discovery, repos.directory, cfg.discovery.failing_after_failures)
     recommendations.refresh_all()
+    source_checks = SourceCheckRunner(discovery, repos.directory, cfg.discovery.failing_after_failures, recommendations.refresh_all)
     opportunity_service = OpportunityService(candidate)
     public_config = PublicConfigService(
         cfg, demo["enumValues"], lambda: repos.platform.get().active_theme, MetadataCache(cache_store, keys, cfg.coordination)
@@ -227,10 +229,11 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         admin_auth=AdminAuthService(admin, guard),
         admin_dashboard=AdminDashboardService(admin),
         admin_users=AdminUserService(admin),
-        admin_catalog=AdminCatalogService(admin, discovery, recommendations.refresh_all),
+        admin_catalog=AdminCatalogService(admin, source_checks),
         admin_settings=admin_settings,
         admin_audit=AdminAuditService(admin),
         admin_accounts=AdminAccountService(admin),
         discovery=discovery,
         recommendations=recommendations,
+        source_checks=source_checks,
     )

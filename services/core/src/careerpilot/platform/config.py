@@ -238,6 +238,17 @@ class MatchingConfig(Strict):
     sponsorship: SponsorshipPhrases
 
 
+class WorkersConfig(Strict):
+    temporal_address_env: str
+    namespace: str
+    discovery_task_queue: str
+    discovery_workflow_id: str
+    discovery_schedule_id: str
+    discovery_interval_minutes: int = Field(gt=0)
+    activity_timeout_seconds: int = Field(gt=0)
+    activity_max_attempts: int = Field(gt=0)
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -254,6 +265,7 @@ class Settings(Strict):
     coordination: CoordinationConfig
     discovery: DiscoveryConfig
     matching: MatchingConfig
+    workers: WorkersConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

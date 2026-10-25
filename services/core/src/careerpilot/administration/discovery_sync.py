@@ -1,8 +1,11 @@
+from collections.abc import Callable
+
 from careerpilot.administration.models import AdminOpportunityRow, AdminSourceRow
 from careerpilot.administration.ports import Directory
 from careerpilot.discovery.models import CheckOutcome, Listing, ListingChange, SourceCheck
 from careerpilot.discovery.service import DiscoveryService
 from careerpilot.platform.enums import SourceStatus
+from careerpilot.platform.errors import conflict, not_found
 
 NO_APPLICATIONS = 0
 
@@ -47,3 +50,28 @@ def seed_discovery(discovery: DiscoveryService, directory: Directory, failing_af
         if row.enabled and discovery.is_configured(row.id):
             apply_check(directory, row, discovery.run(row.id), failing_after)
     return True
+
+
+class SourceCheckRunner:
+    def __init__(
+        self, discovery: DiscoveryService, directory: Directory, failing_after: int, on_new_listings: Callable[[], object]
+    ) -> None:
+        self._discovery = discovery
+        self._directory = directory
+        self._failing_after = failing_after
+        self._on_new_listings = on_new_listings
+
+    def due_sources(self) -> list[str]:
+        return [row.id for row in self._directory.sources() if row.enabled and self._discovery.is_configured(row.id)]
+
+    def check(self, source_id: str) -> tuple[AdminSourceRow, SourceCheck]:
+        row = next((s for s in self._directory.sources() if s.id == source_id), None)
+        if row is None:
+            raise not_found("source")
+        if not row.enabled:
+            raise conflict("source_disabled")
+        check = self._discovery.run(source_id)
+        updated = apply_check(self._directory, row, check, self._failing_after)
+        if check.listings(ListingChange.NEW):
+            self._on_new_listings()
+        return updated, check

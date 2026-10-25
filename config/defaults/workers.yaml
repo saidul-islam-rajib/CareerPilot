@@ -1,0 +1,9 @@
+workers:
+  temporal_address_env: CAREERPILOT_TEMPORAL_ADDRESS
+  namespace: default
+  discovery_task_queue: discovery
+  discovery_workflow_id: discovery-all-sources
+  discovery_schedule_id: discovery-schedule
+  discovery_interval_minutes: 60
+  activity_timeout_seconds: 300
+  activity_max_attempts: 3
