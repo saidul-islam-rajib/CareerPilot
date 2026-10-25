@@ -41,6 +41,7 @@ async function readProblem(response: Response): Promise<ProblemDetails> {
 
 export function createHttpClient(options: HttpClientOptions): HttpClient {
   const baseUrl = options.baseUrl.replace(/\/+$/, '');
+  const fetchFn = options.fetchFn;
   return {
     async request<T>(method: HttpMethod, path: string, body?: unknown): Promise<T> {
       const controller = new AbortController();
@@ -54,7 +55,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
         headers.Authorization = `Bearer ${token}`;
       }
       try {
-        const response = await options.fetchFn(`${baseUrl}${path}`, {
+        const response = await fetchFn(`${baseUrl}${path}`, {
           method,
           headers,
           body: body === undefined ? undefined : JSON.stringify(body),

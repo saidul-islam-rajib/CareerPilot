@@ -64,4 +64,15 @@ describe('http api', () => {
     const { api } = setup(new TypeError('offline'));
     expect(isApiError(await api.config.getPublicConfig().catch((e: unknown) => e), ApiErrorCode.Network)).toBe(true);
   });
+
+  it('calls fetch without binding it to another object', async () => {
+    function strictFetch(this: unknown): Promise<Response> {
+      if (this !== undefined) {
+        return Promise.reject(new TypeError('Illegal invocation'));
+      }
+      return Promise.resolve(jsonResponse(200, {}));
+    }
+    const api = createHttpApi(createHttpClient({ baseUrl: 'https://api.example.com', timeoutMs: 1000, fetchFn: strictFetch as unknown as typeof fetch, getAccessToken: () => undefined }));
+    await expect(api.config.getPublicConfig()).resolves.toEqual({});
+  });
 });
