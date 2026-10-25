@@ -65,6 +65,8 @@ services:
       CAREERPILOT_REDIS_CACHE_URL: redis://redis-cache:6379/0
       CAREERPILOT_REDIS_COORD_URL: redis://redis-coord:6379/0
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    volumes:
+      - profile-files:/data/files
     ports:
       - "127.0.0.1:8000:8000"
     depends_on: &api-deps
@@ -81,6 +83,8 @@ services:
       dockerfile: infra/docker/api.Dockerfile
     command: ["uvicorn", "careerpilot_api.apps:admin_api", "--factory", "--host", "0.0.0.0", "--port", "8001"]
     environment: *api-env
+    volumes:
+      - profile-files:/data/files
     ports:
       - "127.0.0.1:8001:8001"
     depends_on: *api-deps
@@ -117,6 +121,8 @@ services:
     environment:
       <<: *api-env
       CAREERPILOT_TEMPORAL_ADDRESS: temporal:7233
+    volumes:
+      - profile-files:/data/files
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -154,3 +160,4 @@ services:
 volumes:
   postgres-data:
   redis-coord-data:
+  profile-files:

@@ -8,7 +8,8 @@ COPY services/core ./services/core
 COPY services/api ./services/api
 COPY services/workers ./services/workers
 RUN pip install -e ./services/core -e ./services/api -e ./services/workers \
- && useradd --create-home --uid 10001 careerpilot
+ && useradd --create-home --uid 10001 careerpilot \
+ && mkdir -p /data/files && chown careerpilot /data/files
 USER careerpilot
 WORKDIR /app/services/core
 EXPOSE 8000 8001
