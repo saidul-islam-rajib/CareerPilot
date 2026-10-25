@@ -77,6 +77,7 @@ async function waitForServer() {
 
 const server = external ? undefined : spawn('npx', ['next', 'start', '--port', String(port)], { cwd: appDir, shell: true, stdio: 'ignore' });
 const errors = [];
+const layoutIssues = [];
 try {
   await waitForServer();
   const browser = await chromium.launch({ channel: process.env.BROWSER_CHANNEL ?? 'msedge' });
@@ -88,6 +89,10 @@ try {
     page.on('pageerror', (e) => errors.push(`[${width}] ${e.message}`));
     const shot = async (name) => {
       await page.waitForTimeout(settleMs);
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      if (overflow > 0) {
+        layoutIssues.push(`[${width}] ${name}: ${overflow}px wider than the viewport`);
+      }
       await page.screenshot({ path: path.join(dir, `${name}.png`), fullPage: true });
     };
     for (const [name, route, submitLabel] of profile.preSignIn) {
@@ -118,4 +123,8 @@ try {
 }
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(path.join(outDir, 'console-errors.txt'), errors.join('\n'));
-console.log(`widths: ${widths.join(', ')}, screens per width: ${screens.length + profile.preSignIn.length}, console errors: ${errors.length}`);
+fs.writeFileSync(path.join(outDir, 'layout-issues.txt'), layoutIssues.join('\n'));
+console.log(`widths: ${widths.join(', ')}, screens per width: ${screens.length + profile.preSignIn.length}, console errors: ${errors.length}, layout issues: ${layoutIssues.length}`);
+if (layoutIssues.length > 0) {
+  console.log(layoutIssues.join('\n'));
+}
