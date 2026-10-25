@@ -10,4 +10,4 @@
 - [ ] Connectors for Bangladesh job portal, government notices, university pages (PDF and Bangla extraction, §7.6)
 - [ ] Turn discovered listings into per-user recommendations (AI extraction and matching, E03)
 - [ ] User reports: dead link, inaccurate detail, false merge, fraud confirmation
-- [ ] Admin UI message for `source_not_configured`
+- [x] Admin UI message for `source_not_configured`
