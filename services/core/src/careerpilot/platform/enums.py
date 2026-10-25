@@ -157,6 +157,26 @@ class ActorType(StrEnum):
     AGENT = "agent"
 
 
+class TrackKind(StrEnum):
+    REMOTE = "remote"
+    INTERNATIONAL_SPONSORED = "international_sponsored"
+    BANGLADESH_ONSITE = "bangladesh_onsite"
+    BANGLADESH_GOVERNMENT = "bangladesh_government"
+    CUSTOM = "custom"
+
+
+class RequirementCheck(StrEnum):
+    MET = "met"
+    NOT_MET = "not_met"
+    UNKNOWN = "unknown"
+
+
+class SponsorshipEvidence(StrEnum):
+    STATED = "stated"
+    NOT_STATED = "not_stated"
+    UNVERIFIED = "unverified"
+
+
 class ThemeKey(StrEnum):
     SOBER = "sober"
     HORIZON = "horizon"

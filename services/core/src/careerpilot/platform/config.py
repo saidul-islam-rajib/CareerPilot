@@ -1,7 +1,7 @@
 import os
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
@@ -193,6 +193,51 @@ class DiscoveryConfig(Strict):
     warning_signs: WarningSignConfig
 
 
+class MatchingMode(StrEnum):
+    RULES = "rules"
+    CLAUDE = "claude"
+
+
+Effort = Literal["low", "medium", "high", "xhigh", "max"]
+
+
+class MatchWeights(Strict):
+    base: int = Field(ge=0)
+    title: int = Field(ge=0)
+    skill: int = Field(ge=0)
+    max_skills: int = Field(ge=0)
+    arrangement: int = Field(ge=0)
+
+
+class TrackRule(Strict):
+    work_arrangements: list[str] = Field(default_factory=list[str])
+    country_codes: list[str] = Field(default_factory=list[str])
+    exclude_country_codes: list[str] = Field(default_factory=list[str])
+    types: list[str] = Field(default_factory=list[str])
+    require_sponsorship: bool = False
+
+
+class SponsorshipPhrases(Strict):
+    negative: list[str]
+    positive: list[str]
+
+
+class MatchingConfig(Strict):
+    mode: MatchingMode
+    model: str
+    effort: Effort
+    max_tokens: int = Field(gt=0)
+    api_key_env: str
+    prompt_file: str
+    rules_version: str
+    min_score: int = Field(ge=0, le=100)
+    include_flagged: bool
+    default_route: str
+    weights: MatchWeights
+    track_rules: dict[str, TrackRule]
+    sponsorship: SponsorshipPhrases
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -208,6 +253,7 @@ class Settings(Strict):
     observability: ObservabilityConfig
     coordination: CoordinationConfig
     discovery: DiscoveryConfig
+    matching: MatchingConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

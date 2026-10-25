@@ -1,0 +1,40 @@
+matching:
+  mode: rules
+  model: claude-opus-5-5
+  effort: low
+  max_tokens: 4000
+  api_key_env: ANTHROPIC_API_KEY
+  prompt_file: config/prompts/match-v1.md
+  rules_version: rules-1
+  min_score: 50
+  include_flagged: false
+  default_route: ats_portal
+  weights:
+    base: 30
+    title: 30
+    skill: 8
+    max_skills: 4
+    arrangement: 10
+  track_rules:
+    remote:
+      work_arrangements: [remote]
+    international_sponsored:
+      exclude_country_codes: [BD]
+      require_sponsorship: true
+    bangladesh_onsite:
+      country_codes: [BD]
+      work_arrangements: [onsite, hybrid]
+    bangladesh_government:
+      types: [government_job]
+    custom:
+      types: [masters, phd, scholarship]
+  sponsorship:
+    negative:
+      - sponsorship is not available
+      - no visa sponsorship
+      - unable to sponsor
+      - cannot sponsor
+    positive:
+      - visa sponsorship
+      - sponsorship available
+      - will sponsor

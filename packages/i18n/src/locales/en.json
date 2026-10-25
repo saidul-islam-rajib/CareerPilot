@@ -82,6 +82,22 @@
     "pointApproval": "You approve, CareerPilot completes the application",
     "pointRecord": "Every application recorded with proof"
   },
+  "matching": {
+    "titleMatch": "Similar to your experience as {title}",
+    "skillsMatch": "Mentions {skills}, which are in your profile",
+    "noSkills": "None of the skills in your profile are mentioned",
+    "arrangementMatch": "The work arrangement fits this track",
+    "sponsorshipStated": "Mentions visa sponsorship",
+    "sponsorshipUnavailable": "Says visa sponsorship is not available",
+    "requirementSponsorship": "Visa sponsorship for this role",
+    "trackNames": {
+      "remote": "Remote jobs",
+      "international_sponsored": "International jobs with visa sponsorship",
+      "bangladesh_onsite": "On-site jobs in Bangladesh",
+      "bangladesh_government": "Bangladesh government jobs",
+      "custom": "Custom search"
+    }
+  },
   "validation": {
     "required": "This field is required.",
     "email": "Enter a valid email address.",
