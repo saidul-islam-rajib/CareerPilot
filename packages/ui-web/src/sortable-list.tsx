@@ -13,9 +13,20 @@ export interface SortableListProps<T> {
   labelOf: (item: T) => string;
   renderItem: (item: T) => ReactNode;
   onReorder: (from: number, to: number) => void;
+  moveButtons?: boolean;
 }
 
-function SortableRow({ id, index, count, label, onMove, children }: { id: string; index: number; count: number; label: string; onMove: (from: number, to: number) => void; children: ReactNode }) {
+interface SortableRowProps {
+  id: string;
+  index: number;
+  count: number;
+  label: string;
+  moveButtons: boolean;
+  onMove: (from: number, to: number) => void;
+  children: ReactNode;
+}
+
+function SortableRow({ id, index, count, label, moveButtons, onMove, children }: SortableRowProps) {
   const t = useT();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   return (
@@ -28,13 +39,17 @@ function SortableRow({ id, index, count, label, onMove, children }: { id: string
         <GripVertical className="size-5" aria-hidden />
       </button>
       <div className="min-w-0 flex-1">{children}</div>
-      <Button variant="ghost" size="icon" icon={ChevronUp} aria-label={`${t('common.moveUp')}: ${label}`} disabled={index === 0} onClick={() => onMove(index, index - 1)} />
-      <Button variant="ghost" size="icon" icon={ChevronDown} aria-label={`${t('common.moveDown')}: ${label}`} disabled={index === count - 1} onClick={() => onMove(index, index + 1)} />
+      {moveButtons ? (
+        <>
+          <Button variant="ghost" size="icon" icon={ChevronUp} aria-label={`${t('common.moveUp')}: ${label}`} disabled={index === 0} onClick={() => onMove(index, index - 1)} />
+          <Button variant="ghost" size="icon" icon={ChevronDown} aria-label={`${t('common.moveDown')}: ${label}`} disabled={index === count - 1} onClick={() => onMove(index, index + 1)} />
+        </>
+      ) : null}
     </li>
   );
 }
 
-export function SortableList<T>({ items, keyOf, labelOf, renderItem, onReorder }: SortableListProps<T>) {
+export function SortableList<T>({ items, keyOf, labelOf, renderItem, onReorder, moveButtons = true }: SortableListProps<T>) {
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
   const ids = items.map(keyOf);
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
@@ -47,7 +62,7 @@ export function SortableList<T>({ items, keyOf, labelOf, renderItem, onReorder }
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
         <ul className="flex flex-col">
           {items.map((item, index) => (
-            <SortableRow key={keyOf(item)} id={keyOf(item)} index={index} count={items.length} label={labelOf(item)} onMove={onReorder}>
+            <SortableRow key={keyOf(item)} id={keyOf(item)} index={index} count={items.length} label={labelOf(item)} moveButtons={moveButtons} onMove={onReorder}>
               {renderItem(item)}
             </SortableRow>
           ))}

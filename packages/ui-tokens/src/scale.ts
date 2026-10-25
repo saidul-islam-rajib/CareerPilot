@@ -65,3 +65,7 @@ export const contentMaxWidth = 720;
 export const zoom = { min: 1, max: 5, step: 1, doubleTap: 2.5 } as const;
 
 export const gesture = { longPressMs: 250, dragScale: 1.02, dragElevation: 6 } as const;
+
+export const feedback = { toastMs: 5000, undoToastMs: 8000, maxToasts: 3 } as const;
+
+export const ring = { size: 120, stroke: 10 } as const;
