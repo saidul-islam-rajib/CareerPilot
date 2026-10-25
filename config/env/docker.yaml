@@ -1,0 +1,9 @@
+api:
+  mode: http
+http:
+  host: 0.0.0.0
+  cors_origins:
+    - http://localhost:3000
+    - http://localhost:3001
+persistence:
+  mode: database

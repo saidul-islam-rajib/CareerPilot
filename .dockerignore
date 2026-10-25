@@ -1,0 +1,13 @@
+**/node_modules
+**/.next
+**/dist
+**/.expo
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/*.log
+.git
+.validation
+.env
+apps/mobile

@@ -40,6 +40,66 @@ services:
       - "127.0.0.1:8025:8025"
       - "127.0.0.1:1025:1025"
 
+  migrate:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    command: ["sh", "-c", "alembic upgrade head && python -m careerpilot_api.seed"]
+    environment:
+      CAREERPILOT_MIGRATION_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      CAREERPILOT_DATABASE_URL: postgresql+psycopg://${CAREERPILOT_APP_DB_USER}:${CAREERPILOT_APP_DB_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      CAREERPILOT_TOKEN_SECRET: ${CAREERPILOT_TOKEN_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  user-api:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    environment: &api-env
+      CAREERPILOT_DATABASE_URL: postgresql+psycopg://${CAREERPILOT_APP_DB_USER}:${CAREERPILOT_APP_DB_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      CAREERPILOT_TOKEN_SECRET: ${CAREERPILOT_TOKEN_SECRET}
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on: &api-deps
+      migrate:
+        condition: service_completed_successfully
+
+  admin-api:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    command: ["uvicorn", "careerpilot_api.apps:admin_api", "--factory", "--host", "0.0.0.0", "--port", "8001"]
+    environment: *api-env
+    ports:
+      - "127.0.0.1:8001:8001"
+    depends_on: *api-deps
+
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+      args:
+        APP: web
+        PORT: "3000"
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - user-api
+
+  admin:
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+      args:
+        APP: admin
+        PORT: "3001"
+    ports:
+      - "127.0.0.1:3001:3001"
+    depends_on:
+      - admin-api
+
 volumes:
   postgres-data:
   redis-coord-data:
