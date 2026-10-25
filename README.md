@@ -47,6 +47,17 @@ make mobile     # optional: start the Expo dev server for Android/iOS
 
 Other commands: `make test` (unit tests), `make logs`, `make down`, `make reset`.
 
+## Run the backend locally (without Docker)
+
+```bash
+cd services
+python -m venv .venv
+.venv/Scripts/python -m pip install -e "core[dev]" -e api
+APP_ENV=http .venv/Scripts/python -m careerpilot_api.dev_server   # user API :8000, admin API :8001
+```
+
+Build the web or admin app with `APP_ENV=http` to use the backend instead of the built-in demo data. Backend tests: `cd services/core && ../.venv/Scripts/python -m pytest`.
+
 ## Unattended development (autopilot)
 
 Claude Code works through the open tasks in `specs/*/tasks.md` without stopping. To keep it going across usage-limit resets, run:
