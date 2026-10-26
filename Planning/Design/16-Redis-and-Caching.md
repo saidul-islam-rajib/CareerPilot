@@ -23,7 +23,7 @@ At the lean launch stage both run as small containers on the same host; at the g
 | 6 | Web and admin BFF sessions | coord | `cp:{env}:sess:{session_id}` | Hash (encrypted token set) | Session idle timeout (admin shorter) |
 | 7 | Rate limiting (per user, IP, endpoint; per source; per route; per mailbox; AI budgets) | coord | `cp:{env}:rl:{subject}:{window}` | Token bucket via Lua script | Window length |
 | 8 | Login protection (failed attempts, lockout timers) | coord | `cp:{env}:auth:fail:{account}` | Counter | 15–60 min |
-| 9 | Verification codes (email/phone OTP), registration and password-reset link secrets, and resend throttles | coord | `cp:{env}:otp:{purpose}:{target}` | Hash (hashed code, attempts) | 10 min for codes; links per `account_links.ttl_minutes` |
+| 9 | Verification codes (email/phone OTP), registration and password-reset link secrets, and resend throttles | coord | `cp:{env}:otp:{purpose}:{target}` | Hash (hashed code, attempts) | 10 min for codes; links per the admin link lifetime (default 5 min), which is also the resend cooldown |
 | 10 | Idempotency fast check (the database remains authoritative) | coord | `cp:{env}:idem:{key}` | String (status/result ref) | 24 h |
 | 11 | Short distributed locks (for example one digest build per user, one refresh per source) | coord | `cp:{env}:lock:{name}` | `SET NX PX` + fencing token | Seconds; never used to guarantee exactly-once submissions (Temporal + DB do that) |
 | 12 | Real-time fan-out for SSE (status updates to all API instances) | coord | `cp:{env}:rt:user:{user}` | Pub/Sub or Streams | — |
