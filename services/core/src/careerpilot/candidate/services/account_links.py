@@ -65,7 +65,9 @@ class AccountLinkService:
         return AccountLinkDetails(purpose=link_purpose(account), full_name=account.user.full_name, email=account.user.email)
 
     def redeem(self, token: str) -> Account:
-        return self._verified(token, consume=True)
+        account = self._verified(token, consume=True)
+        self._ctx.codes.withdraw(PURPOSE, account.user.id)
+        return account
 
     def _verified(self, token: str, consume: bool) -> Account:
         user_id, _, secret = token.strip().partition(TOKEN_SEPARATOR)

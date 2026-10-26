@@ -134,6 +134,12 @@ def test_reset_signs_out_older_sessions(container: Container, outbox: InMemoryEm
     assert container.auth.sign_in(DEMO_EMAIL, NEW_PASSWORD, CLIENT).user.id == DEMO_USER
 
 
+def test_a_used_link_lets_the_next_link_go_out_at_once(container: Container, outbox: InMemoryEmailSender) -> None:
+    register_and_activate(container, outbox, REGISTRATION)
+    container.auth.request_password_reset(NEW_EMAIL, CLIENT)
+    assert [e.subject for e in outbox.sent] == ["Finish creating your CareerPilot account", "Reset your CareerPilot password"]
+
+
 def test_resend_cooldown_never_reveals_an_account(container: Container, outbox: InMemoryEmailSender) -> None:
     container.auth.request_password_reset(DEMO_EMAIL, CLIENT)
     container.auth.request_password_reset(DEMO_EMAIL, CLIENT)
