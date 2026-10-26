@@ -8,8 +8,8 @@ import {
   SubmissionWindowKind,
 } from '@careerpilot/domain-ui-logic';
 import { ApiErrorCode, isApiError } from '../errors';
-import { createTestApi, fixedNow } from '../test-support';
-import { AnswerSource, ApplicationFilter } from '../types';
+import { TEST_LINK_TOKEN, createTestApi, fixedNow } from '../test-support';
+import { AccountLinkPurpose, AnswerSource, ApplicationFilter } from '../types';
 
 async function expectError(promise: Promise<unknown>, code: ApiErrorCode) {
   const error = await promise.catch((e: unknown) => e);
@@ -31,12 +31,29 @@ describe('in-memory auth', () => {
     expect((await api.settings.listSignInActivity())[0]?.success).toBe(false);
   });
 
-  it('registers once per email and requires consent', async () => {
+  it('registers by demo link, then signs in with the chosen password', async () => {
     const api = createTestApi();
-    const request = { fullName: 'New User', email: 'new@example.com', password: 'Str0ng!Pass', consent: true, consentDocuments: { terms: '1', privacy: '1' } };
-    expect((await api.auth.register(request)).user.email).toBe('new@example.com');
-    await expectError(api.auth.register(request), ApiErrorCode.EmailTaken);
+    const request = { fullName: 'New User', email: 'New@example.com', consent: true, consentDocuments: { terms: '1', privacy: '1' } };
+    await expect(api.auth.register(request)).resolves.toBeUndefined();
+    await expectError(api.auth.signIn({ email: 'new@example.com', password: '' }), ApiErrorCode.InvalidCredentials);
+    expect(await api.auth.inspectAccountLink(TEST_LINK_TOKEN)).toEqual({ purpose: AccountLinkPurpose.Setup, fullName: 'New User', email: 'new@example.com' });
+    await expectError(api.auth.completeAccountLink({ token: TEST_LINK_TOKEN, password: 'short' }), ApiErrorCode.Validation);
+    const session = await api.auth.completeAccountLink({ token: TEST_LINK_TOKEN, password: 'Str0ng!Password' });
+    expect(session.user.email).toBe('new@example.com');
+    await expectError(api.auth.completeAccountLink({ token: TEST_LINK_TOKEN, password: 'Str0ng!Password' }), ApiErrorCode.Validation);
+    expect((await api.auth.signIn({ email: 'new@example.com', password: 'Str0ng!Password' })).user.fullName).toBe('New User');
     await expectError(api.auth.register({ ...request, email: 'other@example.com', consent: false }), ApiErrorCode.Validation);
+  });
+
+  it('answers the same for existing emails and resets passwords by link', async () => {
+    const api = createTestApi();
+    await api.auth.register({ fullName: 'Someone', email: 'admin@sober.com', consent: true, consentDocuments: { terms: '1', privacy: '1' } });
+    await expectError(api.auth.inspectAccountLink(TEST_LINK_TOKEN), ApiErrorCode.Validation);
+    await api.auth.requestPasswordReset('admin@sober.com');
+    expect((await api.auth.inspectAccountLink(TEST_LINK_TOKEN)).purpose).toBe(AccountLinkPurpose.Reset);
+    await api.auth.completeAccountLink({ token: TEST_LINK_TOKEN, password: 'N3w!Password99' });
+    await expectError(api.auth.signIn({ email: 'admin@sober.com', password: 'admin@sober.com' }), ApiErrorCode.InvalidCredentials);
+    expect((await api.auth.signIn({ email: 'admin@sober.com', password: 'N3w!Password99' })).user.id).toBe('usr_demo');
   });
 });
 

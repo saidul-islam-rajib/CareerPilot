@@ -40,6 +40,22 @@ describe('http api', () => {
     expect(init.body).toBe(JSON.stringify({ answer: 'Yes', saveForReuse: false }));
   });
 
+  it('keeps account link tokens in request bodies', async () => {
+    const inspect = setup(jsonResponse(200, {}));
+    await inspect.api.auth.inspectAccountLink('usr_1.secret');
+    const complete = setup(jsonResponse(200, {}));
+    await complete.api.auth.completeAccountLink({ token: 'usr_1.secret', password: 'Str0ng!Password' });
+    const calls = [inspect, complete].map(({ fetchFn }) => (fetchFn.mock.calls as unknown as [string, RequestInit][])[0]);
+    expect(calls.map((call) => call?.[0])).toEqual([
+      'https://api.example.com/v1/auth/account-links/inspect',
+      'https://api.example.com/v1/auth/account-links/complete',
+    ]);
+    expect(calls.map((call) => call?.[1].body)).toEqual([
+      JSON.stringify({ token: 'usr_1.secret' }),
+      JSON.stringify({ token: 'usr_1.secret', password: 'Str0ng!Password' }),
+    ]);
+  });
+
   it('handles empty responses', async () => {
     const { api } = setup(new Response(null, { status: 204 }));
     await expect(api.auth.signOut()).resolves.toBeUndefined();
@@ -47,7 +63,7 @@ describe('http api', () => {
 
   it('maps problem details and status codes to error codes', async () => {
     const coded = setup(jsonResponse(400, { code: 'email_taken' }));
-    const error = await coded.api.auth.register({ fullName: 'a', email: 'b', password: 'c', consent: true, consentDocuments: { terms: '1', privacy: '1' } }).catch((e: unknown) => e);
+    const error = await coded.api.auth.register({ fullName: 'a', email: 'b', consent: true, consentDocuments: { terms: '1', privacy: '1' } }).catch((e: unknown) => e);
     expect(isApiError(error, ApiErrorCode.EmailTaken)).toBe(true);
 
     const missing = setup(jsonResponse(404));

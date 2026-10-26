@@ -12,6 +12,7 @@ api:
   upload_timeout_ms: 120000
   demo_latency_ms: 250
   demo_verification_code: "246810"
+  demo_link_token: demo-link
 query:
   stale_time_ms: 30000
   retry_count: 6

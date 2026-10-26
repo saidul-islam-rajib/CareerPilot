@@ -51,9 +51,30 @@ export interface SignInRequest {
 export interface RegisterRequest {
   fullName: string;
   email: string;
-  password: string;
   consent: boolean;
   consentDocuments: { terms: string; privacy: string };
+}
+
+export const AccountLinkPurpose = {
+  Setup: 'setup',
+  Reset: 'reset',
+} as const;
+export type AccountLinkPurpose = (typeof AccountLinkPurpose)[keyof typeof AccountLinkPurpose];
+
+export interface AccountLinkDetails {
+  purpose: AccountLinkPurpose;
+  fullName: string;
+  email: string;
+}
+
+export interface CompleteAccountLinkRequest {
+  token: string;
+  password: string;
+}
+
+export interface AccountLinkSettings {
+  ttlMinutes: number;
+  resendCooldownSeconds: number;
 }
 
 export interface OpenSourceComponent {
@@ -82,6 +103,7 @@ export interface PublicConfig {
   openSourceComponents: OpenSourceComponent[];
   notifications: NotificationSettings;
   verification: VerificationSettings;
+  accountLinks: AccountLinkSettings;
   tracking: TrackingSettings;
   answers: AnswerSettings;
   profile: ProfileSettings;

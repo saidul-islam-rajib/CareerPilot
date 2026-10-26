@@ -40,6 +40,7 @@ const PDF_MEDIA_TYPE = 'application/pdf';
 export interface DemoAccount {
   user: UserSummary;
   password: string;
+  registered?: boolean;
 }
 
 export interface DemoState {

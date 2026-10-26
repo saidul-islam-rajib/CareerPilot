@@ -128,6 +128,7 @@ export const enumValueSeed: EnumValueMetadata[] = [
     [OpportunityDecision.Irrelevant, StatusTone.Neutral],
   ]),
   ...rows(EnumKey.UserAccountStatus, [
+    [UserAccountStatus.Registered, StatusTone.Info],
     [UserAccountStatus.Active, StatusTone.Success],
     [UserAccountStatus.Paused, StatusTone.Warning],
     [UserAccountStatus.Suspended, StatusTone.Danger],

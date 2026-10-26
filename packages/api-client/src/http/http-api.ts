@@ -33,6 +33,8 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       signIn: (request) => post('/v1/auth/sign-in', request),
       register: (request) => post('/v1/auth/register', request),
       requestPasswordReset: (email) => post('/v1/auth/password-reset', { email }),
+      inspectAccountLink: (token) => post('/v1/auth/account-links/inspect', { token }),
+      completeAccountLink: (request) => post('/v1/auth/account-links/complete', request),
       signOut: () => post('/v1/auth/sign-out'),
     },
     config: {

@@ -1,12 +1,14 @@
 import type { OpportunityDecision, PhotoCrop, TaskStatus } from '@careerpilot/domain-ui-logic';
 import type { EntryValue } from '@careerpilot/dynamic-forms';
 import type {
+  AccountLinkDetails,
   ApplicationFilter,
   ApplicationRecord,
   ApplicationSummary,
   ApprovalDetail,
   ApprovalSummary,
   BasicsChanges,
+  CompleteAccountLinkRequest,
   ContactChanges,
   ContactInput,
   DashboardSummary,
@@ -37,8 +39,10 @@ import type {
 
 export interface AuthApi {
   signIn(request: SignInRequest): Promise<Session>;
-  register(request: RegisterRequest): Promise<Session>;
+  register(request: RegisterRequest): Promise<void>;
   requestPasswordReset(email: string): Promise<void>;
+  inspectAccountLink(token: string): Promise<AccountLinkDetails>;
+  completeAccountLink(request: CompleteAccountLinkRequest): Promise<Session>;
   signOut(): Promise<void>;
 }
 

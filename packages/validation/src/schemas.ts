@@ -36,13 +36,16 @@ export function createSchemas(policy: ValidationPolicy) {
     password: z.string().min(1, ValidationMessage.Required),
   });
 
-  const register = z
+  const register = z.object({
+    fullName,
+    email,
+    consent: z.boolean().refine((value) => value, ValidationMessage.ConsentRequired),
+  });
+
+  const setPassword = z
     .object({
-      fullName,
-      email,
       password,
       confirmPassword: z.string().min(1, ValidationMessage.Required),
-      consent: z.boolean().refine((value) => value, ValidationMessage.ConsentRequired),
     })
     .refine((value) => value.password === value.confirmPassword, {
       message: ValidationMessage.PasswordMismatch,
@@ -83,7 +86,7 @@ export function createSchemas(policy: ValidationPolicy) {
     digestTime: z.string().regex(TIME_PATTERN, ValidationMessage.Time),
   });
 
-  return { signIn, register, forgotPassword, email, phone, answer, resultCount, submissionWindow, changePassword, notifications };
+  return { signIn, register, setPassword, forgotPassword, email, phone, answer, resultCount, submissionWindow, changePassword, notifications };
 }
 
 export function verificationCodeSchema(length: number) {
@@ -93,6 +96,7 @@ export function verificationCodeSchema(length: number) {
 export type Schemas = ReturnType<typeof createSchemas>;
 export type SignInInput = z.infer<Schemas['signIn']>;
 export type RegisterInput = z.infer<Schemas['register']>;
+export type SetPasswordInput = z.infer<Schemas['setPassword']>;
 export type ForgotPasswordInput = z.infer<Schemas['forgotPassword']>;
 export type ChangePasswordInput = z.infer<Schemas['changePassword']>;
 export type NotificationsInput = z.infer<Schemas['notifications']>;

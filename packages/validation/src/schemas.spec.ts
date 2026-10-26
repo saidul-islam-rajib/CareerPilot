@@ -14,33 +14,42 @@ const schemas = createSchemas(policy);
 const validRegistration = {
   fullName: 'Saidul Islam Rajib',
   email: 'user@example.com',
-  password: 'Str0ng!Password',
-  confirmPassword: 'Str0ng!Password',
   consent: true,
 };
 
+const validPassword = { password: 'Str0ng!Password', confirmPassword: 'Str0ng!Password' };
+
 describe('register schema', () => {
-  it('accepts a valid registration', () => {
-    expect(validate(schemas.register, validRegistration).ok).toBe(true);
+  it('accepts a registration without a password', () => {
+    expect(validate(schemas.register, validRegistration)).toEqual({ ok: true, value: validRegistration });
   });
 
-  it('requires the consent checkbox', () => {
-    const result = validate(schemas.register, { ...validRegistration, consent: false });
-    expect(result).toEqual({ ok: false, errors: { consent: ValidationMessage.ConsentRequired } });
+  it('requires the consent checkbox, a name, and an email', () => {
+    const result = validate(schemas.register, { fullName: 'A', email: 'nope', consent: false });
+    expect(result).toEqual({
+      ok: false,
+      errors: { fullName: ValidationMessage.NameLength, email: ValidationMessage.Email, consent: ValidationMessage.ConsentRequired },
+    });
+  });
+});
+
+describe('set password schema', () => {
+  it('accepts a strong, confirmed password', () => {
+    expect(validate(schemas.setPassword, validPassword).ok).toBe(true);
   });
 
   it('rejects mismatched and weak passwords', () => {
-    const mismatch = validate(schemas.register, { ...validRegistration, confirmPassword: 'Other!Pass123' });
+    const mismatch = validate(schemas.setPassword, { ...validPassword, confirmPassword: 'Other!Pass123' });
     expect(mismatch.ok ? undefined : mismatch.errors.confirmPassword).toBe(ValidationMessage.PasswordMismatch);
-    const weak = validate(schemas.register, { ...validRegistration, password: 'alllowercase', confirmPassword: 'alllowercase' });
+    const weak = validate(schemas.setPassword, { password: 'alllowercase', confirmPassword: 'alllowercase' });
     expect(weak.ok ? undefined : weak.errors.password).toBe(ValidationMessage.PasswordComplexity);
-    const short = validate(schemas.register, { ...validRegistration, password: 'S!1a', confirmPassword: 'S!1a' });
+    const short = validate(schemas.setPassword, { password: 'S!1a', confirmPassword: 'S!1a' });
     expect(short.ok ? undefined : short.errors.password).toBe(ValidationMessage.PasswordLength);
   });
 
   it('follows the configured policy', () => {
     const relaxed = createSchemas({ ...policy, password: { ...policy.password, requireSymbol: false, minLength: 4 } });
-    expect(validate(relaxed.register, { ...validRegistration, password: 'Abc1', confirmPassword: 'Abc1' }).ok).toBe(true);
+    expect(validate(relaxed.setPassword, { password: 'Abc1', confirmPassword: 'Abc1' }).ok).toBe(true);
   });
 });
 

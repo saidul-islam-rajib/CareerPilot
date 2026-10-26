@@ -39,6 +39,7 @@ export function createApi(deps: ApiDependencies): CareerPilotApi {
     ids: sequentialIds(),
     latencyMs: deps.config.api.demoLatencyMs,
     demoVerificationCode: deps.config.api.demoVerificationCode,
+    demoLinkToken: deps.config.api.demoLinkToken,
     approvalValidityDays: deps.config.account.approvalValidityDays,
     recentWindowDays: deps.config.account.recentWindowDays,
   });

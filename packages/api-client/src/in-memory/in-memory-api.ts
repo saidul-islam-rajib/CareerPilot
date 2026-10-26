@@ -23,6 +23,7 @@ import {
   type Settings,
 } from '../types';
 import type { DemoState } from './demo.seed';
+import { createAccountLinks } from './account-links';
 import { createAnswers, hasBlankAnswers } from './answers';
 import { createFollowUps } from './follow-ups';
 import { createProfileStore } from './profile-store';
@@ -34,6 +35,7 @@ export interface InMemoryApiOptions {
   ids: IdGenerator;
   latencyMs: number;
   demoVerificationCode: string;
+  demoLinkToken: string;
   approvalValidityDays: number;
   recentWindowDays: number;
 }
@@ -111,6 +113,17 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
 
   const followUps = createFollowUps({ applications: state.applications, config, clock, ids, respond, reject: failWith });
   const answers = createAnswers({ saved: state.savedAnswers, approvals: state.approvals, applications: state.applications, config, clock, ids, respond, reject: failWith });
+  const accountLinks = createAccountLinks({
+    accounts: state.accounts,
+    config,
+    demoLinkToken: options.demoLinkToken,
+    ids,
+    respond,
+    reject: failWith,
+    onSignIn: (userId) => {
+      signedInId = userId;
+    },
+  });
 
   const createApplication = (approval: ApprovalDetail): ApplicationRecord => {
     const detail = findOpportunity(approval.opportunity.id);
@@ -140,7 +153,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     auth: {
       async signIn(request) {
         const account = state.accounts.find(
-          (a) => a.user.email.toLowerCase() === request.email.trim().toLowerCase() && a.password === request.password,
+          (a) => !a.registered && a.user.email.toLowerCase() === request.email.trim().toLowerCase() && a.password === request.password,
         );
         state.signInEvents.unshift({
           id: ids.next('si'),
@@ -154,20 +167,10 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
         signedInId = account?.user.id ?? signedInId;
         return account ? respond({ accessToken: ids.next('token'), user: account.user }) : fail(ApiErrorCode.InvalidCredentials);
       },
-      async register(request) {
-        if (!request.consent) {
-          return fail(ApiErrorCode.Validation);
-        }
-        const email = request.email.trim().toLowerCase();
-        if (state.accounts.some((a) => a.user.email.toLowerCase() === email)) {
-          return fail(ApiErrorCode.EmailTaken);
-        }
-        const user = { id: ids.next('usr'), fullName: request.fullName.trim(), email };
-        state.accounts.push({ user, password: request.password });
-        signedInId = user.id;
-        return respond({ accessToken: ids.next('token'), user });
-      },
-      requestPasswordReset: () => respond(undefined),
+      register: (request) => accountLinks.register(request),
+      requestPasswordReset: (email) => accountLinks.requestPasswordReset(email),
+      inspectAccountLink: (token) => accountLinks.inspect(token),
+      completeAccountLink: (request) => accountLinks.complete(request),
       signOut: () => respond(undefined),
     },
     config: {

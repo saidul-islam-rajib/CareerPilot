@@ -100,6 +100,7 @@ export const appConfigSchema = z.object({
     uploadTimeoutMs: z.number().int().positive(),
     demoLatencyMs: z.number().int().nonnegative(),
     demoVerificationCode: z.string(),
+    demoLinkToken: z.string(),
   }),
   query: z.object({
     staleTimeMs: z.number().int().nonnegative(),
@@ -151,6 +152,10 @@ export const appConfigSchema = z.object({
     resendCooldownSeconds: z.number().int().nonnegative(),
     smsEnabled: z.boolean(),
   }),
+  accountLinks: z.object({
+    ttlMinutes: z.number().int().positive(),
+    resendCooldownSeconds: z.number().int().nonnegative(),
+  }),
   notifications: z.object({
     defaultDigestTime: z.string(),
     digestTimePresets: z.array(z.object({ key: z.string(), time: z.string() })),
@@ -187,6 +192,7 @@ export function publicConfigFromDefaults(config: AppConfig): PublicConfig {
       resendCooldownSeconds: config.verification.resendCooldownSeconds,
       smsEnabled: config.verification.smsEnabled,
     },
+    accountLinks: { ttlMinutes: config.accountLinks.ttlMinutes, resendCooldownSeconds: config.accountLinks.resendCooldownSeconds },
     profile: config.profile,
   };
 }

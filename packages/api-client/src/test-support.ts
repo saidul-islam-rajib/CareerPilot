@@ -51,6 +51,7 @@ export const testConfig: PublicConfig = {
     ],
   },
   verification: { codeLength: 6, codeTtlSeconds: 600, resendCooldownSeconds: 60, smsEnabled: false },
+  accountLinks: { ttlMinutes: 60, resendCooldownSeconds: 60 },
   tracking: {
     taskTitleMaxLength: 120,
     taskNotesMaxLength: 2000,
@@ -75,6 +76,7 @@ export const testConfig: PublicConfig = {
 };
 
 export const TEST_VERIFICATION_CODE = '246810';
+export const TEST_LINK_TOKEN = 'demo-link';
 
 export function createTestApi() {
   return createInMemoryApi({
@@ -84,6 +86,7 @@ export function createTestApi() {
     ids: sequentialIds(),
     latencyMs: 0,
     demoVerificationCode: TEST_VERIFICATION_CODE,
+    demoLinkToken: TEST_LINK_TOKEN,
     approvalValidityDays: 3,
     recentWindowDays: 7,
   });

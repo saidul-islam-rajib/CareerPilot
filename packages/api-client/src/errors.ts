@@ -15,6 +15,9 @@ export type ApiErrorCode = (typeof ApiErrorCode)[keyof typeof ApiErrorCode];
 
 export const ApiErrorDetail = {
   SourceNotConfigured: 'source_not_configured',
+  LinkInvalid: 'link_invalid',
+  LinkExpired: 'link_expired',
+  DeliveryFailed: 'delivery_failed',
 } as const;
 export type ApiErrorDetail = (typeof ApiErrorDetail)[keyof typeof ApiErrorDetail];
 
