@@ -41,7 +41,7 @@ export function Checkbox({ checked, onChange, accessibilityLabel, children, erro
         >
           {checked ? <Icon icon={Check} size={IconSize.Small} color={theme.colors.primaryForeground} /> : null}
         </View>
-        <View style={{ flex: 1 }}>{children}</View>
+        <View style={{ flex: 1 }}>{typeof children === 'string' || typeof children === 'number' ? <Text>{children}</Text> : children}</View>
       </Pressable>
       {error ? (
         <Text variant={TextVariant.Caption} tone={TextTone.Danger} accessibilityLiveRegion="polite">
