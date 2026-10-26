@@ -3,6 +3,7 @@ export const Routes = {
   signIn: '/sign-in',
   register: '/register',
   forgotPassword: '/forgot-password',
+  setPassword: (token: string) => ({ pathname: '/set-password', params: { token } }) as const,
   home: '/',
   approvals: '/approvals',
   applications: '/applications',

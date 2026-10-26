@@ -5,6 +5,7 @@ import { AlertCircle } from 'lucide-react-native';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { Banner, Button, ButtonVariant, Card, Checkbox, LinkedText, Screen, Text, TextField, TextTone, TextVariant } from '@/ui';
+import { CheckEmailCard } from './check-email-card';
 
 export function RegisterScreen() {
   const t = useT();
@@ -12,10 +13,17 @@ export function RegisterScreen() {
   const { config } = usePublicConfig();
   const form = useRegisterForm();
   const nameParams = { min: form.policy.name.minLength, max: form.policy.name.maxLength };
-  const passwordParams = { min: form.policy.password.minLength };
   const open = (url: string) => void WebBrowser.openBrowserAsync(url);
+  if (form.sentTo) {
+    return (
+      <Screen testID="register-screen">
+        <CheckEmailCard email={form.sentTo} onStartOver={form.startOver} />
+      </Screen>
+    );
+  }
   return (
     <Screen testID="register-screen">
+      <Text tone={TextTone.Muted}>{t('auth.registerIntro')}</Text>
       {form.formError ? <Banner tone={StatusTone.Danger} icon={AlertCircle} title={t(form.formError)} /> : null}
       <Card>
         <TextField
@@ -36,27 +44,8 @@ export function RegisterScreen() {
           keyboardType="email-address"
           autoCapitalize="none"
           autoComplete="email"
+          textContentType="emailAddress"
           testID="register-email"
-        />
-        <TextField
-          label={t('auth.password')}
-          value={form.values.password}
-          onChangeText={(v) => form.setField('password', v)}
-          error={form.errors.password}
-          errorParams={passwordParams}
-          hint={t('validation.passwordLength', passwordParams)}
-          secret
-          autoComplete="new-password"
-          testID="register-password"
-        />
-        <TextField
-          label={t('auth.confirmPassword')}
-          value={form.values.confirmPassword}
-          onChangeText={(v) => form.setField('confirmPassword', v)}
-          error={form.errors.confirmPassword}
-          secret
-          autoComplete="new-password"
-          testID="register-confirm"
         />
         <Checkbox
           checked={form.values.consent}
