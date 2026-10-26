@@ -4,6 +4,11 @@ const { loadConfig } = require('../../scripts/config/load-config') as { loadConf
 const catalog = require('../../packages/i18n/src/locales/en.json') as { profile: { photoPermission: string } };
 
 const APP_ENV = process.env.APP_ENV ?? 'local';
+const API_URL = process.env.CAREERPILOT_API_URL;
+
+function withApiUrl(settings: Record<string, unknown>, url: string | undefined): Record<string, unknown> {
+  return url ? { ...settings, api: { ...(settings.api as Record<string, unknown>), baseUrl: url } } : settings;
+}
 
 interface MobileSection {
   appName: string;
@@ -15,7 +20,7 @@ interface MobileSection {
 }
 
 export default ({ config }: ConfigContext): ExpoConfig => {
-  const settings = loadConfig(APP_ENV);
+  const settings = withApiUrl(loadConfig(APP_ENV), API_URL);
   const mobile = settings.mobile as unknown as MobileSection;
   return {
     ...config,

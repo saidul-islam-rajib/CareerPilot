@@ -69,7 +69,7 @@ services:
     volumes:
       - profile-files:/data/files
     ports:
-      - "127.0.0.1:8000:8000"
+      - "${CAREERPILOT_USER_API_BIND:-127.0.0.1}:8000:8000"
     depends_on: &api-deps
       migrate:
         condition: service_completed_successfully
