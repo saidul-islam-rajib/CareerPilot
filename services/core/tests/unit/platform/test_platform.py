@@ -1,6 +1,10 @@
+import shutil
+import tempfile
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator, iso, parse_iso
 from careerpilot.platform.config import deep_merge, load_settings
@@ -58,3 +62,35 @@ def test_clock_helpers() -> None:
     assert parse_iso(iso(NOW)) == NOW
     ids = SequentialIdGenerator()
     assert [ids.next("a"), ids.next("b")] == ["a_1", "b_2"]
+
+
+REPOSITORY_CONFIG = Path(__file__).resolve().parents[5] / "config"
+
+
+def test_secrets_typed_into_config_files_stop_the_api_from_starting() -> None:
+    with tempfile.TemporaryDirectory() as folder:
+        assert_rejects_secrets_in(Path(folder) / "config")
+
+
+def assert_rejects_secrets_in(root: Path) -> None:
+    shutil.copytree(REPOSITORY_CONFIG, root)
+    mail = root / "defaults" / "mail.yaml"
+    text = mail.read_text(encoding="utf-8")
+    text = text.replace("smtp_user_env: CAREERPILOT_MAIL_USER", "smtp_user_env: someone@gmail.com")
+    text = text.replace("smtp_password_env: CAREERPILOT_MAIL_PASSWORD", "smtp_password_env: abcd efgh ijkl mnop")
+    mail.write_text(text, encoding="utf-8")
+    with pytest.raises(ValidationError) as error:
+        load_settings("local", root)
+    assert {tuple(e["loc"][-1:]) for e in error.value.errors()} == {("smtp_user_env",), ("smtp_password_env",)}
+    assert "abcd" not in str([e.get("input") for e in error.value.errors() if e["loc"][-1] == "smtp_user_env"])
+
+
+def test_every_secret_comes_from_a_named_environment_setting() -> None:
+    settings = load_settings("local")
+    names = [
+        settings.mail.smtp_user_env,
+        settings.mail.smtp_password_env,
+        settings.persistence.database_url_env,
+        settings.matching.api_key_env,
+    ]
+    assert all(name.isupper() and " " not in name for name in names)

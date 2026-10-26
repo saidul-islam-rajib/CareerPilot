@@ -1,7 +1,7 @@
 import os
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Annotated, Any, Literal, cast
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
@@ -22,6 +22,10 @@ APP_ENV = "APP_ENV"
 DEFAULT_APP_ENV = "local"
 YAML_SUFFIX = ".yaml"
 SECONDS_PER_MINUTE = 60
+ENV_NAME_PATTERN = r"^[A-Z][A-Z0-9_]*$"
+
+
+EnvName = Annotated[str, Field(pattern=ENV_NAME_PATTERN)]
 
 
 class Strict(BaseModel):
@@ -127,12 +131,12 @@ class PersistenceMode(StrEnum):
 
 class PersistenceConfig(Strict):
     mode: PersistenceMode
-    database_url_env: str
+    database_url_env: EnvName
 
 
 class ObservabilityConfig(Strict):
     enabled: bool
-    otlp_endpoint_env: str
+    otlp_endpoint_env: EnvName
     trace_sample_ratio: float = Field(ge=0, le=1)
     metric_export_interval_ms: int = Field(gt=0)
     log_level: str
@@ -154,8 +158,8 @@ class RateLimitPolicy(Strict):
 
 class CoordinationConfig(Strict):
     mode: CoordinationMode
-    cache_url_env: str
-    coord_url_env: str
+    cache_url_env: EnvName
+    coord_url_env: EnvName
     key_prefix: str
     environment: str
     socket_timeout_seconds: float = Field(gt=0)
@@ -237,7 +241,7 @@ class MatchingConfig(Strict):
     model: str
     effort: Effort
     max_tokens: int = Field(gt=0)
-    api_key_env: str
+    api_key_env: EnvName
     prompt_file: str
     rules_version: str
     min_score: int = Field(ge=0, le=100)
@@ -249,7 +253,7 @@ class MatchingConfig(Strict):
 
 
 class WorkersConfig(Strict):
-    temporal_address_env: str
+    temporal_address_env: EnvName
     namespace: str
     discovery_task_queue: str
     discovery_workflow_id: str
@@ -345,7 +349,7 @@ class ProfileConfig(Strict):
 
 class SubmissionConfig(Strict):
     delivery_mode: DeliveryMode
-    smtp_host_env: str
+    smtp_host_env: EnvName
     smtp_default_host: str
     smtp_port: int = Field(gt=0)
     smtp_timeout_seconds: float = Field(gt=0)
@@ -388,8 +392,8 @@ class MailConfig(Strict):
     smtp_port: int = Field(gt=0)
     smtp_security: SmtpSecurity
     smtp_timeout_seconds: float = Field(gt=0)
-    smtp_user_env: str
-    smtp_password_env: str
+    smtp_user_env: EnvName
+    smtp_password_env: EnvName
     sandbox_only_domains: list[str]
 
 
