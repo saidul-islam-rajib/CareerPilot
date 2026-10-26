@@ -1,12 +1,16 @@
+from collections.abc import AsyncGenerator
 from typing import Annotated, cast
 
 from fastapi import Depends, Query, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from starlette.concurrency import run_in_threadpool
 
 from careerpilot.administration.context import FIRST_PAGE, AdminActor, PageRequest
 from careerpilot.api.common import bearer_token
 from careerpilot.bootstrap import Container
 from careerpilot.candidate.models import UserSummary
+from careerpilot.platform.enums import ActorType
+from careerpilot.platform.persistence import Actor, acting_as
 
 bearer = HTTPBearer(auto_error=False)
 Credentials = Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)]
@@ -19,12 +23,16 @@ def get_container(request: Request) -> Container:
 Services = Annotated[Container, Depends(get_container)]
 
 
-def current_user(services: Services, credentials: Credentials) -> UserSummary:
-    return services.auth.authenticate(bearer_token(credentials))
+async def current_user(services: Services, credentials: Credentials) -> AsyncGenerator[UserSummary]:
+    user = await run_in_threadpool(services.auth.authenticate, bearer_token(credentials))
+    with acting_as(Actor(user.id, ActorType.USER)):
+        yield user
 
 
-def current_admin(services: Services, credentials: Credentials) -> AdminActor:
-    return services.admin_auth.authenticate(bearer_token(credentials))
+async def current_admin(services: Services, credentials: Credentials) -> AsyncGenerator[AdminActor]:
+    admin = await run_in_threadpool(services.admin_auth.authenticate, bearer_token(credentials))
+    with acting_as(Actor(admin.summary.id, ActorType.ADMIN)):
+        yield admin
 
 
 def page_request(

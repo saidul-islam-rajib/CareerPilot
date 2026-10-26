@@ -1,10 +1,14 @@
 from datetime import timedelta
 
 import pytest
+from fastapi.testclient import TestClient
 
+from careerpilot.administration.adapters.sql import PLATFORM_SETTINGS_ID, PlatformSettingsRow
 from careerpilot.administration.context import PageRequest
+from careerpilot.api.admin_app import create_admin_app
+from careerpilot.api.user_app import create_user_app
 from careerpilot.bootstrap import Container, ContainerOverrides, build_container
-from careerpilot.candidate.adapters.sql import SqlAccountRepository, UserAccountRow
+from careerpilot.candidate.adapters.sql import CandidateWorkspaceRow, SqlAccountRepository, UserAccountRow
 from careerpilot.candidate.models import UserSummary
 from careerpilot.candidate.ports import Account
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
@@ -97,3 +101,24 @@ def test_services_work_on_the_database(database_container: Container) -> None:
     container.admin_settings.update(admin, {"active_theme": ThemeKey.ORCHID})
     assert container.public_config.get()["theme"] == "orchid"
     assert container.admin_audit.list(admin, PageRequest(page_size=5)).items[0].action == "settings.updated"
+
+
+def test_requests_stamp_rows_with_the_user_or_admin_who_made_the_change(database_container: Container) -> None:
+    credentials = {"email": "admin@sober.com", "password": "admin@sober.com"}
+    user_client = TestClient(create_user_app(database_container))
+    user_token = user_client.post("/v1/auth/sign-in", json=credentials).json()["accessToken"]
+    user_client.patch("/v1/settings/notifications", headers={"Authorization": f"Bearer {user_token}"}, json={"digestTime": "07:15"})
+    admin_client = TestClient(create_admin_app(database_container))
+    admin_session = admin_client.post("/admin/v1/auth/sign-in", json=credentials).json()
+    admin_client.patch(
+        "/admin/v1/settings", headers={"Authorization": f"Bearer {admin_session['accessToken']}"}, json={"activeTheme": "horizon"}
+    )
+    admin_id = admin_session["admin"]["id"]
+    database = database_container.database
+    assert database is not None
+    with database.unit_of_work() as session:
+        workspace = session.get(CandidateWorkspaceRow, DEMO_USER)
+        platform = session.get(PlatformSettingsRow, PLATFORM_SETTINGS_ID)
+        assert workspace is not None and platform is not None
+        assert (workspace.updated_by, workspace.updated_by_type) == (DEMO_USER, "user")
+        assert (platform.updated_by, platform.updated_by_type) == (admin_id, "admin")
