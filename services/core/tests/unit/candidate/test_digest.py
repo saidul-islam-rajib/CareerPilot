@@ -39,7 +39,7 @@ def test_digest_is_sent_once_a_day_after_the_chosen_time(app: Container, sender:
     assert app.digests.send_due() >= 1
     email = next(e for e in sender.sent if e.to == "admin@sober.com")
     assert email.subject == "Your CareerPilot update for 20 Oct 2026"
-    assert email.body.startswith("Hello Ayesha Rahman,")
+    assert email.body.startswith("Hello Ayesha Rahman,\n\n")
     assert "Waiting for your approval (" in email.body
     assert "• Senior Frontend Engineer at Northwind Labs – approve by" in email.body
     assert "Open CareerPilot: http://localhost:3000" in email.body

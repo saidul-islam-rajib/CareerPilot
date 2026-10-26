@@ -180,7 +180,7 @@ class DigestService:
         return self._limited("digest.closingSoon", lines)
 
     def _body(self, name: str, sections: list[DigestSection]) -> str:
-        parts = [translate("digest.greeting", {"name": name})]
+        parts = [translate("digest.greeting", {"name": name}), ""]
         for section in sections:
             parts.append(translate(section.title_key, {"count": section.total}))
             parts.extend(f"{BULLET}{line}" for line in section.lines)
