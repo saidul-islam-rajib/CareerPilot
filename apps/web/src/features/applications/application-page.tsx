@@ -33,8 +33,8 @@ export function ApplicationPage() {
   const a = application.data;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
-      <div className="flex flex-col gap-6">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="flex min-w-0 flex-col gap-6">
         <PageHeader title={a.opportunity.title} description={`${a.opportunity.organization} · ${a.opportunity.location}`} />
         <FollowUpsSection application={a} />
         <Section title={t('applications.timeline')}>

@@ -116,7 +116,7 @@ function TaskRow({ applicationId, task, onEdit }: { applicationId: string; task:
           <p className="flex min-w-0 items-center gap-1 text-sm">
             <MapPin className="size-4 shrink-0 text-muted" aria-hidden />
             {WEB_LINK.test(task.location) ? (
-              <a href={task.location} target="_blank" rel="noopener noreferrer" className="truncate text-primary underline-offset-2 hover:underline">
+              <a href={task.location} target="_blank" rel="noopener noreferrer" className="min-w-0 truncate text-primary underline-offset-2 hover:underline">
                 {task.location}
               </a>
             ) : (
