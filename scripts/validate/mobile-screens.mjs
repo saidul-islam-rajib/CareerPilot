@@ -37,6 +37,14 @@ const screens = [
   ['about', '/settings/about'],
   ['licences', '/settings/licences'],
   ['delete-account', '/settings/delete-account'],
+  ['notifications', '/settings/notifications'],
+  ['password', '/settings/password'],
+  ['answers', '/settings/answers'],
+  ['answer', '/settings/answer'],
+  ['edit-basics', '/profile/basics'],
+  ['edit-skills', '/profile/skills'],
+  ['follow-up', '/follow-up?applicationId=app_bay'],
+  ['outcome', '/outcome?id=app_bay'],
 ];
 
 await new Promise((resolve) => server.listen(port, resolve));
@@ -47,11 +55,20 @@ const errors = [];
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 page.on('pageerror', (e) => errors.push(e.message));
 const base = `http://localhost:${port}`;
+const unmatched = [];
+let shots = 0;
 const shot = async (name) => {
   await page.waitForTimeout(Number(process.env.SETTLE_MS ?? 1200));
+  if (await page.getByTestId('expo-router-unmatched').count()) {
+    unmatched.push(`${name} (${new URL(page.url()).pathname})`);
+  }
   await page.screenshot({ path: path.join(outDir, `${name}.png`), fullPage: true });
+  shots += 1;
 };
 
+await page.goto(`${base}/`);
+await page.waitForURL(`${base}/welcome`, { timeout: 15000 }).catch(() => undefined);
+await shot('signed-out-root');
 await page.goto(`${base}/welcome`);
 await shot('welcome');
 await page.goto(`${base}/register`);
@@ -66,7 +83,15 @@ for (const [name, route] of screens) {
   await page.goto(`${base}${route}`);
   await shot(name);
 }
+await page.goto(`${base}/more`);
+await page.getByText('Sign out', { exact: true }).click();
+await page.waitForURL(`${base}/welcome`, { timeout: 15000 }).catch(() => undefined);
+await shot('signed-out');
 await browser.close();
 server.close();
 fs.writeFileSync(path.join(outDir, 'console-errors.txt'), errors.join('\n'));
-console.log(`screens: ${screens.length + 2}, console errors: ${errors.length}`);
+console.log(`screens: ${shots}, console errors: ${errors.length}, unmatched routes: ${unmatched.length}`);
+if (unmatched.length > 0) {
+  console.log(`unmatched: ${unmatched.join(', ')}`);
+  process.exitCode = 1;
+}
