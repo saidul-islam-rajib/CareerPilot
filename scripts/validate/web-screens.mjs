@@ -34,6 +34,8 @@ const profiles = {
       ['tracks', '/settings/tracks'],
       ['pause', '/settings/pause'],
       ['window', '/settings/window'],
+      ['notifications', '/settings/notifications'],
+      ['password', '/settings/password'],
       ['activity', '/settings/activity'],
       ['about', '/settings/about'],
       ['licences', '/settings/licences'],
