@@ -12,4 +12,5 @@ export const queryKeys = {
   profile: ['profile'] as const,
   settings: ['settings'] as const,
   signInActivity: ['sign-in-activity'] as const,
+  questionBank: ['question-bank'] as const,
 };

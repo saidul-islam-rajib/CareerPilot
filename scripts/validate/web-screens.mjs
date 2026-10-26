@@ -36,6 +36,7 @@ const profiles = {
       ['window', '/settings/window'],
       ['notifications', '/settings/notifications'],
       ['password', '/settings/password'],
+      ['answers', '/settings/answers'],
       ['activity', '/settings/activity'],
       ['about', '/settings/about'],
       ['licences', '/settings/licences'],

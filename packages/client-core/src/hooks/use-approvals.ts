@@ -23,6 +23,7 @@ function useApprovalMutation<TArgs>(id: string, run: (args: TArgs) => Promise<Ap
         client.invalidateQueries({ queryKey: queryKeys.approvals }),
         client.invalidateQueries({ queryKey: queryKeys.dashboard }),
         client.invalidateQueries({ queryKey: queryKeys.applicationsAll }),
+        client.invalidateQueries({ queryKey: queryKeys.questionBank }),
       ]);
     },
   });
@@ -31,7 +32,9 @@ function useApprovalMutation<TArgs>(id: string, run: (args: TArgs) => Promise<Ap
 export function useApprovalActions(id: string) {
   const api = useApi();
   return {
-    updateAnswer: useApprovalMutation(id, ({ answerId, answer }: { answerId: string; answer: string }) => api.approvals.updateAnswer(id, answerId, answer)),
+    updateAnswer: useApprovalMutation(id, ({ answerId, answer, saveForReuse = false }: { answerId: string; answer: string; saveForReuse?: boolean }) =>
+      api.approvals.updateAnswer(id, answerId, answer, saveForReuse),
+    ),
     approve: useApprovalMutation(id, () => api.approvals.approve(id)),
     reject: useApprovalMutation(id, () => api.approvals.reject(id)),
   };

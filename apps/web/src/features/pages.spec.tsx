@@ -151,3 +151,20 @@ describe('Application follow-ups', () => {
     expect(within(dialog).getByLabelText('Date')).toHaveValue('2026-11-04');
   });
 });
+
+describe('Approval questions', () => {
+  it('blocks approval until every question has an answer and can save the answer for reuse', async () => {
+    const user = userEvent.setup();
+    const { services } = renderWithProviders(<ApprovalPage />, { params: { id: 'apr_oslo' } });
+    expect(await screen.findByText('Answer every question before approving.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Approve and send' })).toBeDisabled();
+    expect(screen.getByText('Needs your answer')).toBeInTheDocument();
+    const field = screen.getByLabelText('Edit answer');
+    await user.type(field, 'Yes');
+    await user.click(screen.getByRole('checkbox', { name: 'Save this answer for similar questions' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Approve and send' })).toBeEnabled());
+    const bank = await services.api.answers.getQuestionBank();
+    expect(bank.saved.map((a) => a.question)).toContain('Are you willing to relocate to Oslo?');
+  });
+});

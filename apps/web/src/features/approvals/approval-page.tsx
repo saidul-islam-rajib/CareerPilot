@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { CheckCircle2, FileText, ShieldCheck, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, FileText, ShieldCheck, XCircle } from 'lucide-react';
 import { useApproval, useApprovalActions, useFormat, useT } from '@careerpilot/client-core';
 import { ApprovalState, EnumKey, StatusTone } from '@careerpilot/domain-ui-logic';
 import { Banner, Button, Card, ConfirmDialog, EnumBadge, ErrorState, ListRow, LoadingState, PageHeader, Section, buttonVariants } from '@careerpilot/ui-web';
@@ -25,6 +25,7 @@ export function ApprovalPage() {
   }
   const a = approval.data;
   const pending = a.state === ApprovalState.Pending;
+  const unanswered = a.materials.answers.some((item) => !item.answer.trim());
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
@@ -53,7 +54,7 @@ export function ApprovalPage() {
           <Section title={t('approvals.answers')}>
             <Card className="divide-y divide-border py-1">
               {a.materials.answers.map((item) => (
-                <AnswerEditor key={item.id} item={item} editable={pending} saving={actions.updateAnswer.isPending} onSave={(answer) => actions.updateAnswer.mutate({ answerId: item.id, answer })} />
+                <AnswerEditor key={item.id} item={item} editable={pending} saving={actions.updateAnswer.isPending} onSave={(answer, saveForReuse) => actions.updateAnswer.mutate({ answerId: item.id, answer, saveForReuse })} />
               ))}
             </Card>
           </Section>
@@ -67,13 +68,14 @@ export function ApprovalPage() {
         </Card>
         {pending ? (
           <>
+            {unanswered ? <Banner tone={StatusTone.Warning} icon={AlertTriangle} title={t('approvals.unansweredQuestions')} /> : null}
             <ConfirmDialog
               title={t('approvals.confirmApproveTitle')}
               body={t('approvals.confirmApproveBody', { employer: a.opportunity.organization })}
               confirmLabel={t('common.confirm')}
               onConfirm={() => actions.approve.mutate()}
               trigger={
-                <Button icon={CheckCircle2} fullWidth loading={actions.approve.isPending}>
+                <Button icon={CheckCircle2} fullWidth loading={actions.approve.isPending} disabled={unanswered}>
                   {t('approvals.approveAndSend')}
                 </Button>
               }

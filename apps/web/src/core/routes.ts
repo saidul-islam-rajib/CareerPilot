@@ -16,6 +16,7 @@ export const Routes = {
   pause: '/settings/pause',
   submissionWindow: '/settings/window',
   notifications: '/settings/notifications',
+  answers: '/settings/answers',
   changePassword: '/settings/password',
   activity: '/settings/activity',
   about: '/settings/about',
