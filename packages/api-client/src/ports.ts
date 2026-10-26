@@ -1,4 +1,4 @@
-import type { OpportunityDecision } from '@careerpilot/domain-ui-logic';
+import type { OpportunityDecision, PhotoCrop } from '@careerpilot/domain-ui-logic';
 import type { EntryValue } from '@careerpilot/dynamic-forms';
 import type {
   ApplicationFilter,
@@ -68,6 +68,7 @@ export interface ProfileApi {
   getProfile(): Promise<Profile>;
   updateBasics(changes: BasicsChanges): Promise<Profile>;
   setPhoto(file: UploadSource): Promise<Profile>;
+  setPhotoCrop(crop: PhotoCrop): Promise<Profile>;
   removePhoto(): Promise<Profile>;
   addContact(input: ContactInput): Promise<Profile>;
   updateContact(id: string, changes: ContactChanges): Promise<Profile>;

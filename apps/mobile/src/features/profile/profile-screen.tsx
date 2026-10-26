@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Pressable, View } from 'react-native';
-import { BadgeCheck, Camera, ChevronRight, FileText, Mail, MapPin, Pencil, Phone, Plus, Sparkles, Trash2, Upload, UserRound, type LucideIcon } from 'lucide-react-native';
+import { BadgeCheck, Camera, ChevronRight, Crop, FileText, Mail, MapPin, Pencil, Phone, Plus, Sparkles, Trash2, Upload, UserRound, type LucideIcon } from 'lucide-react-native';
 import type { Contact, Profile, ProfileDocument, ProfileEntry } from '@careerpilot/api-client';
 import {
   sortContacts,
@@ -173,7 +173,7 @@ function useUploadNewDocument() {
 }
 
 function useChangePhoto() {
-  const t = useT();
+  const router = useRouter();
   const feedback = useProfileFeedback();
   const rules = useUploadRules();
   const setPhoto = useSetPhoto();
@@ -187,7 +187,7 @@ function useChangePhoto() {
       feedback.rejected(rejection, rules.photos.params);
       return;
     }
-    setPhoto.mutate(source, { onSuccess: () => feedback.saved(t('profile.photoUpdated')), onError: (failure) => feedback.failed(failure, rules.photos.params) });
+    setPhoto.mutate(source, { onSuccess: () => router.push(Routes.photoCrop), onError: (failure) => feedback.failed(failure, rules.photos.params) });
   };
   return { start, isPending: setPhoto.isPending };
 }
@@ -210,10 +210,11 @@ function Header({ profile, onNext }: { profile: Profile; onNext: (key: string) =
           disabled={!profile.photoUrl}
           onPress={() => profile.photoUrl && router.push(Routes.viewer(profile.photoUrl, t('profile.photo')))}
         >
-          <Avatar name={profile.fullName} uri={profile.photoUrl} size={avatarSize} />
+          <Avatar name={profile.fullName} uri={profile.photoUrl} crop={profile.photoCrop} size={avatarSize} />
         </Pressable>
         <Row gap={theme.space.xs} wrap>
           <Button label={t(profile.photoUrl ? 'profile.changePhoto' : 'profile.addPhoto')} icon={Camera} variant={ButtonVariant.Ghost} onPress={() => void changePhoto.start()} loading={changePhoto.isPending} />
+          {profile.photoUrl ? <Button label={t('profile.adjustPhoto')} icon={Crop} variant={ButtonVariant.Ghost} onPress={() => router.push(Routes.photoCrop)} /> : null}
           {profile.photoUrl ? (
             <Button label={t('profile.removePhoto')} icon={Trash2} variant={ButtonVariant.Ghost} onPress={() => removePhoto.mutate(undefined, { onError: (failure) => feedback.failed(failure) })} />
           ) : null}

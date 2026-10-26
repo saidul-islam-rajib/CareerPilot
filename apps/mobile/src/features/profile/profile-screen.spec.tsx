@@ -4,6 +4,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { mockParams, mockRouter, renderWithProviders } from '@/test/render';
 import { DocumentScreen } from './document-screen';
 import { EntryScreen } from './entry-screen';
+import { PhotoCropScreen } from './photo-crop-screen';
 import { EditContactScreen, EditSkillsScreen } from './profile-edit-screens';
 import { ProfileScreen } from './profile-screen';
 import { ViewerScreen } from './viewer-screen';
@@ -56,6 +57,7 @@ describe('ProfileScreen', () => {
     launchLibrary.mockResolvedValueOnce({ canceled: false, assets: [{ uri: 'file:///cache/me.jpg', fileName: 'me.jpg', mimeType: 'image/jpeg', fileSize: 4096 }] });
     fireEvent.press(await screen.findByLabelText('Change photo'));
     await waitFor(async () => expect((await services.api.profile.getProfile()).photoUrl).toBe('file:///cache/me.jpg'));
+    await waitFor(() => expect(mockRouter.push).toHaveBeenCalledWith('/profile/photo'));
   });
 
   it('opens the photo viewer', async () => {
@@ -137,5 +139,19 @@ describe('ViewerScreen', () => {
     fireEvent.press(screen.getByLabelText('Reset zoom'));
     fireEvent.press(screen.getByLabelText('Close'));
     expect(mockRouter.back).toHaveBeenCalled();
+  });
+});
+
+describe('PhotoCropScreen', () => {
+  it('zooms in on the face and saves what the circle shows', async () => {
+    const { services } = renderWithProviders(<PhotoCropScreen />);
+    fireEvent(await screen.findByTestId('photo-crop-image'), 'load', { nativeEvent: { source: { width: 600, height: 1200 } } });
+    for (let step = 0; step < 12; step += 1) {
+      fireEvent.press(screen.getByTestId('photo-zoom-in'));
+    }
+    fireEvent.press(screen.getByLabelText('Move photo down'));
+    fireEvent.press(screen.getByTestId('photo-crop-save'));
+    await waitFor(async () => expect((await services.api.profile.getProfile()).photoCrop).toEqual({ x: 0.375, y: 0.435, width: 0.25, height: 0.125 }));
+    await waitFor(() => expect(mockRouter.back).toHaveBeenCalled());
   });
 });

@@ -1,4 +1,4 @@
-import { CompletenessKind, ContactKind, DocumentKind, enumValues, type EnumKey } from '@careerpilot/domain-ui-logic';
+import { CompletenessKind, ContactKind, DocumentKind, enumValues, type EnumKey, type PhotoCrop } from '@careerpilot/domain-ui-logic';
 import { cleanMultiline, cleanText, normalizeSkills, validateEntry, type EntryValue, type SectionDefinition } from '@careerpilot/dynamic-forms';
 import { ApiError, ApiErrorCode } from '../errors';
 import type { Clock, IdGenerator, ProfileApi } from '../ports';
@@ -43,6 +43,21 @@ export interface ProfileStoreOptions {
 
 function invalid(detail: string): never {
   throw new ApiError(ApiErrorCode.Validation, 422, detail);
+}
+
+const CROP_TOLERANCE = 1e-6;
+const CROP_PRECISION = 6;
+
+function checkedCrop(crop: PhotoCrop): PhotoCrop {
+  const fitsX = crop.x >= -CROP_TOLERANCE && crop.width > 0 && crop.x + crop.width <= 1 + CROP_TOLERANCE;
+  const fitsY = crop.y >= -CROP_TOLERANCE && crop.height > 0 && crop.y + crop.height <= 1 + CROP_TOLERANCE;
+  if (!fitsX || !fitsY) {
+    invalid('photo_crop');
+  }
+  const x = Math.max(0, crop.x);
+  const y = Math.max(0, crop.y);
+  const round = (value: number) => Number(value.toFixed(CROP_PRECISION));
+  return { x: round(x), y: round(y), width: round(Math.min(crop.width, 1 - x)), height: round(Math.min(crop.height, 1 - y)) };
 }
 
 function missing(detail: string): never {
@@ -211,10 +226,19 @@ export function createProfileStore(options: ProfileStoreOptions): ProfileApi {
     setPhoto: (file) =>
       run(() => {
         profile.photoUrl = stored(file, settings.uploads.photoTypes, settings.uploads.maxPhotoBytes).url;
+        delete profile.photoCrop;
+      }),
+    setPhotoCrop: (crop) =>
+      run(() => {
+        if (!profile.photoUrl) {
+          missing('photo');
+        }
+        profile.photoCrop = checkedCrop(crop);
       }),
     removePhoto: () =>
       run(() => {
         delete profile.photoUrl;
+        delete profile.photoCrop;
       }),
     addContact: (input) =>
       run(() => {

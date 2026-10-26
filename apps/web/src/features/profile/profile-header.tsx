@@ -1,10 +1,11 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Camera, ChevronRight, MapPin, Pencil, Trash2, UserRound } from 'lucide-react';
+import { Camera, ChevronRight, Crop, MapPin, Pencil, Trash2, UserRound } from 'lucide-react';
 import type { Profile } from '@careerpilot/api-client';
-import { profileErrorKey, useProfileSettings, useRemovePhoto, useSetPhoto, useT, useUpdateBasics } from '@careerpilot/client-core';
-import { Avatar, Button, Card, FormDialog, ImageViewer, OverflowMenu, ProgressRing, TextAreaField, TextField, checkFile } from '@careerpilot/ui-web';
+import type { PhotoCrop } from '@careerpilot/domain-ui-logic';
+import { profileErrorKey, useProfileSettings, useRemovePhoto, useSetPhoto, useSetPhotoCrop, useT, useUpdateBasics } from '@careerpilot/client-core';
+import { Avatar, Button, Card, FormDialog, ImageViewer, OverflowMenu, PhotoCropDialog, ProgressRing, TextAreaField, TextField, checkFile } from '@careerpilot/ui-web';
 import { sectionAnchor, uploadSource, useProfileFeedback, useUploadRules } from './profile-support';
 
 const PERCENT = 100;
@@ -55,7 +56,10 @@ function PhotoEditor({ profile }: { profile: Profile }) {
   const rules = useUploadRules();
   const setPhoto = useSetPhoto();
   const removePhoto = useRemovePhoto();
+  const setCrop = useSetPhotoCrop();
   const picker = useRef<HTMLInputElement>(null);
+  const [adjusting, setAdjusting] = useState(0);
+  const adjust = () => setAdjusting((n) => n + 1);
 
   const onFile = (file: File | undefined) => {
     if (!file) {
@@ -66,10 +70,19 @@ function PhotoEditor({ profile }: { profile: Profile }) {
       feedback.rejected(rules.rejectionKey(rejection), rules.photos.params);
       return;
     }
-    setPhoto.mutate(uploadSource(file), { onSuccess: () => feedback.saved(t('profile.photoUpdated')), onError: (error) => feedback.failed(error, rules.photos.params) });
+    setPhoto.mutate(uploadSource(file), { onSuccess: adjust, onError: (error) => feedback.failed(error, rules.photos.params) });
   };
 
-  const avatar = <Avatar name={profile.fullName} src={profile.photoUrl} className="size-28 md:size-32" />;
+  const saveCrop = (crop: PhotoCrop) =>
+    setCrop.mutate(crop, {
+      onSuccess: () => {
+        setAdjusting(0);
+        feedback.saved(t('profile.photoUpdated'));
+      },
+      onError: (error) => feedback.failed(error),
+    });
+
+  const avatar = <Avatar name={profile.fullName} src={profile.photoUrl} crop={profile.photoCrop} className="size-28 md:size-32" />;
   return (
     <div className="relative shrink-0">
       {profile.photoUrl ? (
@@ -97,6 +110,7 @@ function PhotoEditor({ profile }: { profile: Profile }) {
             variant="primary"
             triggerClassName="rounded-full shadow-md"
             items={[
+              { label: t('profile.adjustPhoto'), icon: Crop, onSelect: adjust },
               { label: t('profile.changePhoto'), icon: Camera, onSelect: () => picker.current?.click() },
               { label: t('profile.removePhoto'), icon: Trash2, onSelect: () => removePhoto.mutate(undefined, { onError: (error) => feedback.failed(error) }), destructive: true },
             ]}
@@ -105,6 +119,17 @@ function PhotoEditor({ profile }: { profile: Profile }) {
           <Button variant="primary" size="icon" icon={Camera} loading={setPhoto.isPending} aria-label={t('profile.addPhoto')} onClick={() => picker.current?.click()} className="rounded-full" />
         )}
       </div>
+      {adjusting > 0 && profile.photoUrl ? (
+        <PhotoCropDialog
+          key={adjusting}
+          open
+          onOpenChange={(open) => !open && setAdjusting(0)}
+          src={profile.photoUrl}
+          crop={profile.photoCrop}
+          saving={setCrop.isPending}
+          onSave={saveCrop}
+        />
+      ) : null}
     </div>
   );
 }

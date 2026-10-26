@@ -14,6 +14,7 @@ export const Routes = {
   circular: (opportunityId: string) => ({ pathname: '/circular/[opportunityId]', params: { opportunityId } }) as const,
   viewer: (uri: string, title: string) => ({ pathname: '/viewer', params: { uri, title } }) as const,
   editBasics: '/profile/basics',
+  photoCrop: '/profile/photo',
   editSkills: '/profile/skills',
   editContact: (id?: string) => ({ pathname: '/profile/contact', params: id ? { id } : {} }) as const,
   editEntry: (section: string, id?: string) => ({ pathname: '/profile/entry', params: id ? { section, id } : { section } }) as const,

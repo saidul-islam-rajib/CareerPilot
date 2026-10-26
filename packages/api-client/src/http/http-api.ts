@@ -62,6 +62,7 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       getProfile: () => get('/v1/profile'),
       updateBasics: (changes) => patch('/v1/profile', changes),
       setPhoto: (file) => put('/v1/profile/photo', uploadForm(file)),
+      setPhotoCrop: (crop) => put('/v1/profile/photo/crop', crop),
       removePhoto: () => del('/v1/profile/photo'),
       addContact: (input) => post('/v1/profile/contacts', input),
       updateContact: (id, changes) => patch(`/v1/profile/contacts/${enc(id)}`, changes),

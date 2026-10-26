@@ -20,6 +20,7 @@ export * from './document-viewer';
 export * from './file-drop-zone';
 export * from './form-dialog';
 export * from './overflow-menu';
+export * from './photo-crop-dialog';
 export * from './progress-ring';
 export * from './select-field';
 export * from './tag-input';

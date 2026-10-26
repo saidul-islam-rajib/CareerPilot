@@ -135,4 +135,28 @@ describe('ProfilePage', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Zoom in' }));
     expect(within(dialog).getByText('200%')).toBeInTheDocument();
   });
+
+  it('lets the user choose which part of the photo shows in the circle', async () => {
+    const user = userEvent.setup();
+    const { services } = await renderProfile();
+    await chooseMenuItem(user, 'Change photo', 'Adjust photo');
+    const dialog = await screen.findByRole('dialog', { name: 'Adjust photo' });
+    const image = dialog.querySelector('img');
+    if (!image) {
+      throw new Error('expected the photo in the editor');
+    }
+    Object.defineProperty(image, 'naturalWidth', { value: 600 });
+    Object.defineProperty(image, 'naturalHeight', { value: 1200 });
+    fireEvent.load(image);
+    const zoom = within(dialog).getByRole('slider', { name: 'Zoom' });
+    fireEvent.change(zoom, { target: { value: '4' } });
+    const frame = within(dialog).getByRole('group', { name: /Photo position/ });
+    for (let step = 0; step < 200; step += 1) {
+      fireEvent.keyDown(frame, { key: 'ArrowDown' });
+    }
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await waitFor(async () => expect((await services.api.profile.getProfile()).photoCrop).toEqual({ x: 0.375, y: 0, width: 0.25, height: 0.125 }));
+    expect(await screen.findByText('Photo updated')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Adjust photo' })).not.toBeInTheDocument();
+  });
 });

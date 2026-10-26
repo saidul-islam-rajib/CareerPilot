@@ -48,6 +48,17 @@ describe('in-memory profile store', () => {
     expect(restored.contacts.at(-1)?.id).toBe('c_email_work');
   });
 
+  it('frames the photo with the same rules as the server', async () => {
+    const api = createTestApi();
+    const crop = { x: 0.25, y: 0, width: 0.5, height: 0.25 };
+    expect((await api.profile.setPhotoCrop(crop)).photoCrop).toEqual(crop);
+    expect((await failure(api.profile.setPhotoCrop({ x: 0.75, y: 0, width: 0.5, height: 0.5 }))).detail).toBe('photo_crop');
+    const replaced = await api.profile.setPhoto({ name: 'me.png', type: 'image/png', size: 1_024, blob: new Blob(['png'], { type: 'image/png' }) });
+    expect(replaced.photoCrop).toBeUndefined();
+    await api.profile.removePhoto();
+    expect(await failure(api.profile.setPhotoCrop(crop))).toEqual({ code: ApiErrorCode.NotFound, detail: 'photo' });
+  });
+
   it('cleans skills and rejects overly long ones', async () => {
     const api = createTestApi();
     expect((await api.profile.setSkills([' Go ', 'go', 'Rust'])).skills).toEqual(['Go', 'Rust']);

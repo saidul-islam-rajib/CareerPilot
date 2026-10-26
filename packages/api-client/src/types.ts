@@ -12,6 +12,7 @@ import type {
   OpportunityType,
   OutcomeStatus,
   PauseDuration,
+  PhotoCrop,
   PauseScope,
   RequirementCheck,
   SponsorshipEvidence,
@@ -292,6 +293,7 @@ export interface Profile {
   location: string;
   summary: string;
   photoUrl?: string;
+  photoCrop?: PhotoCrop;
   signatureUrl?: string;
   completeness: number;
   completenessItems: CompletenessItem[];

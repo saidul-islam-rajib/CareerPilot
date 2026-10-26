@@ -14,7 +14,7 @@ import {
   type ProfileEntry,
   type UploadSource,
 } from '@careerpilot/api-client';
-import { moveItem, type EnumKey } from '@careerpilot/domain-ui-logic';
+import { moveItem, type EnumKey, type PhotoCrop } from '@careerpilot/domain-ui-logic';
 import type { EntryValue, SectionDefinition, ValidationContext } from '@careerpilot/dynamic-forms';
 import { useEnumDisplay, usePublicConfig } from '../config/public-config';
 import { queryKeys } from '../query/query-keys';
@@ -102,6 +102,10 @@ export function useUpdateBasics() {
 
 export function useSetPhoto() {
   return useProfileMutation((api, file: UploadSource) => api.profile.setPhoto(file));
+}
+
+export function useSetPhotoCrop() {
+  return useProfileMutation((api, crop: PhotoCrop) => api.profile.setPhotoCrop(crop));
 }
 
 export function useRemovePhoto() {

@@ -20,9 +20,17 @@ export function Section({ title, action, children }: { title: string; action?: R
   );
 }
 
-export function Row({ children, gap, wrap = false, align = 'center' }: { children: ReactNode; gap?: number; wrap?: boolean; align?: 'center' | 'flex-start' }) {
+export interface RowProps {
+  children: ReactNode;
+  gap?: number;
+  wrap?: boolean;
+  align?: 'center' | 'flex-start';
+  justify?: 'flex-start' | 'center' | 'space-between';
+}
+
+export function Row({ children, gap, wrap = false, align = 'center', justify = 'flex-start' }: RowProps) {
   const theme = useTheme();
-  return <View style={{ flexDirection: 'row', alignItems: align, gap: gap ?? theme.space.sm, flexWrap: wrap ? 'wrap' : 'nowrap' }}>{children}</View>;
+  return <View style={{ flexDirection: 'row', alignItems: align, justifyContent: justify, gap: gap ?? theme.space.sm, flexWrap: wrap ? 'wrap' : 'nowrap' }}>{children}</View>;
 }
 
 export function Divider() {

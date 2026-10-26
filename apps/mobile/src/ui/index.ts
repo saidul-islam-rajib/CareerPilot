@@ -5,6 +5,7 @@ export * from './button';
 export * from './card';
 export * from './checkbox';
 export * from './icon';
+export * from './icon-button';
 export * from './layout';
 export * from './screen';
 export * from './segmented';

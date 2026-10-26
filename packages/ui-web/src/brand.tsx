@@ -1,4 +1,4 @@
-import { initials } from '@careerpilot/domain-ui-logic';
+import { cropPlacement, initials, type PhotoCrop } from '@careerpilot/domain-ui-logic';
 import { opacity } from '@careerpilot/ui-tokens';
 import { usePublicConfig, useT } from '@careerpilot/client-core';
 import { cn } from './cn';
@@ -46,7 +46,21 @@ export function TeamSoberCredit({ logoSrc, compact = false }: { logoSrc: string;
   );
 }
 
-export function Avatar({ name, src, className }: { name: string; src?: string; className?: string }) {
+export function Avatar({ name, src, crop, className }: { name: string; src?: string; crop?: PhotoCrop; className?: string }) {
+  if (src && crop) {
+    const place = cropPlacement(crop);
+    return (
+      <span role="img" aria-label={name} className={cn('relative block size-24 shrink-0 overflow-hidden rounded-full bg-neutral-subtle', className)}>
+        <img
+          src={src}
+          alt=""
+          draggable={false}
+          className="absolute max-w-none select-none"
+          style={{ width: `${place.width}%`, height: `${place.height}%`, left: `${place.left}%`, top: `${place.top}%` }}
+        />
+      </span>
+    );
+  }
   return src ? (
     <img src={src} alt={name} className={cn('size-24 rounded-full object-cover', className)} />
   ) : (
