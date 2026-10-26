@@ -23,6 +23,7 @@
   --color-neutral: var(--cp-neutral);
   --color-neutral-subtle: var(--cp-neutral-subtle);
   --color-overlay: var(--cp-overlay);
+  --color-viewer: var(--cp-viewer-backdrop);
   --color-focus: var(--cp-focus-ring);
   --radius-control: var(--cp-radius-control);
   --radius-card: var(--cp-radius-card);

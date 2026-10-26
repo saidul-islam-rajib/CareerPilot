@@ -6,6 +6,8 @@ import { Segmented } from './segmented';
 import { SortableList } from './sortable-list';
 import { Stepper } from './stepper';
 import { TextField } from './text-field';
+import { AppTheme, ThemeScope } from './theme';
+import { themes } from '@careerpilot/ui-tokens';
 
 describe('ui-web helpers', () => {
   it('splits templates and clamps zoom', () => {
@@ -58,5 +60,22 @@ describe('ui-web components', () => {
     expect(screen.getByRole('button', { name: 'Move up: x' })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: 'Move down: x' }));
     expect(onReorder).toHaveBeenCalledWith(0, 1);
+  });
+});
+
+describe('themes', () => {
+  it('puts the app theme on the document so dialogs and menus in portals get its colours', () => {
+    const root = document.documentElement;
+    const { unmount } = render(
+      <AppTheme theme={themes.horizon}>
+        <ThemeScope theme={themes.orchid}>preview</ThemeScope>
+      </AppTheme>,
+    );
+    expect(root.dataset.theme).toBe('horizon');
+    expect(root.style.getPropertyValue('--cp-primary')).toBe(themes.horizon.colors.primary);
+    expect(root.style.getPropertyValue('--cp-card')).toBe(themes.horizon.colors.card);
+    expect(root.style.getPropertyValue('--cp-viewer-backdrop')).toBe(themes.horizon.colors.viewerBackdrop);
+    unmount();
+    expect(root.style.getPropertyValue('--cp-primary')).toBe('');
   });
 });

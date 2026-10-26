@@ -27,7 +27,7 @@ export function ViewerScreen() {
   const router = useRouter();
   const zoom = useZoom();
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.overlay }} testID="viewer-screen">
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.viewerBackdrop }} testID="viewer-screen">
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: theme.space.md }}>
         <Text variant={TextVariant.Heading} tone={TextTone.Inverse}>
           {title}

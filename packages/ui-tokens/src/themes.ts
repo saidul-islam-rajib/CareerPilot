@@ -32,6 +32,7 @@ export interface ThemeColors {
   neutral: string;
   neutralSubtle: string;
   overlay: string;
+  viewerBackdrop: string;
   focusRing: string;
 }
 
@@ -57,6 +58,7 @@ const semantic = {
   info: '#0369A1',
   infoSubtle: '#E0F2FE',
   overlay: 'rgba(15, 23, 42, 0.55)',
+  viewerBackdrop: 'rgba(12, 10, 9, 0.92)',
 } as const;
 
 const PILL_RADIUS = 999;

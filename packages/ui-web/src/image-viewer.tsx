@@ -32,7 +32,7 @@ export function ImageViewer({ src, title, trigger }: { src: string; title: strin
     <Dialog.Root onOpenChange={(open) => !open && setZoom(zoomLimits.min)}>
       <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-overlay" />
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-viewer" />
         <Dialog.Content className="fixed inset-0 z-50 flex flex-col p-4" aria-describedby={undefined}>
           <div className="flex items-center justify-between">
             <Dialog.Title className="text-lg font-semibold text-primary-foreground">{title}</Dialog.Title>
