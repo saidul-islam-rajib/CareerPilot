@@ -21,10 +21,10 @@
 
 | Area | Cases |
 |---|---|
-| Registration | Required consent checkbox; consent record (versions, time, IP, device); duplicate email/phone; password policy; verification code expiry and resend limits; minimum age rule |
+| Registration | Required consent checkbox; consent record (versions, time, IP, device); same answer for an existing email (no account enumeration); emailed set-password link expiry, single use, replacement, and resend limits; password policy; registered accounts cannot sign in; verification code expiry and resend limits; minimum age rule |
 | Sign-in | Correct/incorrect credentials; lockout after repeated failures; rate limiting; sign-in history record (IP, device, approximate location, result); new-sign-in alert |
 | MFA and sessions | Enrolment, verification, recovery codes; token refresh and expiry; sign out everywhere; re-authentication for sensitive actions |
-| Password reset | Link expiry, single use, sessions revoked after reset |
+| Password reset | Link expiry, single use, same answer for unknown emails, sessions revoked after reset |
 | Mobile and web auth logic | Token storage wrappers, biometric unlock flow logic, BFF cookie/session handling |
 | Admin | Realm separation, role permissions |
 | Account lifecycle | Suspend/reactivate, deletion request, cancellation in grace period, anonymization logic, soft delete and restore, audit columns set automatically |

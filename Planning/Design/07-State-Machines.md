@@ -157,7 +157,7 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
   [*] --> Registered
-  Registered --> Active: email/phone verified
+  Registered --> Active: password chosen from the emailed link
   Active --> Suspended: admin action
   Suspended --> Active: admin reactivates
   Active --> PendingDeletion: user requests deletion
@@ -165,6 +165,8 @@ stateDiagram-v2
   PendingDeletion --> Deleted: grace period ends, data anonymized
   Deleted --> [*]
 ```
+
+A `Registered` account has no password, cannot sign in, and is skipped by discovery, digests, and automation; opening the single-use emailed link and choosing a password proves the email address and activates it.
 
 All automation stops immediately on entering `Suspended` or `PendingDeletion`.
 

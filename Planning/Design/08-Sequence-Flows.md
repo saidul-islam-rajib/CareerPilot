@@ -13,7 +13,9 @@ sequenceDiagram
   participant TMP
   participant W as AI worker
   participant AI as Claude
-  U->>IdP: Sign up (email/phone, password or passkey, MFA)
+  U->>IdP: Register (full name, email, consent)
+  IdP-->>U: Email with a single-use link to choose a password
+  U->>IdP: Open the link, choose a password (policy), MFA
   IdP-->>U: Tokens (web: via BFF cookie, mobile: secure store)
   U->>API: POST /v1/onboarding (basics, locale, time zone)
   U->>API: POST /v1/documents/uploads (request presigned URL)

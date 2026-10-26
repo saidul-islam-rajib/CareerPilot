@@ -56,7 +56,8 @@ Rules:
 
 | Event | Producer | Main consumers |
 |---|---|---|
-| `identity.user.registered` | Identity | Profile, Notification, Audit |
+| `identity.user.registered` | Identity | Notification (set-password link), Audit |
+| `identity.user.activated` | Identity | Profile, Audit |
 | `identity.user.suspended` / `deletion_requested` / `deleted` | Identity | Automation (stop), Notification, Audit, Ops |
 | `profile.fact.changed` | Profile | Matching, Automation (re-check approvals), Audit |
 | `documents.version.approved` / `expired` | Documents | Automation, Notification |

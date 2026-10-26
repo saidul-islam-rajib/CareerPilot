@@ -46,7 +46,7 @@ erDiagram
   USERS {
     uuid id PK
     uuid tenant_id
-    text status "active|suspended|pending_deletion|deleted"
+    text status "registered|active|paused|suspended|pending_deletion|deleted"
     text locale
     text time_zone
   }

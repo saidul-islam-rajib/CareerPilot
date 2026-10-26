@@ -4,7 +4,7 @@ Requirement IDs: §5.4, §5.5, §6, §10.1, §13, §14, §17.1, §20.2, §28, §
 
 User stories (EARS style):
 
-- When a new user registers, the app shall require the Terms and Privacy consent checkbox and shall record the accepted document versions.
+- When a new user registers, the app shall require the Terms and Privacy consent checkbox and shall record the accepted document versions; the password is chosen from the emailed link (E10).
 - When the user signs in with valid credentials, the app shall store the session in secure storage and open the Today tab.
 - The Today tab shall show counts (new matches, awaiting approval, applied this week, interviews), a pause banner when paused, and matches per track limited by each track's result count.
 - When the user opens an opportunity, the app shall show the match explanation, hard and uncertain requirements separately, compensation, deadline, application route, and the archived circular.
