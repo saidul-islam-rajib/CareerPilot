@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react';
+import { useState, type ReactElement, type ReactNode } from 'react';
 import { type AppConfig, type AppServices, createAppServices, createMemoryStore, parseAppConfig, publicConfigFromDefaults, queryKeys } from '@careerpilot/client-core';
 import { QueryClient } from '@tanstack/react-query';
 import { render, type RenderResult } from '@testing-library/react-native';
@@ -34,16 +34,29 @@ export interface RenderWithServices extends RenderResult {
   services: AppServices;
 }
 
-export async function renderWithProviders(ui: ReactElement, options: RenderOptions = {}): Promise<RenderWithServices> {
-  const store = createMemoryStore(options.signedIn === false ? {} : { 'careerpilot.session': JSON.stringify(demoSession) });
-  const services = options.services ?? createAppServices(testConfig(), store, testClock);
+export function createTestServices(signedIn = true): AppServices {
+  const store = createMemoryStore(signedIn ? { 'careerpilot.session': JSON.stringify(demoSession) } : {});
+  return createAppServices(testConfig(), store, testClock);
+}
+
+function createTestQueryClient(services: AppServices): QueryClient {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } } });
   queryClient.setQueryData(queryKeys.config, publicConfigFromDefaults(services.config));
-  const result = await render(
+  return queryClient;
+}
+
+export function TestProviders({ services, children }: { services: AppServices; children: ReactNode }) {
+  const [queryClient] = useState(() => createTestQueryClient(services));
+  return (
     <AppProviders services={services} queryClient={queryClient} safeAreaMetrics={testWindowMetrics}>
-      {ui}
-    </AppProviders>,
+      {children}
+    </AppProviders>
   );
+}
+
+export async function renderWithProviders(ui: ReactElement, options: RenderOptions = {}): Promise<RenderWithServices> {
+  const services = options.services ?? createTestServices(options.signedIn !== false);
+  const result = await render(<TestProviders services={services}>{ui}</TestProviders>);
   return Object.assign(result, { services });
 }
 

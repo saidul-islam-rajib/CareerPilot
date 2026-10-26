@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import { useT } from '@careerpilot/client-core';
 import { useTheme } from '@/core/theme/theme';
 
-export const unstable_settings = { initialRouteName: 'welcome' };
+export const unstable_settings = { anchor: 'welcome' };
 
 export default function AuthLayout() {
   const t = useT();
