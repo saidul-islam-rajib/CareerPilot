@@ -480,7 +480,30 @@
     "notifications": "Notifications",
     "digestEnabled": "Daily digest email",
     "digestBody": "A summary of new matches, approvals, and applications, once a day.",
-    "digestTime": "Send at"
+    "digestTime": "Send at",
+    "notificationsBody": "Choose how CareerPilot keeps you up to date.",
+    "digestCustomTime": "Or choose a time",
+    "digestTimeZone": "Times are in your time zone ({timeZone}).",
+    "digestPresets": {
+      "morning": "Morning",
+      "lunchtime": "Lunchtime",
+      "evening": "Evening"
+    },
+    "digestSentTo": "Sent to",
+    "digestChangeEmail": "Change in profile",
+    "digestOffNote": "The daily email is off. Everything still shows in CareerPilot when you open it.",
+    "digestPreviewTitle": "What's in your digest",
+    "digestPreviewWhen": "Arrives every day at {time}.",
+    "digestPreviewOff": "Turn on the daily digest to get this email.",
+    "digestPreviewQuiet": "Only sections with something new are included. Nothing is sent on quiet days.",
+    "digestPreviewSections": {
+      "matches": { "title": "New matches", "body": "Opportunities that fit your tracks." },
+      "approvals": { "title": "Waiting for your approval", "body": "With the date to approve by." },
+      "sent": { "title": "Applications sent", "body": "What CareerPilot sent for you." },
+      "attention": { "title": "Needs your attention", "body": "Applications that need information or a step from you." },
+      "closing": { "title": "Closing soon", "body": "Deadlines in the next few days you haven't applied to." }
+    },
+    "unsavedChanges": "You have unsaved changes."
   },
   "activity": {
     "title": "Sign-in activity",

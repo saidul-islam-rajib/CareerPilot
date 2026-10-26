@@ -76,5 +76,9 @@ class PublicConfigService:
                 "developerUrl": str(s.branding.developer_url),
             },
             "openSourceComponents": [{"name": c.name, "licence": c.licence, "url": str(c.url)} for c in s.open_source_components],
+            "notifications": {
+                "defaultDigestTime": s.notifications.default_digest_time,
+                "digestTimePresets": [{"key": p.key, "time": p.time} for p in s.notifications.digest_time_presets],
+            },
             "profile": camel_keys(s.profile.model_dump(mode="json", include=PUBLIC_PROFILE_KEYS, exclude_none=True)),
         }

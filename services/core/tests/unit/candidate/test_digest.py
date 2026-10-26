@@ -96,3 +96,9 @@ def test_new_users_see_the_default_digest_time(app: Container) -> None:
     token = client.post("/v1/auth/register", json=body).json()["accessToken"]
     settings = client.get("/v1/settings", headers={"Authorization": f"Bearer {token}"}).json()
     assert settings["notifications"] == {"digestEnabled": True, "digestTime": "08:00"}
+
+
+def test_public_config_offers_digest_time_presets(app: Container) -> None:
+    notifications = TestClient(create_user_app(app)).get("/v1/config").json()["notifications"]
+    assert notifications["defaultDigestTime"] == "08:00"
+    assert [p["key"] for p in notifications["digestTimePresets"]] == ["morning", "lunchtime", "evening"]

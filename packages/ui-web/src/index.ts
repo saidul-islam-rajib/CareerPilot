@@ -12,6 +12,7 @@ export * from './linked-text';
 export * from './segmented';
 export * from './sortable-list';
 export * from './stepper';
+export * from './switch-field';
 export * from './text-field';
 export * from './theme';
 export * from './charts';

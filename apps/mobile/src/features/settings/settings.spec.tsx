@@ -93,15 +93,20 @@ describe('About and licences', () => {
 });
 
 describe('NotificationsScreen', () => {
-  it('validates the time and saves the digest choice', async () => {
+  it('picks a preset or a custom time and turns the digest off', async () => {
     const { services } = renderWithProviders(<NotificationsScreen />);
     const time = await screen.findByTestId('digest-time');
     await waitFor(() => expect(time.props.value).toBe('08:00'));
-    fireEvent.changeText(time, '7pm');
+    expect(screen.getByRole('radio', { name: 'Morning, 8:00 AM' }).props.accessibilityState).toMatchObject({ selected: true });
+    fireEvent.press(screen.getByRole('radio', { name: 'Evening, 6:00 PM' }));
+    expect(screen.getByTestId('digest-time').props.value).toBe('18:00');
+    expect(screen.getByText('You have unsaved changes.')).toBeTruthy();
+    fireEvent.changeText(screen.getByTestId('digest-time'), '7pm');
     fireEvent.press(screen.getByTestId('notifications-save'));
     expect(await screen.findByText('Enter a time as HH:MM.')).toBeTruthy();
     fireEvent.changeText(screen.getByTestId('digest-time'), '07:30');
-    fireEvent.press(screen.getByRole('checkbox', { name: 'Daily digest email' }));
+    fireEvent(screen.getByTestId('digest-enabled'), 'valueChange', false);
+    expect(screen.getByText(/The daily email is off/)).toBeTruthy();
     fireEvent.press(screen.getByTestId('notifications-save'));
     expect(await screen.findByText('Saved')).toBeTruthy();
     expect((await services.api.settings.getSettings()).notifications).toEqual({ digestEnabled: false, digestTime: '07:30' });

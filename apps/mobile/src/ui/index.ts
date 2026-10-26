@@ -17,5 +17,6 @@ export * from './linked-text';
 export * from './sortable-list';
 export * from './zoomable-image';
 export * from './stepper';
+export * from './switch-row';
 export * from './snackbar';
 export * from './tag-input';

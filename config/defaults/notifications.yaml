@@ -1,4 +1,11 @@
 notifications:
   default_digest_time: "08:00"
+  digest_time_presets:
+    - key: morning
+      time: "08:00"
+    - key: lunchtime
+      time: "12:30"
+    - key: evening
+      time: "18:00"
   web_base_url: http://localhost:3000
   max_items_per_section: 5

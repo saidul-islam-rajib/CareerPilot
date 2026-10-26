@@ -1,15 +1,6 @@
 import { useMemo } from 'react';
 import type { EntryPeriod, EntryValue } from '@careerpilot/dynamic-forms';
-import {
-  daysUntil,
-  formatDate,
-  formatDateTime,
-  formatDecimal,
-  formatMoneyRange,
-  formatMonth,
-  type FormatContext,
-  type MoneyRange,
-} from '@careerpilot/domain-ui-logic';
+import { daysUntil, formatDate, formatDateTime, formatDecimal, formatMoneyRange, formatMonth, formatTimeOfDay, type FormatContext, type MoneyRange } from '@careerpilot/domain-ui-logic';
 import { usePublicConfig } from '../config/public-config';
 import { useT } from '../i18n/i18n';
 import { useServices } from '../services/app-services';
@@ -26,6 +17,7 @@ export function useFormat() {
     return {
       date: (iso: string) => formatDate(iso, ctx),
       dateTime: (iso: string) => formatDateTime(iso, ctx),
+      time: (value: string) => formatTimeOfDay(value, ctx),
       money: (range?: MoneyRange) => (range ? formatMoneyRange(range, ctx) : undefined),
       deadline: (iso?: string) => {
         if (!iso) {

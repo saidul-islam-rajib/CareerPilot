@@ -129,6 +129,10 @@ export const appConfigSchema = z.object({
     track: z.object({ minResultCount: z.number().int().positive(), maxResultCount: z.number().int().positive() }),
   }),
   openSourceComponents: z.array(z.object({ name: z.string(), licence: z.string(), url: z.string().url() })),
+  notifications: z.object({
+    defaultDigestTime: z.string(),
+    digestTimePresets: z.array(z.object({ key: z.string(), time: z.string() })),
+  }),
   profile: profileSchema,
 });
 
@@ -152,6 +156,7 @@ export function publicConfigFromDefaults(config: AppConfig): PublicConfig {
     legal: config.legal,
     branding: config.branding,
     openSourceComponents: config.openSourceComponents,
+    notifications: config.notifications,
     profile: config.profile,
   };
 }

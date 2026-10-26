@@ -77,7 +77,18 @@ export interface PublicConfig {
   legal: { termsUrl: string; privacyUrl: string; termsVersion: string; privacyVersion: string };
   branding: { productName: string; developerName: string; developerUrl: string };
   openSourceComponents: OpenSourceComponent[];
+  notifications: NotificationSettings;
   profile: ProfileSettings;
+}
+
+export interface DigestTimePreset {
+  key: string;
+  time: string;
+}
+
+export interface NotificationSettings {
+  defaultDigestTime: string;
+  digestTimePresets: DigestTimePreset[];
 }
 
 export interface PauseOption {

@@ -100,6 +100,20 @@ export function formatMonth(value: string, ctx: FormatContext): string {
   return new Intl.DateTimeFormat(ctx.locale, { timeZone: UTC, month: 'short', year: 'numeric' }).format(date);
 }
 
+const TIME_OF_DAY = /^([01]\d|2[0-3]):([0-5]\d)$/;
+const REFERENCE_DAY = Date.UTC(2000, 0, 1);
+const MS_PER_MINUTE = 60_000;
+const MINUTES_PER_HOUR = 60;
+
+export function formatTimeOfDay(value: string, ctx: FormatContext): string {
+  const match = TIME_OF_DAY.exec(value);
+  if (!match) {
+    return value;
+  }
+  const minutes = Number(match[1]) * MINUTES_PER_HOUR + Number(match[2]);
+  return new Intl.DateTimeFormat(ctx.locale, { timeZone: UTC, hour: 'numeric', minute: '2-digit' }).format(new Date(REFERENCE_DAY + minutes * MS_PER_MINUTE));
+}
+
 export function formatDecimal(value: number, ctx: FormatContext, maximumFractionDigits = 1): string {
   return new Intl.NumberFormat(ctx.locale, { maximumFractionDigits }).format(value);
 }

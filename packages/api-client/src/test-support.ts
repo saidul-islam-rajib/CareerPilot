@@ -43,6 +43,13 @@ export const testConfig: PublicConfig = {
   legal: { termsUrl: 'https://example.com/terms', privacyUrl: 'https://example.com/privacy', termsVersion: '1', privacyVersion: '1' },
   branding: { productName: 'CareerPilot', developerName: 'Team Sober', developerUrl: 'https://team-sober.com/' },
   openSourceComponents: [],
+  notifications: {
+    defaultDigestTime: '08:00',
+    digestTimePresets: [
+      { key: 'morning', time: '08:00' },
+      { key: 'evening', time: '18:00' },
+    ],
+  },
   profile: testProfileSettings,
 };
 

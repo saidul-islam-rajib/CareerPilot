@@ -348,8 +348,17 @@ class SubmissionConfig(Strict):
     stuck_after_minutes: int = Field(gt=0)
 
 
+TIME_OF_DAY_PATTERN = r"^([01]\d|2[0-3]):[0-5]\d$"
+
+
+class DigestTimePreset(Strict):
+    key: str
+    time: str = Field(pattern=TIME_OF_DAY_PATTERN)
+
+
 class NotificationsConfig(Strict):
-    default_digest_time: str
+    default_digest_time: str = Field(pattern=TIME_OF_DAY_PATTERN)
+    digest_time_presets: list[DigestTimePreset]
     web_base_url: str
     max_items_per_section: int = Field(gt=0)
 

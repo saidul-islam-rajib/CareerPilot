@@ -24,19 +24,34 @@ describe('SettingsPage', () => {
 });
 
 describe('NotificationsPage', () => {
-  it('validates the time and saves the digest choice', async () => {
+  it('picks a preset or a custom time, saves only real changes, and turns the digest off', async () => {
     const { services } = renderWithProviders(<NotificationsPage />);
-    const time = await screen.findByLabelText('Send at');
+    const time = await screen.findByLabelText('Or choose a time');
     await waitFor(() => expect(time).toHaveValue('08:00'));
-    fireEvent.change(time, { target: { value: '7pm' } });
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Morning/ })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: /Evening/ }));
+    expect(time).toHaveValue('18:00');
+    expect(screen.getByText('You have unsaved changes.')).toBeInTheDocument();
+    fireEvent.change(time, { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     expect(await screen.findByText('Enter a time as HH:MM.')).toBeInTheDocument();
     fireEvent.change(time, { target: { value: '07:30' } });
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Daily digest email' }));
-    expect(time).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     expect(await screen.findByText('Saved')).toBeInTheDocument();
-    expect((await services.api.settings.getSettings()).notifications).toEqual({ digestEnabled: false, digestTime: '07:30' });
+    expect((await services.api.settings.getSettings()).notifications).toEqual({ digestEnabled: true, digestTime: '07:30' });
+    fireEvent.click(screen.getByRole('switch', { name: 'Daily digest email' }));
+    expect(screen.getByText(/The daily email is off/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(async () => expect((await services.api.settings.getSettings()).notifications.digestEnabled).toBe(false));
+  });
+
+  it('shows where the digest goes and what it contains', async () => {
+    renderWithProviders(<NotificationsPage />);
+    expect(await screen.findByText('admin@sober.com')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Change in profile' })).toHaveAttribute('href', '/profile#profile-contacts');
+    expect(screen.getByRole('heading', { name: "What's in your digest" })).toBeInTheDocument();
+    expect(screen.getByText('Waiting for your approval')).toBeInTheDocument();
   });
 });
 
