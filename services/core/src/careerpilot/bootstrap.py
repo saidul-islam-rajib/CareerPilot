@@ -45,7 +45,15 @@ from careerpilot.matching.ports import Matcher
 from careerpilot.matching.rules import RuleBasedMatcher
 from careerpilot.matching.service import RecommendationContext, RecommendationService
 from careerpilot.platform.clock import Clock, IdGenerator, SystemClock, UuidIdGenerator, iso
-from careerpilot.platform.config import CoordinationMode, MatchingMode, PersistenceMode, Settings, load_settings, repository_root
+from careerpilot.platform.config import (
+    CoordinationMode,
+    MatchingMode,
+    PersistenceMode,
+    Settings,
+    load_settings,
+    repository_root,
+    with_web_address,
+)
 from careerpilot.platform.coordination import KeySpace, MetadataCache, SignInGuard, release_fingerprint
 from careerpilot.platform.email_delivery import (
     BackgroundCourier,
@@ -231,7 +239,7 @@ def _database_url(settings: Settings, options: ContainerOverrides) -> str:
 
 def build_container(overrides: ContainerOverrides | None = None) -> Container:
     options = overrides or ContainerOverrides()
-    cfg = options.settings or load_settings()
+    cfg = options.settings or with_web_address(load_settings())
     clk = options.clock or SystemClock()
     gen = options.ids or UuidIdGenerator()
     pwd = options.hasher or Argon2PasswordHasher()

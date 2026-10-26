@@ -8,4 +8,5 @@ notifications:
     - key: evening
       time: "18:00"
   web_base_url: http://localhost:3000
+  web_base_url_env: CAREERPILOT_WEB_BASE_URL
   max_items_per_section: 5

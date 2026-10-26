@@ -7,7 +7,7 @@ import pytest
 from pydantic import ValidationError
 
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator, iso, parse_iso
-from careerpilot.platform.config import deep_merge, load_settings
+from careerpilot.platform.config import deep_merge, load_settings, with_web_address
 from careerpilot.platform.enums import ThemeKey
 from careerpilot.platform.errors import DomainError, ErrorCode
 from careerpilot.platform.security import Argon2PasswordHasher, TokenService
@@ -83,6 +83,42 @@ def assert_rejects_secrets_in(root: Path) -> None:
         load_settings("local", root)
     assert {tuple(e["loc"][-1:]) for e in error.value.errors()} == {("smtp_user_env",), ("smtp_password_env",)}
     assert "abcd" not in str([e.get("input") for e in error.value.errors() if e["loc"][-1] == "smtp_user_env"])
+
+
+PHONE_WEB = "http://192.168.0.100:8081"
+
+
+def test_settings_keep_the_configured_web_address_without_an_override() -> None:
+    settings = load_settings("docker")
+    assert with_web_address(settings, {}) is settings
+
+
+def test_web_address_override_moves_email_links_and_allows_that_origin() -> None:
+    settings = load_settings("docker")
+    name = settings.notifications.web_base_url_env
+    moved = with_web_address(settings, {name: f" {PHONE_WEB}/ "})
+    assert moved.notifications.web_base_url == PHONE_WEB
+    assert moved.http.cors_origins == [*settings.http.cors_origins, PHONE_WEB]
+    again = with_web_address(moved, {name: PHONE_WEB})
+    assert again.http.cors_origins == moved.http.cors_origins
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "javascript:alert(1)",
+        "ftp://192.168.0.100",
+        "http://user@evil.example",
+        "http://192.168.0.100:8081/?next=x",
+        "http://192.168.0.100#x",
+        "192.168.0.100:8081",
+        "http://",
+    ],
+)
+def test_web_address_override_refuses_unsafe_values(value: str) -> None:
+    settings = load_settings("docker")
+    with pytest.raises(ValueError, match="web_base_url_invalid"):
+        with_web_address(settings, {settings.notifications.web_base_url_env: value})
 
 
 LOCAL_SEED_DOMAIN = "sober.com"

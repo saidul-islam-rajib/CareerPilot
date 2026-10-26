@@ -1,7 +1,9 @@
 import os
+from collections.abc import Mapping
 from enum import StrEnum
 from pathlib import Path
 from typing import Annotated, Any, Literal, cast
+from urllib.parse import urlsplit, urlunsplit
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
@@ -23,6 +25,10 @@ DEFAULT_APP_ENV = "local"
 YAML_SUFFIX = ".yaml"
 SECONDS_PER_MINUTE = 60
 ENV_NAME_PATTERN = r"^[A-Z][A-Z0-9_]*$"
+WEB_SCHEMES = frozenset({"http", "https"})
+USERINFO_MARK = "@"
+PATH_SEPARATOR = "/"
+INVALID_WEB_BASE_URL = "web_base_url_invalid"
 
 
 EnvName = Annotated[str, Field(pattern=ENV_NAME_PATTERN)]
@@ -374,6 +380,7 @@ class NotificationsConfig(Strict):
     default_digest_time: str = Field(pattern=TIME_OF_DAY_PATTERN)
     digest_time_presets: list[DigestTimePreset]
     web_base_url: str
+    web_base_url_env: EnvName
     max_items_per_section: int = Field(gt=0)
 
 
@@ -510,3 +517,31 @@ def load_raw_config(app_env: str, root: Path) -> dict[str, Any]:
 def load_settings(app_env: str | None = None, root: Path | None = None) -> Settings:
     environment = app_env or os.environ.get(APP_ENV, DEFAULT_APP_ENV)
     return Settings.model_validate(load_raw_config(environment, root or default_config_root()))
+
+
+def web_base_url(value: str) -> str:
+    parts = urlsplit(value.strip())
+    if parts.scheme not in WEB_SCHEMES or not parts.hostname or USERINFO_MARK in parts.netloc or parts.query or parts.fragment:
+        raise ValueError(INVALID_WEB_BASE_URL)
+    return urlunsplit((parts.scheme, parts.netloc, parts.path.rstrip(PATH_SEPARATOR), "", ""))
+
+
+def url_origin(url: str) -> str:
+    parts = urlsplit(url)
+    return urlunsplit((parts.scheme, parts.netloc, "", "", ""))
+
+
+def with_web_address(settings: Settings, environ: Mapping[str, str] = os.environ) -> Settings:
+    configured = environ.get(settings.notifications.web_base_url_env, "").strip()
+    if not configured:
+        return settings
+    base_url = web_base_url(configured)
+    origin = url_origin(base_url)
+    http = settings.http
+    origins = http.cors_origins if origin in http.cors_origins else [*http.cors_origins, origin]
+    return settings.model_copy(
+        update={
+            "notifications": settings.notifications.model_copy(update={"web_base_url": base_url}),
+            "http": http.model_copy(update={"cors_origins": origins}),
+        }
+    )

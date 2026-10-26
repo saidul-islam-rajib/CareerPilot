@@ -68,6 +68,7 @@ services:
       CAREERPILOT_SMTP_HOST: mailpit
       CAREERPILOT_MAIL_USER: ${CAREERPILOT_MAIL_USER:-}
       CAREERPILOT_MAIL_PASSWORD: ${CAREERPILOT_MAIL_PASSWORD:-}
+      CAREERPILOT_WEB_BASE_URL: ${CAREERPILOT_WEB_BASE_URL:-}
     volumes:
       - profile-files:/data/files
     ports:
