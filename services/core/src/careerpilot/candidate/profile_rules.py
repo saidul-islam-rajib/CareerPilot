@@ -5,6 +5,7 @@ from enum import StrEnum
 from typing import cast
 from urllib.parse import urlsplit
 
+from careerpilot.candidate.models import PhotoCrop
 from careerpilot.platform.config import ProfileFieldConfig, ProfileLimits, ProfileSectionConfig, ValidationConfig
 from careerpilot.platform.enums import LanguageProficiency, ProfileFieldType
 from careerpilot.platform.errors import DomainError, validation_error
@@ -23,6 +24,26 @@ def clean_text(value: str) -> str:
 
 def clean_multiline(value: str) -> str:
     return "\n".join(line.rstrip() for line in value.strip().splitlines())
+
+
+CROP_PRECISION = 6
+CROP_TOLERANCE = 1e-6
+CROP_DETAIL = "photo_crop"
+WHOLE = 1.0
+
+
+def require_photo_crop(crop: PhotoCrop) -> PhotoCrop:
+    fits_x = crop.x >= -CROP_TOLERANCE and crop.width > 0 and crop.x + crop.width <= WHOLE + CROP_TOLERANCE
+    fits_y = crop.y >= -CROP_TOLERANCE and crop.height > 0 and crop.y + crop.height <= WHOLE + CROP_TOLERANCE
+    if not (fits_x and fits_y):
+        raise validation_error(CROP_DETAIL)
+    left, top = max(0.0, crop.x), max(0.0, crop.y)
+    return PhotoCrop(
+        x=round(left, CROP_PRECISION),
+        y=round(top, CROP_PRECISION),
+        width=round(min(crop.width, WHOLE - left), CROP_PRECISION),
+        height=round(min(crop.height, WHOLE - top), CROP_PRECISION),
+    )
 
 
 def require_length(value: str, max_length: int | None, field: str) -> str:

@@ -317,6 +317,13 @@ def _legacy_documents(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return upgraded
 
 
+class PhotoCrop(CamelModel):
+    x: float
+    y: float
+    width: float
+    height: float
+
+
 class Profile(CamelModel):
     id: str
     full_name: str
@@ -325,6 +332,7 @@ class Profile(CamelModel):
     summary: str = ""
     photo: StoredFile | None = None
     photo_url: str | None = None
+    photo_crop: PhotoCrop | None = None
     signature_url: str | None = None
     completeness: int = 0
     contacts: list[Contact]
@@ -347,6 +355,9 @@ class Profile(CamelModel):
         document["sections"] = sections
         document["documents"] = _legacy_documents(list(document.get("documents") or []))
         return document
+
+    def has_photo(self) -> bool:
+        return self.photo is not None or self.photo_url is not None
 
     def active_contacts(self) -> list[Contact]:
         return sorted((c for c in self.contacts if c.deleted_at is None), key=lambda c: c.position)

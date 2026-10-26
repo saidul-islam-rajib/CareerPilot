@@ -7,6 +7,7 @@ from careerpilot.candidate.models import (
     CompletenessItem,
     Contact,
     DocumentVersion,
+    PhotoCrop,
     Profile,
     ProfileDocument,
     ProfileEntry,
@@ -14,7 +15,15 @@ from careerpilot.candidate.models import (
     UserSummary,
 )
 from careerpilot.candidate.ports import CandidateWorkspace
-from careerpilot.candidate.profile_rules import FieldRules, as_mapping, clean_multiline, clean_text, normalize_skills, require_length
+from careerpilot.candidate.profile_rules import (
+    FieldRules,
+    as_mapping,
+    clean_multiline,
+    clean_text,
+    normalize_skills,
+    require_length,
+    require_photo_crop,
+)
 from careerpilot.candidate.profile_view import ProfileView, present_profile
 from careerpilot.platform.clock import iso
 from careerpilot.platform.config import ProfileConfig, ProfileSectionConfig
@@ -110,12 +119,28 @@ class ProfileService:
 
     def set_photo(self, user_id: str, upload: Upload) -> Profile:
         stored = self._store(upload, "photos", self._config.uploads.photo_types, self._config.uploads.max_photo_bytes)
-        return self._mutate(user_id, lambda w: setattr(w.profile, "photo", stored))
+
+        def replace(workspace: CandidateWorkspace) -> None:
+            workspace.profile.photo = stored
+            workspace.profile.photo_crop = None
+
+        return self._mutate(user_id, replace)
+
+    def set_photo_crop(self, user_id: str, crop: PhotoCrop) -> Profile:
+        checked = require_photo_crop(crop)
+
+        def frame(workspace: CandidateWorkspace) -> None:
+            if not workspace.profile.has_photo():
+                raise not_found("photo")
+            workspace.profile.photo_crop = checked
+
+        return self._mutate(user_id, frame)
 
     def remove_photo(self, user_id: str) -> Profile:
         def clear(workspace: CandidateWorkspace) -> None:
             workspace.profile.photo = None
             workspace.profile.photo_url = None
+            workspace.profile.photo_crop = None
 
         return self._mutate(user_id, clear)
 

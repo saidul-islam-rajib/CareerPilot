@@ -1,6 +1,15 @@
 from collections.abc import Callable
 
-from careerpilot.candidate.models import CompletenessItem, Contact, DocumentVersion, EntryValue, Profile, ProfileDocument, StoredFile
+from careerpilot.candidate.models import (
+    CompletenessItem,
+    Contact,
+    DocumentVersion,
+    EntryValue,
+    PhotoCrop,
+    Profile,
+    ProfileDocument,
+    StoredFile,
+)
 from careerpilot.platform.enums import DocumentKind
 from careerpilot.platform.model import CamelModel
 
@@ -44,6 +53,7 @@ class ProfileView(CamelModel):
     location: str
     summary: str
     photo_url: str | None = None
+    photo_crop: PhotoCrop | None = None
     signature_url: str | None = None
     completeness: int
     completeness_items: list[CompletenessItem]
@@ -89,6 +99,7 @@ def present_profile(profile: Profile, score: int, items: list[CompletenessItem],
         location=profile.location,
         summary=profile.summary,
         photo_url=link(profile.photo.key, profile.photo.file_name) if profile.photo else profile.photo_url,
+        photo_crop=profile.photo_crop if profile.has_photo() else None,
         signature_url=profile.signature_url,
         completeness=score,
         completeness_items=items,

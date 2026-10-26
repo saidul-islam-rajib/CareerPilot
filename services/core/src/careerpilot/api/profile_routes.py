@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse, Response
 from careerpilot.api.common import ok
 from careerpilot.api.dependencies import CurrentUser, Services
 from careerpilot.bootstrap import Container
-from careerpilot.candidate.models import Profile
+from careerpilot.candidate.models import PhotoCrop, Profile
 from careerpilot.candidate.services.profile import BasicsChanges, ProfileService, Upload
 from careerpilot.platform.enums import ContactKind, DocumentKind
 from careerpilot.platform.errors import not_found
@@ -100,6 +100,11 @@ def update_basics(body: BasicsBody, caller: Caller) -> JSONResponse:
 def set_photo(file: UploadedFile, caller: Caller) -> JSONResponse:
     upload = read_upload(file, caller.services.settings.profile.uploads.max_photo_bytes)
     return caller.respond(caller.profiles.set_photo(caller.user_id, upload))
+
+
+@router.put("/profile/photo/crop")
+def set_photo_crop(body: PhotoCrop, caller: Caller) -> JSONResponse:
+    return caller.respond(caller.profiles.set_photo_crop(caller.user_id, body))
 
 
 @router.delete("/profile/photo")

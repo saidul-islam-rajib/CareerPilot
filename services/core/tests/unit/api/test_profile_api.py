@@ -89,6 +89,27 @@ def test_photo_upload_returns_a_signed_photo_link(client: TestClient, headers: d
     assert client.delete("/v1/profile/photo", headers=headers).json().get("photoUrl") is None
 
 
+def test_photo_crop_chooses_what_the_avatar_shows(client: TestClient, headers: dict[str, str]) -> None:
+    face = {"x": 0.25, "y": 0.05, "width": 0.5, "height": 0.3333333}
+    assert (
+        client.put("/v1/profile/photo", headers=headers, files={"file": ("me.png", PNG_BYTES, "image/png")}).json().get("photoCrop") is None
+    )
+    framed = client.put("/v1/profile/photo/crop", headers=headers, json=face).json()
+    assert framed["photoCrop"] == {"x": 0.25, "y": 0.05, "width": 0.5, "height": 0.333333}
+    rounding = client.put("/v1/profile/photo/crop", headers=headers, json={"x": 0.5000001, "y": 0, "width": 0.5, "height": 1})
+    assert rounding.json()["photoCrop"]["width"] == pytest.approx(0.5)
+    for outside in (
+        {"x": 0.6, "y": 0, "width": 0.5, "height": 0.5},
+        {"x": -0.1, "y": 0, "width": 0.5, "height": 0.5},
+        {"x": 0, "y": 0, "width": 0, "height": 0.5},
+    ):
+        assert client.put("/v1/profile/photo/crop", headers=headers, json=outside).status_code == 422
+    replaced = client.put("/v1/profile/photo", headers=headers, files={"file": ("new.png", PNG_BYTES, "image/png")}).json()
+    assert replaced.get("photoCrop") is None
+    client.delete("/v1/profile/photo", headers=headers)
+    assert client.put("/v1/profile/photo/crop", headers=headers, json=face).status_code == 404
+
+
 def test_basics_contacts_skills_and_sections_round_trip(client: TestClient, headers: dict[str, str]) -> None:
     basics = client.patch("/v1/profile", headers=headers, json={"headline": "Senior frontend engineer", "location": "Dhaka, Bangladesh"})
     assert (basics.json()["headline"], basics.json()["location"]) == ("Senior frontend engineer", "Dhaka, Bangladesh")
