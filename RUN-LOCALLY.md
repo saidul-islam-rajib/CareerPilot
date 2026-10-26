@@ -28,11 +28,13 @@ The first build takes about 10 minutes; later starts take seconds. Leave out `-f
 | Admin app | http://localhost:3001 | `admin@sober.com` / `admin@sober.com` |
 | User API docs | http://localhost:8000/docs | — |
 | Admin API docs | http://localhost:8001/docs | — |
-| Mailpit (all local email, including verification codes) | http://localhost:8025 | — |
+| Mailpit (all local email: registration and password-reset links, verification codes) | http://localhost:8025 | — |
 | Grafana (logs, traces, metrics) | http://localhost:3100 → Dashboards → CareerPilot | `admin` / `admin` |
 | Temporal (scheduled discovery runs) | http://localhost:8233 | — |
 
 `127.0.0.1` works as well as `localhost`.
+
+**Create an account:** open http://localhost:3000/register and enter your name and email (no password yet). Open Mailpit at http://localhost:8025, open **Finish creating your CareerPilot account**, and click the link. Choose your password and you're signed in. **Forgot password?** works the same way with the **Reset your CareerPilot password** email. Local email never leaves your PC.
 
 Useful commands:
 
@@ -70,7 +72,7 @@ pnpm install
 pnpm --filter @careerpilot/mobile start
 ```
 
-Scan the QR code: with the phone camera on iPhone, or from inside Expo Go on Android. In the terminal, press `a` to open the Android emulator, `w` for the browser, `r` to reload. Sign in with `admin@sober.com` / `admin@sober.com`. With demo data no email is sent: to verify an email address, enter the code `246810`.
+Scan the QR code: with the phone camera on iPhone, or from inside Expo Go on Android. In the terminal, press `a` to open the Android emulator, `w` for the browser, `r` to reload. Sign in with `admin@sober.com` / `admin@sober.com`. With demo data no email is sent: to verify an email address, enter the code `246810`; to create an account, tap **Open the link** on the **Check your email** screen and choose a password.
 
 ### B2. Real backend (Docker from option A)
 
@@ -87,6 +89,8 @@ Git Bash: `APP_ENV=http CAREERPILOT_API_URL=http://192.168.0.103:8000 pnpm --fil
 Android emulator only (no `.env` change needed): use `http://10.0.2.2:8000` as the address. Browser on the PC: `APP_ENV=http pnpm --filter @careerpilot/mobile web`.
 
 When Windows Firewall asks about Node.js or Docker, allow **Private networks**.
+
+To create an account from the phone: register in the app, then open Mailpit (http://localhost:8025) on the PC and click the link in the email. It opens the web app, where you choose your password. Then sign in on the phone with that email and password.
 
 ## C. Without Docker (fastest for front-end work)
 
