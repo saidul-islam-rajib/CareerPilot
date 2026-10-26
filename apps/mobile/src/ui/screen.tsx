@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { RefreshControl, ScrollView, View, type ViewStyle } from 'react-native';
-import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets, type Edge } from 'react-native-safe-area-context';
 import { useTheme } from '@/core/theme/theme';
 
 export interface ScreenProps {
@@ -15,9 +15,12 @@ export interface ScreenProps {
 }
 
 const DEFAULT_EDGES: Edge[] = ['left', 'right'];
+const BOTTOM_EDGE: Edge = 'bottom';
 
 export function Screen({ children, scroll = true, refreshing = false, onRefresh, footer, edges = DEFAULT_EDGES, contentStyle, testID }: ScreenProps) {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  const footerInset = edges.includes(BOTTOM_EDGE) ? 0 : insets.bottom;
   const inner: ViewStyle = {
     width: '100%',
     maxWidth: theme.contentMaxWidth,
@@ -46,7 +49,9 @@ export function Screen({ children, scroll = true, refreshing = false, onRefresh,
             backgroundColor: theme.colors.background,
           }}
         >
-          <View style={[inner, { paddingVertical: theme.space.md }]}>{footer}</View>
+          <View style={[inner, { paddingTop: theme.space.md, paddingBottom: theme.space.md + footerInset }]} testID="screen-footer">
+            {footer}
+          </View>
         </View>
       ) : null}
     </SafeAreaView>

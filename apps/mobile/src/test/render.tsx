@@ -28,6 +28,7 @@ export const demoSession: Session = {
 export interface RenderOptions {
   signedIn?: boolean;
   services?: AppServices;
+  bottomInset?: number;
 }
 
 export interface RenderWithServices extends RenderResult {
@@ -45,10 +46,11 @@ function createTestQueryClient(services: AppServices): QueryClient {
   return queryClient;
 }
 
-export function TestProviders({ services, children }: { services: AppServices; children: ReactNode }) {
+export function TestProviders({ services, bottomInset = 0, children }: { services: AppServices; bottomInset?: number; children: ReactNode }) {
   const [queryClient] = useState(() => createTestQueryClient(services));
+  const metrics = { ...testWindowMetrics, insets: { ...testWindowMetrics.insets, bottom: bottomInset } };
   return (
-    <AppProviders services={services} queryClient={queryClient} safeAreaMetrics={testWindowMetrics}>
+    <AppProviders services={services} queryClient={queryClient} safeAreaMetrics={metrics}>
       {children}
     </AppProviders>
   );
@@ -56,7 +58,11 @@ export function TestProviders({ services, children }: { services: AppServices; c
 
 export async function renderWithProviders(ui: ReactElement, options: RenderOptions = {}): Promise<RenderWithServices> {
   const services = options.services ?? createTestServices(options.signedIn !== false);
-  const result = await render(<TestProviders services={services}>{ui}</TestProviders>);
+  const result = await render(
+    <TestProviders services={services} bottomInset={options.bottomInset}>
+      {ui}
+    </TestProviders>,
+  );
   return Object.assign(result, { services });
 }
 
