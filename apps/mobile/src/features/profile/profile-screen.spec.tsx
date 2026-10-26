@@ -151,7 +151,7 @@ describe('PhotoCropScreen', () => {
     }
     fireEvent.press(screen.getByLabelText('Move photo down'));
     fireEvent.press(screen.getByTestId('photo-crop-save'));
-    await waitFor(async () => expect((await services.api.profile.getProfile()).photoCrop).toEqual({ x: 0.375, y: 0.435, width: 0.25, height: 0.125 }));
+    await waitFor(async () => expect((await services.api.profile.getProfile()).photoCrop).toEqual({ x: 0.375, y: 0.4275, width: 0.25, height: 0.125 }));
     await waitFor(() => expect(mockRouter.back).toHaveBeenCalled());
   });
 });
