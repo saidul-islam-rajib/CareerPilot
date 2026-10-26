@@ -11,7 +11,7 @@ const require = createRequire(import.meta.url);
 const { loadConfig } = require('../../../../scripts/config/load-config.js') as { loadConfig: (env: string) => Record<string, unknown> };
 
 export const testNow = new Date('2026-10-20T06:00:00Z');
-const testClock: Clock = { now: () => new Date(testNow) };
+const DAY_MS = 86_400_000;
 
 export function testConfig(): AppConfig {
   const config = parseAppConfig({ careerpilot: loadConfig('local') });
@@ -33,10 +33,16 @@ export interface Navigation {
 
 export const navigation = (globalThis as unknown as { navigation: Navigation }).navigation;
 
-export function renderWithProviders(ui: ReactElement, options: { signedIn?: boolean; params?: Record<string, string> } = {}): RenderResult & { services: AppServices } {
+export function renderWithProviders(
+  ui: ReactElement,
+  options: { signedIn?: boolean; params?: Record<string, string>; laterByDays?: number } = {},
+): RenderResult & { services: AppServices } {
   navigation.params = options.params ?? {};
   const store = createMemoryStore(options.signedIn === false ? {} : { 'careerpilot.session': JSON.stringify(demoSession) });
-  const services = createAppServices(testConfig(), store, testClock);
+  let offset = 0;
+  const clock: Clock = { now: () => new Date(testNow.getTime() + offset) };
+  const services = createAppServices(testConfig(), store, clock);
+  offset = (options.laterByDays ?? 0) * DAY_MS;
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } } });
   queryClient.setQueryData(queryKeys.config, publicConfigFromDefaults(services.config));
   const result = render(

@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ApplicationFilter } from '@careerpilot/api-client';
 import { SubmissionStatus } from '@careerpilot/domain-ui-logic';
 import { navigation, renderWithProviders } from '@/test/render';
@@ -33,6 +34,8 @@ describe('HomePage', () => {
     expect(screen.getByLabelText('Awaiting approval: 2')).toHaveAttribute('href', '/approvals');
     expect(screen.getByRole('heading', { name: 'Bangladesh government' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Senior Frontend Engineer/ })).toHaveAttribute('href', '/opportunities/opp_remote_frontend');
+    expect(screen.getByRole('heading', { name: 'Coming up' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /First interview with the engineering manager/ })).toHaveAttribute('href', '/applications/app_bay');
   });
 });
 
@@ -95,4 +98,56 @@ describe('Applications', () => {
   });
 });
 
+describe('Application follow-ups', () => {
+  it('updates the outcome and records it in the timeline', async () => {
+    const user = userEvent.setup();
+    const { services } = renderWithProviders(<ApplicationPage />, { params: { id: 'app_kite' } });
+    await user.click(await screen.findByRole('button', { name: 'Update outcome' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Update outcome' });
+    await user.selectOptions(within(dialog).getByLabelText('Outcome'), 'withdrawn');
+    expect(within(dialog).getByText(/doesn't tell the employer/)).toBeInTheDocument();
+    await user.selectOptions(within(dialog).getByLabelText('Outcome'), 'interview');
+    await user.type(within(dialog).getByLabelText('Note (optional)'), 'Call on Monday');
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    expect(await screen.findByText('Outcome updated')).toBeInTheDocument();
+    expect(await screen.findByText('Outcome set to Interview: Call on Monday')).toBeInTheDocument();
+    expect((await services.api.applications.getApplication('app_kite')).outcomeStatus).toBe('interview');
+  });
 
+  it('adds a follow-up in the user time zone and marks it done', async () => {
+    const user = userEvent.setup();
+    const { services } = renderWithProviders(<ApplicationPage />, { params: { id: 'app_kite' } });
+    await user.click(await screen.findByRole('button', { name: 'Add follow-up' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Add follow-up' });
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    expect(await within(dialog).findByText('This field is required.')).toBeInTheDocument();
+    await user.type(within(dialog).getByLabelText('What'), 'Video interview');
+    fireEvent.change(within(dialog).getByLabelText('Time'), { target: { value: '10:00' } });
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    expect(await within(dialog).findByText('Choose a date for this time.')).toBeInTheDocument();
+    await user.selectOptions(within(dialog).getByLabelText('Type'), 'interview');
+    fireEvent.change(within(dialog).getByLabelText('Date'), { target: { value: '2026-10-22' } });
+    await user.type(within(dialog).getByLabelText('Where or meeting link'), 'https://meet.example/abc');
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    expect(await screen.findByText('Follow-up saved')).toBeInTheDocument();
+    const task = (await services.api.applications.getApplication('app_kite')).tasks.at(-1);
+    expect(task).toMatchObject({ kind: 'interview', title: 'Video interview', dueAt: '2026-10-22T04:00:00.000Z', location: 'https://meet.example/abc' });
+    expect(await screen.findByRole('link', { name: 'https://meet.example/abc' })).toHaveAttribute('href', 'https://meet.example/abc');
+    await user.click(screen.getByRole('button', { name: 'Mark done: Video interview' }));
+    await waitFor(async () => expect((await services.api.applications.getApplication('app_kite')).tasks.at(-1)?.status).toBe('done'));
+  });
+
+  it('suggests a follow-up after a quiet period', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ApplicationPage />, { params: { id: 'app_meghna' }, laterByDays: 15 });
+    expect(await screen.findByText('No response for 14 days. A short, polite follow-up email can help.')).toBeInTheDocument();
+    const suggestion = screen.getByText('Suggestion').closest('[role="status"]');
+    if (!(suggestion instanceof HTMLElement)) {
+      throw new Error('expected the suggestion banner');
+    }
+    await user.click(within(suggestion).getByRole('button', { name: 'Add follow-up' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Add follow-up' });
+    expect(within(dialog).getByLabelText('What')).toHaveValue('Follow up on my application');
+    expect(within(dialog).getByLabelText('Date')).toHaveValue('2026-11-04');
+  });
+});

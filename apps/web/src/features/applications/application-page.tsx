@@ -1,11 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Archive, FileText, Mail, ShieldCheck } from 'lucide-react';
+import { Archive, FileText, Mail, Pencil, ShieldCheck } from 'lucide-react';
 import { useApplication, useFormat, useT } from '@careerpilot/client-core';
 import { EnumKey, TimelineActor } from '@careerpilot/domain-ui-logic';
-import { Card, EnumBadge, ErrorState, ListRow, LoadingState, PageHeader, Section, cn } from '@careerpilot/ui-web';
+import { Button, Card, EnumBadge, ErrorState, ListRow, LoadingState, PageHeader, Section, cn } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
+import { FollowUpsSection, OutcomeDialog } from './follow-ups';
 
 const KILOBYTE = 1024;
 const DOT_CLASSES: Record<TimelineActor, string> = {
@@ -20,6 +22,7 @@ export function ApplicationPage() {
   const t = useT();
   const format = useFormat();
   const application = useApplication(id);
+  const [editingOutcome, setEditingOutcome] = useState(0);
 
   if (application.isPending) {
     return <LoadingState />;
@@ -33,6 +36,7 @@ export function ApplicationPage() {
     <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
       <div className="flex flex-col gap-6">
         <PageHeader title={a.opportunity.title} description={`${a.opportunity.organization} · ${a.opportunity.location}`} />
+        <FollowUpsSection application={a} />
         <Section title={t('applications.timeline')}>
           <Card>
             <ol className="flex flex-col">
@@ -79,6 +83,10 @@ export function ApplicationPage() {
         <Card>
           <ListRow title={t('applications.submission')} trailing={<EnumBadge enumKey={EnumKey.SubmissionStatus} value={a.submissionStatus} />} />
           <ListRow title={t('applications.outcome')} trailing={<EnumBadge enumKey={EnumKey.OutcomeStatus} value={a.outcomeStatus} />} />
+          {a.lastContactAt ? <p className="text-sm text-muted">{t('applications.lastContact', { date: format.date(a.lastContactAt) })}</p> : null}
+          <Button variant="outline" size="sm" icon={Pencil} onClick={() => setEditingOutcome((n) => n + 1)}>
+            {t('applications.updateOutcome')}
+          </Button>
           <ListRow title={t('opportunity.route')} trailing={<EnumBadge enumKey={EnumKey.ApplicationRoute} value={a.route} />} />
           {a.appliedAt ? <p className="text-sm text-muted">{t('applications.appliedOn', { date: format.dateTime(a.appliedAt) })}</p> : null}
         </Card>
@@ -104,6 +112,7 @@ export function ApplicationPage() {
           <ListRow icon={Archive} title={t('applications.circular')} subtitle={t('opportunity.circularArchived', { date: format.date(a.circular.archivedAt) })} href={Routes.circular(a.opportunity.id)} />
         </Card>
       </aside>
+      {editingOutcome > 0 ? <OutcomeDialog key={editingOutcome} application={a} onClose={() => setEditingOutcome(0)} /> : null}
     </div>
   );
 }
