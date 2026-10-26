@@ -20,7 +20,7 @@ import {
 import { ContactKind, StatusTone } from '@careerpilot/domain-ui-logic';
 import { cleanText } from '@careerpilot/dynamic-forms';
 import { Badge, Button, Card, FormDialog, OverflowMenu, Segmented, SortableList, TextField } from '@careerpilot/ui-web';
-import { sectionAnchor, useProfileFeedback } from './profile-support';
+import { sectionAnchor, useProfileFeedback, useRemoveWithUndo } from './profile-support';
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
@@ -158,17 +158,13 @@ function ContactRow({ contact, index, count, onEdit, onVerify }: { contact: Cont
   const t = useT();
   const { config } = usePublicConfig();
   const canVerify = !contact.verified && (contact.kind === ContactKind.Email || config.verification.smsEnabled);
-  const feedback = useProfileFeedback();
   const setPrimary = useSetPrimaryContact();
   const remove = useRemoveContact();
   const restore = useRestoreContact();
   const reorder = useReorderContacts();
   const Glyph = contact.kind === ContactKind.Email ? Mail : Phone;
-  const removeContact = () =>
-    remove.mutate(contact.id, {
-      onSuccess: () => feedback.removed(contact.value, () => restore.mutate(contact.id, { onError: (error) => feedback.failed(error) })),
-      onError: (error) => feedback.failed(error),
-    });
+  const removeWithUndo = useRemoveWithUndo();
+  const removeContact = () => removeWithUndo(() => remove.mutateAsync(contact.id), () => restore.mutateAsync(contact.id), contact.value);
   return (
     <div className="flex items-center gap-3 py-1">
       <Glyph className="size-5 shrink-0 text-primary" aria-hidden />

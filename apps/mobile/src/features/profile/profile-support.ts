@@ -83,3 +83,15 @@ export function useUploadRules() {
     photos: rule(settings.uploads.photoTypes, settings.uploads.maxPhotoBytes),
   };
 }
+
+export function useRemoveWithUndo() {
+  const feedback = useProfileFeedback();
+  return (remove: () => Promise<unknown>, restore: () => Promise<unknown>, label: string, after?: () => void) =>
+    void remove().then(
+      () => {
+        feedback.removed(label, () => void restore().catch((error: unknown) => feedback.failed(error)));
+        after?.();
+      },
+      (error: unknown) => feedback.failed(error),
+    );
+}

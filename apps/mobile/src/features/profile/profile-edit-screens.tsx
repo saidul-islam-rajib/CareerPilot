@@ -20,7 +20,7 @@ import { ContactKind, StatusTone } from '@careerpilot/domain-ui-logic';
 import { cleanText, normalizeSkills } from '@careerpilot/dynamic-forms';
 import { useTheme } from '@/core/theme/theme';
 import { Banner, Button, ButtonVariant, ErrorState, LoadingState, Screen, Segmented, TagInput, Text, TextField, TextTone, TextVariant } from '@/ui';
-import { useProfileFeedback } from './profile-support';
+import { useProfileFeedback, useRemoveWithUndo } from './profile-support';
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const SUMMARY_LINES = 6;
@@ -92,6 +92,7 @@ function ContactForm({ contact }: { contact?: Contact }) {
   const theme = useTheme();
   const router = useRouter();
   const feedback = useProfileFeedback();
+  const removeWithUndo = useRemoveWithUndo();
   const { settings } = useProfileSettings();
   const add = useAddContact();
   const update = useUpdateContact();
@@ -129,13 +130,7 @@ function ContactForm({ contact }: { contact?: Contact }) {
     if (!contact) {
       return;
     }
-    remove.mutate(contact.id, {
-      onSuccess: () => {
-        feedback.removed(contact.value, () => restore.mutate(contact.id, { onError: (failure) => feedback.failed(failure) }));
-        router.back();
-      },
-      onError: (failure) => feedback.failed(failure),
-    });
+    removeWithUndo(() => remove.mutateAsync(contact.id), () => restore.mutateAsync(contact.id), contact.value, () => router.back());
   };
 
   return (

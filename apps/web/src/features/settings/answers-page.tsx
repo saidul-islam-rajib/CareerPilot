@@ -49,14 +49,8 @@ function AnswerDialog({ answer, defaults, onClose }: { answer?: SavedAnswer; def
   );
 }
 
-function SavedRow({ answer, onEdit }: { answer: SavedAnswer; onEdit: () => void }) {
+function SavedRow({ answer, onEdit, onRemove }: { answer: SavedAnswer; onEdit: () => void; onRemove: () => void }) {
   const t = useT();
-  const toast = useToast();
-  const actions = useAnswerActions();
-  const remove = () =>
-    actions.remove.mutate(answer.id, {
-      onSuccess: () => toast.show({ message: t('answers.removed'), actionLabel: t('common.undo'), onAction: () => actions.restore.mutate(answer.id) }),
-    });
   return (
     <li className="flex items-start gap-3 py-3">
       <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -68,7 +62,7 @@ function SavedRow({ answer, onEdit }: { answer: SavedAnswer; onEdit: () => void 
         label={t('common.moreActions', { item: answer.question })}
         items={[
           { label: t('common.edit'), icon: Pencil, onSelect: onEdit },
-          { label: t('common.remove'), icon: Trash2, onSelect: remove, destructive: true },
+          { label: t('common.remove'), icon: Trash2, onSelect: onRemove, destructive: true },
         ]}
       />
     </li>
@@ -104,7 +98,13 @@ function GroupRow({ group, onSave }: { group: QuestionGroup; onSave: () => void 
 
 export function AnswersPage() {
   const t = useT();
+  const toast = useToast();
   const bank = useQuestionBank();
+  const actions = useAnswerActions();
+  const remove = (answer: SavedAnswer) =>
+    void actions.remove.mutateAsync(answer.id).then(() =>
+      toast.show({ message: t('answers.removed'), actionLabel: t('common.undo'), onAction: () => void actions.restore.mutateAsync(answer.id) }),
+    );
   const [dialog, setDialog] = useState<DialogState>();
   const open = (answer?: SavedAnswer, defaults?: Partial<SavedAnswerInput>) => setDialog((current) => ({ answer, defaults, version: (current?.version ?? 0) + 1 }));
   const fromGroup = (group: QuestionGroup) => open(undefined, { topic: group.topic, question: group.question, answer: group.lastAnswer });
@@ -162,7 +162,7 @@ export function AnswersPage() {
               ) : (
                 <ul className="divide-y divide-border">
                   {bank.data.saved.map((answer) => (
-                    <SavedRow key={answer.id} answer={answer} onEdit={() => open(answer)} />
+                    <SavedRow key={answer.id} answer={answer} onEdit={() => open(answer)} onRemove={() => remove(answer)} />
                   ))}
                 </ul>
               )}

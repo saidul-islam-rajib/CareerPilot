@@ -18,7 +18,7 @@ import {
 } from '@careerpilot/client-core';
 import { DocumentKind, EnumKey, enumValues } from '@careerpilot/domain-ui-logic';
 import { Button, Card, DocumentViewer, EnumBadge, FileDropZone, FormDialog, OverflowMenu, SelectField, SortableList, TextField, checkFile } from '@careerpilot/ui-web';
-import { sectionAnchor, uploadSource, useProfileFeedback, useUploadRules } from './profile-support';
+import { sectionAnchor, uploadSource, useProfileFeedback, useRemoveWithUndo, useUploadRules } from './profile-support';
 
 function DocumentDialog({ document, open, onOpenChange }: { document: ProfileDocument; open: boolean; onOpenChange: (open: boolean) => void }) {
   const t = useT();
@@ -79,6 +79,7 @@ function DocumentRow({ document, index, count, onEdit }: { document: ProfileDocu
   const t = useT();
   const format = useFormat();
   const feedback = useProfileFeedback();
+  const removeWithUndo = useRemoveWithUndo();
   const rules = useUploadRules();
   const remove = useRemoveDocument();
   const restore = useRestoreDocument();
@@ -101,11 +102,7 @@ function DocumentRow({ document, index, count, onEdit }: { document: ProfileDocu
     );
   };
 
-  const removeDocument = () =>
-    remove.mutate(document.id, {
-      onSuccess: () => feedback.removed(document.name, () => restore.mutate(document.id, { onError: (error) => feedback.failed(error) })),
-      onError: (error) => feedback.failed(error),
-    });
+  const removeDocument = () => removeWithUndo(() => remove.mutateAsync(document.id), () => restore.mutateAsync(document.id), document.name);
 
   return (
     <div className="flex items-center gap-3 py-2">

@@ -8,7 +8,7 @@ import { describeEntry, emptyValues, formValues, validateEntry, type EntryErrors
 import { useTheme } from '@/core/theme/theme';
 import { Button, ButtonVariant, Checkbox, ErrorState, Screen, Segmented, Text, TextField, TextTone, TextVariant } from '@/ui';
 import { ServerError, useLoadedProfile } from './profile-edit-screens';
-import { useProfileFeedback } from './profile-support';
+import { useProfileFeedback, useRemoveWithUndo } from './profile-support';
 
 const KEYBOARDS: Partial<Record<ProfileFieldType, KeyboardTypeOptions>> = {
   [ProfileFieldType.Email]: 'email-address',
@@ -72,6 +72,7 @@ function EntryForm({ section, entry }: { section: SectionDefinition; entry?: Pro
   const theme = useTheme();
   const router = useRouter();
   const feedback = useProfileFeedback();
+  const removeWithUndo = useRemoveWithUndo();
   const { validationContext, optionLabel } = useProfileSettings();
   const add = useAddEntry(section.key);
   const update = useUpdateEntry(section.key);
@@ -120,13 +121,7 @@ function EntryForm({ section, entry }: { section: SectionDefinition; entry?: Pro
       return;
     }
     const title = describeEntry(section, entry.values, optionLabel).title;
-    remove.mutate(entry.id, {
-      onSuccess: () => {
-        feedback.removed(title, () => restore.mutate(entry.id, { onError: (failure) => feedback.failed(failure) }));
-        router.back();
-      },
-      onError: (failure) => feedback.failed(failure),
-    });
+    removeWithUndo(() => remove.mutateAsync(entry.id), () => restore.mutateAsync(entry.id), title, () => router.back());
   };
   const errorCount = Object.keys(errors).length;
 

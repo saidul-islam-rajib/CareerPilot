@@ -19,7 +19,7 @@ import { DocumentKind, EnumKey, enumValues } from '@careerpilot/domain-ui-logic'
 import { useTheme } from '@/core/theme/theme';
 import { Button, ButtonVariant, Card, ErrorState, ListRow, Screen, Section, Segmented, Text, TextField, TextVariant } from '@/ui';
 import { ServerError, useLoadedProfile } from './profile-edit-screens';
-import { pickDocument, useProfileFeedback, useUploadRules } from './profile-support';
+import { pickDocument, useProfileFeedback, useRemoveWithUndo, useUploadRules } from './profile-support';
 
 function DocumentForm({ document }: { document: ProfileDocument }) {
   const t = useT();
@@ -27,6 +27,7 @@ function DocumentForm({ document }: { document: ProfileDocument }) {
   const router = useRouter();
   const format = useFormat();
   const feedback = useProfileFeedback();
+  const removeWithUndo = useRemoveWithUndo();
   const rules = useUploadRules();
   const enumDisplay = useEnumDisplay();
   const { settings } = useProfileSettings();
@@ -68,14 +69,7 @@ function DocumentForm({ document }: { document: ProfileDocument }) {
     uploadVersion.mutate({ id: document.id, file: source }, { onSuccess: () => feedback.saved(t('profile.uploaded', { name: source.name })), onError: (failure) => feedback.failed(failure, rules.documents.params) });
   };
 
-  const removeDocument = () =>
-    remove.mutate(document.id, {
-      onSuccess: () => {
-        feedback.removed(document.name, () => restore.mutate(document.id, { onError: (failure) => feedback.failed(failure) }));
-        router.back();
-      },
-      onError: (failure) => feedback.failed(failure),
-    });
+  const removeDocument = () => removeWithUndo(() => remove.mutateAsync(document.id), () => restore.mutateAsync(document.id), document.name, () => router.back());
 
   return (
     <Screen footer={<Button label={t('common.save')} onPress={save} loading={update.isPending} fullWidth />} testID="document-screen">

@@ -75,3 +75,15 @@ export function useProfileFeedback() {
     removed: (item: string, undo: () => void) => toast.show({ message: t('common.removed', { item }), actionLabel: t('common.undo'), onAction: undo }),
   };
 }
+
+export function useRemoveWithUndo() {
+  const feedback = useProfileFeedback();
+  return (remove: () => Promise<unknown>, restore: () => Promise<unknown>, label: string, after?: () => void) =>
+    void remove().then(
+      () => {
+        feedback.removed(label, () => void restore().catch((error: unknown) => feedback.failed(error)));
+        after?.();
+      },
+      (error: unknown) => feedback.failed(error),
+    );
+}

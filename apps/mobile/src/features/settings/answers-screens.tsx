@@ -119,11 +119,9 @@ function AnswerForm({ answer, defaults }: { answer?: SavedAnswer; defaults?: Par
   const topics = enumValues(AnswerTopic).map((topic) => ({ value: topic, label: t(`enums.answer_topic.${topic}`) }));
   const remove = () =>
     answer &&
-    actions.remove.mutate(answer.id, {
-      onSuccess: () => {
-        snackbar.show({ message: t('answers.removed'), actionLabel: t('common.undo'), onAction: () => actions.restore.mutate(answer.id) });
-        router.back();
-      },
+    void actions.remove.mutateAsync(answer.id).then(() => {
+      snackbar.show({ message: t('answers.removed'), actionLabel: t('common.undo'), onAction: () => void actions.restore.mutateAsync(answer.id) });
+      router.back();
     });
   return (
     <Screen testID="answer-screen" footer={<Button label={t('common.save')} onPress={form.submit} loading={form.saving} fullWidth testID="answer-save" />}>

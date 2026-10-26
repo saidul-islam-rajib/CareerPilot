@@ -7,7 +7,7 @@ import { sortEntries, useFormat, useProfileSettings, useRemoveEntry, useReorderE
 import { describeEntry, type SectionDefinition } from '@careerpilot/dynamic-forms';
 import { Button, Card, OverflowMenu, SortableList } from '@careerpilot/ui-web';
 import { EntryDialog } from './entry-dialog';
-import { sectionAnchor, sectionIcon, useProfileFeedback } from './profile-support';
+import { sectionAnchor, sectionIcon, useRemoveWithUndo } from './profile-support';
 
 interface DialogState {
   open: boolean;
@@ -67,7 +67,7 @@ function EntryCard({
 
 export function EntrySection({ section, entries }: { section: SectionDefinition; entries: ProfileEntry[] | undefined }) {
   const t = useT();
-  const feedback = useProfileFeedback();
+  const removeWithUndo = useRemoveWithUndo();
   const { optionLabel } = useProfileSettings();
   const reorder = useReorderEntries(section.key);
   const remove = useRemoveEntry(section.key);
@@ -80,10 +80,7 @@ export function EntrySection({ section, entries }: { section: SectionDefinition;
   const open = (entry?: ProfileEntry) => setDialog((current) => ({ open: true, entry, version: current.version + 1 }));
   const removeEntry = (entry: ProfileEntry) => {
     const title = describeEntry(section, entry.values, optionLabel).title;
-    remove.mutate(entry.id, {
-      onSuccess: () => feedback.removed(title, () => restore.mutate(entry.id, { onError: (error) => feedback.failed(error) })),
-      onError: (error) => feedback.failed(error),
-    });
+    removeWithUndo(() => remove.mutateAsync(entry.id), () => restore.mutateAsync(entry.id), title);
   };
 
   return (
