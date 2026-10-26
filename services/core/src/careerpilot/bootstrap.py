@@ -31,6 +31,7 @@ from careerpilot.candidate.services.preferences import PreferencesService
 from careerpilot.candidate.services.profile import ProfileService
 from careerpilot.candidate.services.public_config import PublicConfigService
 from careerpilot.candidate.services.submission import SubmissionContext, SubmissionService
+from careerpilot.candidate.services.verification import ContactVerificationService, VerificationContext
 from careerpilot.discovery.connectors.registry import ConnectorRegistry, first_party_connectors
 from careerpilot.discovery.fetchers import fetcher_for
 from careerpilot.discovery.ports import Fetcher
@@ -46,6 +47,7 @@ from careerpilot.platform.email_delivery import EmailSender, SmtpEmailSender, Sm
 from careerpilot.platform.enums import ApplicationMode, SubmissionWindowKind
 from careerpilot.platform.files import FileLinkSigner, FileStorage, LocalFileStorage, SampleAwareStorage
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore
+from careerpilot.platform.one_time_codes import OneTimeCodes
 from careerpilot.platform.persistence import Database, create_database
 from careerpilot.platform.security import Argon2PasswordHasher, PasswordHasher, TokenService, token_secret_from_environment
 from careerpilot.platform.seed import load_demo_seed
@@ -80,6 +82,7 @@ class Container:
     file_links: FileLinkSigner
     submissions: SubmissionService
     digests: DigestService
+    verification: ContactVerificationService
     source_checks: SourceCheckRunner
 
 
@@ -243,12 +246,11 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     seed_discovery(discovery, repos.directory, cfg.discovery.failing_after_failures)
     recommendations.refresh_all()
     source_checks = SourceCheckRunner(discovery, repos.directory, cfg.discovery.failing_after_failures, recommendations.refresh_all)
-    digests = DigestService(DigestContext(candidate=candidate, sender=options.email_sender or email_sender_for(cfg)))
-    submissions = SubmissionService(
-        SubmissionContext(
-            candidate=candidate, platform=repos.platform.get, sender=options.email_sender or email_sender_for(cfg), storage=storage
-        )
-    )
+    sender = options.email_sender or email_sender_for(cfg)
+    digests = DigestService(DigestContext(candidate=candidate, sender=sender))
+    submissions = SubmissionService(SubmissionContext(candidate=candidate, platform=repos.platform.get, sender=sender, storage=storage))
+    codes = OneTimeCodes(coord_store, keys, cfg.verification, secret)
+    verification = ContactVerificationService(VerificationContext(candidate=candidate, codes=codes, sender=sender))
     release = release_fingerprint(cfg.model_dump_json(), version(PACKAGE))
     metadata = MetadataCache(cache_store, keys, cfg.coordination, release=release)
     public_config = PublicConfigService(cfg, demo["enumValues"], lambda: repos.platform.get().active_theme, metadata)
@@ -279,4 +281,5 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         file_links=file_links,
         submissions=submissions,
         digests=digests,
+        verification=verification,
     )

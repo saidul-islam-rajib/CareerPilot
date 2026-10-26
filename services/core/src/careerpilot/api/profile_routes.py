@@ -52,6 +52,10 @@ class OrderBody(CamelModel):
     ordered_ids: list[str]
 
 
+class CodeBody(CamelModel):
+    code: str
+
+
 class DocumentUpdateBody(CamelModel):
     name: str | None = None
     kind: DocumentKind | None = None
@@ -105,6 +109,16 @@ def set_photo(file: UploadedFile, caller: Caller) -> JSONResponse:
 @router.put("/profile/photo/crop")
 def set_photo_crop(body: PhotoCrop, caller: Caller) -> JSONResponse:
     return caller.respond(caller.profiles.set_photo_crop(caller.user_id, body))
+
+
+@router.post("/profile/contacts/{contact_id}/verification")
+def send_contact_code(contact_id: str, caller: Caller) -> JSONResponse:
+    return ok(caller.services.verification.send(caller.user_id, contact_id))
+
+
+@router.post("/profile/contacts/{contact_id}/verification/confirm")
+def confirm_contact_code(contact_id: str, body: CodeBody, caller: Caller) -> JSONResponse:
+    return caller.respond(caller.services.verification.confirm(caller.user_id, contact_id, body.code))
 
 
 @router.delete("/profile/photo")

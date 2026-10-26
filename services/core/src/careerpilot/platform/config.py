@@ -363,6 +363,15 @@ class NotificationsConfig(Strict):
     max_items_per_section: int = Field(gt=0)
 
 
+class VerificationConfig(Strict):
+    code_length: int = Field(ge=4, le=10)
+    code_ttl_seconds: int = Field(gt=0)
+    max_attempts: int = Field(gt=0)
+    resend_cooldown_seconds: int = Field(ge=0)
+    sends_per_hour: int = Field(gt=0)
+    sms_enabled: bool
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -383,6 +392,7 @@ class Settings(Strict):
     profile: ProfileConfig
     submission: SubmissionConfig
     notifications: NotificationsConfig
+    verification: VerificationConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

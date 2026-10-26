@@ -188,5 +188,5 @@ class DigestService:
         branding = self._candidate.settings.branding
         parts.append(translate("digest.openApp", {"url": self._config.web_base_url}))
         parts.append(translate("digest.footer"))
-        parts.append(translate("digest.credit", {"url": str(branding.developer_url)}))
+        parts.append(translate("email.credit", {"url": str(branding.developer_url)}))
         return LINE.join(parts)

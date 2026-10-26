@@ -1,0 +1,7 @@
+verification:
+  code_length: 6
+  code_ttl_seconds: 600
+  max_attempts: 5
+  resend_cooldown_seconds: 60
+  sends_per_hour: 5
+  sms_enabled: false

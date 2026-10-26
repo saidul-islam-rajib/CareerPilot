@@ -28,6 +28,7 @@ class KeyNamespace(StrEnum):
     META = "meta"
     SIGN_IN_FAILURES = "auth:fail"
     AUTH_REQUESTS = "rl:auth"
+    ONE_TIME_CODES = "otp"
 
 
 def release_fingerprint(*parts: str) -> str:

@@ -883,7 +883,32 @@
     "deadlineLine": "{title} at {organization} – closes {date}",
     "more": "and {count} more",
     "openApp": "Open CareerPilot: {url}",
-    "footer": "You get this email because the daily digest is on. Change it in Settings.",
+    "footer": "You get this email because the daily digest is on. Change it in Settings."
+  },
+  "email": {
     "credit": "Developed by Team Sober – {url}"
+  },
+  "verification": {
+    "emailSubject": "Your CareerPilot verification code",
+    "emailGreeting": "Hello {name},",
+    "emailIntro": "Use this code to verify {destination} in CareerPilot:",
+    "emailExpiry": "The code expires in {minutes} minutes. If you didn't ask for it, you can ignore this email.",
+    "verify": "Verify",
+    "title": "Verify your email",
+    "sentTo": "We sent a {length}-digit code to {destination}.",
+    "expires": "It expires in {minutes} minutes.",
+    "code": "Verification code",
+    "submit": "Verify",
+    "resend": "Send a new code",
+    "resendIn": "Send a new code in {seconds}s",
+    "verified": "Email verified",
+    "codeInvalid": "That code isn't right. Check it and try again.",
+    "codeExpired": "This code has expired. Send a new one.",
+    "tooManyAttempts": "Too many wrong codes. Send a new one.",
+    "resendCooldown": "Please wait a moment before asking for another code.",
+    "sendLimit": "You've asked for several codes. Try again in an hour.",
+    "deliveryFailed": "We couldn't send the email. Try again in a few minutes.",
+    "smsUnavailable": "Phone numbers can't be verified yet.",
+    "alreadyVerified": "This contact is already verified."
   }
 }
