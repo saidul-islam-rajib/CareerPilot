@@ -159,4 +159,29 @@ describe('ProfilePage', () => {
     expect(await screen.findByText('Photo updated')).toBeInTheDocument();
     expect(screen.queryByRole('dialog', { name: 'Adjust photo' })).not.toBeInTheDocument();
   });
+
+  it('verifies an email address with a code', async () => {
+    const user = userEvent.setup();
+    const { services } = await renderProfile();
+    await user.click(within(region('Emails and phones')).getByRole('button', { name: 'Verify ayesha.personal@example.com' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Verify your email' });
+    expect(within(dialog).getByText(/We'll email a 6-digit code to ayesha.personal@example.com/)).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Send code' }));
+    expect(await within(dialog).findByText(/We sent a 6-digit code to a•••@example.com/)).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: /Send a new code in \d+s/ })).toBeDisabled();
+    const code = within(dialog).getByLabelText('Verification code');
+    await user.type(code, '123');
+    await user.click(within(dialog).getByRole('button', { name: 'Verify' }));
+    expect(await within(dialog).findByText('Enter the 6-digit code.')).toBeInTheDocument();
+    await user.clear(code);
+    await user.type(code, '000000');
+    await user.click(within(dialog).getByRole('button', { name: 'Verify' }));
+    expect(await within(dialog).findByText("That code isn't right. Check it and try again.")).toBeInTheDocument();
+    await user.clear(code);
+    await user.type(code, '246810');
+    await user.click(within(dialog).getByRole('button', { name: 'Verify' }));
+    expect(await screen.findByText('Email verified')).toBeInTheDocument();
+    await waitFor(async () => expect((await services.api.profile.getProfile()).contacts.find((c) => c.id === 'c_email_personal')?.verified).toBe(true));
+    expect(screen.queryByRole('button', { name: 'Verify ayesha.personal@example.com' })).not.toBeInTheDocument();
+  });
 });

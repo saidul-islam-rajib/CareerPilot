@@ -23,6 +23,7 @@ export default function SignedInLayout() {
       <Stack.Screen name="viewer" options={{ headerShown: false, presentation: 'fullScreenModal', animation: 'fade' }} />
       <Stack.Screen name="profile/basics" options={{ title: t('profile.editBasics') }} />
       <Stack.Screen name="profile/photo" options={{ title: t('profile.adjustPhoto') }} />
+      <Stack.Screen name="profile/verify-contact" options={{ title: t('verification.title') }} />
       <Stack.Screen name="profile/contact" options={{ title: t('profile.contacts') }} />
       <Stack.Screen name="profile/entry" options={{ title: t('profile.title') }} />
       <Stack.Screen name="profile/skills" options={{ title: t('profile.editSkills') }} />

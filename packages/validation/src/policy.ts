@@ -33,5 +33,6 @@ export const ValidationMessage = {
   Phone: 'validation.phone',
   Range: 'validation.range',
   Time: 'validation.time',
+  VerificationCode: 'validation.verificationCode',
 } as const;
 export type ValidationMessage = (typeof ValidationMessage)[keyof typeof ValidationMessage];

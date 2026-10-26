@@ -11,6 +11,7 @@ api:
   timeout_ms: 15000
   upload_timeout_ms: 120000
   demo_latency_ms: 250
+  demo_verification_code: "246810"
 query:
   stale_time_ms: 30000
   retry_count: 6

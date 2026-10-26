@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ContactKind, DocumentKind } from '@careerpilot/domain-ui-logic';
 import { ApiErrorCode, isApiError } from '../errors';
-import { createTestApi } from '../test-support';
+import { TEST_VERIFICATION_CODE, createTestApi } from '../test-support';
 import type { UploadSource } from '../types';
 import { samplePdf } from './sample-pdf';
 
@@ -57,6 +57,20 @@ describe('in-memory profile store', () => {
     expect(replaced.photoCrop).toBeUndefined();
     await api.profile.removePhoto();
     expect(await failure(api.profile.setPhotoCrop(crop))).toEqual({ code: ApiErrorCode.NotFound, detail: 'photo' });
+  });
+
+  it('verifies an email contact with a code', async () => {
+    const api = createTestApi();
+    const personal = 'c_email_personal';
+    expect(await failure(api.profile.confirmContactCode(personal, TEST_VERIFICATION_CODE))).toEqual({ code: ApiErrorCode.Validation, detail: 'code_expired' });
+    const challenge = await api.profile.sendContactCode(personal);
+    expect(challenge).toMatchObject({ destination: 'a•••@example.com', resendAfterSeconds: 60 });
+    expect(await failure(api.profile.sendContactCode(personal))).toEqual({ code: ApiErrorCode.TooManyAttempts, detail: 'resend_cooldown' });
+    expect((await failure(api.profile.confirmContactCode(personal, '000000'))).detail).toBe('code_invalid');
+    const verified = await api.profile.confirmContactCode(personal, TEST_VERIFICATION_CODE);
+    expect(verified.contacts.find((c) => c.id === personal)?.verified).toBe(true);
+    expect(await failure(api.profile.sendContactCode(personal))).toEqual({ code: ApiErrorCode.Conflict, detail: 'already_verified' });
+    expect((await failure(api.profile.sendContactCode('c_phone_mobile'))).detail).toBe('already_verified');
   });
 
   it('cleans skills and rejects overly long ones', async () => {

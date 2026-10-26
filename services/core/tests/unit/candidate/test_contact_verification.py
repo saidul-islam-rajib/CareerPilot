@@ -105,4 +105,9 @@ def test_verification_endpoints(app: Container, sender: InMemoryEmailSender) -> 
     assert (wrong.status_code, wrong.json()["detail"]) == (422, "code_invalid")
     body = client.post(f"/v1/profile/contacts/{PERSONAL}/verification/confirm", headers=headers, json={"code": last_code(sender)}).json()
     assert next(c for c in body["contacts"] if c["id"] == PERSONAL)["verified"] is True
-    assert client.get("/v1/config").json()["verification"] == {"codeLength": 6, "resendCooldownSeconds": 60, "smsEnabled": False}
+    assert client.get("/v1/config").json()["verification"] == {
+        "codeLength": 6,
+        "codeTtlSeconds": 600,
+        "resendCooldownSeconds": 60,
+        "smsEnabled": False,
+    }

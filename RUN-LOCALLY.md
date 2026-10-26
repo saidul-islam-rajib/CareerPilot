@@ -28,7 +28,7 @@ The first build takes about 10 minutes; later starts take seconds. Leave out `-f
 | Admin app | http://localhost:3001 | `admin@sober.com` / `admin@sober.com` |
 | User API docs | http://localhost:8000/docs | — |
 | Admin API docs | http://localhost:8001/docs | — |
-| Mailpit (all local email) | http://localhost:8025 | — |
+| Mailpit (all local email, including verification codes) | http://localhost:8025 | — |
 | Grafana (logs, traces, metrics) | http://localhost:3100 → Dashboards → CareerPilot | `admin` / `admin` |
 | Temporal (scheduled discovery runs) | http://localhost:8233 | — |
 
@@ -64,7 +64,7 @@ pnpm install
 pnpm --filter @careerpilot/mobile start
 ```
 
-Scan the QR code: with the phone camera on iPhone, or from inside Expo Go on Android. In the terminal, press `a` to open the Android emulator, `w` for the browser, `r` to reload. Sign in with `admin@sober.com` / `admin@sober.com`.
+Scan the QR code: with the phone camera on iPhone, or from inside Expo Go on Android. In the terminal, press `a` to open the Android emulator, `w` for the browser, `r` to reload. Sign in with `admin@sober.com` / `admin@sober.com`. With demo data no email is sent: to verify an email address, enter the code `246810`.
 
 ### B2. Real backend (Docker from option A)
 

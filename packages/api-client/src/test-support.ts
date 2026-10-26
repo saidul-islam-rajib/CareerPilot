@@ -50,8 +50,11 @@ export const testConfig: PublicConfig = {
       { key: 'evening', time: '18:00' },
     ],
   },
+  verification: { codeLength: 6, codeTtlSeconds: 600, resendCooldownSeconds: 60, smsEnabled: false },
   profile: testProfileSettings,
 };
+
+export const TEST_VERIFICATION_CODE = '246810';
 
 export function createTestApi() {
   return createInMemoryApi({
@@ -60,6 +63,7 @@ export function createTestApi() {
     clock: fixedClock,
     ids: sequentialIds(),
     latencyMs: 0,
+    demoVerificationCode: TEST_VERIFICATION_CODE,
     approvalValidityDays: 3,
     recentWindowDays: 7,
   });

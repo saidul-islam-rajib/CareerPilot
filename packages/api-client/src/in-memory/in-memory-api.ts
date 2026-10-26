@@ -30,6 +30,7 @@ export interface InMemoryApiOptions {
   clock: Clock;
   ids: IdGenerator;
   latencyMs: number;
+  demoVerificationCode: string;
   approvalValidityDays: number;
   recentWindowDays: number;
 }
@@ -267,7 +268,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
         ),
       getApplication: async (id) => respond(state.applications.find((a) => a.id === id) ?? notFound()),
     },
-    profile: createProfileStore({ profile: state.profile, config, clock, ids, respond, reject: failWith }),
+    profile: createProfileStore({ profile: state.profile, config, clock, ids, respond, reject: failWith, verificationCode: options.demoVerificationCode }),
     settings: {
       getSettings: async () => respond(state.settings),
       async updateTrack(id, update) {

@@ -118,6 +118,7 @@
   },
   "validation": {
     "required": "This field is required.",
+    "verificationCode": "Enter the {length}-digit code.",
     "email": "Enter a valid email address.",
     "passwordLength": "Use at least {min} characters.",
     "passwordComplexity": "Use upper and lower case letters, a number, and a symbol.",
@@ -894,7 +895,10 @@
     "emailIntro": "Use this code to verify {destination} in CareerPilot:",
     "emailExpiry": "The code expires in {minutes} minutes. If you didn't ask for it, you can ignore this email.",
     "verify": "Verify",
+    "verifyContact": "Verify {value}",
     "title": "Verify your email",
+    "willSend": "We'll email a {length}-digit code to {destination}.",
+    "sendCode": "Send code",
     "sentTo": "We sent a {length}-digit code to {destination}.",
     "expires": "It expires in {minutes} minutes.",
     "code": "Verification code",

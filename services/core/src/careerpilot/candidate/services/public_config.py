@@ -78,6 +78,7 @@ class PublicConfigService:
             "openSourceComponents": [{"name": c.name, "licence": c.licence, "url": str(c.url)} for c in s.open_source_components],
             "verification": {
                 "codeLength": s.verification.code_length,
+                "codeTtlSeconds": s.verification.code_ttl_seconds,
                 "resendCooldownSeconds": s.verification.resend_cooldown_seconds,
                 "smsEnabled": s.verification.sms_enabled,
             },

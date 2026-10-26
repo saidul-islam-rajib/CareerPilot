@@ -86,6 +86,10 @@ export function createSchemas(policy: ValidationPolicy) {
   return { signIn, register, forgotPassword, email, phone, answer, resultCount, submissionWindow, changePassword, notifications };
 }
 
+export function verificationCodeSchema(length: number) {
+  return z.object({ code: z.string().trim().regex(new RegExp(`^[0-9]{${length}}$`), ValidationMessage.VerificationCode) });
+}
+
 export type Schemas = ReturnType<typeof createSchemas>;
 export type SignInInput = z.infer<Schemas['signIn']>;
 export type RegisterInput = z.infer<Schemas['register']>;

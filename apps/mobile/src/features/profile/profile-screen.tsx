@@ -10,6 +10,7 @@ import {
   useFormat,
   useProfile,
   useProfileSettings,
+  usePublicConfig,
   useRemovePhoto,
   useReorderContacts,
   useReorderDocuments,
@@ -68,6 +69,9 @@ function AddButton({ label, onPress }: { label: string; onPress: () => void }) {
 function ContactRow({ contact, onPress }: { contact: Contact; onPress: () => void }) {
   const t = useT();
   const theme = useTheme();
+  const router = useRouter();
+  const { config } = usePublicConfig();
+  const canVerify = !contact.verified && (contact.kind === ContactKind.Email || config.verification.smsEnabled);
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`${t('common.edit')}: ${contact.value}`} onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space.sm, paddingVertical: theme.space.sm }}>
       <Icon icon={contact.kind === ContactKind.Email ? Mail : Phone} color={theme.colors.primary} />
@@ -79,8 +83,26 @@ function ContactRow({ contact, onPress }: { contact: Contact; onPress: () => voi
           <Text variant={TextVariant.Caption} tone={TextTone.Muted}>
             {contact.label}
           </Text>
-          {contact.verified ? <Icon icon={BadgeCheck} size={IconSize.Small} color={theme.colors.success} /> : null}
+          {contact.verified ? (
+            <Icon icon={BadgeCheck} size={IconSize.Small} color={theme.colors.success} />
+          ) : (
+            <Text variant={TextVariant.Caption} tone={TextTone.Muted}>
+              {t('profile.notVerified')}
+            </Text>
+          )}
           {contact.isPrimary ? <Badge label={t('common.primary')} tone={StatusTone.Primary} /> : null}
+          {canVerify ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('verification.verifyContact', { value: contact.value })}
+              hitSlop={theme.space.sm}
+              onPress={() => router.push(Routes.verifyContact(contact.id))}
+            >
+              <Text variant={TextVariant.Caption} tone={TextTone.Primary}>
+                {t('verification.verify')}
+              </Text>
+            </Pressable>
+          ) : null}
         </Row>
       </View>
     </Pressable>

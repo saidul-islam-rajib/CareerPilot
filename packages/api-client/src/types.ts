@@ -78,7 +78,21 @@ export interface PublicConfig {
   branding: { productName: string; developerName: string; developerUrl: string };
   openSourceComponents: OpenSourceComponent[];
   notifications: NotificationSettings;
+  verification: VerificationSettings;
   profile: ProfileSettings;
+}
+
+export interface VerificationSettings {
+  codeLength: number;
+  codeTtlSeconds: number;
+  resendCooldownSeconds: number;
+  smsEnabled: boolean;
+}
+
+export interface VerificationChallenge {
+  destination: string;
+  expiresAt: IsoDateTime;
+  resendAfterSeconds: number;
 }
 
 export interface DigestTimePreset {

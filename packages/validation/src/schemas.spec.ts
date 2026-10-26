@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ValidationMessage, type ValidationPolicy } from './policy';
-import { createSchemas, validate } from './schemas';
+import { createSchemas, validate, verificationCodeSchema } from './schemas';
 
 const policy: ValidationPolicy = {
   password: { minLength: 10, maxLength: 128, requireMixedCase: true, requireDigit: true, requireSymbol: true },
@@ -82,5 +82,14 @@ describe('account schemas', () => {
   it('accepts times of day only', () => {
     expect(validate(schemas.notifications, { digestEnabled: true, digestTime: '07:30' }).ok).toBe(true);
     expect(validate(schemas.notifications, { digestEnabled: false, digestTime: '7pm' })).toEqual({ ok: false, errors: { digestTime: ValidationMessage.Time } });
+  });
+});
+
+describe('verificationCodeSchema', () => {
+  it('accepts exactly the configured number of digits', () => {
+    const schema = verificationCodeSchema(6);
+    expect(validate(schema, { code: ' 246810 ' })).toEqual({ ok: true, value: { code: '246810' } });
+    expect(validate(schema, { code: '24681' })).toEqual({ ok: false, errors: { code: ValidationMessage.VerificationCode } });
+    expect(validate(schema, { code: '24681a' }).ok).toBe(false);
   });
 });

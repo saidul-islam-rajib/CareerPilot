@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { BadgeCheck, Mail, Pencil, Phone, Plus, Star, Trash2 } from 'lucide-react';
+import { BadgeCheck, Mail, Pencil, Phone, Plus, RotateCw, Star, Trash2 } from 'lucide-react';
 import type { Contact } from '@careerpilot/api-client';
 import {
   profileErrorKey,
@@ -12,6 +12,8 @@ import {
   useReorderContacts,
   useRestoreContact,
   useSetPrimaryContact,
+  useContactVerification,
+  usePublicConfig,
   useT,
   useUpdateContact,
 } from '@careerpilot/client-core';
@@ -103,8 +105,59 @@ function ContactDialog({ contact, open, onOpenChange }: { contact?: Contact; ope
   );
 }
 
-function ContactRow({ contact, index, count, onEdit }: { contact: Contact; index: number; count: number; onEdit: () => void }) {
+function VerifyDialog({ contact, onOpenChange }: { contact: Contact; onOpenChange: (open: boolean) => void }) {
   const t = useT();
+  const feedback = useProfileFeedback();
+  const verification = useContactVerification(contact.id, {
+    onVerified: () => {
+      onOpenChange(false);
+      feedback.saved(t('verification.verified'));
+    },
+  });
+  const sent = verification.challenge !== undefined;
+  return (
+    <FormDialog
+      open
+      onOpenChange={onOpenChange}
+      title={t('verification.title')}
+      submitLabel={sent ? t('verification.submit') : t('verification.sendCode')}
+      submitting={sent ? verification.confirming : verification.sending}
+      error={verification.error && !sent ? t(verification.error) : undefined}
+      onSubmit={sent ? verification.submit : verification.send}
+    >
+      {sent ? (
+        <>
+          <p className="text-sm text-foreground">
+            {t('verification.sentTo', { length: verification.codeLength, destination: verification.challenge?.destination ?? '' })}{' '}
+            {t('verification.expires', { minutes: verification.expiresInMinutes })}
+          </p>
+          <TextField
+            label={t('verification.code')}
+            value={verification.code}
+            onChange={(event) => verification.setCode(event.target.value)}
+            error={verification.error}
+            errorParams={{ length: verification.codeLength }}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={verification.codeLength}
+            autoFocus
+            className="text-center text-xl font-semibold tracking-[0.4em]"
+          />
+          <Button type="button" variant="ghost" size="sm" icon={RotateCw} className="self-start" disabled={verification.resendIn > 0} loading={verification.sending} onClick={verification.send}>
+            {verification.resendIn > 0 ? t('verification.resendIn', { seconds: verification.resendIn }) : t('verification.resend')}
+          </Button>
+        </>
+      ) : (
+        <p className="text-sm text-foreground">{t('verification.willSend', { length: verification.codeLength, destination: contact.value })}</p>
+      )}
+    </FormDialog>
+  );
+}
+
+function ContactRow({ contact, index, count, onEdit, onVerify }: { contact: Contact; index: number; count: number; onEdit: () => void; onVerify: () => void }) {
+  const t = useT();
+  const { config } = usePublicConfig();
+  const canVerify = !contact.verified && (contact.kind === ContactKind.Email || config.verification.smsEnabled);
   const feedback = useProfileFeedback();
   const setPrimary = useSetPrimaryContact();
   const remove = useRemoveContact();
@@ -131,6 +184,16 @@ function ContactRow({ contact, index, count, onEdit }: { contact: Contact; index
           ) : (
             <span>{t('profile.notVerified')}</span>
           )}
+          {canVerify ? (
+            <button
+              type="button"
+              onClick={onVerify}
+              aria-label={t('verification.verifyContact', { value: contact.value })}
+              className="font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            >
+              {t('verification.verify')}
+            </button>
+          ) : null}
           {contact.isPrimary ? <Badge label={t('common.primary')} tone={StatusTone.Primary} /> : null}
         </span>
       </div>
@@ -152,6 +215,7 @@ export function ContactsSection({ contacts }: { contacts: Contact[] }) {
   const t = useT();
   const reorder = useReorderContacts();
   const [dialog, setDialog] = useState<{ open: boolean; contact?: Contact; version: number }>({ open: false, version: 0 });
+  const [verifying, setVerifying] = useState<{ contact: Contact; version: number }>();
   const sorted = sortContacts(contacts);
   const open = (contact?: Contact) => setDialog((current) => ({ open: true, contact, version: current.version + 1 }));
   return (
@@ -177,11 +241,20 @@ export function ContactsSection({ contacts }: { contacts: Contact[] }) {
               labelOf={(c) => c.value}
               onReorder={reorder.move}
               moveButtons={false}
-              renderItem={(contact) => <ContactRow contact={contact} index={sorted.indexOf(contact)} count={sorted.length} onEdit={() => open(contact)} />}
+              renderItem={(contact) => (
+                <ContactRow
+                  contact={contact}
+                  index={sorted.indexOf(contact)}
+                  count={sorted.length}
+                  onEdit={() => open(contact)}
+                  onVerify={() => setVerifying((current) => ({ contact, version: (current?.version ?? 0) + 1 }))}
+                />
+              )}
             />
           </>
         )}
       </Card>
+      {verifying ? <VerifyDialog key={verifying.version} contact={verifying.contact} onOpenChange={(value) => !value && setVerifying(undefined)} /> : null}
       {dialog.open ? (
         <ContactDialog key={dialog.version} contact={dialog.contact} open={dialog.open} onOpenChange={(value) => setDialog((current) => ({ ...current, open: value }))} />
       ) : null}

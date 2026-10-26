@@ -99,6 +99,7 @@ export const appConfigSchema = z.object({
     timeoutMs: z.number().int().positive(),
     uploadTimeoutMs: z.number().int().positive(),
     demoLatencyMs: z.number().int().nonnegative(),
+    demoVerificationCode: z.string(),
   }),
   query: z.object({
     staleTimeMs: z.number().int().nonnegative(),
@@ -129,6 +130,12 @@ export const appConfigSchema = z.object({
     track: z.object({ minResultCount: z.number().int().positive(), maxResultCount: z.number().int().positive() }),
   }),
   openSourceComponents: z.array(z.object({ name: z.string(), licence: z.string(), url: z.string().url() })),
+  verification: z.object({
+    codeLength: z.number().int().positive(),
+    codeTtlSeconds: z.number().int().positive(),
+    resendCooldownSeconds: z.number().int().nonnegative(),
+    smsEnabled: z.boolean(),
+  }),
   notifications: z.object({
     defaultDigestTime: z.string(),
     digestTimePresets: z.array(z.object({ key: z.string(), time: z.string() })),
@@ -157,6 +164,12 @@ export function publicConfigFromDefaults(config: AppConfig): PublicConfig {
     branding: config.branding,
     openSourceComponents: config.openSourceComponents,
     notifications: config.notifications,
+    verification: {
+      codeLength: config.verification.codeLength,
+      codeTtlSeconds: config.verification.codeTtlSeconds,
+      resendCooldownSeconds: config.verification.resendCooldownSeconds,
+      smsEnabled: config.verification.smsEnabled,
+    },
     profile: config.profile,
   };
 }

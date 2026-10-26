@@ -11,6 +11,7 @@ import type {
   ProfileEntry,
   PublicConfig,
   UploadSource,
+  VerificationChallenge,
 } from '../types';
 import { samplePdfDataUri } from './sample-pdf';
 
@@ -39,6 +40,7 @@ export interface ProfileStoreOptions {
   ids: IdGenerator;
   respond: <T>(value: T) => Promise<T>;
   reject: (code: ApiErrorCode, detail?: string) => Promise<never>;
+  verificationCode: string;
 }
 
 function invalid(detail: string): never {
@@ -58,6 +60,16 @@ function checkedCrop(crop: PhotoCrop): PhotoCrop {
   const y = Math.max(0, crop.y);
   const round = (value: number) => Number(value.toFixed(CROP_PRECISION));
   return { x: round(x), y: round(y), width: round(Math.min(crop.width, 1 - x)), height: round(Math.min(crop.height, 1 - y)) };
+}
+
+const MS_PER_SECOND = 1000;
+const MASK = '•••';
+const EMAIL_AT = '@';
+const VISIBLE_PHONE_DIGITS = 3;
+
+function maskDestination(contact: Contact): string {
+  const at = contact.value.indexOf(EMAIL_AT);
+  return contact.kind === ContactKind.Email && at > 0 ? `${contact.value.slice(0, 1)}${MASK}${contact.value.slice(at)}` : `${MASK}${contact.value.slice(-VISIBLE_PHONE_DIGITS)}`;
 }
 
 function missing(detail: string): never {
@@ -118,6 +130,30 @@ export function createProfileStore(options: ProfileStoreOptions): ProfileApi {
   const optionsOf = (key: EnumKey) => config.enumValues.filter((v) => v.enumKey === key && v.isActive).map((v) => v.value);
   const sectionOf = (key: string): SectionDefinition => settings.sections.find((s) => s.key === key) ?? missing('section');
   const entriesOf = (key: string): ProfileEntry[] => (profile.sections[key] ??= []);
+
+  const codesSentAt = new Map<string, number>();
+
+  function verifiable(id: string): Contact {
+    const contact = profile.contacts.find((c) => c.id === id) ?? missing('contact');
+    if (contact.verified) {
+      throw new ApiError(ApiErrorCode.Conflict, 409, 'already_verified');
+    }
+    if (contact.kind === ContactKind.Phone && !config.verification.smsEnabled) {
+      throw new ApiError(ApiErrorCode.ServiceUnavailable, 503, 'sms_unavailable');
+    }
+    return contact;
+  }
+
+  async function attempt<T>(work: () => T): Promise<T> {
+    try {
+      return options.respond(work());
+    } catch (error) {
+      if (error instanceof ApiError) {
+        return options.reject(error.code, error.detail);
+      }
+      throw error;
+    }
+  }
 
   async function run(change: () => void): Promise<Profile> {
     try {
@@ -234,6 +270,35 @@ export function createProfileStore(options: ProfileStoreOptions): ProfileApi {
           missing('photo');
         }
         profile.photoCrop = checkedCrop(crop);
+      }),
+    sendContactCode: (id) =>
+      attempt((): VerificationChallenge => {
+        const contact = verifiable(id);
+        const now = clock.now().getTime();
+        const cooldown = config.verification.resendCooldownSeconds * MS_PER_SECOND;
+        const last = codesSentAt.get(id);
+        if (last !== undefined && now - last < cooldown) {
+          throw new ApiError(ApiErrorCode.TooManyAttempts, 429, 'resend_cooldown');
+        }
+        codesSentAt.set(id, now);
+        return {
+          destination: maskDestination(contact),
+          expiresAt: new Date(now + config.verification.codeTtlSeconds * MS_PER_SECOND).toISOString(),
+          resendAfterSeconds: config.verification.resendCooldownSeconds,
+        };
+      }),
+    confirmContactCode: (id, code) =>
+      run(() => {
+        const contact = verifiable(id);
+        const sentAt = codesSentAt.get(id);
+        if (sentAt === undefined || clock.now().getTime() - sentAt > config.verification.codeTtlSeconds * MS_PER_SECOND) {
+          invalid('code_expired');
+        }
+        if (code.trim() !== options.verificationCode) {
+          invalid('code_invalid');
+        }
+        contact.verified = true;
+        codesSentAt.delete(id);
       }),
     removePhoto: () =>
       run(() => {

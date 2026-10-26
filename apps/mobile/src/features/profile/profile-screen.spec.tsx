@@ -7,6 +7,7 @@ import { EntryScreen } from './entry-screen';
 import { PhotoCropScreen } from './photo-crop-screen';
 import { EditContactScreen, EditSkillsScreen } from './profile-edit-screens';
 import { ProfileScreen } from './profile-screen';
+import { VerifyContactScreen } from './verify-contact-screen';
 import { ViewerScreen } from './viewer-screen';
 
 const getDocument = DocumentPicker.getDocumentAsync as jest.Mock;
@@ -153,5 +154,29 @@ describe('PhotoCropScreen', () => {
     fireEvent.press(screen.getByTestId('photo-crop-save'));
     await waitFor(async () => expect((await services.api.profile.getProfile()).photoCrop).toEqual({ x: 0.375, y: 0.4275, width: 0.25, height: 0.125 }));
     await waitFor(() => expect(mockRouter.back).toHaveBeenCalled());
+  });
+});
+
+describe('VerifyContactScreen', () => {
+  it('sends a code and verifies the email', async () => {
+    mockParams.current = { id: 'c_email_personal' };
+    const { services } = renderWithProviders(<VerifyContactScreen />);
+    expect(await screen.findByText(/We'll email a 6-digit code to ayesha.personal@example.com/)).toBeTruthy();
+    fireEvent.press(screen.getByTestId('verification-send'));
+    expect(await screen.findByText(/We sent a 6-digit code to a•••@example.com/)).toBeTruthy();
+    fireEvent.changeText(screen.getByTestId('verification-code'), '000000');
+    fireEvent.press(screen.getByTestId('verification-submit'));
+    expect(await screen.findByText("That code isn't right. Check it and try again.")).toBeTruthy();
+    fireEvent.changeText(screen.getByTestId('verification-code'), '246810');
+    fireEvent.press(screen.getByTestId('verification-submit'));
+    await waitFor(async () => expect((await services.api.profile.getProfile()).contacts.find((c) => c.id === 'c_email_personal')?.verified).toBe(true));
+    await waitFor(() => expect(mockRouter.back).toHaveBeenCalled());
+  });
+
+  it('offers verification only on unverified email contacts', async () => {
+    renderWithProviders(<ProfileScreen />);
+    fireEvent.press(await screen.findByLabelText('Verify ayesha.personal@example.com'));
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/profile/verify-contact', params: { id: 'c_email_personal' } });
+    expect(screen.queryByLabelText('Verify admin@sober.com')).toBeNull();
   });
 });

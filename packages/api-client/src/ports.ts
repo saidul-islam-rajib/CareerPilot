@@ -28,6 +28,7 @@ import type {
   Track,
   TrackUpdate,
   UploadSource,
+  VerificationChallenge,
 } from './types';
 
 export interface AuthApi {
@@ -69,6 +70,8 @@ export interface ProfileApi {
   updateBasics(changes: BasicsChanges): Promise<Profile>;
   setPhoto(file: UploadSource): Promise<Profile>;
   setPhotoCrop(crop: PhotoCrop): Promise<Profile>;
+  sendContactCode(contactId: string): Promise<VerificationChallenge>;
+  confirmContactCode(contactId: string, code: string): Promise<Profile>;
   removePhoto(): Promise<Profile>;
   addContact(input: ContactInput): Promise<Profile>;
   updateContact(id: string, changes: ContactChanges): Promise<Profile>;
