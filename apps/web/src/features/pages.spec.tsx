@@ -31,11 +31,11 @@ describe('HomePage', () => {
   it('shows counts and tracks', async () => {
     renderWithProviders(<HomePage />);
     expect(await screen.findByText('Hello, Ayesha')).toBeInTheDocument();
-    expect(screen.getByLabelText('Awaiting approval: 2')).toHaveAttribute('href', '/approvals');
-    expect(screen.getByRole('heading', { name: 'Bangladesh government' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Senior Frontend Engineer/ })).toHaveAttribute('href', '/opportunities/opp_remote_frontend');
-    expect(screen.getByRole('heading', { name: 'Coming up' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /First interview with the engineering manager/ })).toHaveAttribute('href', '/applications/app_bay');
+    expect(await screen.findByLabelText('Awaiting approval: 2')).toHaveAttribute('href', '/approvals');
+    expect(await screen.findByRole('heading', { name: 'Bangladesh government' })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: /Senior Frontend Engineer/ })).toHaveAttribute('href', '/opportunities/opp_remote_frontend');
+    expect(await screen.findByRole('heading', { name: 'Coming up' })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: /First interview with the engineering manager/ })).toHaveAttribute('href', '/applications/app_bay');
   });
 });
 
