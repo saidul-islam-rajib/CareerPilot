@@ -7,7 +7,7 @@ from careerpilot.platform.config import VerificationConfig, load_settings
 from careerpilot.platform.coordination import KeySpace
 from careerpilot.platform.errors import DomainError, ErrorCode
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, StoreUnavailableError
-from careerpilot.platform.one_time_codes import CodeCheck, OneTimeCodes, random_code
+from careerpilot.platform.one_time_codes import CodeCheck, OneTimeCodes, random_code, random_token
 
 CODE = "123456"
 TARGET = "usr_demo:c_email:abc"
@@ -86,3 +86,26 @@ def test_unavailable_store_fails_closed(clock: FixedClock, config: VerificationC
 
 def test_random_codes_have_the_configured_length() -> None:
     assert all(len(random_code(6)) == 6 and random_code(6).isdigit() for _ in range(20))
+
+
+def test_peek_checks_a_code_without_using_it_up(clock: FixedClock, config: VerificationConfig) -> None:
+    otp = codes(InMemoryKeyValueStore(clock), config)
+    otp.issue("contact", TARGET)
+    assert otp.peek("contact", TARGET, CODE) is CodeCheck.VALID
+    assert otp.peek("contact", TARGET, CODE) is CodeCheck.VALID
+    assert otp.peek("contact", TARGET, "000000") is CodeCheck.INVALID
+    assert otp.check("contact", TARGET, CODE) is CodeCheck.VALID
+    assert otp.peek("contact", TARGET, CODE) is CodeCheck.EXPIRED
+
+
+def test_link_tokens_are_url_safe_and_long(clock: FixedClock) -> None:
+    links = load_settings("local").account_links
+    otp = OneTimeCodes(
+        InMemoryKeyValueStore(clock), KeySpace(load_settings("local").coordination), links, "test-secret", generate=random_token
+    )
+    token = otp.issue("account_link", "usr_new")
+    assert len(token) >= links.token_bytes
+    assert token.replace("-", "").replace("_", "").isalnum()
+    assert otp.peek("account_link", "usr_new", token) is CodeCheck.VALID
+    clock.advance(timedelta(minutes=links.ttl_minutes, seconds=1))
+    assert otp.peek("account_link", "usr_new", token) is CodeCheck.EXPIRED

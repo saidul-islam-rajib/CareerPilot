@@ -88,6 +88,10 @@ class PublicConfigService:
                 "resendCooldownSeconds": s.verification.resend_cooldown_seconds,
                 "smsEnabled": s.verification.sms_enabled,
             },
+            "accountLinks": {
+                "ttlMinutes": s.account_links.ttl_minutes,
+                "resendCooldownSeconds": s.account_links.resend_cooldown_seconds,
+            },
             "notifications": {
                 "defaultDigestTime": s.notifications.default_digest_time,
                 "digestTimePresets": [{"key": p.key, "time": p.time} for p in s.notifications.digest_time_presets],

@@ -125,7 +125,13 @@ class ContactKind(StrEnum):
     PHONE = "phone"
 
 
+class AccountLinkPurpose(StrEnum):
+    SETUP = "setup"
+    RESET = "reset"
+
+
 class UserAccountStatus(StrEnum):
+    REGISTERED = "registered"
     ACTIVE = "active"
     PAUSED = "paused"
     SUSPENDED = "suspended"

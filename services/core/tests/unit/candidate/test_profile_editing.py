@@ -7,10 +7,11 @@ from careerpilot.bootstrap import Container
 from careerpilot.candidate.services.auth import Registration
 from careerpilot.candidate.services.profile import BasicsChanges, Upload
 from careerpilot.platform.clock import FixedClock
+from careerpilot.platform.email_delivery import InMemoryEmailSender
 from careerpilot.platform.enums import ContactKind, DocumentKind
 from careerpilot.platform.errors import DomainError, ErrorCode
 from careerpilot.platform.files import sample_pdf
-from tests.unit.conftest import CLIENT, DEMO_USER
+from tests.unit.conftest import CLIENT, DEMO_USER, register_and_activate
 
 PDF_BYTES = sample_pdf("Curriculum vitae")
 PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
@@ -201,9 +202,9 @@ def test_view_hides_removed_items_and_signs_file_links(container: Container, clo
     assert container.file_links.verify(key, int(query["expires"]), query["name"], query["signature"]) is None
 
 
-def test_completeness_rises_as_the_profile_fills_in(container: Container) -> None:
-    registration = Registration("Nadia Islam", "nadia@example.com", "Str0ng!Passw0rd", True, "1.0", "1.0")
-    user_id = container.auth.register(registration, CLIENT).user.id
+def test_completeness_rises_as_the_profile_fills_in(container: Container, outbox: InMemoryEmailSender) -> None:
+    registration = Registration("Nadia Islam", "nadia@example.com", True, "1.0", "1.0")
+    user_id = register_and_activate(container, outbox, registration).user.id
     fresh = container.profile.get(user_id)
     assert fresh.full_name == "Nadia Islam"
     assert [(c.kind, c.value, c.is_primary) for c in fresh.active_contacts()] == [(ContactKind.EMAIL, "nadia@example.com", True)]
@@ -224,9 +225,9 @@ def test_password_change_requires_the_current_password(container: Container) -> 
     assert container.auth.sign_in("admin@sober.com", "N3w!Password99", CLIENT).access_token
 
 
-def test_profiles_created_before_registration_filled_them_are_started_on_read(container: Container) -> None:
-    registration = Registration("Rafiq Karim", "rafiq@example.com", "Str0ng!Passw0rd", True, "1.0", "1.0")
-    user_id = container.auth.register(registration, CLIENT).user.id
+def test_profiles_created_before_registration_filled_them_are_started_on_read(container: Container, outbox: InMemoryEmailSender) -> None:
+    registration = Registration("Rafiq Karim", "rafiq@example.com", True, "1.0", "1.0")
+    user_id = register_and_activate(container, outbox, registration).user.id
     workspace = container.profile._ctx.workspaces.get(user_id)
     workspace.profile.full_name = ""
     workspace.profile.contacts = []

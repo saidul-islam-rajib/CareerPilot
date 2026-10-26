@@ -40,6 +40,7 @@ class Argon2PasswordHasher:
 class TokenClaims:
     subject: str
     audience: str
+    issued_at: int
 
 
 class TokenService:
@@ -73,7 +74,7 @@ class TokenService:
             raise DomainError(ErrorCode.UNAUTHORIZED) from error
         if int(payload["exp"]) <= int(self._clock.now().timestamp()):
             raise DomainError(ErrorCode.UNAUTHORIZED)
-        return TokenClaims(subject=str(payload["sub"]), audience=audience)
+        return TokenClaims(subject=str(payload["sub"]), audience=audience, issued_at=int(payload["iat"]))
 
 
 def token_secret_from_environment() -> str:

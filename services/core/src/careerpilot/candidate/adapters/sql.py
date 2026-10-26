@@ -1,7 +1,8 @@
 from collections.abc import Callable
+from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Index, String, func, select, text
+from sqlalchemy import DateTime, Index, String, func, select, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from careerpilot.candidate.models import (
@@ -16,6 +17,7 @@ from careerpilot.candidate.models import (
     UserSummary,
 )
 from careerpilot.candidate.ports import Account, CandidateWorkspace
+from careerpilot.platform.clock import iso, parse_iso
 from careerpilot.platform.enums import OpportunityDecision, UserAccountStatus
 from careerpilot.platform.persistence import ID_LENGTH, SHORT_TEXT, TEXT, Audited, Base, Database, active
 
@@ -34,6 +36,18 @@ class UserAccountRow(Audited, Base):
     status: Mapped[str] = mapped_column(String(SHORT_TEXT))
     consent_terms_version: Mapped[str | None] = mapped_column(String(SHORT_TEXT), default=None)
     consent_privacy_version: Mapped[str | None] = mapped_column(String(SHORT_TEXT), default=None)
+    consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
+    consent_ip: Mapped[str | None] = mapped_column(String(TEXT), default=None)
+    consent_device: Mapped[str | None] = mapped_column(String(TEXT), default=None)
+    credentials_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
+
+
+def _moment(value: datetime | None) -> str | None:
+    return iso(value) if value else None
+
+
+def _timestamp(value: str | None) -> datetime | None:
+    return parse_iso(value) if value else None
 
 
 class CandidateWorkspaceRow(Audited, Base):
@@ -57,6 +71,10 @@ def _account(row: UserAccountRow) -> Account:
         status=UserAccountStatus(row.status),
         consent_terms_version=row.consent_terms_version,
         consent_privacy_version=row.consent_privacy_version,
+        consent_at=_moment(row.consent_at),
+        consent_ip=row.consent_ip,
+        consent_device=row.consent_device,
+        credentials_changed_at=_moment(row.credentials_changed_at),
     )
 
 
@@ -102,6 +120,10 @@ class SqlAccountRepository:
             "status": account.status.value,
             "consent_terms_version": account.consent_terms_version,
             "consent_privacy_version": account.consent_privacy_version,
+            "consent_at": _timestamp(account.consent_at),
+            "consent_ip": account.consent_ip,
+            "consent_device": account.consent_device,
+            "credentials_changed_at": _timestamp(account.credentials_changed_at),
         }
 
 

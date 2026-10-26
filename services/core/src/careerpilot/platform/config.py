@@ -20,6 +20,7 @@ CONFIG_ROOT_ENV = "CAREERPILOT_CONFIG_ROOT"
 APP_ENV = "APP_ENV"
 DEFAULT_APP_ENV = "local"
 YAML_SUFFIX = ".yaml"
+SECONDS_PER_MINUTE = 60
 
 
 class Strict(BaseModel):
@@ -380,6 +381,23 @@ class VerificationConfig(Strict):
     sms_enabled: bool
 
 
+class AccountLinksConfig(Strict):
+    token_bytes: int = Field(ge=16, le=64)
+    ttl_minutes: int = Field(gt=0)
+    max_attempts: int = Field(gt=0)
+    resend_cooldown_seconds: int = Field(ge=0)
+    sends_per_hour: int = Field(gt=0)
+    set_password_path: str = Field(pattern=r"^/")
+
+    @property
+    def code_length(self) -> int:
+        return self.token_bytes
+
+    @property
+    def code_ttl_seconds(self) -> int:
+        return self.ttl_minutes * SECONDS_PER_MINUTE
+
+
 class TrackingConfig(Strict):
     task_title_max_length: int = Field(gt=0)
     task_notes_max_length: int = Field(gt=0)
@@ -426,6 +444,7 @@ class Settings(Strict):
     submission: SubmissionConfig
     notifications: NotificationsConfig
     verification: VerificationConfig
+    account_links: AccountLinksConfig
     tracking: TrackingConfig
     answers: AnswersConfig
 

@@ -22,6 +22,10 @@ class Account:
     status: UserAccountStatus
     consent_terms_version: str | None = None
     consent_privacy_version: str | None = None
+    consent_at: str | None = None
+    consent_ip: str | None = None
+    consent_device: str | None = None
+    credentials_changed_at: str | None = None
 
 
 @dataclass

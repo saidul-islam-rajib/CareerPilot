@@ -21,6 +21,7 @@ from careerpilot.administration.services import (
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import Preferences, Profile, SubmissionWindow, Track
 from careerpilot.candidate.ports import CandidateWorkspace
+from careerpilot.candidate.services.account_links import AccountLinkContext, AccountLinkService
 from careerpilot.candidate.services.answers import AnswerService
 from careerpilot.candidate.services.applications import ApplicationService
 from careerpilot.candidate.services.approvals import ApprovalService
@@ -48,7 +49,7 @@ from careerpilot.platform.email_delivery import EmailSender, SmtpEmailSender, Sm
 from careerpilot.platform.enums import ApplicationMode, SubmissionWindowKind
 from careerpilot.platform.files import FileLinkSigner, FileStorage, LocalFileStorage, SampleAwareStorage
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore
-from careerpilot.platform.one_time_codes import OneTimeCodes
+from careerpilot.platform.one_time_codes import OneTimeCodes, random_token
 from careerpilot.platform.persistence import Database, create_database
 from careerpilot.platform.security import Argon2PasswordHasher, PasswordHasher, TokenService, token_secret_from_environment
 from careerpilot.platform.seed import load_demo_seed
@@ -253,6 +254,8 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     submissions = SubmissionService(SubmissionContext(candidate=candidate, platform=repos.platform.get, sender=sender, storage=storage))
     codes = OneTimeCodes(coord_store, keys, cfg.verification, secret)
     verification = ContactVerificationService(VerificationContext(candidate=candidate, codes=codes, sender=sender))
+    link_codes = OneTimeCodes(coord_store, keys, cfg.account_links, secret, generate=random_token)
+    account_links = AccountLinkService(AccountLinkContext(candidate=candidate, codes=link_codes, sender=sender))
     release = release_fingerprint(cfg.model_dump_json(), version(PACKAGE))
     metadata = MetadataCache(cache_store, keys, cfg.coordination, release=release)
     public_config = PublicConfigService(cfg, demo["enumValues"], lambda: repos.platform.get().active_theme, metadata)
@@ -261,7 +264,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     return Container(
         settings=cfg,
         database=database,
-        auth=AuthService(candidate, guard),
+        auth=AuthService(candidate, guard, account_links),
         public_config=public_config,
         opportunities=opportunity_service,
         approvals=approvals,

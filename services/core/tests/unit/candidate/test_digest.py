@@ -12,7 +12,7 @@ from careerpilot.platform.email_delivery import DeliveryError, InMemoryEmailSend
 from careerpilot.platform.enums import ApplicationFilter, SubmissionWindowKind
 from careerpilot.platform.errors import DomainError
 from careerpilot.platform.files import InMemoryFileStorage
-from tests.unit.conftest import DEMO_USER, TEST_SECRET, FakeHasher
+from tests.unit.conftest import DEMO_USER, STRONG_PASSWORD, TEST_SECRET, FakeHasher, link_token
 
 
 @pytest.fixture
@@ -85,16 +85,17 @@ def test_notification_settings_endpoint(app: Container) -> None:
     assert client.get("/v1/settings", headers=headers).json()["notifications"]["digestEnabled"] is False
 
 
-def test_new_users_see_the_default_digest_time(app: Container) -> None:
+def test_new_users_see_the_default_digest_time(app: Container, sender: InMemoryEmailSender) -> None:
     client = TestClient(create_user_app(app))
     body = {
         "fullName": "Nadia Karim",
         "email": "nadia@example.com",
-        "password": "Str0ng!Password",
         "consent": True,
         "consentDocuments": {"terms": "1", "privacy": "1"},
     }
-    token = client.post("/v1/auth/register", json=body).json()["accessToken"]
+    assert client.post("/v1/auth/register", json=body).status_code == 204
+    completed = client.post("/v1/auth/account-links/complete", json={"token": link_token(sender), "password": STRONG_PASSWORD})
+    token = completed.json()["accessToken"]
     settings = client.get("/v1/settings", headers={"Authorization": f"Bearer {token}"}).json()
     assert settings["notifications"] == {"digestEnabled": True, "digestTime": "08:00"}
 

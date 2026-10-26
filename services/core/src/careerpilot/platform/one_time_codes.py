@@ -3,9 +3,8 @@ import hmac
 import secrets
 from collections.abc import Callable
 from enum import StrEnum
-from typing import TypeVar
+from typing import Protocol, TypeVar
 
-from careerpilot.platform.config import VerificationConfig
 from careerpilot.platform.coordination import KeyNamespace, KeySpace
 from careerpilot.platform.errors import DomainError, ErrorCode
 from careerpilot.platform.keyvalue import KeyValueStore, StoreUnavailableError
@@ -31,8 +30,29 @@ class SendRefusal(StrEnum):
     LIMIT = "send_limit"
 
 
+class CodePolicy(Protocol):
+    @property
+    def code_length(self) -> int: ...
+
+    @property
+    def code_ttl_seconds(self) -> int: ...
+
+    @property
+    def max_attempts(self) -> int: ...
+
+    @property
+    def resend_cooldown_seconds(self) -> int: ...
+
+    @property
+    def sends_per_hour(self) -> int: ...
+
+
 def random_code(length: int) -> str:
     return str(secrets.randbelow(DECIMAL_BASE**length)).zfill(length)
+
+
+def random_token(length: int) -> str:
+    return secrets.token_urlsafe(length)
 
 
 class OneTimeCodes:
@@ -40,7 +60,7 @@ class OneTimeCodes:
         self,
         store: KeyValueStore,
         keys: KeySpace,
-        config: VerificationConfig,
+        config: CodePolicy,
         secret: str,
         generate: Callable[[int], str] = random_code,
     ) -> None:
@@ -68,12 +88,19 @@ class OneTimeCodes:
             self._fail_closed(lambda key=key: self._store.remove(key))
 
     def check(self, purpose: str, target: str, code: str) -> CodeCheck:
+        return self._verify(purpose, target, code, consume=True)
+
+    def peek(self, purpose: str, target: str, code: str) -> CodeCheck:
+        return self._verify(purpose, target, code, consume=False)
+
+    def _verify(self, purpose: str, target: str, code: str, consume: bool) -> CodeCheck:
         stored = self._fail_closed(lambda: self._store.get(self._key(purpose, target, CODE_KEY)))
         if stored is None:
             return CodeCheck.EXPIRED
         if hmac.compare_digest(stored, self._digest(target, code.strip())):
-            self._fail_closed(lambda: self._store.remove(self._key(purpose, target, CODE_KEY)))
-            self._fail_closed(lambda: self._store.remove(self._key(purpose, target, ATTEMPTS_KEY)))
+            if consume:
+                self._fail_closed(lambda: self._store.remove(self._key(purpose, target, CODE_KEY)))
+                self._fail_closed(lambda: self._store.remove(self._key(purpose, target, ATTEMPTS_KEY)))
             return CodeCheck.VALID
         attempts_key = self._key(purpose, target, ATTEMPTS_KEY)
         attempts = self._fail_closed(lambda: self._store.increment(attempts_key, self._config.code_ttl_seconds))

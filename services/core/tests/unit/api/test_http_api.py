@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 from careerpilot.api.admin_app import create_admin_app
 from careerpilot.api.user_app import create_user_app
 from careerpilot.bootstrap import Container
+from careerpilot.platform.email_delivery import InMemoryEmailSender
 
 PASSWORD = "admin@sober.com"
 
@@ -47,17 +48,17 @@ def test_errors_use_problem_details_codes(user_client: TestClient) -> None:
     assert invalid.json()["code"] == "validation"
 
 
-def test_register_conflicts_on_existing_email(user_client: TestClient) -> None:
+def test_register_answers_the_same_for_an_existing_email(user_client: TestClient, outbox: InMemoryEmailSender) -> None:
     body = {
         "fullName": "Dup",
         "email": "admin@sober.com",
-        "password": "Str0ng!Password",
         "consent": True,
         "consentDocuments": {"terms": "1", "privacy": "1"},
     }
-    response = user_client.post("/v1/auth/register", json=body)
-    assert response.status_code == 409
-    assert response.json()["code"] == "email_taken"
+    existing = user_client.post("/v1/auth/register", json=body)
+    fresh = user_client.post("/v1/auth/register", json={**body, "email": "fresh@example.com"})
+    assert (existing.status_code, existing.content) == (fresh.status_code, fresh.content) == (204, b"")
+    assert [e.to for e in outbox.sent] == ["fresh@example.com"]
 
 
 def test_dashboard_and_config_shapes(user_client: TestClient) -> None:

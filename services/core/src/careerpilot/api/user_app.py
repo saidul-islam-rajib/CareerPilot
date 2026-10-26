@@ -44,13 +44,21 @@ class ConsentDocuments(CamelModel):
 class RegisterBody(CamelModel):
     full_name: str
     email: str
-    password: str
     consent: bool
     consent_documents: ConsentDocuments
 
 
 class EmailBody(CamelModel):
     email: str
+
+
+class AccountLinkBody(CamelModel):
+    token: str
+
+
+class CompleteLinkBody(CamelModel):
+    token: str
+    password: str
 
 
 class DecisionBody(CamelModel):
@@ -117,22 +125,32 @@ def sign_in(body: SignInBody, request: Request, services: Services) -> JSONRespo
 
 
 @router.post("/auth/register")
-def register(body: RegisterBody, request: Request, services: Services) -> JSONResponse:
+def register(body: RegisterBody, request: Request, services: Services) -> Response:
     registration = Registration(
         full_name=body.full_name,
         email=body.email,
-        password=body.password,
         consent=body.consent,
         terms_version=body.consent_documents.terms,
         privacy_version=body.consent_documents.privacy,
     )
-    return ok(services.auth.register(registration, client_info(request, services.settings)))
+    services.auth.register(registration, client_info(request, services.settings))
+    return no_content()
 
 
 @router.post("/auth/password-reset")
 def password_reset(body: EmailBody, request: Request, services: Services) -> Response:
     services.auth.request_password_reset(body.email, client_info(request, services.settings))
     return no_content()
+
+
+@router.post("/auth/account-links/inspect")
+def inspect_account_link(body: AccountLinkBody, request: Request, services: Services) -> JSONResponse:
+    return ok(services.auth.inspect_link(body.token, client_info(request, services.settings)))
+
+
+@router.post("/auth/account-links/complete")
+def complete_account_link(body: CompleteLinkBody, request: Request, services: Services) -> JSONResponse:
+    return ok(services.auth.complete_link(body.token, body.password, client_info(request, services.settings)))
 
 
 @router.post("/auth/sign-out")

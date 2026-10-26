@@ -152,6 +152,7 @@ export const StatusTone = {
 export type StatusTone = (typeof StatusTone)[keyof typeof StatusTone];
 
 export const UserAccountStatus = {
+  Registered: 'registered',
   Active: 'active',
   Paused: 'paused',
   Suspended: 'suspended',
