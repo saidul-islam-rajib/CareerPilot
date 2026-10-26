@@ -35,6 +35,14 @@ function readYaml(file) {
   return isObject(parsed) ? parsed : {};
 }
 
+const CLIENT_SECTIONS = ['account', 'admin', 'answers', 'api', 'branding', 'display', 'legal', 'mobile', 'openSourceComponents', 'query', 'tracking', 'ui', 'validation'];
+const CLIENT_FIELDS = {
+  accountLinks: ['ttlMinutes', 'minTtlMinutes', 'maxTtlMinutes'],
+  notifications: ['defaultDigestTime', 'digestTimePresets'],
+  profile: ['pageOrder', 'sections', 'limits', 'uploads', 'completeness'],
+  verification: ['codeLength', 'codeTtlSeconds', 'resendCooldownSeconds', 'smsEnabled'],
+};
+
 function loadConfig(env, root = CONFIG_ROOT) {
   const defaultsDir = path.join(root, 'defaults');
   const merged = fs
@@ -46,4 +54,20 @@ function loadConfig(env, root = CONFIG_ROOT) {
   return camelize(fs.existsSync(envFile) ? deepMerge(merged, readYaml(envFile)) : merged);
 }
 
-module.exports = { loadConfig, deepMerge, camelize };
+function pickFields(value, fields) {
+  return isObject(value) ? Object.fromEntries(fields.filter((field) => field in value).map((field) => [field, value[field]])) : value;
+}
+
+function clientConfig(config) {
+  const whole = CLIENT_SECTIONS.filter((section) => section in config).map((section) => [section, config[section]]);
+  const partial = Object.entries(CLIENT_FIELDS)
+    .filter(([section]) => section in config)
+    .map(([section, fields]) => [section, pickFields(config[section], fields)]);
+  return Object.fromEntries([...whole, ...partial]);
+}
+
+function loadClientConfig(env, root = CONFIG_ROOT) {
+  return clientConfig(loadConfig(env, root));
+}
+
+module.exports = { loadConfig, loadClientConfig, clientConfig, deepMerge, camelize };

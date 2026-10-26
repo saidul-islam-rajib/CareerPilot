@@ -5,13 +5,13 @@ import { render, type RenderResult } from '@testing-library/react-native';
 import type { Clock, Session } from '@careerpilot/api-client';
 import { AppProviders } from '@/core/providers/app-providers';
 
-const { loadConfig } = require('../../../../scripts/config/load-config') as { loadConfig: (env: string) => Record<string, unknown> };
+const { loadClientConfig } = require('../../../../scripts/config/load-config') as { loadClientConfig: (env: string) => Record<string, unknown> };
 
 export const testNow = new Date('2026-10-20T06:00:00Z');
 export const testClock: Clock = { now: () => new Date(testNow) };
 
 export function testConfig(): AppConfig {
-  const config = parseAppConfig({ careerpilot: loadConfig('local') });
+  const config = parseAppConfig({ careerpilot: loadClientConfig('local') });
   return { ...config, api: { ...config.api, demoLatencyMs: 0 } };
 }
 

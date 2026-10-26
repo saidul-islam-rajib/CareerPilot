@@ -10,13 +10,13 @@ import { createAdminServices, type AdminServices } from '@/core/admin-services';
 import { Providers } from '@/core/providers';
 
 const require = createRequire(import.meta.url);
-const { loadConfig } = require('../../../../scripts/config/load-config.js') as { loadConfig: (env: string) => Record<string, unknown> };
+const { loadClientConfig } = require('../../../../scripts/config/load-config.js') as { loadClientConfig: (env: string) => Record<string, unknown> };
 
 export const testNow = new Date('2026-10-20T06:00:00Z');
 const testClock: Clock = { now: () => new Date(testNow) };
 
 export function testConfig(): AdminConfig {
-  const config = parseAdminConfig(loadConfig('local'));
+  const config = parseAdminConfig(loadClientConfig('local'));
   return { ...config, api: { ...config.api, demoLatencyMs: 0 } };
 }
 

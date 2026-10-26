@@ -1,5 +1,8 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
-const { loadConfig } = require('../../scripts/config/load-config') as { loadConfig: (env: string) => Record<string, unknown> };
+const { loadConfig, clientConfig } = require('../../scripts/config/load-config') as {
+  loadConfig: (env: string) => Record<string, unknown>;
+  clientConfig: (config: Record<string, unknown>) => Record<string, unknown>;
+};
 
 const catalog = require('../../packages/i18n/src/locales/en.json') as { profile: { photoPermission: string } };
 
@@ -69,7 +72,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     extra: {
       appEnv: APP_ENV,
-      careerpilot: settings,
+      careerpilot: clientConfig(settings),
     },
   };
 };

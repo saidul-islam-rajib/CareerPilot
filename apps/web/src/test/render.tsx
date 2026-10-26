@@ -8,13 +8,13 @@ import { createAppServices, createMemoryStore, parseAppConfig, publicConfigFromD
 import { Providers } from '@/core/providers';
 
 const require = createRequire(import.meta.url);
-const { loadConfig } = require('../../../../scripts/config/load-config.js') as { loadConfig: (env: string) => Record<string, unknown> };
+const { loadClientConfig } = require('../../../../scripts/config/load-config.js') as { loadClientConfig: (env: string) => Record<string, unknown> };
 
 export const testNow = new Date('2026-10-20T06:00:00Z');
 const DAY_MS = 86_400_000;
 
 export function testConfig(): AppConfig {
-  const config = parseAppConfig({ careerpilot: loadConfig('local') });
+  const config = parseAppConfig({ careerpilot: loadClientConfig('local') });
   return { ...config, api: { ...config.api, demoLatencyMs: 0 } };
 }
 

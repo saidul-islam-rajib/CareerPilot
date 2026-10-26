@@ -1,6 +1,6 @@
 import type { NextConfig } from 'next';
 
-const { loadConfig } = require('../../scripts/config/load-config.js') as { loadConfig: (env: string) => Record<string, unknown> };
+const { loadClientConfig } = require('../../scripts/config/load-config.js') as { loadClientConfig: (env: string) => Record<string, unknown> };
 
 const { version } = require('./package.json') as { version: string };
 
@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
     '@careerpilot/validation',
   ],
   env: {
-    NEXT_PUBLIC_CAREERPILOT_CONFIG: JSON.stringify(loadConfig(appEnv)),
+    NEXT_PUBLIC_CAREERPILOT_CONFIG: JSON.stringify(loadClientConfig(appEnv)),
     NEXT_PUBLIC_APP_VERSION: version,
   },
   poweredByHeader: false,
