@@ -9,4 +9,4 @@ mail:
   delivery_workers: 2
   smtp_user_env: CAREERPILOT_MAIL_USER
   smtp_password_env: CAREERPILOT_MAIL_PASSWORD
-  sandbox_only_domains: [sober.com, gmail.com, example.org, example.net]
+  sandbox_only_domains: [sober.com, example.com, example.org, example.net]

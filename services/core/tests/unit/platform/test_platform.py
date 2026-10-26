@@ -85,6 +85,16 @@ def assert_rejects_secrets_in(root: Path) -> None:
     assert "abcd" not in str([e.get("input") for e in error.value.errors() if e["loc"][-1] == "smtp_user_env"])
 
 
+LOCAL_SEED_DOMAIN = "sober.com"
+RESERVED_EXAMPLE_DOMAINS = {"example.com", "example.org", "example.net"}
+
+
+@pytest.mark.parametrize("app_env", ["local", "docker", "http"])
+def test_only_seed_and_example_domains_stay_in_the_mail_sandbox(app_env: str) -> None:
+    domains = set(load_settings(app_env).mail.sandbox_only_domains)
+    assert domains <= RESERVED_EXAMPLE_DOMAINS | {LOCAL_SEED_DOMAIN}
+
+
 def test_every_secret_comes_from_a_named_environment_setting() -> None:
     settings = load_settings("local")
     names = [
