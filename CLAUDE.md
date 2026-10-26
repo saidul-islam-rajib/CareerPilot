@@ -47,7 +47,7 @@ Job discovery and application assistant for job seekers and students (Bangladesh
 - v1 UI is English only and light themes only: three themes (Sober default, Horizon, Orchid) chosen by a Super Admin for all users (`Planning/16-UX-Design.md` §7); all user-facing text goes through string catalogs and colours through theme tokens, never literal colours.
 - Build UI from the chosen templates, don't hand-roll: shadcn/ui and its blocks (web, admin), React Native Reusables (mobile). Credit "Developed by Team Sober" (https://team-sober.com/, URL from config) in footers, the About screen, and emails.
 - All tests must pass before every commit (git hooks + CI); never skip or disable tests to commit.
-- Commit portion by portion with very short messages.
+- Commit portion by portion with very short messages, authored only with the repository owner's configured git identity (`user.name` / `user.email`). Never add `Co-Authored-By` or any other AI attribution line to commits or pull requests.
 - Keep costs low: prefer free tiers and self-hosted open-source tools (`Planning/12-Cost-Plan.md`).
 - Every service emits OpenTelemetry logs, traces, and metrics for Grafana (`Planning/11-Observability.md`).
 - Requirements stay at version 1.0; edit in place, don't add revision rows.
