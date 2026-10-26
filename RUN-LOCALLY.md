@@ -53,7 +53,7 @@ docker compose exec redis-coord redis-cli FLUSHDB
 
 ## B. Mobile app (Android, iOS, or browser)
 
-Install on your phone: **Expo Go** — [Android (Google Play)](https://play.google.com/store/apps/details?id=host.exp.exponent) · [iPhone (App Store)](https://apps.apple.com/app/expo-go/id982107779). The phone and the PC must be on the same Wi-Fi. The project uses Expo SDK 57; if Expo Go says the project is incompatible, update Expo Go from the store.
+Install on your phone: **Expo Go** — [Android (Google Play)](https://play.google.com/store/apps/details?id=host.exp.exponent) · [iPhone (App Store)](https://apps.apple.com/app/expo-go/id982107779). The phone and the PC must be on the same Wi-Fi. The project uses Expo SDK 58; if Expo Go says the project is incompatible, update Expo Go from the store.
 
 Optional, for an Android emulator on the PC: [Android Studio](https://developer.android.com/studio) → More Actions → Virtual Device Manager → create and start a phone. An iOS simulator needs a Mac with Xcode; on Windows use a real iPhone with Expo Go.
 
@@ -117,4 +117,4 @@ cd services/core && ../.venv/Scripts/python -m pytest       # backend tests
 | Old screens after changing code | Rebuild with `--build` (option A). |
 | Phone shows "We couldn't load this" (option B2) | Check the phone can open `http://<your IPv4>:8000/v1/config` in its browser. If not: same Wi-Fi? `CAREERPILOT_USER_API_BIND=0.0.0.0` in `.env` and `docker compose up -d user-api`? Firewall allowed? |
 | Expo Go can't open the project / QR code times out | Same Wi-Fi on both; allow Node.js in Windows Firewall; or start with `pnpm --filter @careerpilot/mobile start --tunnel`. |
-| "Project is incompatible with this version of Expo Go" | Update Expo Go from the store (the project uses Expo SDK 57). |
+| "Project is incompatible with this version of Expo Go" | Update Expo Go from the store (the project uses Expo SDK 58). |

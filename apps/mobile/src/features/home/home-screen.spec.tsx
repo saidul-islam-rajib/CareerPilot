@@ -5,7 +5,7 @@ import { HomeScreen } from './home-screen';
 
 describe('HomeScreen', () => {
   it('shows the greeting, counts, and matches per track', async () => {
-    renderWithProviders(<HomeScreen />);
+    await renderWithProviders(<HomeScreen />);
     expect(await screen.findByText('Hello, Ayesha')).toBeTruthy();
     expect(screen.getByText('Remote jobs')).toBeTruthy();
     expect(screen.getByText('Bangladesh government')).toBeTruthy();
@@ -13,22 +13,22 @@ describe('HomeScreen', () => {
     expect(screen.getByText('Senior Frontend Engineer')).toBeTruthy();
     expect(screen.getByLabelText('Awaiting approval: 2')).toBeTruthy();
     expect(screen.getByText('Coming up')).toBeTruthy();
-    fireEvent.press(screen.getByLabelText(/First interview with the engineering manager/));
+    await fireEvent.press(screen.getByLabelText(/First interview with the engineering manager/));
     expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/application/[id]', params: { id: 'app_bay' } });
   });
 
   it('opens an opportunity', async () => {
-    renderWithProviders(<HomeScreen />);
-    fireEvent.press(await screen.findByLabelText(/Senior Frontend Engineer, Northwind Labs/));
+    await renderWithProviders(<HomeScreen />);
+    await fireEvent.press(await screen.findByLabelText(/Senior Frontend Engineer, Northwind Labs/));
     expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/opportunity/[id]', params: { id: 'opp_remote_frontend' } });
   });
 
   it('shows the pause banner and resumes', async () => {
-    const { services } = renderWithProviders(<HomeScreen />);
+    const { services } = await renderWithProviders(<HomeScreen />);
     await services.api.settings.pause({ duration: PauseDuration.Indefinite });
-    const view = renderWithProviders(<HomeScreen />, { services });
+    const view = await renderWithProviders(<HomeScreen />, { services });
     expect(await view.findByText('Automatic applications are paused')).toBeTruthy();
-    fireEvent.press(view.getByText('Resume'));
+    await fireEvent.press(view.getByText('Resume'));
     await view.findByText('Hello, Ayesha');
     expect(await services.api.settings.getSettings()).not.toHaveProperty('pause');
   });

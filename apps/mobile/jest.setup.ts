@@ -3,6 +3,7 @@ import { configure } from '@testing-library/react-native';
 
 configure({ asyncUtilTimeout: 5000 });
 
+jest.mock('react-native-reanimated/src/initializers', () => ({ initializeReanimatedModule: () => undefined }));
 jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
 jest.mock('react-native-worklets', () => require('react-native-worklets/lib/module/mock'));
 

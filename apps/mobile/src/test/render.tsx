@@ -34,12 +34,12 @@ export interface RenderWithServices extends RenderResult {
   services: AppServices;
 }
 
-export function renderWithProviders(ui: ReactElement, options: RenderOptions = {}): RenderWithServices {
+export async function renderWithProviders(ui: ReactElement, options: RenderOptions = {}): Promise<RenderWithServices> {
   const store = createMemoryStore(options.signedIn === false ? {} : { 'careerpilot.session': JSON.stringify(demoSession) });
   const services = options.services ?? createAppServices(testConfig(), store, testClock);
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } } });
   queryClient.setQueryData(queryKeys.config, publicConfigFromDefaults(services.config));
-  const result = render(
+  const result = await render(
     <AppProviders services={services} queryClient={queryClient} safeAreaMetrics={testWindowMetrics}>
       {ui}
     </AppProviders>,
