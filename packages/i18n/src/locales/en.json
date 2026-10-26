@@ -987,9 +987,13 @@
   "accountLinks": {
     "setupEmailSubject": "Finish creating your {product} account",
     "resetEmailSubject": "Reset your {product} password",
+    "existingEmailSubject": "You already have a {product} account",
     "emailGreeting": "Hello {name},",
     "setupEmailIntro": "Open this link to choose your password and finish creating your {product} account:",
     "resetEmailIntro": "Open this link to choose a new password for your {product} account:",
+    "existingEmailIntro": "Someone tried to create a {product} account with this email address. You already have an account, so nothing was changed.",
+    "existingEmailSignIn": "Sign in here: {url}",
+    "existingEmailReset": "Forgot your password? Open this link to choose a new one:",
     "emailExpiry": "The link expires in {minutes} minutes and works once.",
     "emailIgnore": "If you didn't ask for this, you can ignore this email. Nothing changes until the link is used.",
     "checkEmailTitle": "Check your email",

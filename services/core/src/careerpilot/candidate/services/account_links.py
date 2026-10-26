@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.ports import Account
 from careerpilot.platform.email_delivery import DeliveryError, DeliveryUncertainError, EmailSender, OutgoingEmail
-from careerpilot.platform.enums import AccountLinkPurpose, UserAccountStatus
+from careerpilot.platform.enums import AccountEmail, AccountLinkPurpose, UserAccountStatus
 from careerpilot.platform.errors import DomainError, ErrorCode, validation_error
 from careerpilot.platform.messages import translate
 from careerpilot.platform.model import CamelModel
@@ -41,12 +41,16 @@ def link_purpose(account: Account) -> AccountLinkPurpose:
     return AccountLinkPurpose.SETUP if account.status is UserAccountStatus.REGISTERED else AccountLinkPurpose.RESET
 
 
+def link_email(account: Account) -> AccountEmail:
+    return AccountEmail.SETUP if account.status is UserAccountStatus.REGISTERED else AccountEmail.RESET
+
+
 class AccountLinkService:
     def __init__(self, context: AccountLinkContext) -> None:
         self._ctx = context
         self._config = context.candidate.settings.account_links
 
-    def send(self, account: Account) -> None:
+    def send(self, account: Account, kind: AccountEmail) -> None:
         user_id = account.user.id
         try:
             secret = self._ctx.codes.issue(PURPOSE, user_id)
@@ -55,7 +59,7 @@ class AccountLinkService:
                 return
             raise
         try:
-            self._ctx.sender.send(self._email(account, TOKEN_SEPARATOR.join((user_id, secret))))
+            self._ctx.sender.send(self._email(account, kind, TOKEN_SEPARATOR.join((user_id, secret))))
         except (DeliveryError, DeliveryUncertainError) as error:
             self._ctx.codes.withdraw(PURPOSE, user_id)
             raise DomainError(ErrorCode.SERVICE_UNAVAILABLE, "delivery_failed") from error
@@ -80,20 +84,28 @@ class AccountLinkService:
             raise LINK_ERRORS[outcome]()
         return account
 
-    def _link(self, token: str) -> str:
-        base = self._ctx.candidate.settings.notifications.web_base_url.rstrip(URL_SEPARATOR)
-        return f"{base}{self._config.set_password_path}?{urlencode({TOKEN_PARAMETER: token})}"
+    def _web_url(self, path: str) -> str:
+        return f"{self._ctx.candidate.settings.notifications.web_base_url.rstrip(URL_SEPARATOR)}{path}"
 
-    def _email(self, account: Account, token: str) -> OutgoingEmail:
+    def _link(self, token: str) -> str:
+        return f"{self._web_url(self._config.set_password_path)}?{urlencode({TOKEN_PARAMETER: token})}"
+
+    def _paragraphs(self, kind: AccountEmail, product: str) -> list[str]:
+        intro = translate(f"accountLinks.{kind.value}EmailIntro", {"product": product})
+        if kind is not AccountEmail.EXISTING:
+            return [intro]
+        sign_in = translate("accountLinks.existingEmailSignIn", {"url": self._web_url(self._config.sign_in_path)})
+        return [intro, sign_in, translate("accountLinks.existingEmailReset")]
+
+    def _email(self, account: Account, kind: AccountEmail, token: str) -> OutgoingEmail:
         settings = self._ctx.candidate.settings
-        purpose = link_purpose(account).value
         product = settings.branding.product_name
+        paragraphs = [line for paragraph in self._paragraphs(kind, product) for line in (paragraph, "")]
         body = LINE.join(
             (
                 translate("accountLinks.emailGreeting", {"name": account.user.full_name}),
                 "",
-                translate(f"accountLinks.{purpose}EmailIntro", {"product": product}),
-                "",
+                *paragraphs,
                 self._link(token),
                 "",
                 translate("accountLinks.emailExpiry", {"minutes": self._config.ttl_minutes}),
@@ -104,9 +116,9 @@ class AccountLinkService:
         )
         return OutgoingEmail(
             sender_name=product,
-            sender_address=settings.submission.sender_address,
-            reply_to=settings.submission.sender_address,
+            sender_address=settings.mail.sender_address,
+            reply_to=settings.mail.sender_address,
             to=account.user.email,
-            subject=translate(f"accountLinks.{purpose}EmailSubject", {"product": product}),
+            subject=translate(f"accountLinks.{kind.value}EmailSubject", {"product": product}),
             body=body,
         )

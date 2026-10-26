@@ -58,7 +58,10 @@ def test_register_answers_the_same_for_an_existing_email(user_client: TestClient
     existing = user_client.post("/v1/auth/register", json=body)
     fresh = user_client.post("/v1/auth/register", json={**body, "email": "fresh@example.com"})
     assert (existing.status_code, existing.content) == (fresh.status_code, fresh.content) == (204, b"")
-    assert [e.to for e in outbox.sent] == ["fresh@example.com"]
+    assert [(e.to, e.subject) for e in outbox.sent] == [
+        ("admin@sober.com", "You already have a CareerPilot account"),
+        ("fresh@example.com", "Finish creating your CareerPilot account"),
+    ]
 
 
 def test_dashboard_and_config_shapes(user_client: TestClient) -> None:

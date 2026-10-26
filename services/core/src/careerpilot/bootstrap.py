@@ -1,5 +1,5 @@
 import os
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from importlib.metadata import version
 from pathlib import Path
@@ -45,8 +45,16 @@ from careerpilot.matching.service import RecommendationContext, RecommendationSe
 from careerpilot.platform.clock import Clock, IdGenerator, SystemClock, UuidIdGenerator, iso
 from careerpilot.platform.config import CoordinationMode, MatchingMode, PersistenceMode, Settings, load_settings, repository_root
 from careerpilot.platform.coordination import KeySpace, MetadataCache, SignInGuard, release_fingerprint
-from careerpilot.platform.email_delivery import EmailSender, SmtpEmailSender, SmtpSettings
-from careerpilot.platform.enums import ApplicationMode, SubmissionWindowKind
+from careerpilot.platform.email_delivery import (
+    EmailSender,
+    RecipientRoutingSender,
+    SmtpEmailSender,
+    SmtpLogin,
+    SmtpSettings,
+    connect_smtp,
+    connect_smtp_tls,
+)
+from careerpilot.platform.enums import ApplicationMode, DeliveryMode, SmtpSecurity, SubmissionWindowKind
 from careerpilot.platform.files import FileLinkSigner, FileStorage, LocalFileStorage, SampleAwareStorage
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore
 from careerpilot.platform.one_time_codes import OneTimeCodes, random_token
@@ -155,6 +163,28 @@ def _stores(settings: Settings, clock: Clock, options: ContainerOverrides) -> tu
     return options.cache_store or InMemoryKeyValueStore(clock), options.coord_store or InMemoryKeyValueStore(clock)
 
 
+def account_sender_for(settings: Settings, sandbox: EmailSender, environ: Mapping[str, str] = os.environ) -> EmailSender:
+    mail = settings.mail
+    user = environ.get(mail.smtp_user_env, "").strip()
+    password = environ.get(mail.smtp_password_env, "").strip()
+    if not user or not password:
+        return sandbox
+    connect = connect_smtp_tls if mail.smtp_security is SmtpSecurity.TLS else connect_smtp
+    live = SmtpEmailSender(
+        SmtpSettings(
+            host=mail.smtp_host,
+            port=mail.smtp_port,
+            timeout_seconds=mail.smtp_timeout_seconds,
+            mode=DeliveryMode.LIVE,
+            sandbox_hosts=frozenset(),
+            security=mail.smtp_security,
+            login=SmtpLogin(user=user, password=password),
+        ),
+        connect,
+    )
+    return RecipientRoutingSender(live, sandbox, frozenset(mail.sandbox_only_domains))
+
+
 def email_sender_for(settings: Settings) -> EmailSender:
     config = settings.submission
     smtp = SmtpSettings(
@@ -252,10 +282,11 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     sender = options.email_sender or email_sender_for(cfg)
     digests = DigestService(DigestContext(candidate=candidate, sender=sender))
     submissions = SubmissionService(SubmissionContext(candidate=candidate, platform=repos.platform.get, sender=sender, storage=storage))
+    account_sender = options.email_sender or account_sender_for(cfg, sender)
     codes = OneTimeCodes(coord_store, keys, cfg.verification, secret)
-    verification = ContactVerificationService(VerificationContext(candidate=candidate, codes=codes, sender=sender))
+    verification = ContactVerificationService(VerificationContext(candidate=candidate, codes=codes, sender=account_sender))
     link_codes = OneTimeCodes(coord_store, keys, cfg.account_links, secret, generate=random_token)
-    account_links = AccountLinkService(AccountLinkContext(candidate=candidate, codes=link_codes, sender=sender))
+    account_links = AccountLinkService(AccountLinkContext(candidate=candidate, codes=link_codes, sender=account_sender))
     release = release_fingerprint(cfg.model_dump_json(), version(PACKAGE))
     metadata = MetadataCache(cache_store, keys, cfg.coordination, release=release)
     public_config = PublicConfigService(cfg, demo["enumValues"], lambda: repos.platform.get().active_theme, metadata)

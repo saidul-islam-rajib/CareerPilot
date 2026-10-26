@@ -5,3 +5,4 @@ account_links:
   resend_cooldown_seconds: 60
   sends_per_hour: 5
   set_password_path: /set-password
+  sign_in_path: /sign-in

@@ -3,11 +3,11 @@ from dataclasses import dataclass, replace
 from careerpilot.candidate.context import USER_AUDIENCE, CandidateContext
 from careerpilot.candidate.models import Session, SignInEvent, UserSummary
 from careerpilot.candidate.ports import Account
-from careerpilot.candidate.services.account_links import LINKABLE_STATUSES, AccountLinkDetails, AccountLinkService
+from careerpilot.candidate.services.account_links import LINKABLE_STATUSES, AccountLinkDetails, AccountLinkService, link_email
 from careerpilot.candidate.services.profile import start_profile
 from careerpilot.platform.clock import iso, parse_iso
 from careerpilot.platform.coordination import GuardScope, SignInGuard
-from careerpilot.platform.enums import UserAccountStatus
+from careerpilot.platform.enums import AccountEmail, UserAccountStatus
 from careerpilot.platform.errors import DomainError, ErrorCode, validation_error
 from careerpilot.platform.security import TokenClaims
 from careerpilot.platform.validation import require_email, require_name, require_password
@@ -63,6 +63,8 @@ class AuthService:
         full_name = require_name(registration.full_name, policy.name)
         existing = self._ctx.accounts.find_by_email(email)
         if existing is not None and existing.status is not UserAccountStatus.REGISTERED:
+            if existing.status in LINKABLE_STATUSES:
+                self._links.send(existing, AccountEmail.EXISTING)
             return
         consent = self._consent(registration, client)
         if existing is None:
@@ -76,13 +78,13 @@ class AuthService:
         else:
             account = replace(existing, user=existing.user.model_copy(update={"full_name": full_name}), **consent)
             self._ctx.accounts.save(account)
-        self._links.send(account)
+        self._links.send(account, AccountEmail.SETUP)
 
     def request_password_reset(self, email: str, client: ClientInfo) -> None:
         self._guard.throttle(GuardScope.USER, client.ip)
         account = self._ctx.accounts.find_by_email(require_email(email, self._ctx.settings.validation.email))
         if account is not None and account.status in LINKABLE_STATUSES:
-            self._links.send(account)
+            self._links.send(account, link_email(account))
 
     def inspect_link(self, token: str, client: ClientInfo) -> AccountLinkDetails:
         self._guard.throttle(GuardScope.USER, client.ip)

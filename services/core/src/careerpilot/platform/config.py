@@ -13,6 +13,7 @@ from careerpilot.platform.enums import (
     DeliveryMode,
     PauseDuration,
     ProfileFieldType,
+    SmtpSecurity,
     ThemeKey,
 )
 
@@ -381,6 +382,17 @@ class VerificationConfig(Strict):
     sms_enabled: bool
 
 
+class MailConfig(Strict):
+    sender_address: str = Field(pattern=r"^[^@\s]+@[^@\s]+$")
+    smtp_host: str
+    smtp_port: int = Field(gt=0)
+    smtp_security: SmtpSecurity
+    smtp_timeout_seconds: float = Field(gt=0)
+    smtp_user_env: str
+    smtp_password_env: str
+    sandbox_only_domains: list[str]
+
+
 class AccountLinksConfig(Strict):
     token_bytes: int = Field(ge=16, le=64)
     ttl_minutes: int = Field(gt=0)
@@ -388,6 +400,7 @@ class AccountLinksConfig(Strict):
     resend_cooldown_seconds: int = Field(ge=0)
     sends_per_hour: int = Field(gt=0)
     set_password_path: str = Field(pattern=r"^/")
+    sign_in_path: str = Field(pattern=r"^/")
 
     @property
     def code_length(self) -> int:
@@ -445,6 +458,7 @@ class Settings(Strict):
     notifications: NotificationsConfig
     verification: VerificationConfig
     account_links: AccountLinksConfig
+    mail: MailConfig
     tracking: TrackingConfig
     answers: AnswersConfig
 

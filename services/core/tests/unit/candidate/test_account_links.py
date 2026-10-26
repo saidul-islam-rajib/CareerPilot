@@ -42,16 +42,20 @@ def test_registration_stores_a_registered_account_and_emails_a_link(container: C
     assert account.consent_at is not None
     email = outbox.sent[-1]
     assert (email.to, email.subject) == (NEW_EMAIL, "Finish creating your CareerPilot account")
+    assert (email.sender_name, email.sender_address) == ("CareerPilot", "info@team-sober.com")
     assert emailed_link(outbox).startswith("http://localhost:3000/set-password?token=")
     assert "60 minutes" in email.body
     assert "Developed by Team Sober" in email.body
 
 
-def test_registration_never_reveals_or_changes_an_existing_account(container: Container, outbox: InMemoryEmailSender) -> None:
+def test_an_existing_account_gets_a_sign_in_or_reset_email_and_is_not_changed(container: Container, outbox: InMemoryEmailSender) -> None:
     before = stored(container, DEMO_EMAIL)
     assert container.auth.register(Registration("Someone Else", DEMO_EMAIL, True, "1.0", "1.0"), CLIENT) is None
-    assert outbox.sent == []
+    email = outbox.sent[-1]
+    assert (email.to, email.subject) == (DEMO_EMAIL, "You already have a CareerPilot account")
+    assert "Sign in here: http://localhost:3000/sign-in" in email.body
     assert stored(container, DEMO_EMAIL) == before
+    assert container.auth.inspect_link(link_token(outbox), CLIENT).purpose is AccountLinkPurpose.RESET
 
 
 def test_registering_again_replaces_the_link_and_updates_the_name(

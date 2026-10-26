@@ -263,6 +263,18 @@ class DeliveryMode(StrEnum):
     LIVE = "live"
 
 
+class SmtpSecurity(StrEnum):
+    NONE = "none"
+    STARTTLS = "starttls"
+    TLS = "tls"
+
+
+class AccountEmail(StrEnum):
+    SETUP = "setup"
+    RESET = "reset"
+    EXISTING = "existing"
+
+
 class CheckFailure(StrEnum):
     MISSING_DOCUMENT = "missing_document"
     UNREADABLE_DOCUMENT = "unreadable_document"

@@ -66,6 +66,8 @@ services:
       CAREERPILOT_REDIS_COORD_URL: redis://redis-coord:6379/0
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       CAREERPILOT_SMTP_HOST: mailpit
+      CAREERPILOT_MAIL_USER: ${CAREERPILOT_MAIL_USER:-}
+      CAREERPILOT_MAIL_PASSWORD: ${CAREERPILOT_MAIL_PASSWORD:-}
     volumes:
       - profile-files:/data/files
     ports:

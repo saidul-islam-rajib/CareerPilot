@@ -112,8 +112,8 @@ class ContactVerificationService:
         )
         return OutgoingEmail(
             sender_name=settings.branding.product_name,
-            sender_address=settings.submission.sender_address,
-            reply_to=settings.submission.sender_address,
+            sender_address=settings.mail.sender_address,
+            reply_to=settings.mail.sender_address,
             to=contact.value,
             subject=translate("verification.emailSubject"),
             body=body,

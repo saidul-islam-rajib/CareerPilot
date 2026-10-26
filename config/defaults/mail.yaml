@@ -1,0 +1,9 @@
+mail:
+  sender_address: info@team-sober.com
+  smtp_host: smtp.gmail.com
+  smtp_port: 587
+  smtp_security: starttls
+  smtp_timeout_seconds: 15
+  smtp_user_env: CAREERPILOT_MAIL_USER
+  smtp_password_env: CAREERPILOT_MAIL_PASSWORD
+  sandbox_only_domains: [sober.com, example.com, example.org, example.net]

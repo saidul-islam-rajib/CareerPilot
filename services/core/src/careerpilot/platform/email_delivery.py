@@ -1,11 +1,12 @@
 import smtplib
+import ssl
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from email.message import EmailMessage
 from email.utils import formataddr, make_msgid
 from typing import Protocol
 
-from careerpilot.platform.enums import DeliveryMode
+from careerpilot.platform.enums import DeliveryMode, SmtpSecurity
 
 MESSAGE_ID = "Message-ID"
 MAIN_TYPE_SEPARATOR = "/"
@@ -71,6 +72,16 @@ def connect_smtp(host: str, port: int, timeout: float) -> smtplib.SMTP:
     return smtplib.SMTP(host, port, timeout=timeout)
 
 
+def connect_smtp_tls(host: str, port: int, timeout: float) -> smtplib.SMTP:
+    return smtplib.SMTP_SSL(host, port, timeout=timeout, context=ssl.create_default_context())
+
+
+@dataclass(frozen=True)
+class SmtpLogin:
+    user: str
+    password: str = field(repr=False)
+
+
 @dataclass(frozen=True)
 class SmtpSettings:
     host: str
@@ -78,6 +89,8 @@ class SmtpSettings:
     timeout_seconds: float
     mode: DeliveryMode
     sandbox_hosts: frozenset[str]
+    security: SmtpSecurity = SmtpSecurity.NONE
+    login: SmtpLogin | None = None
 
 
 class SmtpEmailSender:
@@ -95,16 +108,34 @@ class SmtpEmailSender:
         except (OSError, smtplib.SMTPException) as error:
             raise DeliveryError(type(error).__name__, retryable=True) from error
         try:
-            refused = client.send_message(message)
-        except (smtplib.SMTPRecipientsRefused, smtplib.SMTPSenderRefused) as error:
-            raise DeliveryError(type(error).__name__, retryable=False) from error
-        except (OSError, smtplib.SMTPException) as error:
-            raise DeliveryUncertainError(type(error).__name__) from error
+            self._secure(client)
+            refused = self._deliver(client, message)
         finally:
             self._close(client)
         if refused:
             raise DeliveryError("recipients_refused", retryable=False)
         return SentReceipt(message_id=str(message[MESSAGE_ID]))
+
+    def _secure(self, client: smtplib.SMTP) -> None:
+        settings = self._settings
+        try:
+            if settings.security is SmtpSecurity.STARTTLS:
+                client.starttls(context=ssl.create_default_context())
+            if settings.login is not None:
+                client.login(settings.login.user, settings.login.password)
+        except smtplib.SMTPAuthenticationError as error:
+            raise DeliveryError(type(error).__name__, retryable=False) from error
+        except (OSError, smtplib.SMTPException) as error:
+            raise DeliveryError(type(error).__name__, retryable=True) from error
+
+    @staticmethod
+    def _deliver(client: smtplib.SMTP, message: EmailMessage) -> dict[str, tuple[int, bytes]]:
+        try:
+            return client.send_message(message)
+        except (smtplib.SMTPRecipientsRefused, smtplib.SMTPSenderRefused) as error:
+            raise DeliveryError(type(error).__name__, retryable=False) from error
+        except (OSError, smtplib.SMTPException) as error:
+            raise DeliveryUncertainError(type(error).__name__) from error
 
     @staticmethod
     def _close(client: smtplib.SMTP) -> None:
@@ -112,6 +143,21 @@ class SmtpEmailSender:
             client.quit()
         except (OSError, smtplib.SMTPException):
             client.close()
+
+
+def recipient_domain(address: str) -> str:
+    return address.rsplit(ADDRESS_SEPARATOR, 1)[-1].strip().lower()
+
+
+class RecipientRoutingSender:
+    def __init__(self, live: EmailSender, sandbox: EmailSender, sandbox_domains: frozenset[str]) -> None:
+        self._live = live
+        self._sandbox = sandbox
+        self._sandbox_domains = frozenset(d.lower() for d in sandbox_domains)
+
+    def send(self, email: OutgoingEmail) -> SentReceipt:
+        sender = self._sandbox if recipient_domain(email.to) in self._sandbox_domains else self._live
+        return sender.send(email)
 
 
 class InMemoryEmailSender:
