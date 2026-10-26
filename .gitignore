@@ -18,6 +18,9 @@ pnpm-debug.log*
 .env.*
 !.env.example
 
+# Editor settings (personal, per machine)
+.idea/
+
 # Local validation screenshots
 .validation/
 
