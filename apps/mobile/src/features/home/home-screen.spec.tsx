@@ -12,6 +12,9 @@ describe('HomeScreen', () => {
     expect(screen.getByText("Master's in Europe")).toBeTruthy();
     expect(screen.getByText('Senior Frontend Engineer')).toBeTruthy();
     expect(screen.getByLabelText('Awaiting approval: 2')).toBeTruthy();
+    expect(screen.getByText('Coming up')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText(/First interview with the engineering manager/));
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/application/[id]', params: { id: 'app_bay' } });
   });
 
   it('opens an opportunity', async () => {

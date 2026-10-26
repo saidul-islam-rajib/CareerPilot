@@ -232,6 +232,7 @@
     "taskTime": "Time",
     "taskWhenHint": "In your time zone ({timeZone}). Leave the date empty if there isn't one yet.",
     "taskTimeNeedsDate": "Choose a date for this time.",
+    "datePlaceholder": "YYYY-MM-DD",
     "taskLocation": "Where or meeting link",
     "taskNotes": "Notes",
     "markDone": "Mark done",

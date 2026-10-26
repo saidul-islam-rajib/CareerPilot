@@ -1,11 +1,12 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useApplication, useFormat, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
-import { Archive, FileText, Mail, ShieldCheck } from 'lucide-react-native';
+import { Archive, FileText, Mail, Pencil, ShieldCheck } from 'lucide-react-native';
 import { EnumKey, TimelineActor } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
-import { Card, Divider, EmptyState, EnumBadge, ErrorState, ListRow, LoadingState, Row, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
+import { Button, ButtonVariant, Card, Divider, EmptyState, EnumBadge, ErrorState, ListRow, LoadingState, Row, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
+import { FollowUpsCard } from './follow-up-screens';
 
 const KILOBYTE = 1024;
 
@@ -47,7 +48,11 @@ export function ApplicationScreen() {
           <ListRow title={t('applications.outcome')} trailing={<EnumBadge enumKey={EnumKey.OutcomeStatus} value={a.outcomeStatus} />} />
           <ListRow title={t('opportunity.route')} trailing={<EnumBadge enumKey={EnumKey.ApplicationRoute} value={a.route} />} />
           {a.appliedAt ? <ListRow title={t('applications.appliedOn', { date: format.dateTime(a.appliedAt) })} /> : null}
+          {a.lastContactAt ? <ListRow title={t('applications.lastContact', { date: format.date(a.lastContactAt) })} /> : null}
+          <Button label={t('applications.updateOutcome')} icon={Pencil} variant={ButtonVariant.Outline} onPress={() => router.push(Routes.outcome(a.id))} testID="update-outcome" />
         </Card>
+
+        <FollowUpsCard application={a} />
 
         <Section title={t('applications.timeline')}>
           <Card>

@@ -6,6 +6,7 @@ import { PauseCircle } from 'lucide-react-native';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
+import { ComingUpSection } from '@/features/applications/follow-up-screens';
 import { OpportunityCard } from '@/features/opportunities/opportunity-card';
 import { Banner, BrandMark, Button, ButtonVariant, Card, EmptyState, ErrorState, LoadingState, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
 
@@ -69,6 +70,8 @@ export function HomeScreen() {
             <Text variant={TextVariant.Caption} tone={TextTone.Muted}>
               {t('home.lastChecked', { date: format.dateTime(dashboard.data.lastCheckedAt) })}
             </Text>
+
+            {dashboard.data.upcoming.length > 0 ? <ComingUpSection items={dashboard.data.upcoming} /> : null}
 
             {dashboard.data.tracks.map(({ track, opportunities }) => (
               <Section key={track.id} title={trackTitle(track, t)}>

@@ -11,6 +11,9 @@ export const Routes = {
   opportunity: (id: string) => ({ pathname: '/opportunity/[id]', params: { id } }) as const,
   approval: (id: string) => ({ pathname: '/approval/[id]', params: { id } }) as const,
   application: (id: string) => ({ pathname: '/application/[id]', params: { id } }) as const,
+  followUp: (applicationId: string, taskId?: string, suggested = false) =>
+    ({ pathname: '/follow-up', params: { applicationId, ...(taskId ? { taskId } : {}), ...(suggested ? { suggested: '1' } : {}) } }) as const,
+  outcome: (id: string) => ({ pathname: '/outcome', params: { id } }) as const,
   circular: (opportunityId: string) => ({ pathname: '/circular/[opportunityId]', params: { opportunityId } }) as const,
   viewer: (uri: string, title: string) => ({ pathname: '/viewer', params: { uri, title } }) as const,
   editBasics: '/profile/basics',
