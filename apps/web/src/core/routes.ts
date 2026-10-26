@@ -3,6 +3,7 @@ export const Routes = {
   signIn: '/sign-in',
   register: '/register',
   forgotPassword: '/forgot-password',
+  setPassword: (token: string) => `/set-password?token=${encodeURIComponent(token)}`,
   home: '/',
   approvals: '/approvals',
   applications: '/applications',

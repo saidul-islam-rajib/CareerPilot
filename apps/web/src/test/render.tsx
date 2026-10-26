@@ -23,11 +23,16 @@ export const demoSession: Session = {
   user: { id: 'usr_demo', fullName: 'Ayesha Rahman', email: 'admin@sober.com' },
 };
 
+export function createSignedOutServices(): AppServices {
+  return createAppServices(testConfig(), createMemoryStore({}), { now: () => new Date(testNow) });
+}
+
 export interface Navigation {
   push: Mock;
   replace: Mock;
   back: Mock;
   params: Record<string, string>;
+  search: string;
   pathname: string;
 }
 
@@ -35,13 +40,14 @@ export const navigation = (globalThis as unknown as { navigation: Navigation }).
 
 export function renderWithProviders(
   ui: ReactElement,
-  options: { signedIn?: boolean; params?: Record<string, string>; laterByDays?: number } = {},
+  options: { signedIn?: boolean; params?: Record<string, string>; search?: string; laterByDays?: number; services?: AppServices } = {},
 ): RenderResult & { services: AppServices } {
   navigation.params = options.params ?? {};
+  navigation.search = options.search ?? '';
   const store = createMemoryStore(options.signedIn === false ? {} : { 'careerpilot.session': JSON.stringify(demoSession) });
   let offset = 0;
   const clock: Clock = { now: () => new Date(testNow.getTime() + offset) };
-  const services = createAppServices(testConfig(), store, clock);
+  const services = options.services ?? createAppServices(testConfig(), store, clock);
   offset = (options.laterByDays ?? 0) * DAY_MS;
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } } });
   queryClient.setQueryData(queryKeys.config, publicConfigFromDefaults(services.config));

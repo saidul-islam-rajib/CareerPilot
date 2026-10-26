@@ -11,7 +11,10 @@ export function ForgotPasswordPage() {
   return (
     <>
       <BrandLockup />
-      <h1 className="text-2xl font-bold">{t('auth.resetTitle')}</h1>
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl font-bold">{t('auth.resetTitle')}</h1>
+        <p className="text-muted">{t('auth.resetIntro')}</p>
+      </div>
       {form.sent ? <Banner tone={StatusTone.Success} icon={MailCheck} title={t('auth.resetSent', { email: form.email })} /> : null}
       <Card>
         <form
