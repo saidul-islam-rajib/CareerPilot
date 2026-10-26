@@ -219,7 +219,36 @@
     "coverLetter": "Dear {organization} hiring team,\n\nI am writing to apply for the {title} position. {headline}\n\n{skillsSentence}Please find my CV attached.\n\nThank you for considering my application. I look forward to hearing from you.\n\nKind regards,\n{fullName}\n{contact}",
     "emailSubject": "Application for {title} – {fullName}",
     "senderName": "{fullName} via CareerPilot",
-    "coverLetterSkills": "My key skills include {skills}. "
+    "coverLetterSkills": "My key skills include {skills}. ",
+    "followUps": "Follow-ups",
+    "followUpsEmpty": "Add interviews, assessments, and reminders to keep track of what happens next.",
+    "addFollowUp": "Add follow-up",
+    "editFollowUp": "Edit follow-up",
+    "taskKind": "Type",
+    "taskTitle": "What",
+    "taskTitleHint": "For example: first interview with the hiring manager.",
+    "taskDate": "Date",
+    "taskTime": "Time",
+    "taskWhenHint": "In your time zone ({timeZone}). Leave the date empty if there isn't one yet.",
+    "taskTimeNeedsDate": "Choose a date for this time.",
+    "taskLocation": "Where or meeting link",
+    "taskNotes": "Notes",
+    "markDone": "Mark done",
+    "reopen": "Reopen",
+    "dismiss": "Dismiss",
+    "overdue": "Overdue",
+    "noDate": "No date",
+    "taskSaved": "Follow-up saved",
+    "updateOutcome": "Update outcome",
+    "outcomeNote": "Note (optional)",
+    "outcomeNoteHint": "For example, what the employer told you.",
+    "outcomeSaved": "Outcome updated",
+    "withdrawNote": "Recording a withdrawal here doesn't tell the employer. Contact them yourself if you need to.",
+    "suggestionLabel": "Suggestion",
+    "suggestedFollowUp": "No response for {days} days. A short, polite follow-up email can help.",
+    "followUpTitle": "Follow up on my application",
+    "comingUp": "Coming up",
+    "openTask": "{kind}: {title}"
   },
   "profile": {
     "title": "Profile",
@@ -663,6 +692,19 @@
       "intermediate": "Intermediate",
       "basic": "Basic"
     },
+    "task_kind": {
+      "follow_up": "Follow-up",
+      "interview": "Interview",
+      "assessment": "Assessment",
+      "reference": "Reference request",
+      "communication": "Message",
+      "other": "Other"
+    },
+    "task_status": {
+      "open": "To do",
+      "done": "Done",
+      "dismissed": "Dismissed"
+    },
     "document_kind": {
       "cv": "CV",
       "cover_letter": "Cover letter",
@@ -852,7 +894,13 @@
     "retryScheduled": "Sending failed ({reason}). We will try again.",
     "sendFailed": "Sending failed after {attempts} attempts ({reason}).",
     "outcomeUnknown": "We can't tell whether the email was sent, so we will not resend it. Please check with the employer.",
-    "checkFailed": "Stopped before sending: {reason}"
+    "checkFailed": "Stopped before sending: {reason}",
+    "outcomeSet": "Outcome set to {outcome}",
+    "outcomeNoted": "Outcome set to {outcome}: {note}",
+    "taskAdded": "Added {kind}: {title}",
+    "taskCompleted": "Completed {kind}: {title}",
+    "taskDismissed": "Dismissed {kind}: {title}",
+    "taskReopened": "Reopened {kind}: {title}"
   },
   "submission": {
     "failures": {

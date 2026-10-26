@@ -277,6 +277,23 @@ export const DocumentKind = {
 } as const;
 export type DocumentKind = (typeof DocumentKind)[keyof typeof DocumentKind];
 
+export const TaskKind = {
+  FollowUp: 'follow_up',
+  Interview: 'interview',
+  Assessment: 'assessment',
+  Reference: 'reference',
+  Communication: 'communication',
+  Other: 'other',
+} as const;
+export type TaskKind = (typeof TaskKind)[keyof typeof TaskKind];
+
+export const TaskStatus = {
+  Open: 'open',
+  Done: 'done',
+  Dismissed: 'dismissed',
+} as const;
+export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus];
+
 export const EnumKey = {
   SubmissionStatus: 'submission_status',
   OutcomeStatus: 'outcome_status',
@@ -297,6 +314,8 @@ export const EnumKey = {
   ActorType: 'actor_type',
   LanguageProficiency: 'language_proficiency',
   DocumentKind: 'document_kind',
+  TaskKind: 'task_kind',
+  TaskStatus: 'task_status',
 } as const;
 export type EnumKey = (typeof EnumKey)[keyof typeof EnumKey];
 

@@ -20,6 +20,8 @@ import {
   ActorType,
   DocumentKind,
   LanguageProficiency,
+  TaskKind,
+  TaskStatus,
   type EnumValueMetadata,
 } from '@careerpilot/domain-ui-logic';
 
@@ -174,5 +176,18 @@ export const enumValueSeed: EnumValueMetadata[] = [
     [DocumentKind.Transcript, StatusTone.Neutral],
     [DocumentKind.Identity, StatusTone.Warning],
     [DocumentKind.Other, StatusTone.Neutral],
+  ]),
+  ...rows(EnumKey.TaskKind, [
+    [TaskKind.FollowUp, StatusTone.Info],
+    [TaskKind.Interview, StatusTone.Primary],
+    [TaskKind.Assessment, StatusTone.Primary],
+    [TaskKind.Reference, StatusTone.Neutral],
+    [TaskKind.Communication, StatusTone.Neutral],
+    [TaskKind.Other, StatusTone.Neutral],
+  ]),
+  ...rows(EnumKey.TaskStatus, [
+    [TaskStatus.Open, StatusTone.Warning],
+    [TaskStatus.Done, StatusTone.Success, true],
+    [TaskStatus.Dismissed, StatusTone.Neutral, true],
   ]),
 ];

@@ -72,6 +72,21 @@ class SubmissionWindowKind(StrEnum):
     DAILY_WINDOW = "daily_window"
 
 
+class TaskKind(StrEnum):
+    FOLLOW_UP = "follow_up"
+    INTERVIEW = "interview"
+    ASSESSMENT = "assessment"
+    REFERENCE = "reference"
+    COMMUNICATION = "communication"
+    OTHER = "other"
+
+
+class TaskStatus(StrEnum):
+    OPEN = "open"
+    DONE = "done"
+    DISMISSED = "dismissed"
+
+
 class TimelineActor(StrEnum):
     SYSTEM = "system"
     USER = "user"

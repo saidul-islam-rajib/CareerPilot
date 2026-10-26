@@ -891,6 +891,87 @@
       "sortOrder": 6,
       "isTerminal": false,
       "isActive": true
+    },
+    {
+      "enumKey": "task_kind",
+      "value": "follow_up",
+      "labelKey": "enums.task_kind.follow_up",
+      "tone": "info",
+      "sortOrder": 1,
+      "isTerminal": false,
+      "isActive": true
+    },
+    {
+      "enumKey": "task_kind",
+      "value": "interview",
+      "labelKey": "enums.task_kind.interview",
+      "tone": "primary",
+      "sortOrder": 2,
+      "isTerminal": false,
+      "isActive": true
+    },
+    {
+      "enumKey": "task_kind",
+      "value": "assessment",
+      "labelKey": "enums.task_kind.assessment",
+      "tone": "primary",
+      "sortOrder": 3,
+      "isTerminal": false,
+      "isActive": true
+    },
+    {
+      "enumKey": "task_kind",
+      "value": "reference",
+      "labelKey": "enums.task_kind.reference",
+      "tone": "neutral",
+      "sortOrder": 4,
+      "isTerminal": false,
+      "isActive": true
+    },
+    {
+      "enumKey": "task_kind",
+      "value": "communication",
+      "labelKey": "enums.task_kind.communication",
+      "tone": "neutral",
+      "sortOrder": 5,
+      "isTerminal": false,
+      "isActive": true
+    },
+    {
+      "enumKey": "task_kind",
+      "value": "other",
+      "labelKey": "enums.task_kind.other",
+      "tone": "neutral",
+      "sortOrder": 6,
+      "isTerminal": false,
+      "isActive": true
+    },
+    {
+      "enumKey": "task_status",
+      "value": "open",
+      "labelKey": "enums.task_status.open",
+      "tone": "warning",
+      "sortOrder": 1,
+      "isTerminal": false,
+      "isActive": true
+    },
+    {
+      "enumKey": "task_status",
+      "value": "done",
+      "labelKey": "enums.task_status.done",
+      "tone": "success",
+      "sortOrder": 2,
+      "isTerminal": true,
+      "isActive": true
+    },
+    {
+      "enumKey": "task_status",
+      "value": "dismissed",
+      "labelKey": "enums.task_status.dismissed",
+      "tone": "neutral",
+      "sortOrder": 3,
+      "isTerminal": true,
+      "isActive": true
     }
   ],
   "user": {

@@ -76,6 +76,7 @@ class PublicConfigService:
                 "developerUrl": str(s.branding.developer_url),
             },
             "openSourceComponents": [{"name": c.name, "licence": c.licence, "url": str(c.url)} for c in s.open_source_components],
+            "tracking": camel_keys(s.tracking.model_dump(mode="json")),
             "verification": {
                 "codeLength": s.verification.code_length,
                 "codeTtlSeconds": s.verification.code_ttl_seconds,

@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import DashboardCounts, DashboardSummary, OpportunitySummary, TrackDigest
+from careerpilot.candidate.services.applications import upcoming_tasks
 from careerpilot.candidate.services.opportunities import OpportunityService
 from careerpilot.platform.clock import parse_iso
 from careerpilot.platform.enums import ApprovalState, OpportunityDecision, OutcomeStatus
@@ -34,4 +35,5 @@ class DashboardService:
             pause=workspace.preferences.pause,
             last_checked_at=workspace.last_checked_at,
             tracks=digests,
+            upcoming=upcoming_tasks(workspace.applications, self._ctx.clock.now(), self._ctx.settings.tracking),
         )

@@ -372,6 +372,16 @@ class VerificationConfig(Strict):
     sms_enabled: bool
 
 
+class TrackingConfig(Strict):
+    task_title_max_length: int = Field(gt=0)
+    task_notes_max_length: int = Field(gt=0)
+    task_location_max_length: int = Field(gt=0)
+    outcome_note_max_length: int = Field(gt=0)
+    upcoming_days: int = Field(gt=0)
+    upcoming_limit: int = Field(gt=0)
+    follow_up_after_days: int = Field(gt=0)
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -393,6 +403,7 @@ class Settings(Strict):
     submission: SubmissionConfig
     notifications: NotificationsConfig
     verification: VerificationConfig
+    tracking: TrackingConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

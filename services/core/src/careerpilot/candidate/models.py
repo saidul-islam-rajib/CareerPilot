@@ -14,6 +14,8 @@ from careerpilot.platform.enums import (
     PauseScope,
     SubmissionStatus,
     SubmissionWindowKind,
+    TaskKind,
+    TaskStatus,
     TimelineActor,
 )
 from careerpilot.platform.files import PDF, SAMPLE_PREFIX
@@ -174,6 +176,18 @@ class Evidence(CamelModel):
     at: str
 
 
+class FollowUpTask(CamelModel):
+    id: str
+    kind: TaskKind
+    title: str
+    due_at: str | None = None
+    location: str = ""
+    notes: str = ""
+    status: TaskStatus = TaskStatus.OPEN
+    created_at: str
+    updated_at: str
+
+
 class ApplicationSummary(CamelModel):
     id: str
     opportunity: OpportunitySummary
@@ -194,6 +208,7 @@ class ApplicationRecord(ApplicationSummary):
     circular: ArchivedCircular
     materials: ApprovalMaterials | None = None
     attempts: int = 0
+    tasks: list[FollowUpTask] = Field(default_factory=list[FollowUpTask])
 
     def summary(self) -> ApplicationSummary:
         return ApplicationSummary.model_validate(self.model_dump(include=set(ApplicationSummary.model_fields)))
@@ -420,8 +435,16 @@ class DashboardCounts(CamelModel):
     interviews: int
 
 
+class UpcomingTask(CamelModel):
+    application_id: str
+    organization: str
+    title: str
+    task: FollowUpTask
+
+
 class DashboardSummary(CamelModel):
     counts: DashboardCounts
     pause: PauseState | None = None
     last_checked_at: str
     tracks: list[TrackDigest]
+    upcoming: list[UpcomingTask] = Field(default_factory=list[UpcomingTask])

@@ -1,0 +1,8 @@
+tracking:
+  task_title_max_length: 120
+  task_notes_max_length: 2000
+  task_location_max_length: 500
+  outcome_note_max_length: 500
+  upcoming_days: 7
+  upcoming_limit: 5
+  follow_up_after_days: 14

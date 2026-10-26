@@ -10,8 +10,17 @@ from careerpilot.api.dependencies import CurrentUser, Services
 from careerpilot.api.instrumentation import instrument
 from careerpilot.bootstrap import Container
 from careerpilot.candidate.models import SubmissionWindow
+from careerpilot.candidate.services.applications import TaskDraft
 from careerpilot.candidate.services.auth import Registration
-from careerpilot.platform.enums import ApplicationFilter, ApplicationMode, OpportunityDecision, PauseDuration
+from careerpilot.platform.enums import (
+    ApplicationFilter,
+    ApplicationMode,
+    OpportunityDecision,
+    OutcomeStatus,
+    PauseDuration,
+    TaskKind,
+    TaskStatus,
+)
 from careerpilot.platform.messages import translate
 from careerpilot.platform.model import CamelModel
 
@@ -48,6 +57,26 @@ class DecisionBody(CamelModel):
 
 class AnswerBody(CamelModel):
     answer: str
+
+
+class OutcomeBody(CamelModel):
+    outcome: OutcomeStatus
+    note: str | None = None
+
+
+class TaskBody(CamelModel):
+    kind: TaskKind
+    title: str
+    due_at: str | None = None
+    location: str = ""
+    notes: str = ""
+
+    def draft(self) -> TaskDraft:
+        return TaskDraft(kind=self.kind, title=self.title, due_at=self.due_at, location=self.location, notes=self.notes)
+
+
+class TaskStatusBody(CamelModel):
+    status: TaskStatus
 
 
 class NotificationsBody(CamelModel):
@@ -155,6 +184,26 @@ def applications(
     user: CurrentUser, services: Services, application_filter: Annotated[ApplicationFilter, Query(alias="filter")] = ApplicationFilter.ALL
 ) -> JSONResponse:
     return ok(services.applications.list(user.id, application_filter))
+
+
+@router.put("/applications/{application_id}/outcome")
+def update_outcome(application_id: str, body: OutcomeBody, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.applications.update_outcome(user.id, application_id, body.outcome, body.note))
+
+
+@router.post("/applications/{application_id}/tasks")
+def add_task(application_id: str, body: TaskBody, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.applications.add_task(user.id, application_id, body.draft()))
+
+
+@router.put("/applications/{application_id}/tasks/{task_id}")
+def edit_task(application_id: str, task_id: str, body: TaskBody, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.applications.edit_task(user.id, application_id, task_id, body.draft()))
+
+
+@router.put("/applications/{application_id}/tasks/{task_id}/status")
+def set_task_status(application_id: str, task_id: str, body: TaskStatusBody, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.applications.set_task_status(user.id, application_id, task_id, body.status))
 
 
 @router.get("/applications/{application_id}")
