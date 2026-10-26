@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { usePublicConfig, useSession, useT } from '@careerpilot/client-core';
-import { Clock, Info, ListOrdered, LogOut, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2 } from 'lucide-react-native';
+import { Bell, Clock, Info, KeyRound, ListOrdered, LogOut, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2 } from 'lucide-react-native';
 import { Routes } from '@/core/navigation/routes';
 import { Card, Divider, ListRow, Screen, TeamSoberCredit, Text, TextTone, TextVariant } from '@/ui';
 
@@ -22,6 +22,11 @@ export function MoreScreen() {
         <ListRow icon={PauseCircle} title={t('settings.pause')} subtitle={t('settings.pauseBody')} onPress={() => router.push(Routes.pause)} />
         <Divider />
         <ListRow icon={Clock} title={t('settings.submissionWindow')} subtitle={t('settings.submissionWindowBody')} onPress={() => router.push(Routes.submissionWindow)} />
+      </Card>
+      <Card>
+        <ListRow icon={Bell} title={t('settings.notifications')} subtitle={t('settings.digestBody')} onPress={() => router.push(Routes.notifications)} />
+        <Divider />
+        <ListRow icon={KeyRound} title={t('settings.changePassword')} onPress={() => router.push(Routes.changePassword)} />
       </Card>
       <Card>
         <ListRow icon={Palette} title={t('settings.appearance')} subtitle={t('settings.activeTheme', { theme: t(`themes.${config.theme}`) })} />

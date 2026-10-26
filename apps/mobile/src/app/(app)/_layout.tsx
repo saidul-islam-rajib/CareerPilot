@@ -29,6 +29,8 @@ export default function SignedInLayout() {
       <Stack.Screen name="settings/tracks" options={{ title: t('settings.tracks') }} />
       <Stack.Screen name="settings/pause" options={{ title: t('settings.pause') }} />
       <Stack.Screen name="settings/window" options={{ title: t('settings.submissionWindow') }} />
+      <Stack.Screen name="settings/notifications" options={{ title: t('settings.notifications') }} />
+      <Stack.Screen name="settings/password" options={{ title: t('settings.changePassword') }} />
       <Stack.Screen name="settings/activity" options={{ title: t('activity.title') }} />
       <Stack.Screen name="settings/about" options={{ title: t('settings.about') }} />
       <Stack.Screen name="settings/licences" options={{ title: t('settings.licences') }} />

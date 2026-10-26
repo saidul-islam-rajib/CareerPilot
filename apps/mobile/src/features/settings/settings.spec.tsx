@@ -6,6 +6,8 @@ import { ActivityScreen } from './activity-screen';
 import { DeleteAccountScreen } from './delete-account-screen';
 import { LicencesScreen } from './licences-screen';
 import { MoreScreen } from './more-screen';
+import { NotificationsScreen } from './notifications-screen';
+import { PasswordScreen } from './password-screen';
 import { PauseScreen } from './pause-screen';
 import { TracksScreen } from './tracks-screen';
 import { WindowScreen } from './window-screen';
@@ -87,5 +89,35 @@ describe('About and licences', () => {
     expect(screen.getByText('Version 1.0.0')).toBeTruthy();
     renderWithProviders(<LicencesScreen />);
     expect(await screen.findByText('React Native Reusables')).toBeTruthy();
+  });
+});
+
+describe('NotificationsScreen', () => {
+  it('validates the time and saves the digest choice', async () => {
+    const { services } = renderWithProviders(<NotificationsScreen />);
+    const time = await screen.findByTestId('digest-time');
+    await waitFor(() => expect(time.props.value).toBe('08:00'));
+    fireEvent.changeText(time, '7pm');
+    fireEvent.press(screen.getByTestId('notifications-save'));
+    expect(await screen.findByText('Enter a time as HH:MM.')).toBeTruthy();
+    fireEvent.changeText(screen.getByTestId('digest-time'), '07:30');
+    fireEvent.press(screen.getByRole('checkbox', { name: 'Daily digest email' }));
+    fireEvent.press(screen.getByTestId('notifications-save'));
+    expect(await screen.findByText('Saved')).toBeTruthy();
+    expect((await services.api.settings.getSettings()).notifications).toEqual({ digestEnabled: false, digestTime: '07:30' });
+  });
+});
+
+describe('PasswordScreen', () => {
+  it('reports a wrong current password and then changes it', async () => {
+    renderWithProviders(<PasswordScreen />);
+    fireEvent.changeText(screen.getByTestId('current-password'), 'not-my-password');
+    fireEvent.changeText(screen.getByTestId('new-password'), 'N3w!Password99');
+    fireEvent.changeText(screen.getByTestId('confirm-password'), 'N3w!Password99');
+    fireEvent.press(screen.getByTestId('password-save'));
+    expect(await screen.findByText('Your current password is incorrect.')).toBeTruthy();
+    fireEvent.changeText(screen.getByTestId('current-password'), 'admin@sober.com');
+    fireEvent.press(screen.getByTestId('password-save'));
+    expect(await screen.findByText('Your password has been changed.')).toBeTruthy();
   });
 });
