@@ -22,6 +22,7 @@ import {
   LanguageProficiency,
   TaskKind,
   TaskStatus,
+  AnswerTopic,
   type EnumValueMetadata,
 } from '@careerpilot/domain-ui-logic';
 
@@ -189,5 +190,16 @@ export const enumValueSeed: EnumValueMetadata[] = [
     [TaskStatus.Open, StatusTone.Warning],
     [TaskStatus.Done, StatusTone.Success, true],
     [TaskStatus.Dismissed, StatusTone.Neutral, true],
+  ]),
+  ...rows(EnumKey.AnswerTopic, [
+    [AnswerTopic.WorkAuthorization, StatusTone.Primary],
+    [AnswerTopic.Sponsorship, StatusTone.Primary],
+    [AnswerTopic.NoticePeriod, StatusTone.Info],
+    [AnswerTopic.StartDate, StatusTone.Info],
+    [AnswerTopic.SalaryExpectation, StatusTone.Info],
+    [AnswerTopic.Relocation, StatusTone.Neutral],
+    [AnswerTopic.Experience, StatusTone.Neutral],
+    [AnswerTopic.Eligibility, StatusTone.Neutral],
+    [AnswerTopic.Other, StatusTone.Neutral],
   ]),
 ];

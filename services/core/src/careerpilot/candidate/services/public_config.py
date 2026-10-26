@@ -77,6 +77,11 @@ class PublicConfigService:
             },
             "openSourceComponents": [{"name": c.name, "licence": c.licence, "url": str(c.url)} for c in s.open_source_components],
             "tracking": camel_keys(s.tracking.model_dump(mode="json")),
+            "answers": {
+                "questionMaxLength": s.answers.question_max_length,
+                "maxSavedAnswers": s.answers.max_saved_answers,
+                "topicKeywords": [{"topic": e.topic.value, "keywords": e.keywords} for e in s.answers.topic_keywords],
+            },
             "verification": {
                 "codeLength": s.verification.code_length,
                 "codeTtlSeconds": s.verification.code_ttl_seconds,

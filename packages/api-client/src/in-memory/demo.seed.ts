@@ -1,4 +1,5 @@
 import {
+  AnswerTopic,
   ApplicationMode,
   ApplicationRoute,
   ApprovalState,
@@ -26,6 +27,7 @@ import {
   type Profile,
   type ProfileDocument,
   type ProfileEntry,
+  type SavedAnswer,
   type Settings,
   type SignInEvent,
   type UserSummary,
@@ -50,6 +52,7 @@ export interface DemoState {
   settings: Settings;
   signInEvents: SignInEvent[];
   lastCheckedAt: string;
+  savedAnswers: SavedAnswer[];
 }
 
 const DAY_MS = 86_400_000;
@@ -320,6 +323,7 @@ export function buildDemoSeed(now: Date): DemoState {
         answers: [
           { id: 'q_permit', question: 'Do you require visa sponsorship?', answer: 'Yes', source: AnswerSource.Profile },
           { id: 'q_start', question: 'Earliest start date', answer: 'Within 3 months of an offer', source: AnswerSource.User },
+          { id: 'q_relocate', question: 'Are you willing to relocate to Oslo?', answer: '', source: AnswerSource.User },
         ],
       },
     },
@@ -488,5 +492,15 @@ export function buildDemoSeed(now: Date): DemoState {
     settings,
     signInEvents,
     lastCheckedAt: at(0, -1),
+    savedAnswers: [
+      {
+        id: 'ans_notice',
+        topic: AnswerTopic.NoticePeriod,
+        question: 'What is your notice period?',
+        answer: '30 days',
+        createdAt: at(-20),
+        updatedAt: at(-20),
+      },
+    ],
   };
 }

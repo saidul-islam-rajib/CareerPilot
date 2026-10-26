@@ -10,9 +10,11 @@ from careerpilot.api.dependencies import CurrentUser, Services
 from careerpilot.api.instrumentation import instrument
 from careerpilot.bootstrap import Container
 from careerpilot.candidate.models import SubmissionWindow
+from careerpilot.candidate.services.answers import AnswerDraft
 from careerpilot.candidate.services.applications import TaskDraft
 from careerpilot.candidate.services.auth import Registration
 from careerpilot.platform.enums import (
+    AnswerTopic,
     ApplicationFilter,
     ApplicationMode,
     OpportunityDecision,
@@ -57,6 +59,16 @@ class DecisionBody(CamelModel):
 
 class AnswerBody(CamelModel):
     answer: str
+    save_for_reuse: bool = False
+
+
+class SavedAnswerBody(CamelModel):
+    topic: AnswerTopic
+    question: str
+    answer: str
+
+    def draft(self) -> AnswerDraft:
+        return AnswerDraft(topic=self.topic, question=self.question, answer=self.answer)
 
 
 class OutcomeBody(CamelModel):
@@ -166,7 +178,32 @@ def approval(approval_id: str, user: CurrentUser, services: Services) -> JSONRes
 
 @router.put("/approvals/{approval_id}/answers/{answer_id}")
 def update_answer(approval_id: str, answer_id: str, body: AnswerBody, user: CurrentUser, services: Services) -> JSONResponse:
-    return ok(services.approvals.update_answer(user.id, approval_id, answer_id, body.answer))
+    return ok(services.approvals.update_answer(user.id, approval_id, answer_id, body.answer, body.save_for_reuse))
+
+
+@router.get("/answers")
+def question_bank(user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.answers.bank(user.id))
+
+
+@router.post("/answers")
+def add_saved_answer(body: SavedAnswerBody, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.answers.save(user.id, body.draft()))
+
+
+@router.put("/answers/{answer_id}")
+def edit_saved_answer(answer_id: str, body: SavedAnswerBody, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.answers.save(user.id, body.draft(), answer_id))
+
+
+@router.delete("/answers/{answer_id}")
+def remove_saved_answer(answer_id: str, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.answers.remove(user.id, answer_id))
+
+
+@router.post("/answers/{answer_id}/restore")
+def restore_saved_answer(answer_id: str, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.answers.restore(user.id, answer_id))
 
 
 @router.post("/approvals/{approval_id}/approve")

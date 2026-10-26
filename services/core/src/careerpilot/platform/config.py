@@ -6,7 +6,15 @@ from typing import Any, Literal, cast
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
-from careerpilot.platform.enums import ApplicationRoute, CompletenessKind, DeliveryMode, PauseDuration, ProfileFieldType, ThemeKey
+from careerpilot.platform.enums import (
+    AnswerTopic,
+    ApplicationRoute,
+    CompletenessKind,
+    DeliveryMode,
+    PauseDuration,
+    ProfileFieldType,
+    ThemeKey,
+)
 
 CONFIG_ROOT_ENV = "CAREERPILOT_CONFIG_ROOT"
 APP_ENV = "APP_ENV"
@@ -383,6 +391,20 @@ class TrackingConfig(Strict):
     default_task_time: str = Field(pattern=TIME_OF_DAY_PATTERN)
 
 
+class TopicKeywordsConfig(Strict):
+    topic: AnswerTopic
+    keywords: list[str]
+
+
+class AnswersConfig(Strict):
+    question_max_length: int = Field(gt=0)
+    max_saved_answers: int = Field(gt=0)
+    topic_keywords: list[TopicKeywordsConfig]
+
+    def keywords(self) -> dict[AnswerTopic, list[str]]:
+        return {entry.topic: entry.keywords for entry in self.topic_keywords}
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -405,6 +427,7 @@ class Settings(Strict):
     notifications: NotificationsConfig
     verification: VerificationConfig
     tracking: TrackingConfig
+    answers: AnswersConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

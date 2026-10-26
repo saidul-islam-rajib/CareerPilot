@@ -54,8 +54,15 @@ def service(clock: FixedClock, sender: InMemoryEmailSender) -> Container:
     return container
 
 
+def answer_blanks(container: Container, approval_id: str) -> None:
+    for item in container.approvals.get(DEMO_USER, approval_id).materials.answers:
+        if not item.answer:
+            container.approvals.update_answer(DEMO_USER, approval_id, item.id, "Yes")
+
+
 def approve(container: Container, opportunity_id: str) -> str:
     approval = container.approvals.prepare(DEMO_USER, opportunity_id)
+    answer_blanks(container, approval.id)
     container.approvals.approve(DEMO_USER, approval.id)
     record = next(a for a in container.applications.list(DEMO_USER, ApplicationFilter.ALL) if a.opportunity.id == opportunity_id)
     return record.id

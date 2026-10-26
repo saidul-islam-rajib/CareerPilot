@@ -49,8 +49,8 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
     approvals: {
       listApprovals: () => get('/v1/approvals'),
       getApproval: (id) => get(`/v1/approvals/${enc(id)}`),
-      updateAnswer: (approvalId, answerId, answer) =>
-        put(`/v1/approvals/${enc(approvalId)}/answers/${enc(answerId)}`, { answer }),
+      updateAnswer: (approvalId, answerId, answer, saveForReuse = false) =>
+        put(`/v1/approvals/${enc(approvalId)}/answers/${enc(answerId)}`, { answer, saveForReuse }),
       approve: (id) => post(`/v1/approvals/${enc(id)}/approve`),
       reject: (id) => post(`/v1/approvals/${enc(id)}/reject`),
     },
@@ -61,6 +61,13 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       addTask: (id, input) => post(`/v1/applications/${enc(id)}/tasks`, input),
       editTask: (id, taskId, input) => put(`/v1/applications/${enc(id)}/tasks/${enc(taskId)}`, input),
       setTaskStatus: (id, taskId, status) => put(`/v1/applications/${enc(id)}/tasks/${enc(taskId)}/status`, { status }),
+    },
+    answers: {
+      getQuestionBank: () => get('/v1/answers'),
+      addAnswer: (input) => post('/v1/answers', input),
+      editAnswer: (id, input) => put(`/v1/answers/${enc(id)}`, input),
+      removeAnswer: (id) => del(`/v1/answers/${enc(id)}`),
+      restoreAnswer: (id) => post(`/v1/answers/${enc(id)}/restore`),
     },
     profile: {
       getProfile: () => get('/v1/profile'),

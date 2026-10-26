@@ -21,6 +21,7 @@ from careerpilot.administration.services import (
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import Preferences, Profile, SubmissionWindow, Track
 from careerpilot.candidate.ports import CandidateWorkspace
+from careerpilot.candidate.services.answers import AnswerService
 from careerpilot.candidate.services.applications import ApplicationService
 from careerpilot.candidate.services.approvals import ApprovalService
 from careerpilot.candidate.services.auth import AuthService
@@ -83,6 +84,7 @@ class Container:
     submissions: SubmissionService
     digests: DigestService
     verification: ContactVerificationService
+    answers: AnswerService
     source_checks: SourceCheckRunner
 
 
@@ -282,4 +284,5 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         submissions=submissions,
         digests=digests,
         verification=verification,
+        answers=AnswerService(candidate),
     )

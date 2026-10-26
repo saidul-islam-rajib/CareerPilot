@@ -61,6 +61,7 @@ def test_digest_respects_preferences(app: Container) -> None:
 def test_sections_report_sent_and_blocked_applications(app: Container) -> None:
     app.preferences.update_submission_window(DEMO_USER, SubmissionWindow(kind=SubmissionWindowKind.AS_SOON_AS_READY))
     approval = app.approvals.prepare(DEMO_USER, "opp_intl_oslo")
+    app.approvals.update_answer(DEMO_USER, approval.id, "q_relocate", "Yes")
     app.approvals.approve(DEMO_USER, approval.id)
     queued = next(a for a in app.applications.list(DEMO_USER, ApplicationFilter.ALL) if a.opportunity.id == "opp_intl_oslo")
     app.submissions.submit(DEMO_USER, queued.id)

@@ -5,6 +5,7 @@ from pydantic import Field, model_validator
 
 from careerpilot.platform.enums import (
     AnswerSource,
+    AnswerTopic,
     ApplicationMode,
     ApprovalState,
     ContactKind,
@@ -120,6 +121,32 @@ class QuestionAnswer(CamelModel):
     question: str
     answer: str
     source: AnswerSource
+
+
+class SavedAnswer(CamelModel):
+    id: str
+    topic: AnswerTopic
+    question: str
+    answer: str
+    created_at: str
+    updated_at: str
+    deleted_at: str | None = None
+
+
+class QuestionGroup(CamelModel):
+    key: str
+    topic: AnswerTopic
+    question: str
+    count: int
+    last_answer: str
+    last_source: AnswerSource | None = None
+    saved_answer_id: str | None = None
+    needs_answer: bool = False
+
+
+class QuestionBank(CamelModel):
+    saved: list[SavedAnswer]
+    groups: list[QuestionGroup]
 
 
 class CvRef(CamelModel):

@@ -8,6 +8,7 @@ from careerpilot.candidate.models import (
     OpportunityDetail,
     Preferences,
     Profile,
+    SavedAnswer,
     SignInEvent,
     UserSummary,
 )
@@ -76,6 +77,7 @@ def workspace_from_seed(user_seed: dict[str, Any]) -> CandidateWorkspace:
         applications=[ApplicationRecord.model_validate(a) for a in user_seed["applications"]],
         sign_in_events=[SignInEvent.model_validate(e) for e in user_seed["signInEvents"]],
         last_checked_at=str(user_seed["lastCheckedAt"]),
+        saved_answers=[SavedAnswer.model_validate(a) for a in user_seed.get("savedAnswers", [])],
     )
 
 

@@ -2,6 +2,7 @@ import re
 from dataclasses import dataclass
 from datetime import timedelta
 
+from careerpilot.candidate.answer_rules import detect_topic, fill_blank_answers, has_blank_answers
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import (
     ApplicationRecord,
@@ -15,6 +16,7 @@ from careerpilot.candidate.models import (
     TimelineEntry,
 )
 from careerpilot.candidate.ports import CandidateWorkspace
+from careerpilot.candidate.services.answers import AnswerDraft, upsert_saved_answer
 from careerpilot.candidate.services.opportunities import OpportunityService
 from careerpilot.platform.clock import iso
 from careerpilot.platform.enums import (
@@ -28,7 +30,7 @@ from careerpilot.platform.enums import (
     SubmissionWindowKind,
     TimelineActor,
 )
-from careerpilot.platform.errors import conflict, not_found
+from careerpilot.platform.errors import conflict, not_found, validation_error
 from careerpilot.platform.messages import translate
 from careerpilot.platform.validation import require_text
 
@@ -124,7 +126,7 @@ class ApprovalService:
         self._ctx.workspaces.save(user_id, workspace)
         return approval.summary()
 
-    def update_answer(self, user_id: str, approval_id: str, answer_id: str, answer: str) -> ApprovalDetail:
+    def update_answer(self, user_id: str, approval_id: str, answer_id: str, answer: str, save_for_reuse: bool = False) -> ApprovalDetail:
         workspace = self._ctx.workspaces.get(user_id)
         approval = self._pending(workspace, approval_id)
         item = next((a for a in approval.materials.answers if a.id == answer_id), None)
@@ -132,12 +134,19 @@ class ApprovalService:
             raise not_found("answer")
         item.answer = require_text(answer, self._ctx.settings.validation.answer)
         item.source = AnswerSource.USER
+        if save_for_reuse:
+            keywords = self._ctx.settings.answers.keywords()
+            draft = AnswerDraft(topic=detect_topic(item.question, keywords), question=item.question, answer=item.answer)
+            upsert_saved_answer(workspace, draft, lambda: self._ctx.ids.next("ans"), iso(self._ctx.clock.now()))
+            fill_blank_answers(workspace, keywords)
         self._ctx.workspaces.save(user_id, workspace)
         return approval.model_copy(update={"submission_window_label": window_label(workspace)})
 
     def approve(self, user_id: str, approval_id: str) -> ApprovalDetail:
         workspace = self._ctx.workspaces.get(user_id)
         approval = self._pending(workspace, approval_id)
+        if has_blank_answers(approval.materials.answers):
+            raise validation_error("unanswered_questions")
         approval.state = ApprovalState.APPROVED
         workspace.applications.insert(0, self._queued_application(workspace, approval, Approver(TimelineActor.USER, YOU_APPROVED)))
         self._ctx.workspaces.save(user_id, workspace)
@@ -146,8 +155,10 @@ class ApprovalService:
     def approve_by_rule(self, user_id: str, opportunity_id: str) -> None:
         approval_id = self.prepare(user_id, opportunity_id).id
         workspace = self._ctx.workspaces.get(user_id)
+        fill_blank_answers(workspace, self._ctx.settings.answers.keywords())
         approval = self._find(workspace, approval_id)
-        if approval.state is not ApprovalState.PENDING:
+        if approval.state is not ApprovalState.PENDING or has_blank_answers(approval.materials.answers):
+            self._ctx.workspaces.save(user_id, workspace)
             return
         approval.state = ApprovalState.APPROVED
         workspace.applications.insert(0, self._queued_application(workspace, approval, Approver(TimelineActor.SYSTEM, APPROVED_BY_RULE)))

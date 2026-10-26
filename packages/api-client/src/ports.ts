@@ -20,7 +20,9 @@ import type {
   PauseOption,
   Profile,
   PublicConfig,
+  QuestionBank,
   RegisterRequest,
+  SavedAnswerInput,
   Session,
   Settings,
   SignInEvent,
@@ -57,7 +59,7 @@ export interface OpportunityApi {
 export interface ApprovalApi {
   listApprovals(): Promise<ApprovalSummary[]>;
   getApproval(id: string): Promise<ApprovalDetail>;
-  updateAnswer(approvalId: string, answerId: string, answer: string): Promise<ApprovalDetail>;
+  updateAnswer(approvalId: string, answerId: string, answer: string, saveForReuse?: boolean): Promise<ApprovalDetail>;
   approve(id: string): Promise<ApprovalDetail>;
   reject(id: string): Promise<ApprovalDetail>;
 }
@@ -69,6 +71,14 @@ export interface ApplicationApi {
   addTask(id: string, input: TaskInput): Promise<ApplicationRecord>;
   editTask(id: string, taskId: string, input: TaskInput): Promise<ApplicationRecord>;
   setTaskStatus(id: string, taskId: string, status: TaskStatus): Promise<ApplicationRecord>;
+}
+
+export interface AnswersApi {
+  getQuestionBank(): Promise<QuestionBank>;
+  addAnswer(input: SavedAnswerInput): Promise<QuestionBank>;
+  editAnswer(id: string, input: SavedAnswerInput): Promise<QuestionBank>;
+  removeAnswer(id: string): Promise<QuestionBank>;
+  restoreAnswer(id: string): Promise<QuestionBank>;
 }
 
 export interface ProfileApi {
@@ -118,6 +128,7 @@ export interface CareerPilotApi {
   opportunities: OpportunityApi;
   approvals: ApprovalApi;
   applications: ApplicationApi;
+  answers: AnswersApi;
   profile: ProfileApi;
   settings: SettingsApi;
 }

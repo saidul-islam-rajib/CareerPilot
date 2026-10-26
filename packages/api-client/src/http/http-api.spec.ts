@@ -37,7 +37,7 @@ describe('http api', () => {
     const [url, init] = fetchFn.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe('https://api.example.com/v1/approvals/a%2F1/answers/q%202');
     expect(init.method).toBe('PUT');
-    expect(init.body).toBe(JSON.stringify({ answer: 'Yes' }));
+    expect(init.body).toBe(JSON.stringify({ answer: 'Yes', saveForReuse: false }));
   });
 
   it('handles empty responses', async () => {

@@ -1,4 +1,5 @@
 import type {
+  AnswerTopic,
   ApplicationMode,
   ApplicationRoute,
   ApprovalState,
@@ -82,6 +83,7 @@ export interface PublicConfig {
   notifications: NotificationSettings;
   verification: VerificationSettings;
   tracking: TrackingSettings;
+  answers: AnswerSettings;
   profile: ProfileSettings;
 }
 
@@ -188,6 +190,7 @@ export const AnswerSource = {
   Profile: 'profile',
   Ai: 'ai',
   User: 'user',
+  Saved: 'saved',
 } as const;
 export type AnswerSource = (typeof AnswerSource)[keyof typeof AnswerSource];
 
@@ -492,3 +495,45 @@ export interface DeletionRequest {
 }
 
 export type { Money };
+
+export interface SavedAnswer {
+  id: string;
+  topic: AnswerTopic;
+  question: string;
+  answer: string;
+  createdAt: IsoDateTime;
+  updatedAt: IsoDateTime;
+}
+
+export interface SavedAnswerInput {
+  topic: AnswerTopic;
+  question: string;
+  answer: string;
+}
+
+export interface QuestionGroup {
+  key: string;
+  topic: AnswerTopic;
+  question: string;
+  count: number;
+  lastAnswer: string;
+  lastSource?: AnswerSource;
+  savedAnswerId?: string;
+  needsAnswer: boolean;
+}
+
+export interface QuestionBank {
+  saved: SavedAnswer[];
+  groups: QuestionGroup[];
+}
+
+export interface TopicKeywords {
+  topic: AnswerTopic;
+  keywords: string[];
+}
+
+export interface AnswerSettings {
+  questionMaxLength: number;
+  maxSavedAnswers: number;
+  topicKeywords: TopicKeywords[];
+}

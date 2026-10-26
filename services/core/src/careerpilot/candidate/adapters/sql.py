@@ -11,6 +11,7 @@ from careerpilot.candidate.models import (
     OpportunityMatch,
     Preferences,
     Profile,
+    SavedAnswer,
     SignInEvent,
     UserSummary,
 )
@@ -142,6 +143,7 @@ def workspace_to_document(workspace: CandidateWorkspace) -> dict[str, object]:
         "deletionScheduledFor": workspace.deletion_scheduled_for,
         "matches": {k: v.to_json() for k, v in workspace.matches.items()},
         "lastDigestOn": workspace.last_digest_on,
+        "savedAnswers": [a.to_json() for a in workspace.saved_answers],
     }
 
 
@@ -158,6 +160,7 @@ def workspace_from_document(document: dict[str, Any]) -> CandidateWorkspace:
         deletion_scheduled_for=document.get("deletionScheduledFor"),
         matches={k: OpportunityMatch.model_validate(v) for k, v in document.get("matches", {}).items()},
         last_digest_on=document.get("lastDigestOn"),
+        saved_answers=[SavedAnswer.model_validate(a) for a in document.get("savedAnswers", [])],
     )
 
 

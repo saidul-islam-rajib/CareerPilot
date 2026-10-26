@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module';
 import { ThemeKey } from '@careerpilot/ui-tokens';
-import { PauseDuration } from '@careerpilot/domain-ui-logic';
+import { AnswerTopic, PauseDuration } from '@careerpilot/domain-ui-logic';
 import { buildDemoSeed } from './in-memory/demo.seed';
 import { enumValueSeed } from './in-memory/enum-values.seed';
 import { createInMemoryApi } from './in-memory/in-memory-api';
@@ -60,6 +60,16 @@ export const testConfig: PublicConfig = {
     upcomingLimit: 5,
     followUpAfterDays: 14,
     defaultTaskTime: '09:00',
+  },
+  answers: {
+    questionMaxLength: 300,
+    maxSavedAnswers: 100,
+    topicKeywords: [
+      { topic: AnswerTopic.Sponsorship, keywords: ['sponsorship', 'visa'] },
+      { topic: AnswerTopic.NoticePeriod, keywords: ['notice period'] },
+      { topic: AnswerTopic.StartDate, keywords: ['start date', 'earliest start'] },
+      { topic: AnswerTopic.Relocation, keywords: ['relocate'] },
+    ],
   },
   profile: testProfileSettings,
 };

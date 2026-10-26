@@ -1,0 +1,20 @@
+answers:
+  question_max_length: 300
+  max_saved_answers: 100
+  topic_keywords:
+    - topic: work_authorization
+      keywords: ["authorized to work", "authorised to work", "right to work", "work permit", "legally allowed to work", "eligible to work"]
+    - topic: sponsorship
+      keywords: ["sponsorship", "sponsor", "visa"]
+    - topic: notice_period
+      keywords: ["notice period"]
+    - topic: start_date
+      keywords: ["start date", "earliest start", "available to start", "when can you start", "join date"]
+    - topic: salary_expectation
+      keywords: ["salary", "compensation", "expected pay", "pay expectation", "remuneration"]
+    - topic: relocation
+      keywords: ["relocate", "relocation", "move to"]
+    - topic: experience
+      keywords: ["years of experience", "how many years", "experience with"]
+    - topic: eligibility
+      keywords: ["eligible", "eligibility", "qualify"]

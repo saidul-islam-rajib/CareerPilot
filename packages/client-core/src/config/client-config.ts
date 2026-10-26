@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CompletenessKind, EnumKey, PauseDuration, ProfileFieldType, enumValues } from '@careerpilot/domain-ui-logic';
+import { AnswerTopic, CompletenessKind, EnumKey, PauseDuration, ProfileFieldType, enumValues } from '@careerpilot/domain-ui-logic';
 import { THEME_KEYS, type ThemeKey } from '@careerpilot/ui-tokens';
 import { enumValueSeed, type PublicConfig } from '@careerpilot/api-client';
 
@@ -140,6 +140,11 @@ export const appConfigSchema = z.object({
     followUpAfterDays: z.number().int().positive(),
     defaultTaskTime: z.string(),
   }),
+  answers: z.object({
+    questionMaxLength: z.number().int().positive(),
+    maxSavedAnswers: z.number().int().positive(),
+    topicKeywords: z.array(z.object({ topic: z.enum(enumValues(AnswerTopic)), keywords: z.array(z.string()) })),
+  }),
   verification: z.object({
     codeLength: z.number().int().positive(),
     codeTtlSeconds: z.number().int().positive(),
@@ -175,6 +180,7 @@ export function publicConfigFromDefaults(config: AppConfig): PublicConfig {
     openSourceComponents: config.openSourceComponents,
     notifications: config.notifications,
     tracking: config.tracking,
+    answers: config.answers,
     verification: {
       codeLength: config.verification.codeLength,
       codeTtlSeconds: config.verification.codeTtlSeconds,

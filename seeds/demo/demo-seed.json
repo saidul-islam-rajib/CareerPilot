@@ -972,6 +972,87 @@
       "sortOrder": 3,
       "isTerminal": true,
       "isActive": true
+    },
+    {
+      "enumKey": "answer_topic",
+      "value": "work_authorization",
+      "labelKey": "enums.answer_topic.work_authorization",
+      "tone": "primary",
+      "sortOrder": 1,
+      "isTerminal": false,
+      "isActive": true
+    },
+    {
+      "enumKey": "answer_topic",
+      "value": "sponsorship",
+      "labelKey": "enums.answer_topic.sponsorship",
+      "tone": "primary",
+      "sortOrder": 2,
+      "isTerminal": false,
+      "isActive": true
+    },
+    {
+      "enumKey": "answer_topic",
+      "value": "notice_period",
+      "labelKey": "enums.answer_topic.notice_period",
+      "tone": "info",
+      "sortOrder": 3,
+      "isTerminal": false,
+      "isActive": true
+    },
+    {
+      "enumKey": "answer_topic",
+      "value": "start_date",
+      "labelKey": "enums.answer_topic.start_date",
+      "tone": "info",
+      "sortOrder": 4,
+      "isTerminal": false,
+      "isActive": true
+    },
+    {
+      "enumKey": "answer_topic",
+      "value": "salary_expectation",
+      "labelKey": "enums.answer_topic.salary_expectation",
+      "tone": "info",
+      "sortOrder": 5,
+      "isTerminal": false,
+      "isActive": true
+    },
+    {
+      "enumKey": "answer_topic",
+      "value": "relocation",
+      "labelKey": "enums.answer_topic.relocation",
+      "tone": "neutral",
+      "sortOrder": 6,
+      "isTerminal": false,
+      "isActive": true
+    },
+    {
+      "enumKey": "answer_topic",
+      "value": "experience",
+      "labelKey": "enums.answer_topic.experience",
+      "tone": "neutral",
+      "sortOrder": 7,
+      "isTerminal": false,
+      "isActive": true
+    },
+    {
+      "enumKey": "answer_topic",
+      "value": "eligibility",
+      "labelKey": "enums.answer_topic.eligibility",
+      "tone": "neutral",
+      "sortOrder": 8,
+      "isTerminal": false,
+      "isActive": true
+    },
+    {
+      "enumKey": "answer_topic",
+      "value": "other",
+      "labelKey": "enums.answer_topic.other",
+      "tone": "neutral",
+      "sortOrder": 9,
+      "isTerminal": false,
+      "isActive": true
     }
   ],
   "user": {
@@ -1518,6 +1599,12 @@
               "id": "q_start",
               "question": "Earliest start date",
               "answer": "Within 3 months of an offer",
+              "source": "user"
+            },
+            {
+              "id": "q_relocate",
+              "question": "Are you willing to relocate to Oslo?",
+              "answer": "",
               "source": "user"
             }
           ]
@@ -2183,7 +2270,17 @@
         "current": false
       }
     ],
-    "lastCheckedAt": "2026-10-20T05:00:00.000Z"
+    "lastCheckedAt": "2026-10-20T05:00:00.000Z",
+    "savedAnswers": [
+      {
+        "id": "ans_notice",
+        "topic": "notice_period",
+        "question": "What is your notice period?",
+        "answer": "30 days",
+        "createdAt": "2026-09-30T06:00:00.000Z",
+        "updatedAt": "2026-09-30T06:00:00.000Z"
+      }
+    ]
   },
   "admin": {
     "admins": [

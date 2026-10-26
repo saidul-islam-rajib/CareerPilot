@@ -12,6 +12,7 @@ import {
 import { ApiError, ApiErrorCode } from '../errors';
 import type { CareerPilotApi, Clock, IdGenerator } from '../ports';
 import {
+  AnswerSource,
   ApplicationFilter,
   type ApplicationRecord,
   type ApprovalDetail,
@@ -22,6 +23,7 @@ import {
   type Settings,
 } from '../types';
 import type { DemoState } from './demo.seed';
+import { createAnswers, hasBlankAnswers } from './answers';
 import { createFollowUps } from './follow-ups';
 import { createProfileStore } from './profile-store';
 
@@ -108,6 +110,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
   };
 
   const followUps = createFollowUps({ applications: state.applications, config, clock, ids, respond, reject: failWith });
+  const answers = createAnswers({ saved: state.savedAnswers, approvals: state.approvals, applications: state.applications, config, clock, ids, respond, reject: failWith });
 
   const createApplication = (approval: ApprovalDetail): ApplicationRecord => {
     const detail = findOpportunity(approval.opportunity.id);
@@ -238,17 +241,23 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
             .map(({ materials, route, submissionWindowLabel, ...summary }) => summary),
         ),
       getApproval: async (id) => respond({ ...findApproval(id), submissionWindowLabel: windowLabel(state.settings) }),
-      async updateAnswer(approvalId, answerId, answer) {
+      async updateAnswer(approvalId, answerId, answer, saveForReuse = false) {
         const approval = findApproval(approvalId);
         const item = approval.materials.answers.find((a) => a.id === answerId) ?? notFound();
         item.answer = answer;
-        item.source = 'user';
+        item.source = AnswerSource.User;
+        if (saveForReuse) {
+          answers.saveFromApproval(item.question, answer);
+        }
         return respond(approval);
       },
       async approve(id) {
         const approval = findApproval(id);
         if (approval.state !== ApprovalState.Pending) {
           return fail(ApiErrorCode.Conflict);
+        }
+        if (hasBlankAnswers(approval.materials.answers)) {
+          return failWith(ApiErrorCode.Validation, 'unanswered_questions');
         }
         approval.state = ApprovalState.Approved;
         createApplication(approval);
@@ -277,6 +286,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
       editTask: followUps.editTask,
       setTaskStatus: followUps.setTaskStatus,
     },
+    answers: answers.api,
     profile: createProfileStore({ profile: state.profile, config, clock, ids, respond, reject: failWith, verificationCode: options.demoVerificationCode }),
     settings: {
       getSettings: async () => respond(state.settings),

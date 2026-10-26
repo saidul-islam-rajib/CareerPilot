@@ -194,6 +194,11 @@
     "rejectedNote": "We won't apply to this opportunity.",
     "aiDrafted": "Drafted by AI, check before approving",
     "fromProfile": "From your profile",
+    "fromSaved": "From your saved answers",
+    "saveForReuse": "Save this answer for similar questions",
+    "needsAnswer": "Needs your answer",
+    "answerNow": "Answer",
+    "unansweredQuestions": "Answer every question before approving.",
     "sendWindowNow": "the next available moment",
     "confirmApproveTitle": "Approve this application?",
     "confirmApproveBody": "CareerPilot will submit exactly what you see here to {employer}."
@@ -694,6 +699,17 @@
       "intermediate": "Intermediate",
       "basic": "Basic"
     },
+    "answer_topic": {
+      "work_authorization": "Work authorization",
+      "sponsorship": "Visa sponsorship",
+      "notice_period": "Notice period",
+      "start_date": "Start date",
+      "salary_expectation": "Salary expectations",
+      "relocation": "Relocation",
+      "experience": "Experience",
+      "eligibility": "Eligibility",
+      "other": "Other"
+    },
     "task_kind": {
       "follow_up": "Follow-up",
       "interview": "Interview",
@@ -964,5 +980,38 @@
     "deliveryFailed": "We couldn't send the email. Try again in a few minutes.",
     "smsUnavailable": "Phone numbers can't be verified yet.",
     "alreadyVerified": "This contact is already verified."
+  },
+  "answers": {
+    "title": "Saved answers",
+    "menuBody": "Answer common application questions once.",
+    "body": "Answer common questions once. CareerPilot reuses an answer only for questions with the same meaning.",
+    "needsAnswer": "Needs an answer",
+    "needsAnswerBody": "These questions are holding up an application. Answer once to unblock it.",
+    "saved": "Your saved answers",
+    "savedEmpty": "No saved answers yet. Add one, or tick \"Save this answer\" when you answer a question in an approval.",
+    "asked": "Questions you've been asked",
+    "askedEmpty": "Questions from your applications will appear here.",
+    "askedOnce": "Asked once",
+    "askedCount": "Asked {count} times",
+    "lastAnswer": "Last answer: {answer}",
+    "add": "Add answer",
+    "edit": "Edit answer",
+    "saveThis": "Save this answer",
+    "topic": "Topic",
+    "question": "Question",
+    "answer": "Answer",
+    "savedBadge": "Saved",
+    "answerSaved": "Answer saved",
+    "removed": "Answer removed",
+    "topicQuestions": {
+      "work_authorization": "Are you legally allowed to work in the country of this job?",
+      "sponsorship": "Do you need visa sponsorship?",
+      "notice_period": "What is your notice period?",
+      "start_date": "When can you start?",
+      "salary_expectation": "What are your salary expectations?",
+      "relocation": "Are you willing to relocate?",
+      "experience": "How many years of relevant experience do you have?",
+      "eligibility": "Do you meet the eligibility requirements?"
+    }
   }
 }

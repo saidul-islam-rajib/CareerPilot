@@ -277,6 +277,19 @@ export const DocumentKind = {
 } as const;
 export type DocumentKind = (typeof DocumentKind)[keyof typeof DocumentKind];
 
+export const AnswerTopic = {
+  WorkAuthorization: 'work_authorization',
+  Sponsorship: 'sponsorship',
+  NoticePeriod: 'notice_period',
+  StartDate: 'start_date',
+  SalaryExpectation: 'salary_expectation',
+  Relocation: 'relocation',
+  Experience: 'experience',
+  Eligibility: 'eligibility',
+  Other: 'other',
+} as const;
+export type AnswerTopic = (typeof AnswerTopic)[keyof typeof AnswerTopic];
+
 export const TaskKind = {
   FollowUp: 'follow_up',
   Interview: 'interview',
@@ -316,6 +329,7 @@ export const EnumKey = {
   DocumentKind: 'document_kind',
   TaskKind: 'task_kind',
   TaskStatus: 'task_status',
+  AnswerTopic: 'answer_topic',
 } as const;
 export type EnumKey = (typeof EnumKey)[keyof typeof EnumKey];
 

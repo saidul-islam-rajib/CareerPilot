@@ -8,6 +8,7 @@ from careerpilot.candidate.models import (
     OpportunityMatch,
     Preferences,
     Profile,
+    SavedAnswer,
     SignInEvent,
     UserSummary,
 )
@@ -36,6 +37,7 @@ class CandidateWorkspace:
     deletion_scheduled_for: str | None = None
     matches: dict[str, OpportunityMatch] = field(default_factory=dict[str, OpportunityMatch])
     last_digest_on: str | None = None
+    saved_answers: list[SavedAnswer] = field(default_factory=list[SavedAnswer])
 
 
 class AccountRepository(Protocol):

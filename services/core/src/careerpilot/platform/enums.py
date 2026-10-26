@@ -98,6 +98,19 @@ class AnswerSource(StrEnum):
     PROFILE = "profile"
     AI = "ai"
     USER = "user"
+    SAVED = "saved"
+
+
+class AnswerTopic(StrEnum):
+    WORK_AUTHORIZATION = "work_authorization"
+    SPONSORSHIP = "sponsorship"
+    NOTICE_PERIOD = "notice_period"
+    START_DATE = "start_date"
+    SALARY_EXPECTATION = "salary_expectation"
+    RELOCATION = "relocation"
+    EXPERIENCE = "experience"
+    ELIGIBILITY = "eligibility"
+    OTHER = "other"
 
 
 class ApplicationFilter(StrEnum):
