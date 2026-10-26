@@ -29,7 +29,7 @@ How Claude Code is used to build CareerPilot safely and quickly. Under AIDLC, th
 - The requirements document is the source of truth. If code and requirements disagree, stop and ask; don't silently pick one.
 - Use the single definitions: status model (requirements Section 20.2), precedence (38), user-only steps (27.3), pre-submission checks (27.4), pause (47), submission timing (49), circular archive (50), compensation (51), admin access (53).
 - Never weaken a safeguard: no fabrication, no CAPTCHA solving or bot-detection evasion, no blind resubmission, no secrets in code or logs, no plain-text credentials.
-- Never send real applications, emails, or payments from development, test, or CI environments.
+- Never send real applications, payments, or other email from development, test, or CI environments. Only account email a person asks for themselves (registration and password-reset links, verification codes) may use the real mail service, and only when its credentials are set in `.env` (see `docs/runbooks/email-setup.md`).
 - Every user-facing string goes through the string catalogs (English only in v1).
 - Keep commits small, with short messages.
 

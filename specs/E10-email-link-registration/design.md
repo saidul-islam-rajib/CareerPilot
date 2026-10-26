@@ -6,6 +6,13 @@
 2. The email links to `{notifications.web_base_url}{account_links.set_password_path}?token={user_id}.{secret}`. The page inspects the link and shows the name, email, and whether it finishes registration or resets a password.
 3. Set password: the password is checked against the policy first, then the link is redeemed (single use). A `registered` account becomes `active`, its profile is created, and the user is signed in. A reset sets `credentials_changed_at`, which ends every session issued before it.
 4. Forgot password: an `active` or `paused` account gets a reset link; a `registered` account gets a new registration link; nothing is sent otherwise. The response is always 204.
+5. Registering with an `active` or `paused` email changes nothing and sends the "You already have an account" email (sign-in link plus a reset link). The response is the same 204.
+
+## Mail delivery
+
+- Config `config/defaults/mail.yaml`: `sender_address` (`info@team-sober.com`), `smtp_host` (`smtp.gmail.com`), `smtp_port` (587), `smtp_security` (`starttls` / `tls` / `none`), `smtp_timeout_seconds`, `smtp_user_env` / `smtp_password_env` (`CAREERPILOT_MAIL_USER` / `CAREERPILOT_MAIL_PASSWORD`), `sandbox_only_domains`.
+- `bootstrap.account_sender_for`: with both credentials set, account email (links and verification codes) goes through `SmtpEmailSender` in live mode (STARTTLS then login, Gmail App Password) wrapped in `RecipientRoutingSender`, which keeps `sandbox_only_domains` in the sandbox; without them it is the sandbox sender (Mailpit). Digests and job applications always use the sandbox sender outside production.
+- A rejected login is a permanent delivery error; the password is never part of an error, log, or repr. Setup steps: `docs/runbooks/email-setup.md`.
 
 ## Backend
 

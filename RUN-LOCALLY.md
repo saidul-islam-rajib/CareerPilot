@@ -34,7 +34,9 @@ The first build takes about 10 minutes; later starts take seconds. Leave out `-f
 
 `127.0.0.1` works as well as `localhost`.
 
-**Create an account:** open http://localhost:3000/register and enter your name and email (no password yet). Open Mailpit at http://localhost:8025, open **Finish creating your CareerPilot account**, and click the link. Choose your password and you're signed in. **Forgot password?** works the same way with the **Reset your CareerPilot password** email. Local email never leaves your PC.
+**Create an account:** open http://localhost:3000/register and enter your name and email (no password yet). Open Mailpit at http://localhost:8025, open **Finish creating your CareerPilot account**, and click the link. Choose your password and you're signed in. **Forgot password?** works the same way with the **Reset your CareerPilot password** email.
+
+**Real inbox delivery (optional):** by default all local email stays in Mailpit. To receive registration and reset emails in a real inbox (sent from `info@team-sober.com`), set `CAREERPILOT_MAIL_USER` and `CAREERPILOT_MAIL_PASSWORD` in `.env` as described in [docs/runbooks/email-setup.md](docs/runbooks/email-setup.md), then run `docker compose up -d user-api`.
 
 Useful commands:
 

@@ -90,7 +90,7 @@ Agent working rules:
 Agent rules (in each agent's instructions):
 
 - Read the requirements and design before acting; use the single definitions (requirements §45).
-- Never weaken safeguards, never handle real user data outside production systems, never send real applications, emails, or payments outside production.
+- Never weaken safeguards, never handle real user data outside production systems, never send real applications, payments, or other email outside production (account email a person asks for themselves may use the configured mail service, as in `docs/runbooks/email-setup.md`).
 - Production agents see only scrubbed logs and traces (no personal data or secrets).
 - Every agent action is logged with its inputs, outputs, and cost.
 - Agent spend has daily budgets; the Capacity/Cost agent reports it.

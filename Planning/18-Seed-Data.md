@@ -39,7 +39,7 @@ These accounts exist in **all local and dev environments** (local Docker, dev, C
 Notes:
 - Admin and user accounts are separate accounts in separate realms, even with the same email (requirements §53.1).
 - The local Keycloak realms use a relaxed password policy so these passwords work; staging and production enforce the full policy.
-- Local email goes to Mailpit by default. Only when a developer explicitly enables real email sending in their local `.env` (with their own sending credentials, never committed) does mail reach `saidul.rajib.online@gmail.com`; no mail is ever sent to `@sober.com` addresses.
+- Local email goes to Mailpit by default. Only when a developer explicitly enables real email sending in their local `.env` (`CAREERPILOT_MAIL_USER` and `CAREERPILOT_MAIL_PASSWORD`, their own sending credentials, never committed) does account email (registration and reset links, verification codes) reach real inboxes such as `saidul.rajib.online@gmail.com`; mail to `@sober.com` and reserved example domains always stays in Mailpit (`docs/runbooks/email-setup.md`). Because `saidul.rajib.online@gmail.com` is already registered, registering it again sends the "you already have an account" email; use `saidul.rajib.online+anything@gmail.com` to test a new registration in the same inbox.
 - The application refuses to start in staging or production if any of these default accounts or passwords exist.
 - Production gets its first Super Admin through a one-time bootstrap command using a secret from the secret store, with MFA enrolment required on first sign-in.
 

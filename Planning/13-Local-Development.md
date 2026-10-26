@@ -49,7 +49,7 @@ CareerPilot/
 | `embeddings` | Local embedding model | 8100 |
 | `clamav` | Antivirus for uploads | — |
 | `web`, `admin` | Next.js apps (hot reload) | 3000 / 3001 |
-| `mailpit` | Catches all outgoing email | 8025 |
+| `mailpit` | Catches all outgoing email (account email reaches real inboxes only when `CAREERPILOT_MAIL_USER` and `CAREERPILOT_MAIL_PASSWORD` are set in `.env`) | 8025 |
 | `mock-portals`, `mock-sources`, `mock-payments`, `mock-whatsapp` | Safe stand-ins for external systems | 9100–9400 |
 | `otel-lgtm` | Grafana + Loki + Tempo + Prometheus + Pyroscope in one container | Grafana 3100 |
 

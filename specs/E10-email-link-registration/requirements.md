@@ -11,7 +11,7 @@
 ## Acceptance criteria
 
 - WHEN a visitor registers with full name, email, and the required consent THE SYSTEM SHALL create the account in the `registered` state without a password, record the consent (document versions, time, IP, device), and email a single-use link to set the password.
-- THE SYSTEM SHALL answer every registration request the same way whether or not the email already has an account; WHEN the email belongs to an account that is not in the `registered` state THE SYSTEM SHALL not change it and SHALL not send a link.
+- THE SYSTEM SHALL answer every registration request the same way whether or not the email already has an account; WHEN the email belongs to an active or paused account THE SYSTEM SHALL not change it and SHALL email its owner that they already have an account, with a sign-in link and a single-use link to choose a new password; for suspended or deleted accounts THE SYSTEM SHALL send nothing.
 - WHEN the email belongs to an account still in the `registered` state THE SYSTEM SHALL update the name and consent and send a new link that replaces the previous one.
 - WHEN a link is opened THE SYSTEM SHALL show who the account is for (name and email) and whether it finishes registration or resets a password; WHEN the link is unknown, used, or expired THE SYSTEM SHALL say so and offer a way to request a new link.
 - WHEN the user chooses a password that meets the password policy through a valid link THE SYSTEM SHALL save the password, activate a `registered` account and create its profile, discard the link, and sign the user in.
@@ -19,6 +19,7 @@
 - WHEN a password is reset through a link THE SYSTEM SHALL end every other session of the account.
 - Accounts in the `registered` state SHALL not be able to sign in and SHALL be excluded from discovery, digests, and automation.
 - Links SHALL expire after the configured time and work once; only a keyed hash of the link secret SHALL be stored, in the coordination store; resends SHALL be limited by a cooldown and an hourly limit per account; WHEN the coordination store is unavailable THE SYSTEM SHALL refuse the request (fail closed).
-- THE SYSTEM SHALL never log or return the link secret, and SHALL never send real email from local, dev, test, staging, or CI (sandbox sender, Mailpit).
+- THE SYSTEM SHALL never log or return the link secret or the mail password.
+- Account emails SHALL come from `CareerPilot <info@team-sober.com>`. WHEN SMTP credentials are configured (local `.env` or the production secret store) THE SYSTEM SHALL deliver them to real inboxes in any environment; otherwise they SHALL go to the sandbox (Mailpit). Mail to `@sober.com` and reserved example domains SHALL always stay in the sandbox, and job-application email and digests SHALL never leave the sandbox outside production.
 - The emailed link opens the set-password page of the user web app, which works on phones and desktops. The Android and iOS apps offer the same register, check-your-email, and set-password screens, and open set-password links that use the app's scheme.
 - In demo mode (no backend) THE SYSTEM SHALL send no email; the check-your-email screen SHALL offer the demo link instead.
