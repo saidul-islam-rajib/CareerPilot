@@ -3,7 +3,7 @@ from typing import Any, cast
 
 from pydantic.alias_generators import to_camel
 
-from careerpilot.platform.config import Settings
+from careerpilot.platform.config import SECONDS_PER_MINUTE, Settings
 from careerpilot.platform.coordination import MetadataCache
 from careerpilot.platform.enums import ThemeKey
 
@@ -21,12 +21,18 @@ def camel_keys(value: Any) -> Any:
 
 class PublicConfigService:
     def __init__(
-        self, settings: Settings, enum_values: list[dict[str, Any]], active_theme: Callable[[], ThemeKey], cache: MetadataCache
+        self,
+        settings: Settings,
+        enum_values: list[dict[str, Any]],
+        active_theme: Callable[[], ThemeKey],
+        cache: MetadataCache,
+        link_ttl_minutes: Callable[[], int],
     ) -> None:
         self._settings = settings
         self._enum_values = enum_values
         self._active_theme = active_theme
         self._cache = cache
+        self._link_ttl_minutes = link_ttl_minutes
 
     def get(self) -> dict[str, Any]:
         return self._cache.get_or_load(PUBLIC_CONFIG_CACHE, self._build)
@@ -89,8 +95,10 @@ class PublicConfigService:
                 "smsEnabled": s.verification.sms_enabled,
             },
             "accountLinks": {
-                "ttlMinutes": s.account_links.ttl_minutes,
-                "resendCooldownSeconds": s.account_links.resend_cooldown_seconds,
+                "ttlMinutes": self._link_ttl_minutes(),
+                "resendCooldownSeconds": self._link_ttl_minutes() * SECONDS_PER_MINUTE,
+                "minTtlMinutes": s.account_links.min_ttl_minutes,
+                "maxTtlMinutes": s.account_links.max_ttl_minutes,
             },
             "notifications": {
                 "defaultDigestTime": s.notifications.default_digest_time,

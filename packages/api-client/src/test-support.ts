@@ -51,7 +51,7 @@ export const testConfig: PublicConfig = {
     ],
   },
   verification: { codeLength: 6, codeTtlSeconds: 600, resendCooldownSeconds: 60, smsEnabled: false },
-  accountLinks: { ttlMinutes: 60, resendCooldownSeconds: 60 },
+  accountLinks: { ttlMinutes: 5, resendCooldownSeconds: 300, minTtlMinutes: 1, maxTtlMinutes: 60 },
   tracking: {
     taskTitleMaxLength: 120,
     taskNotesMaxLength: 2000,

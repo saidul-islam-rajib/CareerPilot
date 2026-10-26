@@ -9,6 +9,7 @@ export const ApiMode = {
 } as const;
 export type ApiMode = (typeof ApiMode)[keyof typeof ApiMode];
 
+const SECONDS_PER_MINUTE = 60;
 const themeKey = z.enum(THEME_KEYS as [ThemeKey, ...ThemeKey[]]);
 
 function enumSchema<T extends string>(values: T[]) {
@@ -152,10 +153,13 @@ export const appConfigSchema = z.object({
     resendCooldownSeconds: z.number().int().nonnegative(),
     smsEnabled: z.boolean(),
   }),
-  accountLinks: z.object({
-    ttlMinutes: z.number().int().positive(),
-    resendCooldownSeconds: z.number().int().nonnegative(),
-  }),
+  accountLinks: z
+    .object({
+      ttlMinutes: z.number().int().positive(),
+      minTtlMinutes: z.number().int().positive(),
+      maxTtlMinutes: z.number().int().positive(),
+    })
+    .refine((links) => links.minTtlMinutes <= links.ttlMinutes && links.ttlMinutes <= links.maxTtlMinutes),
   notifications: z.object({
     defaultDigestTime: z.string(),
     digestTimePresets: z.array(z.object({ key: z.string(), time: z.string() })),
@@ -192,7 +196,12 @@ export function publicConfigFromDefaults(config: AppConfig): PublicConfig {
       resendCooldownSeconds: config.verification.resendCooldownSeconds,
       smsEnabled: config.verification.smsEnabled,
     },
-    accountLinks: { ttlMinutes: config.accountLinks.ttlMinutes, resendCooldownSeconds: config.accountLinks.resendCooldownSeconds },
+    accountLinks: {
+      ttlMinutes: config.accountLinks.ttlMinutes,
+      resendCooldownSeconds: config.accountLinks.ttlMinutes * SECONDS_PER_MINUTE,
+      minTtlMinutes: config.accountLinks.minTtlMinutes,
+      maxTtlMinutes: config.accountLinks.maxTtlMinutes,
+    },
     profile: config.profile,
   };
 }

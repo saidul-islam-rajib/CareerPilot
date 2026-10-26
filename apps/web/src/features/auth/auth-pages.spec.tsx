@@ -81,8 +81,8 @@ describe('RegisterPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
     expect(await screen.findByRole('heading', { name: 'Check your email' })).toBeInTheDocument();
     expect(screen.getByText(/We've sent a link to new@example\.com/)).toBeInTheDocument();
-    expect(screen.getByText(/expires in 60 minutes/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Send a new link in \d+s/ })).toBeDisabled();
+    expect(screen.getByText(/expires in 5 minutes/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Send a new link in 5:00' })).toBeDisabled();
     expect(screen.getByTestId('session')).toHaveTextContent('signed_out');
     fireEvent.click(screen.getByRole('button', { name: 'Open the link' }));
     expect(navigation.push).toHaveBeenCalledWith('/set-password?token=demo-link');

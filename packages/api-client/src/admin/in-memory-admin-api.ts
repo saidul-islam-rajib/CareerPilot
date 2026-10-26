@@ -23,6 +23,7 @@ export interface InMemoryAdminApiOptions {
   recentWindowDays: number;
   chartDays: number;
   completeProfilePercent: number;
+  linkTtlBounds: { min: number; max: number };
 }
 
 const DAY_MS = 86_400_000;
@@ -249,6 +250,10 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
     settings: {
       getSettings: async () => respond(state.settings),
       async updateSettings(update) {
+        const ttl = update.accountLinkTtlMinutes;
+        if (ttl !== undefined && !(Number.isInteger(ttl) && ttl >= options.linkTtlBounds.min && ttl <= options.linkTtlBounds.max)) {
+          return fail(ApiErrorCode.Validation);
+        }
         const changed = Object.keys(update).filter((k) => update[k as keyof typeof update] !== undefined);
         Object.assign(state.settings, Object.fromEntries(Object.entries(update).filter(([, v]) => v !== undefined)));
         record('settings.updated', changed.join(', '));

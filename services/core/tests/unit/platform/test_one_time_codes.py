@@ -2,6 +2,7 @@ from datetime import timedelta
 
 import pytest
 
+from careerpilot.candidate.services.account_links import AccountLinkPolicy
 from careerpilot.platform.clock import FixedClock
 from careerpilot.platform.config import VerificationConfig, load_settings
 from careerpilot.platform.coordination import KeySpace
@@ -100,9 +101,11 @@ def test_peek_checks_a_code_without_using_it_up(clock: FixedClock, config: Verif
 
 def test_link_tokens_are_url_safe_and_long(clock: FixedClock) -> None:
     links = load_settings("local").account_links
+    policy = AccountLinkPolicy(links, lambda: links.ttl_minutes)
     otp = OneTimeCodes(
-        InMemoryKeyValueStore(clock), KeySpace(load_settings("local").coordination), links, "test-secret", generate=random_token
+        InMemoryKeyValueStore(clock), KeySpace(load_settings("local").coordination), policy, "test-secret", generate=random_token
     )
+    assert policy.resend_cooldown_seconds == policy.code_ttl_seconds == links.ttl_minutes * 60
     token = otp.issue("account_link", "usr_new")
     assert len(token) >= links.token_bytes
     assert token.replace("-", "").replace("_", "").isalnum()

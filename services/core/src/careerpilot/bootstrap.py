@@ -17,11 +17,12 @@ from careerpilot.administration.services import (
     AdminDashboardService,
     AdminUserService,
     PlatformSettingsService,
+    effective_link_ttl_minutes,
 )
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import Preferences, Profile, SubmissionWindow, Track
 from careerpilot.candidate.ports import CandidateWorkspace
-from careerpilot.candidate.services.account_links import AccountLinkContext, AccountLinkService
+from careerpilot.candidate.services.account_links import AccountLinkContext, AccountLinkPolicy, AccountLinkService
 from careerpilot.candidate.services.answers import AnswerService
 from careerpilot.candidate.services.applications import ApplicationService
 from careerpilot.candidate.services.approvals import ApprovalService
@@ -285,11 +286,17 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     account_sender = options.email_sender or account_sender_for(cfg, sender)
     codes = OneTimeCodes(coord_store, keys, cfg.verification, secret)
     verification = ContactVerificationService(VerificationContext(candidate=candidate, codes=codes, sender=account_sender))
-    link_codes = OneTimeCodes(coord_store, keys, cfg.account_links, secret, generate=random_token)
-    account_links = AccountLinkService(AccountLinkContext(candidate=candidate, codes=link_codes, sender=account_sender))
+
+    def link_ttl_minutes() -> int:
+        return effective_link_ttl_minutes(repos.platform.get(), cfg.account_links)
+
+    link_codes = OneTimeCodes(coord_store, keys, AccountLinkPolicy(cfg.account_links, link_ttl_minutes), secret, generate=random_token)
+    account_links = AccountLinkService(
+        AccountLinkContext(candidate=candidate, codes=link_codes, sender=account_sender, ttl_minutes=link_ttl_minutes)
+    )
     release = release_fingerprint(cfg.model_dump_json(), version(PACKAGE))
     metadata = MetadataCache(cache_store, keys, cfg.coordination, release=release)
-    public_config = PublicConfigService(cfg, demo["enumValues"], lambda: repos.platform.get().active_theme, metadata)
+    public_config = PublicConfigService(cfg, demo["enumValues"], lambda: repos.platform.get().active_theme, metadata, link_ttl_minutes)
     public_config.invalidate()
     admin_settings = PlatformSettingsService(admin, public_config.invalidate)
     return Container(

@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Literal, cast
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
 from careerpilot.platform.enums import (
     AnswerTopic,
@@ -396,19 +396,21 @@ class MailConfig(Strict):
 class AccountLinksConfig(Strict):
     token_bytes: int = Field(ge=16, le=64)
     ttl_minutes: int = Field(gt=0)
+    min_ttl_minutes: int = Field(gt=0)
+    max_ttl_minutes: int = Field(gt=0)
     max_attempts: int = Field(gt=0)
-    resend_cooldown_seconds: int = Field(ge=0)
     sends_per_hour: int = Field(gt=0)
     set_password_path: str = Field(pattern=r"^/")
     sign_in_path: str = Field(pattern=r"^/")
 
-    @property
-    def code_length(self) -> int:
-        return self.token_bytes
+    @model_validator(mode="after")
+    def _default_within_bounds(self) -> "AccountLinksConfig":
+        if not self.min_ttl_minutes <= self.ttl_minutes <= self.max_ttl_minutes:
+            raise ValueError("account_links.ttl_minutes")
+        return self
 
-    @property
-    def code_ttl_seconds(self) -> int:
-        return self.ttl_minutes * SECONDS_PER_MINUTE
+    def allows(self, minutes: int) -> bool:
+        return self.min_ttl_minutes <= minutes <= self.max_ttl_minutes
 
 
 class TrackingConfig(Strict):

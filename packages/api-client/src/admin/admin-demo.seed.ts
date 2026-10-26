@@ -62,7 +62,7 @@ const STATUS_CYCLE: UserAccountStatus[] = [
 const COMPLETENESS = [86, 42, 95, 70, 100, 55, 88, 63];
 const APPLICATIONS = [7, 2, 12, 0, 5, 1, 9, 3];
 
-export function buildAdminDemoSeed(now: Date, userState: DemoState): AdminDemoState {
+export function buildAdminDemoSeed(now: Date, userState: DemoState, accountLinkTtlMinutes: number): AdminDemoState {
   const at = (days: number) => new Date(now.getTime() + days * DAY_MS).toISOString();
 
   const users: AdminUserRow[] = FIRST_NAMES.map((first, i) => {
@@ -165,7 +165,7 @@ export function buildAdminDemoSeed(now: Date, userState: DemoState): AdminDemoSt
     sources,
     applications,
     audit,
-    settings: { activeTheme: ThemeKey.Sober, emergencyStop: { active: false }, dailyApplicationCap: 10, approvalValidityDays: 3, deletionGraceDays: 14 },
+    settings: { activeTheme: ThemeKey.Sober, emergencyStop: { active: false }, dailyApplicationCap: 10, approvalValidityDays: 3, deletionGraceDays: 14, accountLinkTtlMinutes },
     services: [
       { service: 'User API', status: ServiceHealth.Up },
       { service: 'Admin API', status: ServiceHealth.Up },

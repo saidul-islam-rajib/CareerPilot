@@ -2,6 +2,7 @@ from importlib.metadata import version
 
 from fastapi import APIRouter, FastAPI, Request
 from fastapi.responses import JSONResponse, Response
+from pydantic import StrictInt
 
 from careerpilot.api.common import client_info, configure, no_content, ok
 from careerpilot.api.dependencies import CurrentAdmin, Paging, Services
@@ -34,6 +35,7 @@ class SettingsUpdateBody(CamelModel):
     daily_application_cap: int | None = None
     approval_validity_days: int | None = None
     deletion_grace_days: int | None = None
+    account_link_ttl_minutes: StrictInt | None = None
 
 
 class EmergencyStopBody(CamelModel):

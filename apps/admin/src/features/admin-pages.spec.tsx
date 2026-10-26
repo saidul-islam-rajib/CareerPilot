@@ -108,6 +108,22 @@ describe('SettingsPage', () => {
     expect((await services.api.settings.getSettings()).activeTheme).toBe(ThemeKey.Orchid);
   });
 
+  it('sets how long sign-up and reset links last, only within the allowed range', async () => {
+    const { services } = await renderAdmin(<SettingsPage />);
+    const lifetime = await screen.findByLabelText('Sign-up and reset links last (minutes)');
+    expect(lifetime).toHaveValue(5);
+    expect(screen.getByText(/From 1 to 60 minutes/)).toBeInTheDocument();
+    for (const invalid of ['0', '61', '2.5']) {
+      fireEvent.change(lifetime, { target: { value: invalid } });
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      expect(await screen.findByText('Enter a number from 1 to 60.')).toBeInTheDocument();
+    }
+    expect((await services.api.settings.getSettings()).accountLinkTtlMinutes).toBe(5);
+    fireEvent.change(lifetime, { target: { value: '10' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(async () => expect((await services.api.settings.getSettings()).accountLinkTtlMinutes).toBe(10));
+  });
+
   it('requires a reason and confirmation for the emergency stop', async () => {
     const { services } = await renderAdmin(<SettingsPage />);
     const stop = await screen.findByRole('button', { name: 'Stop all automation' });

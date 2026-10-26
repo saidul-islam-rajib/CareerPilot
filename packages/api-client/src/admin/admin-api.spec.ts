@@ -14,7 +14,7 @@ import { can, permissionsForRole } from './permissions';
 function createAdminApi() {
   const userState = buildDemoSeed(fixedNow);
   return createInMemoryAdminApi({
-    state: buildAdminDemoSeed(fixedNow, userState),
+    state: buildAdminDemoSeed(fixedNow, userState, 5),
     userState,
     clock: fixedClock,
     ids: sequentialIds(),
@@ -22,6 +22,7 @@ function createAdminApi() {
     recentWindowDays: 7,
     chartDays: 14,
     completeProfilePercent: 80,
+    linkTtlBounds: { min: 1, max: 60 },
   });
 }
 
@@ -114,6 +115,15 @@ describe('in-memory admin api', () => {
     expect(stopped.emergencyStop).toMatchObject({ active: true, reason: 'Portal incident' });
     expect((await api.dashboard.getDashboard()).emergencyStop.active).toBe(true);
     expect((await api.settings.endEmergencyStop()).emergencyStop.active).toBe(false);
+  });
+
+  it('sets the sign-up and reset link lifetime only within bounds', async () => {
+    const api = await signedIn();
+    expect((await api.settings.getSettings()).accountLinkTtlMinutes).toBe(5);
+    for (const invalid of [0, 61, 2.5]) {
+      expect(await errorCode(api.settings.updateSettings({ accountLinkTtlMinutes: invalid }))).toBe(ApiErrorCode.Validation);
+    }
+    expect((await api.settings.updateSettings({ accountLinkTtlMinutes: 15 })).accountLinkTtlMinutes).toBe(15);
   });
 
   it('manages admin accounts but never suspends the signed-in admin', async () => {

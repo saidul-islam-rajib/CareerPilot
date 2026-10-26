@@ -39,7 +39,7 @@ export function createAdminServices(config: AdminConfig, store: KeyValueStore, c
           }),
         )
       : createInMemoryAdminApi({
-          state: buildAdminDemoSeed(clock.now(), buildDemoSeed(clock.now())),
+          state: buildAdminDemoSeed(clock.now(), buildDemoSeed(clock.now()), config.accountLinks.ttlMinutes),
           userState: buildDemoSeed(clock.now()),
           clock,
           ids: sequentialIds(),
@@ -47,6 +47,7 @@ export function createAdminServices(config: AdminConfig, store: KeyValueStore, c
           recentWindowDays: config.account.recentWindowDays,
           chartDays: config.admin.chartDays,
           completeProfilePercent: config.admin.completeProfilePercent,
+          linkTtlBounds: { min: config.accountLinks.minTtlMinutes, max: config.accountLinks.maxTtlMinutes },
         });
   return { config, api, store, clock, tokens, userServices };
 }

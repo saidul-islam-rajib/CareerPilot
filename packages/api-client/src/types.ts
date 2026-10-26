@@ -75,6 +75,8 @@ export interface CompleteAccountLinkRequest {
 export interface AccountLinkSettings {
   ttlMinutes: number;
   resendCooldownSeconds: number;
+  minTtlMinutes: number;
+  maxTtlMinutes: number;
 }
 
 export interface OpenSourceComponent {

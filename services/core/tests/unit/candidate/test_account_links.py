@@ -3,6 +3,7 @@ from datetime import timedelta
 import pytest
 from fastapi.testclient import TestClient
 
+from careerpilot.api.admin_app import create_admin_app
 from careerpilot.api.user_app import create_user_app
 from careerpilot.bootstrap import Container
 from careerpilot.candidate.ports import Account
@@ -44,7 +45,7 @@ def test_registration_stores_a_registered_account_and_emails_a_link(container: C
     assert (email.to, email.subject) == (NEW_EMAIL, "Finish creating your CareerPilot account")
     assert (email.sender_name, email.sender_address) == ("CareerPilot", "info@team-sober.com")
     assert emailed_link(outbox).startswith("http://localhost:3000/set-password?token=")
-    assert "60 minutes" in email.body
+    assert f"{container.settings.account_links.ttl_minutes} minutes" in email.body
     assert "Developed by Team Sober" in email.body
 
 
@@ -63,7 +64,7 @@ def test_registering_again_replaces_the_link_and_updates_the_name(
 ) -> None:
     container.auth.register(REGISTRATION, CLIENT)
     first = link_token(outbox)
-    clock.advance(timedelta(seconds=container.settings.account_links.resend_cooldown_seconds))
+    clock.advance(timedelta(minutes=container.settings.account_links.ttl_minutes))
     container.auth.register(Registration("Renamed Person", NEW_EMAIL, True, "1.0", "1.0"), CLIENT)
     second = link_token(outbox)
     assert first != second
@@ -172,9 +173,70 @@ def test_registration_and_links_over_http(container: Container, outbox: InMemory
     reused = client.post("/v1/auth/account-links/complete", json={"token": token, "password": STRONG_PASSWORD})
     assert (reused.status_code, reused.json()["code"], reused.json()["detail"]) == (422, "validation", "link_expired")
     assert client.post("/v1/auth/password-reset", json={"email": "nobody@example.com"}).status_code == 204
-    assert client.get("/v1/config").json()["accountLinks"] == {"ttlMinutes": 60, "resendCooldownSeconds": 60}
+    assert client.get("/v1/config").json()["accountLinks"] == {
+        "ttlMinutes": 5,
+        "resendCooldownSeconds": 300,
+        "minTtlMinutes": 1,
+        "maxTtlMinutes": 60,
+    }
 
 
 def test_activated_registration_helper_returns_a_session(container: Container, outbox: InMemoryEmailSender) -> None:
     session = register_and_activate(container, outbox, REGISTRATION)
     assert session.user.full_name == "New Person"
+
+
+def admin_actor(container: Container):  # type: ignore[no-untyped-def]
+    return container.admin_auth.authenticate(container.admin_auth.sign_in(DEMO_EMAIL, DEMO_PASSWORD, CLIENT.ip).access_token)
+
+
+def test_a_new_link_is_sent_only_after_the_previous_one_expires(
+    container: Container, outbox: InMemoryEmailSender, clock: FixedClock
+) -> None:
+    container.auth.register(REGISTRATION, CLIENT)
+    first = link_token(outbox)
+    ttl = timedelta(minutes=container.settings.account_links.ttl_minutes)
+    clock.advance(ttl - timedelta(seconds=1))
+    container.auth.request_password_reset(NEW_EMAIL, CLIENT)
+    assert len(outbox.sent) == 1
+    assert container.auth.inspect_link(first, CLIENT).email == NEW_EMAIL
+    clock.advance(timedelta(seconds=1))
+    assert failure(lambda: container.auth.inspect_link(first, CLIENT)) == (ErrorCode.VALIDATION, "link_expired")
+    container.auth.request_password_reset(NEW_EMAIL, CLIENT)
+    assert len(outbox.sent) == 2
+    assert container.auth.inspect_link(link_token(outbox), CLIENT).email == NEW_EMAIL
+
+
+def test_admins_set_the_link_lifetime_within_bounds(container: Container, outbox: InMemoryEmailSender, clock: FixedClock) -> None:
+    admin = admin_actor(container)
+    bounds = container.settings.account_links
+    assert container.admin_settings.get(admin).account_link_ttl_minutes == bounds.ttl_minutes
+    for invalid in (bounds.min_ttl_minutes - 1, bounds.max_ttl_minutes + 1, True):
+        code, detail = failure(lambda invalid=invalid: container.admin_settings.update(admin, {"account_link_ttl_minutes": invalid}))
+        assert code is ErrorCode.VALIDATION
+        assert detail in {"account_link_ttl_minutes", "settings"}
+    assert container.admin_settings.update(admin, {"account_link_ttl_minutes": 10}).account_link_ttl_minutes == 10
+    assert container.public_config.get()["accountLinks"]["ttlMinutes"] == 10
+    container.auth.register(REGISTRATION, CLIENT)
+    assert "10 minutes" in outbox.sent[-1].body
+    clock.advance(timedelta(minutes=9))
+    assert container.auth.inspect_link(link_token(outbox), CLIENT).email == NEW_EMAIL
+    clock.advance(timedelta(minutes=1, seconds=1))
+    assert failure(lambda: container.auth.inspect_link(link_token(outbox), CLIENT)) == (ErrorCode.VALIDATION, "link_expired")
+
+
+def test_link_lifetime_setting_is_validated_strictly_over_http(container: Container) -> None:
+    client = TestClient(create_admin_app(container))
+    token = client.post("/admin/v1/auth/sign-in", json={"email": DEMO_EMAIL, "password": DEMO_PASSWORD}).json()["accessToken"]
+    headers = {"Authorization": f"Bearer {token}"}
+    for invalid in ("5", 5.5, 0, 61):
+        response = client.patch("/admin/v1/settings", json={"accountLinkTtlMinutes": invalid}, headers=headers)
+        assert response.status_code == 422, invalid
+    saved = client.patch("/admin/v1/settings", json={"accountLinkTtlMinutes": 15}, headers=headers)
+    assert saved.json()["accountLinkTtlMinutes"] == 15
+    assert client.get("/admin/v1/settings", headers=headers).json()["accountLinkTtlMinutes"] == 15
+
+
+def test_tokens_that_are_not_shaped_like_links_are_refused_before_lookup(container: Container) -> None:
+    for token in ("a" * 300, "usr_1.short", "usr 1.abcdefghijklmnopqrst", "usr_1.abcdefghijklmnop<script>"):
+        assert failure(lambda token=token: container.auth.inspect_link(token, CLIENT)) == (ErrorCode.VALIDATION, "link_invalid")

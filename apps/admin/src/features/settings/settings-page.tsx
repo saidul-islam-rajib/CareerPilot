@@ -7,6 +7,7 @@ import type { PlatformSettings, PlatformSettingsUpdate } from '@careerpilot/api-
 import { useFormat, usePublicConfig, useT } from '@careerpilot/client-core';
 import { AdminArea, EmergencyStopScope, PermissionAction, StatusTone } from '@careerpilot/domain-ui-logic';
 import { THEME_KEYS, themes, type ThemeKey } from '@careerpilot/ui-tokens';
+import { ValidationMessage } from '@careerpilot/validation';
 import { Badge, Banner, BrandMark, Button, Card, ConfirmDialog, ErrorState, LoadingState, PageHeader, Section, TextField, ThemeScope, cn } from '@careerpilot/ui-web';
 import { adminKeys, useAdminMutation } from '@/core/admin-queries';
 import { useAdminApi } from '@/core/admin-services';
@@ -37,42 +38,71 @@ function ThemePreview({ themeKey }: { themeKey: ThemeKey }) {
 function LimitsForm({ settings }: { settings: PlatformSettings }) {
   const t = useT();
   const api = useAdminApi();
+  const { config } = usePublicConfig();
   const canUpdate = useCan(AdminArea.Settings, PermissionAction.Update);
   const save = useAdminMutation((update: PlatformSettingsUpdate) => api.settings.updateSettings(update));
-  const [values, setValues] = useState({ dailyApplicationCap: '', approvalValidityDays: '', deletionGraceDays: '' });
+  const [values, setValues] = useState({ dailyApplicationCap: '', approvalValidityDays: '', deletionGraceDays: '', accountLinkTtlMinutes: '' });
+  const [linkTtlError, setLinkTtlError] = useState<string>();
+  const linkBounds = { min: config.accountLinks.minTtlMinutes, max: config.accountLinks.maxTtlMinutes };
 
   useEffect(() => {
     setValues({
       dailyApplicationCap: String(settings.dailyApplicationCap),
       approvalValidityDays: String(settings.approvalValidityDays),
       deletionGraceDays: String(settings.deletionGraceDays),
+      accountLinkTtlMinutes: String(settings.accountLinkTtlMinutes),
     });
-  }, [settings.approvalValidityDays, settings.dailyApplicationCap, settings.deletionGraceDays]);
+  }, [settings.accountLinkTtlMinutes, settings.approvalValidityDays, settings.dailyApplicationCap, settings.deletionGraceDays]);
+
+  const setValue = (key: keyof typeof values, value: string) => {
+    setValues((v) => ({ ...v, [key]: value }));
+    if (key === 'accountLinkTtlMinutes') {
+      setLinkTtlError(undefined);
+    }
+  };
 
   const field = (key: keyof typeof values, label: string) => (
-    <TextField label={label} type="number" min={1} inputMode="numeric" value={values[key]} disabled={!canUpdate} onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))} />
+    <TextField label={label} type="number" min={1} inputMode="numeric" value={values[key]} disabled={!canUpdate} onChange={(e) => setValue(key, e.target.value)} />
   );
+
+  const submit = () => {
+    const linkTtl = Number(values.accountLinkTtlMinutes);
+    if (!Number.isInteger(linkTtl) || linkTtl < linkBounds.min || linkTtl > linkBounds.max) {
+      setLinkTtlError(ValidationMessage.Range);
+      return;
+    }
+    save.mutate({
+      dailyApplicationCap: Number(values.dailyApplicationCap),
+      approvalValidityDays: Number(values.approvalValidityDays),
+      deletionGraceDays: Number(values.deletionGraceDays),
+      accountLinkTtlMinutes: linkTtl,
+    });
+  };
 
   return (
     <Card className="gap-4">
       {save.isSuccess ? <Banner tone={StatusTone.Success} icon={CheckCircle2} title={t('common.saved')} /> : null}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         {field('dailyApplicationCap', t('admin.settings.dailyCap'))}
         {field('approvalValidityDays', t('admin.settings.approvalValidity'))}
         {field('deletionGraceDays', t('admin.settings.deletionGrace'))}
+        <TextField
+          label={t('admin.settings.linkTtl')}
+          type="number"
+          min={linkBounds.min}
+          max={linkBounds.max}
+          step={1}
+          inputMode="numeric"
+          value={values.accountLinkTtlMinutes}
+          disabled={!canUpdate}
+          onChange={(e) => setValue('accountLinkTtlMinutes', e.target.value)}
+          hint={t('admin.settings.linkTtlHint', linkBounds)}
+          error={linkTtlError}
+          errorParams={linkBounds}
+        />
       </div>
       {canUpdate ? (
-        <Button
-          className="self-start"
-          loading={save.isPending}
-          onClick={() =>
-            save.mutate({
-              dailyApplicationCap: Number(values.dailyApplicationCap),
-              approvalValidityDays: Number(values.approvalValidityDays),
-              deletionGraceDays: Number(values.deletionGraceDays),
-            })
-          }
-        >
+        <Button className="self-start" loading={save.isPending} onClick={submit}>
           {t('common.save')}
         </Button>
       ) : null}

@@ -104,6 +104,13 @@ const TIME_OF_DAY = /^([01]\d|2[0-3]):([0-5]\d)$/;
 const REFERENCE_DAY = Date.UTC(2000, 0, 1);
 const MS_PER_MINUTE = 60_000;
 const MINUTES_PER_HOUR = 60;
+const SECONDS_PER_MINUTE = 60;
+const SECONDS_WIDTH = 2;
+
+export function formatCountdown(totalSeconds: number): string {
+  const seconds = Math.max(0, Math.ceil(totalSeconds));
+  return `${Math.floor(seconds / SECONDS_PER_MINUTE)}:${String(seconds % SECONDS_PER_MINUTE).padStart(SECONDS_WIDTH, '0')}`;
+}
 
 export function formatTimeOfDay(value: string, ctx: FormatContext): string {
   const match = TIME_OF_DAY.exec(value);

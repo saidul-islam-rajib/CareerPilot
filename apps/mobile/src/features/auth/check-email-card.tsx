@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 import { AlertCircle, MailCheck, RotateCw } from '@/ui/icons';
 import { useDemoLinkToken, useLinkResend, useT } from '@careerpilot/client-core';
-import { StatusTone } from '@careerpilot/domain-ui-logic';
+import { StatusTone, formatCountdown } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { Banner, Button, ButtonVariant, Card, Icon, IconSize, Text, TextTone, TextVariant } from '@/ui';
@@ -40,7 +40,7 @@ export function CheckEmailCard({ email, onStartOver }: { email: string; onStartO
         </View>
       ) : null}
       <Button
-        label={link.resendIn > 0 ? t('accountLinks.resendIn', { seconds: link.resendIn }) : t('accountLinks.resend')}
+        label={link.resendIn > 0 ? t('accountLinks.resendIn', { time: formatCountdown(link.resendIn) }) : t('accountLinks.resend')}
         icon={RotateCw}
         variant={ButtonVariant.Secondary}
         disabled={link.resendIn > 0}

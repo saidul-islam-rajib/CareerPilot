@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, MailCheck, RotateCw } from 'lucide-react';
 import { useDemoLinkToken, useLinkResend, useT } from '@careerpilot/client-core';
-import { StatusTone } from '@careerpilot/domain-ui-logic';
+import { StatusTone, formatCountdown } from '@careerpilot/domain-ui-logic';
 import { Banner, Button, Card } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
 
@@ -38,7 +38,7 @@ export function CheckEmailCard({ email, onStartOver }: { email: string; onStartO
         </div>
       ) : null}
       <Button variant="secondary" icon={RotateCw} fullWidth disabled={link.resendIn > 0} loading={link.resending} onClick={link.resend}>
-        {link.resendIn > 0 ? t('accountLinks.resendIn', { seconds: link.resendIn }) : t('accountLinks.resend')}
+        {link.resendIn > 0 ? t('accountLinks.resendIn', { time: formatCountdown(link.resendIn) }) : t('accountLinks.resend')}
       </Button>
       <div className="flex flex-col items-center gap-2 text-sm sm:flex-row sm:justify-center sm:gap-6">
         <button type="button" className="font-semibold text-primary hover:underline" onClick={onStartOver}>

@@ -163,6 +163,7 @@ export interface PlatformSettings {
   dailyApplicationCap: number;
   approvalValidityDays: number;
   deletionGraceDays: number;
+  accountLinkTtlMinutes: number;
 }
 
 export interface PlatformSettingsUpdate {
@@ -170,6 +171,7 @@ export interface PlatformSettingsUpdate {
   dailyApplicationCap?: number;
   approvalValidityDays?: number;
   deletionGraceDays?: number;
+  accountLinkTtlMinutes?: number;
 }
 
 export interface EmergencyStopRequest {

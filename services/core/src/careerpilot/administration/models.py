@@ -123,6 +123,7 @@ class PlatformSettings(CamelModel):
     daily_application_cap: int
     approval_validity_days: int
     deletion_grace_days: int
+    account_link_ttl_minutes: int | None = None
 
 
 class AuditEntry(CamelModel):

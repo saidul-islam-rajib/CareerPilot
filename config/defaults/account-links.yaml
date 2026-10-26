@@ -1,8 +1,9 @@
 account_links:
   token_bytes: 32
-  ttl_minutes: 60
+  ttl_minutes: 5
+  min_ttl_minutes: 1
+  max_ttl_minutes: 60
   max_attempts: 5
-  resend_cooldown_seconds: 60
   sends_per_hour: 5
   set_password_path: /set-password
   sign_in_path: /sign-in

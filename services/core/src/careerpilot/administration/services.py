@@ -24,6 +24,7 @@ from careerpilot.administration.models import (
 )
 from careerpilot.administration.permissions import permissions_for_role
 from careerpilot.platform.clock import iso, parse_iso
+from careerpilot.platform.config import AccountLinksConfig
 from careerpilot.platform.coordination import GuardScope, SignInGuard
 from careerpilot.platform.enums import (
     AdminArea,
@@ -42,6 +43,7 @@ from careerpilot.platform.validation import require_text
 
 ISO_DATE_LENGTH = 10
 RECENT_APPLICATIONS_LIMIT = 5
+LINK_TTL_FIELD = "account_link_ttl_minutes"
 CANCELLABLE = frozenset({SubmissionStatus.APPROVED_QUEUED, SubmissionStatus.AWAITING_APPROVAL})
 
 
@@ -314,6 +316,10 @@ class AdminCatalogService:
         return row
 
 
+def effective_link_ttl_minutes(settings: PlatformSettings, config: AccountLinksConfig) -> int:
+    return settings.account_link_ttl_minutes or config.ttl_minutes
+
+
 class PlatformSettingsService:
     def __init__(self, context: AdminContext, on_change: Callable[[], None]) -> None:
         self._ctx = context
@@ -321,22 +327,32 @@ class PlatformSettingsService:
 
     def get(self, actor: AdminActor) -> PlatformSettings:
         actor.require(AdminArea.SETTINGS, PermissionAction.READ)
-        return self._ctx.platform.get()
+        return self._effective(self._ctx.platform.get())
 
     def active_theme(self) -> ThemeKey:
         return self._ctx.platform.get().active_theme
 
+    def link_ttl_minutes(self) -> int:
+        return effective_link_ttl_minutes(self._ctx.platform.get(), self._ctx.settings.account_links)
+
     def update(self, actor: AdminActor, changes: dict[str, object]) -> PlatformSettings:
         actor.require(AdminArea.SETTINGS, PermissionAction.UPDATE)
         current = self._ctx.platform.get()
-        allowed = {"active_theme", "daily_application_cap", "approval_validity_days", "deletion_grace_days"}
+        allowed = {"active_theme", "daily_application_cap", "approval_validity_days", "deletion_grace_days", LINK_TTL_FIELD}
         applied = {k: v for k, v in changes.items() if k in allowed and v is not None}
         if any(isinstance(v, int) and v <= 0 for v in applied.values()):
             raise validation_error("settings")
+        ttl = applied.get(LINK_TTL_FIELD)
+        if ttl is not None and not (isinstance(ttl, int) and not isinstance(ttl, bool) and self._ctx.settings.account_links.allows(ttl)):
+            raise validation_error(LINK_TTL_FIELD)
         updated = PlatformSettings.model_validate({**current.model_dump(), **applied})
         self._save(updated)
         actor.record("settings.updated", ", ".join(sorted(applied)))
-        return updated
+        return self._effective(updated)
+
+    def _effective(self, settings: PlatformSettings) -> PlatformSettings:
+        ttl = effective_link_ttl_minutes(settings, self._ctx.settings.account_links)
+        return settings.model_copy(update={LINK_TTL_FIELD: ttl})
 
     def start_emergency_stop(self, actor: AdminActor, scope: EmergencyStopScope, reason: str, target: str | None) -> PlatformSettings:
         actor.require(AdminArea.SETTINGS, PermissionAction.UPDATE)
@@ -346,7 +362,7 @@ class PlatformSettingsService:
         updated = current.model_copy(update={"emergency_stop": stop})
         self._save(updated)
         actor.record("emergency_stop.started", text)
-        return updated
+        return self._effective(updated)
 
     def _save(self, updated: PlatformSettings) -> None:
         self._ctx.platform.save(updated)
@@ -357,7 +373,7 @@ class PlatformSettingsService:
         updated = self._ctx.platform.get().model_copy(update={"emergency_stop": EmergencyStop(active=False)})
         self._save(updated)
         actor.record("emergency_stop.ended", "")
-        return updated
+        return self._effective(updated)
 
 
 class AdminAuditService:
