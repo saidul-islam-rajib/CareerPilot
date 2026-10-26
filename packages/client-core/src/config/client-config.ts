@@ -130,6 +130,16 @@ export const appConfigSchema = z.object({
     track: z.object({ minResultCount: z.number().int().positive(), maxResultCount: z.number().int().positive() }),
   }),
   openSourceComponents: z.array(z.object({ name: z.string(), licence: z.string(), url: z.string().url() })),
+  tracking: z.object({
+    taskTitleMaxLength: z.number().int().positive(),
+    taskNotesMaxLength: z.number().int().positive(),
+    taskLocationMaxLength: z.number().int().positive(),
+    outcomeNoteMaxLength: z.number().int().positive(),
+    upcomingDays: z.number().int().positive(),
+    upcomingLimit: z.number().int().positive(),
+    followUpAfterDays: z.number().int().positive(),
+    defaultTaskTime: z.string(),
+  }),
   verification: z.object({
     codeLength: z.number().int().positive(),
     codeTtlSeconds: z.number().int().positive(),
@@ -164,6 +174,7 @@ export function publicConfigFromDefaults(config: AppConfig): PublicConfig {
     branding: config.branding,
     openSourceComponents: config.openSourceComponents,
     notifications: config.notifications,
+    tracking: config.tracking,
     verification: {
       codeLength: config.verification.codeLength,
       codeTtlSeconds: config.verification.codeTtlSeconds,

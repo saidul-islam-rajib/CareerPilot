@@ -12,12 +12,14 @@ import type {
   OpportunityType,
   OutcomeStatus,
   PauseDuration,
-  PhotoCrop,
   PauseScope,
+  PhotoCrop,
   RequirementCheck,
   SponsorshipEvidence,
   SubmissionStatus,
   SubmissionWindowKind,
+  TaskKind,
+  TaskStatus,
   TimelineActor,
   TrackKind,
   WorkArrangement,
@@ -79,6 +81,7 @@ export interface PublicConfig {
   openSourceComponents: OpenSourceComponent[];
   notifications: NotificationSettings;
   verification: VerificationSettings;
+  tracking: TrackingSettings;
   profile: ProfileSettings;
 }
 
@@ -178,6 +181,7 @@ export interface DashboardSummary {
   pause?: PauseState;
   lastCheckedAt: IsoDateTime;
   tracks: TrackDigest[];
+  upcoming: UpcomingTask[];
 }
 
 export const AnswerSource = {
@@ -255,6 +259,50 @@ export interface ApplicationRecord extends ApplicationSummary {
   files: SentFile[];
   evidence: Evidence[];
   circular: ArchivedCircular;
+  tasks: FollowUpTask[];
+}
+
+export interface FollowUpTask {
+  id: string;
+  kind: TaskKind;
+  title: string;
+  dueAt?: IsoDateTime;
+  location: string;
+  notes: string;
+  status: TaskStatus;
+  createdAt: IsoDateTime;
+  updatedAt: IsoDateTime;
+}
+
+export interface TaskInput {
+  kind: TaskKind;
+  title: string;
+  dueAt?: IsoDateTime;
+  location: string;
+  notes: string;
+}
+
+export interface OutcomeUpdate {
+  outcome: OutcomeStatus;
+  note?: string;
+}
+
+export interface UpcomingTask {
+  applicationId: string;
+  organization: string;
+  title: string;
+  task: FollowUpTask;
+}
+
+export interface TrackingSettings {
+  taskTitleMaxLength: number;
+  taskNotesMaxLength: number;
+  taskLocationMaxLength: number;
+  outcomeNoteMaxLength: number;
+  upcomingDays: number;
+  upcomingLimit: number;
+  followUpAfterDays: number;
+  defaultTaskTime: string;
 }
 
 export const ApplicationFilter = {

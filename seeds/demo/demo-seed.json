@@ -1615,6 +1615,19 @@
           "originalUrl": "https://jobs.example.com/bd/bay-digital",
           "text": "Software Engineer\nBay Digital Ltd\n\nSalary: BDT 120,000–160,000 per month. Apply by email to careers@baydigital.example.com."
         },
+        "tasks": [
+          {
+            "id": "task_bay_interview",
+            "kind": "interview",
+            "title": "First interview with the engineering manager",
+            "dueAt": "2026-10-22T10:00:00.000Z",
+            "location": "Bay Digital office, Gulshan 2, Dhaka",
+            "notes": "Bring a printed CV and two project examples.",
+            "status": "open",
+            "createdAt": "2026-10-19T06:00:00.000Z",
+            "updatedAt": "2026-10-19T06:00:00.000Z"
+          }
+        ],
         "lastContactAt": "2026-10-19T06:00:00.000Z"
       },
       {
@@ -1693,7 +1706,8 @@
           "archivedAt": "2026-10-18T06:00:00.000Z",
           "originalUrl": "https://jobs.example.com/kite/fullstack",
           "text": "Full-Stack Developer\nKite Commerce\n\nJoin our checkout squad. React, Node.js, PostgreSQL. Apply through our applicant tracking system."
-        }
+        },
+        "tasks": []
       },
       {
         "id": "app_meghna",
@@ -1749,7 +1763,8 @@
           "archivedAt": "2026-10-18T06:00:00.000Z",
           "originalUrl": "https://jobs.example.com/bd/meghna",
           "text": "Lead QA Engineer\nMeghna Tech\n\nLead our QA practice in Chattogram."
-        }
+        },
+        "tasks": []
       },
       {
         "id": "app_harbour",
@@ -1800,7 +1815,8 @@
           "archivedAt": "2026-10-18T06:00:00.000Z",
           "originalUrl": "https://jobs.example.com/harbourline/react",
           "text": "React Developer\nHarbourline\n\nInternational team, hybrid in Amsterdam."
-        }
+        },
+        "tasks": []
       }
     ],
     "profile": {

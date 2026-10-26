@@ -57,6 +57,10 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
     applications: {
       listApplications: (filter) => get(`/v1/applications?filter=${enc(filter)}`),
       getApplication: (id) => get(`/v1/applications/${enc(id)}`),
+      updateOutcome: (id, update) => put(`/v1/applications/${enc(id)}/outcome`, update),
+      addTask: (id, input) => post(`/v1/applications/${enc(id)}/tasks`, input),
+      editTask: (id, taskId, input) => put(`/v1/applications/${enc(id)}/tasks/${enc(taskId)}`, input),
+      setTaskStatus: (id, taskId, status) => put(`/v1/applications/${enc(id)}/tasks/${enc(taskId)}/status`, { status }),
     },
     profile: {
       getProfile: () => get('/v1/profile'),

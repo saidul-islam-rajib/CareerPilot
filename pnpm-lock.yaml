@@ -559,6 +559,9 @@ importers:
       '@careerpilot/dynamic-forms':
         specifier: workspace:*
         version: link:../dynamic-forms
+      '@careerpilot/i18n':
+        specifier: workspace:*
+        version: link:../i18n
       '@careerpilot/ui-tokens':
         specifier: workspace:*
         version: link:../ui-tokens

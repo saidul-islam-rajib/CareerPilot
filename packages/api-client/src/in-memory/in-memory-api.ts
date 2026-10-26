@@ -22,6 +22,7 @@ import {
   type Settings,
 } from '../types';
 import type { DemoState } from './demo.seed';
+import { createFollowUps } from './follow-ups';
 import { createProfileStore } from './profile-store';
 
 export interface InMemoryApiOptions {
@@ -106,6 +107,8 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     }
   };
 
+  const followUps = createFollowUps({ applications: state.applications, config, clock, ids, respond, reject: failWith });
+
   const createApplication = (approval: ApprovalDetail): ApplicationRecord => {
     const detail = findOpportunity(approval.opportunity.id);
     const application: ApplicationRecord = {
@@ -124,6 +127,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
       files: [{ name: `${approval.materials.cv.name}.pdf`, version: approval.materials.cv.version, sizeBytes: 0 }],
       evidence: [],
       circular: detail.circular,
+      tasks: [],
     };
     state.applications.unshift(application);
     return application;
@@ -190,6 +194,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
           pause: state.settings.pause,
           lastCheckedAt: state.lastCheckedAt,
           tracks,
+          upcoming: followUps.upcoming(),
         });
       },
     },
@@ -264,9 +269,13 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
           state.applications
             .filter((a) => filter === ApplicationFilter.All || STATUS_GROUPS[filter].includes(a.submissionStatus))
             .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-            .map(({ route, timeline, questions, emails, files, evidence, circular, ...summary }) => summary),
+            .map(({ route, timeline, questions, emails, files, evidence, circular, tasks, ...summary }) => summary),
         ),
       getApplication: async (id) => respond(state.applications.find((a) => a.id === id) ?? notFound()),
+      updateOutcome: followUps.updateOutcome,
+      addTask: followUps.addTask,
+      editTask: followUps.editTask,
+      setTaskStatus: followUps.setTaskStatus,
     },
     profile: createProfileStore({ profile: state.profile, config, clock, ids, respond, reject: failWith, verificationCode: options.demoVerificationCode }),
     settings: {

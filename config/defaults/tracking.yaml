@@ -6,3 +6,4 @@ tracking:
   upcoming_days: 7
   upcoming_limit: 5
   follow_up_after_days: 14
+  default_task_time: "09:00"

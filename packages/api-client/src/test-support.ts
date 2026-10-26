@@ -51,6 +51,16 @@ export const testConfig: PublicConfig = {
     ],
   },
   verification: { codeLength: 6, codeTtlSeconds: 600, resendCooldownSeconds: 60, smsEnabled: false },
+  tracking: {
+    taskTitleMaxLength: 120,
+    taskNotesMaxLength: 2000,
+    taskLocationMaxLength: 500,
+    outcomeNoteMaxLength: 500,
+    upcomingDays: 7,
+    upcomingLimit: 5,
+    followUpAfterDays: 14,
+    defaultTaskTime: '09:00',
+  },
   profile: testProfileSettings,
 };
 

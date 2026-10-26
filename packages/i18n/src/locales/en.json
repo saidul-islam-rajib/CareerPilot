@@ -128,6 +128,7 @@
     "phone": "Enter a valid phone number with country code.",
     "range": "Enter a number from {min} to {max}.",
     "time": "Enter a time as HH:MM.",
+    "date": "Enter a date as YYYY-MM-DD.",
     "tooLong": "Use {max} characters or fewer.",
     "url": "Enter a full web address starting with https://.",
     "month": "Choose a month and year.",

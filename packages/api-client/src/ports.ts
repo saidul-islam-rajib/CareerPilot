@@ -1,4 +1,4 @@
-import type { OpportunityDecision, PhotoCrop } from '@careerpilot/domain-ui-logic';
+import type { OpportunityDecision, PhotoCrop, TaskStatus } from '@careerpilot/domain-ui-logic';
 import type { EntryValue } from '@careerpilot/dynamic-forms';
 import type {
   ApplicationFilter,
@@ -15,6 +15,7 @@ import type {
   DocumentInput,
   NotificationPreferences,
   OpportunityDetail,
+  OutcomeUpdate,
   PasswordChange,
   PauseOption,
   Profile,
@@ -25,6 +26,7 @@ import type {
   SignInEvent,
   SignInRequest,
   SubmissionWindow,
+  TaskInput,
   Track,
   TrackUpdate,
   UploadSource,
@@ -63,6 +65,10 @@ export interface ApprovalApi {
 export interface ApplicationApi {
   listApplications(filter: ApplicationFilter): Promise<ApplicationSummary[]>;
   getApplication(id: string): Promise<ApplicationRecord>;
+  updateOutcome(id: string, update: OutcomeUpdate): Promise<ApplicationRecord>;
+  addTask(id: string, input: TaskInput): Promise<ApplicationRecord>;
+  editTask(id: string, taskId: string, input: TaskInput): Promise<ApplicationRecord>;
+  setTaskStatus(id: string, taskId: string, status: TaskStatus): Promise<ApplicationRecord>;
 }
 
 export interface ProfileApi {

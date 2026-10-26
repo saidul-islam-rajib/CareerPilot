@@ -86,7 +86,9 @@ def test_dashboard_lists_open_tasks_coming_up_soonest_first(container: Container
     done = container.applications.add_task(DEMO_USER, KITE, draft("Finished", timedelta(days=1), clock)).tasks[-1]
     container.applications.set_task_status(DEMO_USER, KITE, done.id, TaskStatus.DONE)
     upcoming = container.dashboard.get(DEMO_USER).upcoming
-    assert [(u.application_id, u.task.title) for u in upcoming] == [("app_bay", "Sooner"), (KITE, "Later")]
+    mine = {"Later", "Sooner", "Too far", "Someday", "Finished"}
+    assert [(u.application_id, u.task.title) for u in upcoming if u.task.title in mine] == [("app_bay", "Sooner"), (KITE, "Later")]
+    assert [u.task.due_at for u in upcoming] == sorted(u.task.due_at or "" for u in upcoming)
     assert no_date.id not in {u.task.id for u in upcoming}
     assert upcoming[0].organization
 

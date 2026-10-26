@@ -10,6 +10,7 @@ export * from './hooks/use-approvals';
 export * from './hooks/use-contact-verification';
 export * from './hooks/use-auth-forms';
 export * from './hooks/use-dashboard';
+export * from './hooks/use-follow-ups';
 export * from './hooks/use-opportunity';
 export * from './hooks/use-profile';
 export * from './hooks/use-settings';

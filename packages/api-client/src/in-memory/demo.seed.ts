@@ -11,6 +11,8 @@ import {
   SponsorshipEvidence,
   SubmissionStatus,
   SubmissionWindowKind,
+  TaskKind,
+  TaskStatus,
   TimelineActor,
   TrackKind,
   WorkArrangement,
@@ -354,6 +356,7 @@ export function buildDemoSeed(now: Date): DemoState {
       files: [{ name: 'Ayesha-Rahman-CV.pdf', version: 3, sizeBytes: 182_400 }],
       evidence: [],
       circular: detail.circular,
+      tasks: [],
       ...extra,
     };
   };
@@ -375,6 +378,19 @@ export function buildDemoSeed(now: Date): DemoState {
         { at: at(-6), actor: TimelineActor.System, text: 'Email sent to careers@baydigital.example.com', status: SubmissionStatus.SubmittedAwaitingConfirmation },
         { at: at(-4), actor: TimelineActor.System, text: 'No bounce received – confirmed', status: SubmissionStatus.Confirmed },
         { at: at(-1), actor: TimelineActor.Employer, text: 'Interview invitation received for next Tuesday' },
+      ],
+      tasks: [
+        {
+          id: 'task_bay_interview',
+          kind: TaskKind.Interview,
+          title: 'First interview with the engineering manager',
+          dueAt: at(2, 4),
+          location: 'Bay Digital office, Gulshan 2, Dhaka',
+          notes: 'Bring a printed CV and two project examples.',
+          status: TaskStatus.Open,
+          createdAt: at(-1),
+          updatedAt: at(-1),
+        },
       ],
     }),
     record('app_kite', 'opp_remote_fullstack', SubmissionStatus.Confirmed, OutcomeStatus.UnderReview, 3, ApplicationRoute.AtsPortal, {

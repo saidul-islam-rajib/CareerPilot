@@ -12,6 +12,7 @@
   "dependencies": {
     "@careerpilot/domain-ui-logic": "workspace:*",
     "@careerpilot/dynamic-forms": "workspace:*",
+    "@careerpilot/i18n": "workspace:*",
     "@careerpilot/ui-tokens": "workspace:*",
     "@careerpilot/validation": "workspace:*"
   }

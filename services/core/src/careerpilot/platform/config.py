@@ -380,6 +380,7 @@ class TrackingConfig(Strict):
     upcoming_days: int = Field(gt=0)
     upcoming_limit: int = Field(gt=0)
     follow_up_after_days: int = Field(gt=0)
+    default_task_time: str = Field(pattern=TIME_OF_DAY_PATTERN)
 
 
 class Settings(Strict):
