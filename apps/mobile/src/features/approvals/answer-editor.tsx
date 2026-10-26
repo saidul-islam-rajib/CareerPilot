@@ -6,21 +6,23 @@ import { AnswerSource, type QuestionAnswer } from '@careerpilot/api-client';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { validate } from '@careerpilot/validation';
 import { useTheme } from '@/core/theme/theme';
-import { Badge, Button, ButtonVariant, Icon, IconSize, Row, Text, TextField, TextTone, TextVariant } from '@/ui';
+import { Badge, Button, ButtonVariant, Checkbox, Icon, IconSize, Row, Text, TextField, TextTone, TextVariant } from '@/ui';
 
 export interface AnswerEditorProps {
   item: QuestionAnswer;
   editable: boolean;
   saving: boolean;
-  onSave: (answer: string) => void;
+  onSave: (answer: string, saveForReuse: boolean) => void;
 }
 
 export function AnswerEditor({ item, editable, saving, onSave }: AnswerEditorProps) {
   const t = useT();
   const theme = useTheme();
   const schemas = useSchemas();
-  const [editing, setEditing] = useState(false);
+  const blank = !item.answer.trim();
+  const [editing, setEditing] = useState(editable && blank);
   const [draft, setDraft] = useState(item.answer);
+  const [reuse, setReuse] = useState(false);
   const [error, setError] = useState<string>();
   const save = () => {
     const result = validate(schemas.answer, draft);
@@ -28,7 +30,7 @@ export function AnswerEditor({ item, editable, saving, onSave }: AnswerEditorPro
       setError(result.errors.form);
       return;
     }
-    onSave(result.value);
+    onSave(result.value, reuse);
     setEditing(false);
   };
   const sourceBadge =
@@ -36,6 +38,8 @@ export function AnswerEditor({ item, editable, saving, onSave }: AnswerEditorPro
       <Badge label={t('approvals.aiDrafted')} tone={StatusTone.Warning} />
     ) : item.source === AnswerSource.Profile ? (
       <Badge label={t('approvals.fromProfile')} tone={StatusTone.Info} />
+    ) : item.source === AnswerSource.Saved ? (
+      <Badge label={t('approvals.fromSaved')} tone={StatusTone.Success} />
     ) : null;
   return (
     <View style={{ gap: theme.space.sm, paddingVertical: theme.space.sm }}>
@@ -45,12 +49,15 @@ export function AnswerEditor({ item, editable, saving, onSave }: AnswerEditorPro
           {item.question}
         </Text>
       </Row>
-      {sourceBadge}
+      {blank ? <Badge label={t('approvals.needsAnswer')} tone={StatusTone.Warning} /> : sourceBadge}
       {editing ? (
         <>
-          <TextField label={t('approvals.editAnswer')} value={draft} onChangeText={setDraft} error={error} multiline autoFocus />
+          <TextField label={t('approvals.editAnswer')} value={draft} onChangeText={setDraft} error={error} multiline autoFocus={!blank} testID={`answer-${item.id}`} />
+          <Checkbox checked={reuse} onChange={setReuse} accessibilityLabel={t('approvals.saveForReuse')}>
+            {t('approvals.saveForReuse')}
+          </Checkbox>
           <Row>
-            <Button label={t('common.save')} onPress={save} loading={saving} style={{ flex: 1 }} />
+            <Button label={t('common.save')} onPress={save} loading={saving} style={{ flex: 1 }} testID={`save-answer-${item.id}`} />
             <Button label={t('common.cancel')} variant={ButtonVariant.Outline} onPress={() => setEditing(false)} style={{ flex: 1 }} />
           </Row>
         </>

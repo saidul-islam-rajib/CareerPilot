@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { SubmissionStatus } from '@careerpilot/domain-ui-logic';
 import { ApplicationFilter } from '@careerpilot/api-client';
 import { mockParams, mockRouter, renderWithProviders } from '@/test/render';
@@ -51,5 +51,20 @@ describe('ApprovalScreen', () => {
     renderWithProviders(<ApprovalScreen />);
     fireEvent.press(await screen.findByTestId('reject'));
     expect(await screen.findByText("We won't apply to this opportunity.")).toBeTruthy();
+  });
+});
+
+describe('Approval questions', () => {
+  it('blocks approval until the blank question is answered and saves it for reuse', async () => {
+    mockParams.current = { id: 'apr_oslo' };
+    const { services } = renderWithProviders(<ApprovalScreen />);
+    expect(await screen.findByText('Answer every question before approving.')).toBeTruthy();
+    expect(screen.getByTestId('approve').props.accessibilityState).toMatchObject({ disabled: true });
+    fireEvent.changeText(screen.getByTestId('answer-q_relocate'), 'Yes');
+    fireEvent.press(screen.getByRole('checkbox', { name: 'Save this answer for similar questions' }));
+    fireEvent.press(screen.getByTestId('save-answer-q_relocate'));
+    await waitFor(() => expect(screen.queryByText('Answer every question before approving.')).toBeNull());
+    const bank = await services.api.answers.getQuestionBank();
+    expect(bank.saved.map((a) => a.question)).toContain('Are you willing to relocate to Oslo?');
   });
 });

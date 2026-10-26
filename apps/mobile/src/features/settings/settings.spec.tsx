@@ -1,8 +1,9 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { ApplicationMode, SubmissionWindowKind } from '@careerpilot/domain-ui-logic';
-import { renderWithProviders } from '@/test/render';
+import { mockParams, mockRouter, renderWithProviders } from '@/test/render';
 import { AboutScreen } from './about-screen';
 import { ActivityScreen } from './activity-screen';
+import { AnswerScreen, AnswersScreen } from './answers-screens';
 import { DeleteAccountScreen } from './delete-account-screen';
 import { LicencesScreen } from './licences-screen';
 import { MoreScreen } from './more-screen';
@@ -124,5 +125,33 @@ describe('PasswordScreen', () => {
     fireEvent.changeText(screen.getByTestId('current-password'), 'admin@sober.com');
     fireEvent.press(screen.getByTestId('password-save'));
     expect(await screen.findByText('Your password has been changed.')).toBeTruthy();
+  });
+});
+
+describe('Saved answers', () => {
+  it('lists blocking questions first and opens the editor with the question filled in', async () => {
+    renderWithProviders(<AnswersScreen />);
+    expect(await screen.findByText('Needs an answer')).toBeTruthy();
+    expect(screen.getByText('Asked 5 times')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('Save this answer: Are you willing to relocate to Oslo?'));
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/settings/answer', params: { topic: 'relocation', question: 'Are you willing to relocate to Oslo?', answer: '' } });
+  });
+
+  it('saves an answer that fills the blank question', async () => {
+    mockParams.current = { topic: 'relocation', question: 'Are you willing to relocate to Oslo?' };
+    const { services } = renderWithProviders(<AnswerScreen />);
+    fireEvent.press(await screen.findByTestId('answer-save'));
+    expect(await screen.findByText('This field is required.')).toBeTruthy();
+    fireEvent.changeText(screen.getByTestId('answer-text'), 'Yes');
+    fireEvent.press(screen.getByTestId('answer-save'));
+    await waitFor(async () => expect((await services.api.approvals.getApproval('apr_oslo')).materials.answers.find((a) => a.id === 'q_relocate')?.answer).toBe('Yes'));
+    await waitFor(() => expect(mockRouter.back).toHaveBeenCalled());
+  });
+
+  it('suggests the usual question for a topic', async () => {
+    mockParams.current = {};
+    renderWithProviders(<AnswerScreen />);
+    fireEvent.press(await screen.findByRole('radio', { name: 'Notice period' }));
+    expect(screen.getByTestId('answer-question').props.value).toBe('What is your notice period?');
   });
 });

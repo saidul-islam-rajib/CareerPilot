@@ -27,6 +27,8 @@ export const Routes = {
   pause: '/settings/pause',
   submissionWindow: '/settings/window',
   notifications: '/settings/notifications',
+  answers: '/settings/answers',
+  answer: (params: { id?: string; topic?: string; question?: string; answer?: string }) => ({ pathname: '/settings/answer', params }) as const,
   changePassword: '/settings/password',
   activity: '/settings/activity',
   about: '/settings/about',

@@ -28,6 +28,7 @@ export function ApprovalScreen() {
   }
   const a = approval.data;
   const pending = a.state === ApprovalState.Pending;
+  const unanswered = a.materials.answers.some((item) => !item.answer.trim());
   const windowLabel = a.submissionWindowLabel ?? t('approvals.sendWindowNow');
 
   const footer = pending ? (
@@ -42,7 +43,12 @@ export function ApprovalScreen() {
       </View>
     ) : (
       <View style={{ gap: theme.space.sm }}>
-        <Button label={t('approvals.approveAndSend')} icon={CheckCircle2} onPress={() => setConfirming(true)} fullWidth testID="approve" />
+        {unanswered ? (
+          <Text variant={TextVariant.Caption} tone={TextTone.Warning} accessibilityLiveRegion="polite">
+            {t('approvals.unansweredQuestions')}
+          </Text>
+        ) : null}
+        <Button label={t('approvals.approveAndSend')} icon={CheckCircle2} onPress={() => setConfirming(true)} disabled={unanswered} fullWidth testID="approve" />
         <Button label={t('approvals.reject')} icon={XCircle} variant={ButtonVariant.Outline} onPress={() => actions.reject.mutate()} loading={actions.reject.isPending} fullWidth testID="reject" />
       </View>
     )
@@ -85,7 +91,7 @@ export function ApprovalScreen() {
                   item={item}
                   editable={pending}
                   saving={actions.updateAnswer.isPending}
-                  onSave={(answer) => actions.updateAnswer.mutate({ answerId: item.id, answer })}
+                  onSave={(answer, saveForReuse) => actions.updateAnswer.mutate({ answerId: item.id, answer, saveForReuse })}
                 />
               </View>
             ))}
