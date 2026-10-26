@@ -83,12 +83,13 @@ def test_codes_expire_and_follow_the_address(app: Container, sender: InMemoryEma
     assert failure(lambda: app.verification.confirm(DEMO_USER, PERSONAL, fresh)) == (ErrorCode.VALIDATION, "code_expired")
 
 
-def test_phones_wait_for_an_sms_provider_and_failed_email_is_reported(app: Container, sender: InMemoryEmailSender) -> None:
+def test_phones_wait_for_an_sms_provider_and_a_failed_email_frees_a_new_code(app: Container, sender: InMemoryEmailSender) -> None:
     profile = app.profile.add_contact(DEMO_USER, ContactKind.PHONE, "+8801700000001", "Office")
     phone = profile.contacts[-1].id
     assert failure(lambda: app.verification.send(DEMO_USER, phone)) == (ErrorCode.SERVICE_UNAVAILABLE, "sms_unavailable")
     sender.failures.append(DeliveryError("SMTPConnectError", retryable=True))
-    assert failure(lambda: app.verification.send(DEMO_USER, PERSONAL)) == (ErrorCode.SERVICE_UNAVAILABLE, "delivery_failed")
+    app.verification.send(DEMO_USER, PERSONAL)
+    assert sender.sent == []
     app.verification.send(DEMO_USER, PERSONAL)
     assert sender.sent[-1].to == "ayesha.personal@example.com"
 

@@ -7,7 +7,7 @@ from careerpilot.candidate.models import Contact, Profile
 from careerpilot.candidate.ports import CandidateWorkspace
 from careerpilot.platform.clock import iso
 from careerpilot.platform.coordination import fingerprint
-from careerpilot.platform.email_delivery import DeliveryError, DeliveryUncertainError, EmailSender, OutgoingEmail
+from careerpilot.platform.email_delivery import Courier, OutgoingEmail
 from careerpilot.platform.enums import ContactKind
 from careerpilot.platform.errors import DomainError, ErrorCode, conflict, not_found, validation_error
 from careerpilot.platform.messages import translate
@@ -38,7 +38,7 @@ class VerificationChallenge(CamelModel):
 class VerificationContext:
     candidate: CandidateContext
     codes: OneTimeCodes
-    sender: EmailSender
+    courier: Courier
 
 
 def mask_destination(contact: Contact) -> str:
@@ -58,11 +58,7 @@ class ContactVerificationService:
         contact = self._unverified(workspace, contact_id)
         target = self._target(user_id, contact)
         code = self._ctx.codes.issue(PURPOSE, target)
-        try:
-            self._ctx.sender.send(self._email(workspace, contact, code))
-        except (DeliveryError, DeliveryUncertainError) as error:
-            self._ctx.codes.withdraw(PURPOSE, target)
-            raise DomainError(ErrorCode.SERVICE_UNAVAILABLE, "delivery_failed") from error
+        self._ctx.courier.deliver(self._email(workspace, contact, code), lambda _error: self._ctx.codes.withdraw(PURPOSE, target))
         expires = self._ctx.candidate.clock.now() + timedelta(seconds=self._config.code_ttl_seconds)
         return VerificationChallenge(
             destination=mask_destination(contact),

@@ -3,7 +3,10 @@ mail:
   smtp_host: smtp.gmail.com
   smtp_port: 587
   smtp_security: starttls
-  smtp_timeout_seconds: 15
+  smtp_timeout_seconds: 30
+  delivery_attempts: 3
+  retry_delay_seconds: 5
+  delivery_workers: 2
   smtp_user_env: CAREERPILOT_MAIL_USER
   smtp_password_env: CAREERPILOT_MAIL_PASSWORD
-  sandbox_only_domains: [sober.com, example.com, example.org, example.net]
+  sandbox_only_domains: [sober.com, gmail.com, example.org, example.net]

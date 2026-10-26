@@ -1,12 +1,17 @@
+import logging
 import smtplib
 import ssl
+import time
 from collections.abc import Callable
+from concurrent.futures import Executor, Future
 from dataclasses import dataclass, field
 from email.message import EmailMessage
 from email.utils import formataddr, make_msgid
 from typing import Protocol
 
 from careerpilot.platform.enums import DeliveryMode, SmtpSecurity
+
+logger = logging.getLogger(__name__)
 
 MESSAGE_ID = "Message-ID"
 MAIN_TYPE_SEPARATOR = "/"
@@ -143,6 +148,66 @@ class SmtpEmailSender:
             client.quit()
         except (OSError, smtplib.SMTPException):
             client.close()
+
+
+OnFailure = Callable[[DeliveryError], None]
+
+
+class Courier(Protocol):
+    def deliver(self, email: OutgoingEmail, on_failure: OnFailure) -> None: ...
+
+
+class DirectCourier:
+    def __init__(self, sender: EmailSender) -> None:
+        self._sender = sender
+
+    def deliver(self, email: OutgoingEmail, on_failure: OnFailure) -> None:
+        try:
+            self._sender.send(email)
+        except DeliveryError as error:
+            on_failure(error)
+        except DeliveryUncertainError:
+            logger.warning("email_delivery_uncertain")
+
+
+def report_crash(future: Future[None]) -> None:
+    error = future.exception()
+    if error is not None:
+        logger.error("email_delivery_crashed", exc_info=error)
+
+
+class BackgroundCourier:
+    def __init__(
+        self,
+        sender: EmailSender,
+        attempts: int,
+        retry_delay_seconds: float,
+        runner: Executor,
+        sleep: Callable[[float], None] = time.sleep,
+    ) -> None:
+        self._sender = sender
+        self._attempts = attempts
+        self._retry_delay_seconds = retry_delay_seconds
+        self._runner = runner
+        self._sleep = sleep
+
+    def deliver(self, email: OutgoingEmail, on_failure: OnFailure) -> None:
+        self._runner.submit(self._attempt, email, on_failure).add_done_callback(report_crash)
+
+    def _attempt(self, email: OutgoingEmail, on_failure: OnFailure) -> None:
+        for attempt in range(1, self._attempts + 1):
+            try:
+                self._sender.send(email)
+                return
+            except DeliveryUncertainError:
+                logger.warning("email_delivery_uncertain", extra={"attempt": attempt})
+                return
+            except DeliveryError as error:
+                if not error.retryable or attempt == self._attempts:
+                    logger.warning("email_not_delivered", extra={"reason": error.reason, "attempts": attempt})
+                    on_failure(error)
+                    return
+            self._sleep(self._retry_delay_seconds * attempt)
 
 
 def recipient_domain(address: str) -> str:

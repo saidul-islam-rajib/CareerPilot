@@ -151,9 +151,10 @@ def test_resend_cooldown_never_reveals_an_account(container: Container, outbox: 
     assert len(outbox.sent) == 1
 
 
-def test_failed_delivery_withdraws_the_link(container: Container, outbox: InMemoryEmailSender) -> None:
+def test_failed_delivery_withdraws_the_link_so_a_new_one_can_be_sent_at_once(container: Container, outbox: InMemoryEmailSender) -> None:
     outbox.failures.append(DeliveryError("SMTPConnectError", retryable=True))
-    assert failure(lambda: container.auth.register(REGISTRATION, CLIENT)) == (ErrorCode.SERVICE_UNAVAILABLE, "delivery_failed")
+    assert container.auth.register(REGISTRATION, CLIENT) is None
+    assert outbox.sent == []
     container.auth.register(REGISTRATION, CLIENT)
     assert container.auth.inspect_link(link_token(outbox), CLIENT).email == NEW_EMAIL
 

@@ -1,4 +1,7 @@
 import smtplib
+import threading
+from collections.abc import Callable
+from concurrent.futures import Executor, Future, ThreadPoolExecutor
 from email.message import EmailMessage
 from typing import cast
 
@@ -8,10 +11,14 @@ from careerpilot import bootstrap
 from careerpilot.bootstrap import account_sender_for
 from careerpilot.platform.config import load_settings
 from careerpilot.platform.email_delivery import (
+    BackgroundCourier,
     DeliveryError,
+    DeliveryUncertainError,
+    DirectCourier,
     InMemoryEmailSender,
     OutgoingEmail,
     RecipientRoutingSender,
+    SentReceipt,
     SmtpEmailSender,
     SmtpLogin,
     SmtpSettings,
@@ -123,3 +130,78 @@ def test_account_mail_goes_through_the_configured_smtp_with_credentials(monkeypa
     assert opened == [("smtp.gmail.com", 587)]
     assert fake.credentials == (USER, SECRET)
     assert [e.to for e in sandbox.sent] == ["admin@sober.com"]
+
+
+class InlineRunner(Executor):
+    def submit(self, fn: Callable[..., None], /, *args: object, **kwargs: object) -> Future[None]:
+        future: Future[None] = Future()
+        try:
+            future.set_result(fn(*args, **kwargs))
+        except Exception as error:
+            future.set_exception(error)
+        return future
+
+
+class FlakySender:
+    def __init__(self, *outcomes: Exception | None) -> None:
+        self.outcomes = list(outcomes)
+        self.attempts = 0
+
+    def send(self, email: OutgoingEmail) -> SentReceipt:
+        self.attempts += 1
+        outcome = self.outcomes.pop(0) if self.outcomes else None
+        if outcome is not None:
+            raise outcome
+        return SentReceipt(message_id="<sent@test>")
+
+
+def courier(sender: FlakySender, pauses: list[float]) -> BackgroundCourier:
+    return BackgroundCourier(sender, attempts=3, retry_delay_seconds=5, runner=InlineRunner(), sleep=pauses.append)
+
+
+def test_background_courier_retries_network_hiccups_then_delivers() -> None:
+    sender, pauses, failures = FlakySender(DeliveryError("gaierror", retryable=True), DeliveryError("timeout", retryable=True)), [], []
+    courier(sender, pauses).deliver(email_to("person@gmail.com"), failures.append)
+    assert (sender.attempts, pauses, failures) == (3, [5, 10], [])
+
+
+def test_background_courier_gives_up_on_permanent_errors_and_reports_once() -> None:
+    sender, pauses, failures = FlakySender(DeliveryError("SMTPAuthenticationError", retryable=False)), [], []
+    courier(sender, pauses).deliver(email_to("person@gmail.com"), failures.append)
+    assert (sender.attempts, pauses, [f.reason for f in failures]) == (1, [], ["SMTPAuthenticationError"])
+
+
+def test_background_courier_reports_after_the_last_attempt() -> None:
+    sender, pauses, failures = FlakySender(*[DeliveryError("timeout", retryable=True)] * 3), [], []
+    courier(sender, pauses).deliver(email_to("person@gmail.com"), failures.append)
+    assert (sender.attempts, len(failures)) == (3, 1)
+
+
+def test_uncertain_delivery_is_not_withdrawn() -> None:
+    sender, pauses, failures = FlakySender(DeliveryUncertainError("SMTPServerDisconnected")), [], []
+    courier(sender, pauses).deliver(email_to("person@gmail.com"), failures.append)
+    assert (sender.attempts, failures) == (1, [])
+
+
+def test_background_courier_answers_without_waiting_for_delivery() -> None:
+    started = threading.Event()
+    release = threading.Event()
+
+    class SlowSender:
+        def send(self, email: OutgoingEmail) -> SentReceipt:
+            started.set()
+            release.wait(5)
+            return SentReceipt(message_id="<slow@test>")
+
+    with ThreadPoolExecutor(max_workers=1) as runner:
+        BackgroundCourier(SlowSender(), attempts=1, retry_delay_seconds=0, runner=runner).deliver(
+            email_to("person@gmail.com"), lambda _e: None
+        )
+        assert started.wait(5)
+        release.set()
+
+
+def test_direct_courier_reports_failures_inline() -> None:
+    failures: list[DeliveryError] = []
+    DirectCourier(FlakySender(DeliveryError("timeout", retryable=True))).deliver(email_to("person@gmail.com"), failures.append)
+    assert len(failures) == 1

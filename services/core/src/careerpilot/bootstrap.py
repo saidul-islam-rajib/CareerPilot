@@ -1,5 +1,6 @@
 import os
 from collections.abc import Callable, Mapping
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from importlib.metadata import version
 from pathlib import Path
@@ -47,6 +48,9 @@ from careerpilot.platform.clock import Clock, IdGenerator, SystemClock, UuidIdGe
 from careerpilot.platform.config import CoordinationMode, MatchingMode, PersistenceMode, Settings, load_settings, repository_root
 from careerpilot.platform.coordination import KeySpace, MetadataCache, SignInGuard, release_fingerprint
 from careerpilot.platform.email_delivery import (
+    BackgroundCourier,
+    Courier,
+    DirectCourier,
     EmailSender,
     RecipientRoutingSender,
     SmtpEmailSender,
@@ -66,6 +70,7 @@ from careerpilot.repositories import in_memory_repositories, sql_repositories
 
 EMPTY_PROFILE_COMPLETENESS = 0
 PACKAGE = "careerpilot-core"
+MAIL_THREAD_PREFIX = "careerpilot-mail"
 
 
 @dataclass(frozen=True)
@@ -186,6 +191,12 @@ def account_sender_for(settings: Settings, sandbox: EmailSender, environ: Mappin
     return RecipientRoutingSender(live, sandbox, frozenset(mail.sandbox_only_domains))
 
 
+def background_courier(settings: Settings, sender: EmailSender) -> Courier:
+    mail = settings.mail
+    runner = ThreadPoolExecutor(max_workers=mail.delivery_workers, thread_name_prefix=MAIL_THREAD_PREFIX)
+    return BackgroundCourier(sender, mail.delivery_attempts, mail.retry_delay_seconds, runner)
+
+
 def email_sender_for(settings: Settings) -> EmailSender:
     config = settings.submission
     smtp = SmtpSettings(
@@ -283,16 +294,16 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     sender = options.email_sender or email_sender_for(cfg)
     digests = DigestService(DigestContext(candidate=candidate, sender=sender))
     submissions = SubmissionService(SubmissionContext(candidate=candidate, platform=repos.platform.get, sender=sender, storage=storage))
-    account_sender = options.email_sender or account_sender_for(cfg, sender)
+    courier = DirectCourier(options.email_sender) if options.email_sender else background_courier(cfg, account_sender_for(cfg, sender))
     codes = OneTimeCodes(coord_store, keys, cfg.verification, secret)
-    verification = ContactVerificationService(VerificationContext(candidate=candidate, codes=codes, sender=account_sender))
+    verification = ContactVerificationService(VerificationContext(candidate=candidate, codes=codes, courier=courier))
 
     def link_ttl_minutes() -> int:
         return effective_link_ttl_minutes(repos.platform.get(), cfg.account_links)
 
     link_codes = OneTimeCodes(coord_store, keys, AccountLinkPolicy(cfg.account_links, link_ttl_minutes), secret, generate=random_token)
     account_links = AccountLinkService(
-        AccountLinkContext(candidate=candidate, codes=link_codes, sender=account_sender, ttl_minutes=link_ttl_minutes)
+        AccountLinkContext(candidate=candidate, codes=link_codes, courier=courier, ttl_minutes=link_ttl_minutes)
     )
     release = release_fingerprint(cfg.model_dump_json(), version(PACKAGE))
     metadata = MetadataCache(cache_store, keys, cfg.coordination, release=release)

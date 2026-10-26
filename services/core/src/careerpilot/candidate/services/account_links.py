@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.ports import Account
 from careerpilot.platform.config import SECONDS_PER_MINUTE, AccountLinksConfig
-from careerpilot.platform.email_delivery import DeliveryError, DeliveryUncertainError, EmailSender, OutgoingEmail
+from careerpilot.platform.email_delivery import Courier, OutgoingEmail
 from careerpilot.platform.enums import AccountEmail, AccountLinkPurpose, UserAccountStatus
 from careerpilot.platform.errors import DomainError, ErrorCode, validation_error
 from careerpilot.platform.messages import translate
@@ -37,7 +37,7 @@ class AccountLinkDetails(CamelModel):
 class AccountLinkContext:
     candidate: CandidateContext
     codes: OneTimeCodes
-    sender: EmailSender
+    courier: Courier
     ttl_minutes: Callable[[], int]
 
 
@@ -88,11 +88,8 @@ class AccountLinkService:
             if error.code is ErrorCode.TOO_MANY_ATTEMPTS:
                 return
             raise
-        try:
-            self._ctx.sender.send(self._email(account, kind, TOKEN_SEPARATOR.join((user_id, secret))))
-        except (DeliveryError, DeliveryUncertainError) as error:
-            self._ctx.codes.withdraw(PURPOSE, user_id)
-            raise DomainError(ErrorCode.SERVICE_UNAVAILABLE, "delivery_failed") from error
+        email = self._email(account, kind, TOKEN_SEPARATOR.join((user_id, secret)))
+        self._ctx.courier.deliver(email, lambda _error: self._ctx.codes.withdraw(PURPOSE, user_id))
 
     def inspect(self, token: str) -> AccountLinkDetails:
         account = self._verified(token, consume=False)

@@ -395,6 +395,9 @@ class MailConfig(Strict):
     smtp_user_env: EnvName
     smtp_password_env: EnvName
     sandbox_only_domains: list[str]
+    delivery_attempts: int = Field(gt=0)
+    retry_delay_seconds: float = Field(ge=0)
+    delivery_workers: int = Field(gt=0)
 
 
 class AccountLinksConfig(Strict):
