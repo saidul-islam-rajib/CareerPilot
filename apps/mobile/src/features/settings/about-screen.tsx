@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import { usePublicConfig, useT } from '@careerpilot/client-core';
 import { getAppVersion } from '@/core/config/expo-config';
 import * as WebBrowser from 'expo-web-browser';
-import { ExternalLink } from 'lucide-react-native';
+import { ExternalLink } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 import { BrandLockup, Card, Divider, ListRow, Screen, TeamSoberCredit, Text, TextTone } from '@/ui';
 

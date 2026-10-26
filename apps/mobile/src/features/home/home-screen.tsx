@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { trackTitle, useDashboard, useFormat, useResume, useSession, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PauseCircle } from 'lucide-react-native';
+import { PauseCircle } from '@/ui/icons';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';

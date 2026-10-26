@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { pauseOptionKey, pauseOptionLabel, useFormat, usePause, usePublicConfig, useSettings, useT } from '@careerpilot/client-core';
-import { PauseCircle, PlayCircle } from 'lucide-react-native';
+import { PauseCircle, PlayCircle } from '@/ui/icons';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Banner, Button, ButtonVariant, Card, ErrorState, LoadingState, Screen, Segmented, Text, TextTone } from '@/ui';
 

@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { useFormat, useNotificationsForm, usePublicConfig, useServices, useT } from '@careerpilot/client-core';
 import type { DigestTimePreset } from '@careerpilot/api-client';
-import { AlertCircle, AlertTriangle, CalendarClock, CheckCircle2, Mail, Send, Sparkles, type LucideIcon } from 'lucide-react-native';
+import { AlertCircle, AlertTriangle, CalendarClock, CheckCircle2, Mail, Send, Sparkles, type LucideIcon } from '@/ui/icons';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';

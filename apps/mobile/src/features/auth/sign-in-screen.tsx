@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useSignInForm, useT } from '@careerpilot/client-core';
-import { AlertCircle } from 'lucide-react-native';
+import { AlertCircle } from '@/ui/icons';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { Banner, Button, ButtonVariant, Card, Screen, TextField } from '@/ui';

@@ -1,7 +1,7 @@
 import { useState, type ReactElement } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View } from 'react-native';
-import { AlertCircle } from 'lucide-react-native';
+import { AlertCircle } from '@/ui/icons';
 import type { Contact, Profile } from '@careerpilot/api-client';
 import {
   profileErrorKey,

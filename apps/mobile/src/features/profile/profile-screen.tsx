@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Pressable, View } from 'react-native';
-import { BadgeCheck, Camera, ChevronRight, Crop, FileText, Mail, MapPin, Pencil, Phone, Plus, Sparkles, Trash2, Upload, UserRound, type LucideIcon } from 'lucide-react-native';
+import { BadgeCheck, Camera, ChevronRight, Crop, FileText, Mail, MapPin, Pencil, Phone, Plus, Sparkles, Trash2, Upload, UserRound, type LucideIcon } from '@/ui/icons';
 import type { Contact, Profile, ProfileDocument, ProfileEntry } from '@careerpilot/api-client';
 import {
   sortContacts,

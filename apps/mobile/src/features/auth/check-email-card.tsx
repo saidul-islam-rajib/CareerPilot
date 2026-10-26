@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
-import { AlertCircle, MailCheck, RotateCw } from 'lucide-react-native';
+import { AlertCircle, MailCheck, RotateCw } from '@/ui/icons';
 import { useDemoLinkToken, useLinkResend, useT } from '@careerpilot/client-core';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';

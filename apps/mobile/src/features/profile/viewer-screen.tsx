@@ -2,7 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useT } from '@careerpilot/client-core';
 import { Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { RotateCcw, X, ZoomIn, ZoomOut, type LucideIcon } from 'lucide-react-native';
+import { RotateCcw, X, ZoomIn, ZoomOut, type LucideIcon } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 import { Icon, Text, TextTone, TextVariant, ZoomableImage, useZoom } from '@/ui';
 

@@ -1,4 +1,4 @@
-import { MailCheck } from 'lucide-react-native';
+import { MailCheck } from '@/ui/icons';
 import { usePasswordReset, useT } from '@careerpilot/client-core';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Banner, Button, Card, Screen, Text, TextField, TextTone } from '@/ui';

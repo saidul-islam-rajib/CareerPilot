@@ -1,6 +1,6 @@
 import { Pressable, View } from 'react-native';
 import { useT } from '@careerpilot/client-core';
-import { Minus, Plus, type LucideIcon } from 'lucide-react-native';
+import { Minus, Plus, type LucideIcon } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 import { Icon } from './icon';
 import { Text, TextVariant } from './text';

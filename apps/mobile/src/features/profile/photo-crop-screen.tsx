@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { View, type AccessibilityActionEvent, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, RotateCcw, ZoomIn, ZoomOut, type LucideIcon } from 'lucide-react-native';
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, RotateCcw, ZoomIn, ZoomOut, type LucideIcon } from '@/ui/icons';
 import { useProfile, useSetPhotoCrop, useT } from '@careerpilot/client-core';
 import { cropFromView, moveView, viewFromCrop, viewPlacement, zoomView, type CropView, type ImageSize, type Offset } from '@careerpilot/domain-ui-logic';
 import { photoCrop as cropTuning } from '@careerpilot/ui-tokens';

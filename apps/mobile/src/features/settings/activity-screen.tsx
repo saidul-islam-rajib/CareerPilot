@@ -1,4 +1,4 @@
-import { MonitorSmartphone, ShieldAlert } from 'lucide-react-native';
+import { MonitorSmartphone, ShieldAlert } from '@/ui/icons';
 import { useFormat, useSignInActivity, useT } from '@careerpilot/client-core';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Badge, Card, ErrorState, ListRow, LoadingState, Screen, Text, TextTone, TextVariant } from '@/ui';

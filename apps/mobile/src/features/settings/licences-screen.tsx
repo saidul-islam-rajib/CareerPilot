@@ -1,6 +1,6 @@
 import * as WebBrowser from 'expo-web-browser';
 import { usePublicConfig, useT } from '@careerpilot/client-core';
-import { Scale } from 'lucide-react-native';
+import { Scale } from '@/ui/icons';
 import { Card, ListRow, Screen, TeamSoberCredit, Text, TextTone } from '@/ui';
 
 export function LicencesScreen() {

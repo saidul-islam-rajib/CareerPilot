@@ -1,7 +1,7 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useDecide, useFormat, useOpportunity, usePrepareApplication, usePublicConfig, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
-import { AlertTriangle, Archive, Bookmark, Check, CircleHelp, Minus, Plus, Send, X, type LucideIcon } from 'lucide-react-native';
+import { AlertTriangle, Archive, Bookmark, Check, CircleHelp, Minus, Plus, Send, X, type LucideIcon } from '@/ui/icons';
 import { EnumKey, OpportunityDecision, RequirementCheck, StatusTone } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';

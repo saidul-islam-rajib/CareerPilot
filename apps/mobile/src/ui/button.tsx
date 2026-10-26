@@ -1,5 +1,5 @@
 import { ActivityIndicator, Pressable, View, type PressableProps, type ViewStyle } from 'react-native';
-import type { LucideIcon } from 'lucide-react-native';
+import type { LucideIcon } from '@/ui/icons';
 import { useTheme, type AppTheme } from '@/core/theme/theme';
 import { Icon, IconSize } from './icon';
 import { Text, TextVariant } from './text';

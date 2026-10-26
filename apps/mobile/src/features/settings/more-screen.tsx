@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { usePublicConfig, useSession, useT } from '@careerpilot/client-core';
-import { Bell, Clock, Info, KeyRound, ListOrdered, LogOut, MessageSquareText, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2 } from 'lucide-react-native';
+import { Bell, Clock, Info, KeyRound, ListOrdered, LogOut, MessageSquareText, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2 } from '@/ui/icons';
 import { Routes } from '@/core/navigation/routes';
 import { Card, Divider, ListRow, Screen, TeamSoberCredit, Text, TextTone, TextVariant } from '@/ui';
 

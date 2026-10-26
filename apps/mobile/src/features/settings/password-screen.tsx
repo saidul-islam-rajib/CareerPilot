@@ -1,5 +1,5 @@
 import { useChangePasswordForm, usePublicConfig, useT } from '@careerpilot/client-core';
-import { AlertCircle, CheckCircle2 } from 'lucide-react-native';
+import { AlertCircle, CheckCircle2 } from '@/ui/icons';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Banner, Button, Card, Screen, TextField } from '@/ui';
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useT } from '@careerpilot/client-core';
 import { Pressable, TextInput, View, type TextInputProps } from 'react-native';
-import { Eye, EyeOff } from 'lucide-react-native';
+import { Eye, EyeOff } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 import { Icon } from './icon';
 import { Text, TextTone, TextVariant } from './text';

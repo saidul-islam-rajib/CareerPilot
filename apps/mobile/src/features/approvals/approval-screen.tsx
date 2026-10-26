@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useApproval, useApprovalActions, useFormat, useT } from '@careerpilot/client-core';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View } from 'react-native';
-import { CheckCircle2, FileText, ShieldCheck, XCircle } from 'lucide-react-native';
+import { CheckCircle2, FileText, ShieldCheck, XCircle } from '@/ui/icons';
 import { ApprovalState, EnumKey, StatusTone } from '@careerpilot/domain-ui-logic';
 import { useTheme } from '@/core/theme/theme';
 import { OpportunityCard } from '@/features/opportunities/opportunity-card';

@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useT } from '@careerpilot/client-core';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AlertCircle, CheckCircle2, X } from 'lucide-react-native';
+import { AlertCircle, CheckCircle2, X } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 import { Icon, IconSize } from './icon';
 import { Text, TextVariant } from './text';

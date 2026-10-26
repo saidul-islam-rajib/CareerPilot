@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
-import type { LucideIcon } from 'lucide-react-native';
+import type { LucideIcon } from '@/ui/icons';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { useTheme } from '@/core/theme/theme';
 import { Icon } from './icon';

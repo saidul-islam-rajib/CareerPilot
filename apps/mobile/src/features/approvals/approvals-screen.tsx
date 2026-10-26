@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useApprovals, useFormat, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
-import { Clock } from 'lucide-react-native';
+import { Clock } from '@/ui/icons';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { OpportunityCard } from '@/features/opportunities/opportunity-card';

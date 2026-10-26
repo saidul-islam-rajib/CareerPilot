@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
-import { AlertTriangle, Bell, CalendarClock, CheckCircle2, ClipboardCheck, Lightbulb, MessageSquare, Plus, Sparkles, UserCheck, type LucideIcon } from 'lucide-react-native';
+import { AlertTriangle, Bell, CalendarClock, CheckCircle2, ClipboardCheck, Lightbulb, MessageSquare, Plus, Sparkles, UserCheck, type LucideIcon } from '@/ui/icons';
 import type { ApplicationRecord, FollowUpTask, UpcomingTask } from '@careerpilot/api-client';
 import { useApplication, useApplicationActions, useFollowUpSuggestion, useFormat, useOutcomeForm, useServices, useT, useTaskForm, type TaskFormValues } from '@careerpilot/client-core';
 import { EnumKey, OutcomeStatus, StatusTone, TaskKind, TaskStatus, enumValues } from '@careerpilot/domain-ui-logic';

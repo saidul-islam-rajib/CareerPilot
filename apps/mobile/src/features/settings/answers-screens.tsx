@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
-import { AlertTriangle, CheckCircle2, ChevronRight, Plus, Trash2 } from 'lucide-react-native';
+import { AlertTriangle, CheckCircle2, ChevronRight, Plus, Trash2 } from '@/ui/icons';
 import type { QuestionGroup, SavedAnswer, SavedAnswerInput } from '@careerpilot/api-client';
 import { useAnswerActions, useQuestionBank, useSavedAnswerForm, useT } from '@careerpilot/client-core';
 import { AnswerTopic, EnumKey, StatusTone, enumValues, isEnumValue } from '@careerpilot/domain-ui-logic';

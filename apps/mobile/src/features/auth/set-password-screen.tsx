@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { View } from 'react-native';
-import { AlertCircle, KeyRound, ShieldAlert } from 'lucide-react-native';
+import { AlertCircle, KeyRound, ShieldAlert } from '@/ui/icons';
 import { AccountLinkPurpose, type AccountLinkDetails } from '@careerpilot/api-client';
 import { accountLinkErrorKey, useAccountLink, useSetPasswordForm, useT } from '@careerpilot/client-core';
 import { StatusTone } from '@careerpilot/domain-ui-logic';

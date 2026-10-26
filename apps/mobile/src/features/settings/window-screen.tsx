@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSchemas, useSettings, useT, useUpdateWindow } from '@careerpilot/client-core';
-import { CheckCircle2 } from 'lucide-react-native';
+import { CheckCircle2 } from '@/ui/icons';
 import { StatusTone, SubmissionWindowKind } from '@careerpilot/domain-ui-logic';
 import { validate, type FieldErrors } from '@careerpilot/validation';
 import { Banner, Button, Card, ErrorState, LoadingState, Row, Screen, Segmented, Text, TextField, TextTone } from '@/ui';

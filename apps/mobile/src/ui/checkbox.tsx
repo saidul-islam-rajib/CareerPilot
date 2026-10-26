@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useT } from '@careerpilot/client-core';
 import { Pressable, View } from 'react-native';
-import { Check } from 'lucide-react-native';
+import { Check } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 import { Icon, IconSize } from './icon';
 import { Text, TextTone, TextVariant } from './text';

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
-import { Plus, X } from 'lucide-react-native';
+import { Plus, X } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 import { Button, ButtonVariant } from './button';
 import { Icon, IconSize } from './icon';

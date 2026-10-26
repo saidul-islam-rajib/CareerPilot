@@ -1,7 +1,7 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useApplication, useFormat, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
-import { Archive, FileText, Mail, Pencil, ShieldCheck } from 'lucide-react-native';
+import { Archive, FileText, Mail, Pencil, ShieldCheck } from '@/ui/icons';
 import { EnumKey, TimelineActor } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';

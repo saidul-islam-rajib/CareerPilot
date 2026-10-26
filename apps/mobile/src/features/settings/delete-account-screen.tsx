@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAccountDeletion, useFormat, usePublicConfig, useT } from '@careerpilot/client-core';
-import { AlertTriangle, CalendarX } from 'lucide-react-native';
+import { AlertTriangle, CalendarX } from '@/ui/icons';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Banner, Button, ButtonVariant, Card, Screen, TextField } from '@/ui';
 

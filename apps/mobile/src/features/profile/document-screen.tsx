@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { View } from 'react-native';
-import { FileText, Upload } from 'lucide-react-native';
+import { FileText, Upload } from '@/ui/icons';
 import type { ProfileDocument } from '@careerpilot/api-client';
 import {
   profileErrorKey,

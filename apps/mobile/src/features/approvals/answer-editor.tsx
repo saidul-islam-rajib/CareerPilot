@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSchemas, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
-import { Pencil, Sparkles, UserRound } from 'lucide-react-native';
+import { Pencil, Sparkles, UserRound } from '@/ui/icons';
 import { AnswerSource, type QuestionAnswer } from '@careerpilot/api-client';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { validate } from '@careerpilot/validation';

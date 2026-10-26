@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { useFormat, usePublicConfig, useT } from '@careerpilot/client-core';
-import { Building2, CalendarClock, MapPin } from 'lucide-react-native';
+import { Building2, CalendarClock, MapPin } from '@/ui/icons';
 import { EnumKey, StatusTone } from '@careerpilot/domain-ui-logic';
 import type { DisplaySettings, OpportunitySummary } from '@careerpilot/api-client';
 import { useTheme } from '@/core/theme/theme';

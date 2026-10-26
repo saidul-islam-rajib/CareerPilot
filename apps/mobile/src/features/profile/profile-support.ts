@@ -1,6 +1,6 @@
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
-import { Award, Briefcase, ClipboardCheck, FileText, FolderGit2, GraduationCap, Languages, Link, Trophy, Users, type LucideIcon } from 'lucide-react-native';
+import { Award, Briefcase, ClipboardCheck, FileText, FolderGit2, GraduationCap, Languages, Link, Trophy, Users, type LucideIcon } from '@/ui/icons';
 import type { UploadSource } from '@careerpilot/api-client';
 import { UPLOAD_REJECTION_KEYS, checkUpload, profileErrorKey, useFormat, useProfileSettings, useT } from '@careerpilot/client-core';
 import { SnackbarTone, useSnackbar } from '@/ui/snackbar';

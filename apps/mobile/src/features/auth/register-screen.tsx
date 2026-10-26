@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { usePublicConfig, useRegisterForm, useT } from '@careerpilot/client-core';
 import * as WebBrowser from 'expo-web-browser';
-import { AlertCircle } from 'lucide-react-native';
+import { AlertCircle } from '@/ui/icons';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { Banner, Button, ButtonVariant, Card, Checkbox, LinkedText, Screen, Text, TextField, TextTone, TextVariant } from '@/ui';

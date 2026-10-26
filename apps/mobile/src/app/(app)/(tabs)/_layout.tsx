@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { queryKeys, useApi, useT } from '@careerpilot/client-core';
 import type { ColorValue } from 'react-native';
-import { Briefcase, CircleCheckBig, House, Menu, UserRound, type LucideIcon } from 'lucide-react-native';
+import { Briefcase, CircleCheckBig, House, Menu, UserRound, type LucideIcon } from '@/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/core/theme/theme';
