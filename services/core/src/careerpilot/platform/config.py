@@ -441,6 +441,8 @@ class AccountLinksConfig(Strict):
     sends_per_hour: int = Field(gt=0)
     set_password_path: str = Field(pattern=r"^/")
     sign_in_path: str = Field(pattern=r"^/")
+    admin_web_base_url: str
+    owner_email_env: EnvName
 
     @model_validator(mode="after")
     def _default_within_bounds(self) -> "AccountLinksConfig":

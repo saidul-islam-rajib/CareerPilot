@@ -8,6 +8,7 @@ from careerpilot.bootstrap import Container, ContainerOverrides, build_container
 from careerpilot.candidate.models import Session
 from careerpilot.candidate.services.auth import ClientInfo, Registration
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
+from careerpilot.platform.config import load_settings
 from careerpilot.platform.email_delivery import InMemoryEmailSender
 from careerpilot.platform.files import InMemoryFileStorage
 from careerpilot.testing import load_sample_data, sample_repositories, sample_settings
@@ -60,6 +61,20 @@ def container(clock: FixedClock, outbox: InMemoryEmailSender) -> Container:
     overrides = ContainerOverrides(
         settings=sample_settings(),
         repositories=sample_repositories(load_sample_data(clock.now())),
+        clock=clock,
+        ids=SequentialIdGenerator(),
+        hasher=FakeHasher(),
+        token_secret=TEST_SECRET,
+        file_storage=InMemoryFileStorage(),
+        email_sender=outbox,
+    )
+    return build_container(overrides)
+
+
+@pytest.fixture
+def empty_container(clock: FixedClock, outbox: InMemoryEmailSender) -> Container:
+    overrides = ContainerOverrides(
+        settings=load_settings("local"),
         clock=clock,
         ids=SequentialIdGenerator(),
         hasher=FakeHasher(),

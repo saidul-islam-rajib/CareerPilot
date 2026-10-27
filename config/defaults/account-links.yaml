@@ -7,3 +7,5 @@ account_links:
   sends_per_hour: 5
   set_password_path: /set-password
   sign_in_path: /sign-in
+  admin_web_base_url: http://localhost:3001
+  owner_email_env: CAREERPILOT_OWNER_EMAIL

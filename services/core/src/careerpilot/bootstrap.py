@@ -1,5 +1,5 @@
 import os
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from importlib.metadata import version
@@ -7,6 +7,7 @@ from pathlib import Path
 
 import anthropic
 
+from careerpilot.administration.account_links import AdminLinkContext, AdminLinkService, invite_owner
 from careerpilot.administration.context import AdminContext
 from careerpilot.administration.discovery_sync import SourceCheckRunner, discover_when_empty
 from careerpilot.administration.models import EmergencyStop, PlatformSettings
@@ -108,6 +109,7 @@ class Container:
     verification: ContactVerificationService
     answers: AnswerService
     source_checks: SourceCheckRunner
+    invite_owner: Callable[[], bool]
 
 
 def default_tracks(settings: Settings) -> list[Track]:
@@ -335,6 +337,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     account_links = AccountLinkService(
         AccountLinkContext(candidate=candidate, codes=link_codes, courier=courier, ttl_minutes=link_ttl_minutes)
     )
+    admin_links = AdminLinkService(AdminLinkContext(admin=admin, codes=link_codes, courier=courier, ttl_minutes=link_ttl_minutes))
     release = release_fingerprint(cfg.model_dump_json(), version(PACKAGE))
     metadata = MetadataCache(cache_store, keys, cfg.coordination, release=release)
     public_config = PublicConfigService(
@@ -353,7 +356,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         profile=ProfileService(candidate, storage, file_links),
         preferences=PreferencesService(candidate),
         dashboard=DashboardService(candidate, opportunity_service),
-        admin_auth=AdminAuthService(admin, guard),
+        admin_auth=AdminAuthService(admin, guard, admin_links),
         admin_dashboard=AdminDashboardService(admin),
         admin_users=AdminUserService(admin),
         admin_catalog=AdminCatalogService(admin, source_checks),
@@ -369,4 +372,5 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         digests=digests,
         verification=verification,
         answers=AnswerService(candidate),
+        invite_owner=lambda: invite_owner(admin, admin_links),
     )

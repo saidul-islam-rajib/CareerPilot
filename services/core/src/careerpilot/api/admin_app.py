@@ -22,6 +22,19 @@ class SignInBody(CamelModel):
     password: str
 
 
+class EmailBody(CamelModel):
+    email: str
+
+
+class LinkTokenBody(CamelModel):
+    token: str
+
+
+class CompleteLinkBody(CamelModel):
+    token: str
+    password: str
+
+
 class ReasonBody(CamelModel):
     reason: str = ""
 
@@ -52,6 +65,22 @@ class AdminUpdateBody(CamelModel):
 @router.post("/auth/sign-in")
 def sign_in(body: SignInBody, request: Request, services: Services) -> JSONResponse:
     return ok(services.admin_auth.sign_in(body.email, body.password, client_info(request, services.settings).ip))
+
+
+@router.post("/auth/password-link")
+def password_link(body: EmailBody, request: Request, services: Services) -> Response:
+    services.admin_auth.request_password_link(body.email, client_info(request, services.settings).ip)
+    return no_content()
+
+
+@router.post("/auth/account-links/inspect")
+def inspect_link(body: LinkTokenBody, request: Request, services: Services) -> JSONResponse:
+    return ok(services.admin_auth.inspect_link(body.token, client_info(request, services.settings).ip))
+
+
+@router.post("/auth/account-links/complete")
+def complete_link(body: CompleteLinkBody, request: Request, services: Services) -> JSONResponse:
+    return ok(services.admin_auth.complete_link(body.token, body.password, client_info(request, services.settings).ip))
 
 
 @router.post("/auth/sign-out")

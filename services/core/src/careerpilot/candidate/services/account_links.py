@@ -1,7 +1,5 @@
-import re
 from collections.abc import Callable
 from dataclasses import dataclass
-from urllib.parse import urlencode
 
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.ports import Account
@@ -9,22 +7,14 @@ from careerpilot.platform.config import SECONDS_PER_MINUTE, AccountLinksConfig
 from careerpilot.platform.email_delivery import Courier, OutgoingEmail
 from careerpilot.platform.enums import AccountEmail, AccountLinkPurpose, UserAccountStatus
 from careerpilot.platform.errors import DomainError, ErrorCode, validation_error
+from careerpilot.platform.links import LINK_ERRORS, LINK_INVALID, join_token, link_url, split_token, web_url
 from careerpilot.platform.messages import translate
 from careerpilot.platform.model import CamelModel
 from careerpilot.platform.one_time_codes import CodeCheck, OneTimeCodes
 
 PURPOSE = "account_link"
-TOKEN_SEPARATOR = "."
-TOKEN_FORMAT = re.compile(r"[A-Za-z0-9_-]{1,64}\.[A-Za-z0-9_-]{16,256}")
-TOKEN_PARAMETER = "token"
-URL_SEPARATOR = "/"
 LINE = "\n"
 LINKABLE_STATUSES = frozenset({UserAccountStatus.REGISTERED, UserAccountStatus.ACTIVE, UserAccountStatus.PAUSED})
-LINK_ERRORS: dict[CodeCheck, Callable[[], DomainError]] = {
-    CodeCheck.INVALID: lambda: validation_error("link_invalid"),
-    CodeCheck.EXPIRED: lambda: validation_error("link_expired"),
-    CodeCheck.LOCKED: lambda: validation_error("link_expired"),
-}
 
 
 class AccountLinkDetails(CamelModel):
@@ -88,7 +78,7 @@ class AccountLinkService:
             if error.code is ErrorCode.TOO_MANY_ATTEMPTS:
                 return
             raise
-        email = self._email(account, kind, TOKEN_SEPARATOR.join((user_id, secret)))
+        email = self._email(account, kind, join_token(user_id, secret))
         self._ctx.courier.deliver(email, lambda _error: self._ctx.codes.withdraw(PURPOSE, user_id))
 
     def inspect(self, token: str) -> AccountLinkDetails:
@@ -101,13 +91,10 @@ class AccountLinkService:
         return account
 
     def _verified(self, token: str, consume: bool) -> Account:
-        cleaned = token.strip()
-        if TOKEN_FORMAT.fullmatch(cleaned) is None:
-            raise validation_error("link_invalid")
-        user_id, _, secret = cleaned.partition(TOKEN_SEPARATOR)
+        user_id, secret = split_token(token)
         account = self._ctx.candidate.accounts.get(user_id)
         if account is None or account.status not in LINKABLE_STATUSES:
-            raise validation_error("link_invalid")
+            raise validation_error(LINK_INVALID)
         verify = self._ctx.codes.check if consume else self._ctx.codes.peek
         outcome = verify(PURPOSE, user_id, secret)
         if outcome is not CodeCheck.VALID:
@@ -115,10 +102,10 @@ class AccountLinkService:
         return account
 
     def _web_url(self, path: str) -> str:
-        return f"{self._ctx.candidate.settings.notifications.web_base_url.rstrip(URL_SEPARATOR)}{path}"
+        return web_url(self._ctx.candidate.settings.notifications.web_base_url, path)
 
     def _link(self, token: str) -> str:
-        return f"{self._web_url(self._config.set_password_path)}?{urlencode({TOKEN_PARAMETER: token})}"
+        return link_url(self._ctx.candidate.settings.notifications.web_base_url, self._config.set_password_path, token)
 
     def _paragraphs(self, kind: AccountEmail, product: str) -> list[str]:
         intro = translate(f"accountLinks.{kind.value}EmailIntro", {"product": product})

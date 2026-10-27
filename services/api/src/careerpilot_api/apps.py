@@ -10,4 +10,6 @@ def user_api() -> FastAPI:
 
 
 def admin_api() -> FastAPI:
-    return create_admin_app(build_container())
+    container = build_container()
+    container.invite_owner()
+    return create_admin_app(container)

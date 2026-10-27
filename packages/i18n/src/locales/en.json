@@ -1022,6 +1022,18 @@
     "requestNew": "Send me a new link",
     "deliveryFailed": "We couldn't send the email. Try again in a few minutes."
   },
+  "adminLinks": {
+    "emailSubject": "Choose your {product} admin password",
+    "emailIntro": "Open this link to choose your password for the {product} admin app:",
+    "ownerName": "Owner",
+    "setPasswordTitle": "Choose your admin password",
+    "setPasswordBody": "Hi {name}, choose a password for the admin app.",
+    "setPasswordSubmit": "Save password and sign in",
+    "forgotTitle": "Get a password link",
+    "forgotBody": "Enter your admin email address. If it belongs to an admin account, we'll email you a link to choose a password.",
+    "forgotSubmit": "Email me a link",
+    "sentBody": "If {email} belongs to an admin account, a link is on its way. It expires in {minutes} minutes."
+  },
   "answers": {
     "title": "Saved answers",
     "menuBody": "Answer common application questions once.",

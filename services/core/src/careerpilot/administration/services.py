@@ -2,6 +2,7 @@ from collections import Counter
 from collections.abc import Callable
 from datetime import timedelta
 
+from careerpilot.administration.account_links import AdminLinkDetails, AdminLinkService
 from careerpilot.administration.context import ADMIN_AUDIENCE, AdminActor, AdminContext, PageRequest, paginate
 from careerpilot.administration.discovery_sync import SourceCheckRunner
 from careerpilot.administration.models import (
@@ -23,6 +24,7 @@ from careerpilot.administration.models import (
     ServiceStatus,
 )
 from careerpilot.administration.permissions import permissions_for_role
+from careerpilot.administration.ports import AdminCredential
 from careerpilot.platform.clock import iso, parse_iso
 from careerpilot.platform.config import AccountLinksConfig
 from careerpilot.platform.coordination import GuardScope, SignInGuard
@@ -39,7 +41,7 @@ from careerpilot.platform.enums import (
 )
 from careerpilot.platform.errors import DomainError, ErrorCode, conflict, not_found, validation_error
 from careerpilot.platform.model import CamelModel
-from careerpilot.platform.validation import require_text
+from careerpilot.platform.validation import require_email, require_password, require_text
 
 ISO_DATE_LENGTH = 10
 RECENT_APPLICATIONS_LIMIT = 5
@@ -101,9 +103,10 @@ def count_by(values: list[str]) -> list[CountByKey]:
 
 
 class AdminAuthService:
-    def __init__(self, context: AdminContext, guard: SignInGuard) -> None:
+    def __init__(self, context: AdminContext, guard: SignInGuard, links: AdminLinkService) -> None:
         self._ctx = context
         self._guard = guard
+        self._links = links
 
     def sign_in(self, email: str, password: str, client_ip: str) -> AdminSession:
         self._guard.ensure_allowed(GuardScope.ADMIN, email, client_ip)
@@ -112,6 +115,27 @@ class AdminAuthService:
             self._guard.record_failure(GuardScope.ADMIN, email)
             raise DomainError(ErrorCode.INVALID_CREDENTIALS)
         self._guard.clear(GuardScope.ADMIN, email)
+        return self._start_session(credential)
+
+    def request_password_link(self, email: str, client_ip: str) -> None:
+        self._guard.throttle(GuardScope.ADMIN, client_ip)
+        credential = self._ctx.admins.find_by_email(require_email(email, self._ctx.settings.validation.email))
+        if credential is not None and not credential.account.suspended:
+            self._links.send(credential)
+
+    def inspect_link(self, token: str, client_ip: str) -> AdminLinkDetails:
+        self._guard.throttle(GuardScope.ADMIN, client_ip)
+        return self._links.inspect(token)
+
+    def complete_link(self, token: str, password: str, client_ip: str) -> AdminSession:
+        self._guard.throttle(GuardScope.ADMIN, client_ip)
+        chosen = require_password(password, self._ctx.settings.validation.password)
+        credential = self._links.redeem(token)
+        credential.password_hash = self._ctx.hasher.hash(chosen)
+        self._guard.clear(GuardScope.ADMIN, credential.account.email)
+        return self._start_session(credential)
+
+    def _start_session(self, credential: AdminCredential) -> AdminSession:
         credential.account.last_sign_in_at = iso(self._ctx.clock.now())
         self._ctx.admins.save(credential)
         summary = self._summary(credential.account)
