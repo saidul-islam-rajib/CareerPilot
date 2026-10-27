@@ -21,7 +21,7 @@ Planning documents for version 1. The requirements they implement are in [Requir
 | [15-Mobile-and-Play-Store.md](15-Mobile-and-Play-Store.md) | Android and iOS support, release pipeline, Google Play checklist |
 | [16-UX-Design.md](16-UX-Design.md) | UX principles, navigation, key screens, master profile, image viewer, drag and drop, responsive layout, templates, three themes (Sober default), credits |
 | [17-Project-Structure.md](17-Project-Structure.md) | Canonical solution folder structure, specs, test naming |
-| [18-Seed-Data.md](18-Seed-Data.md) | Seed data for every table, profiles, local default accounts |
+| [18-Seed-Data.md](18-Seed-Data.md) | No seed data: product defaults in config, the first Super Admin by owner email link, test data |
 | [19-Development-Rules.md](19-Development-Rules.md) | Mandatory coding rules: SOLID, design patterns, no hard-coding (configuration first), enums, audit columns, no physical delete, security, definition of done |
 | [Design/](Design/README.md) | Full architecture and design, high level to low level: principles, C4 diagrams, domain model, components, extensibility, data model, state machines, sequences, API, events, front ends, security, infrastructure, ADRs |
 

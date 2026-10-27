@@ -38,7 +38,6 @@ CareerPilot/
 │   ├── plugins/                 # sources/, routes/, channels/, payments/, transformers/, countries/
 │   ├── api/                     # user_api.py, admin_api.py entry points
 │   └── workers/                 # Temporal workers per task queue
-├── seeds/                       # Seed data for every table (Planning/18)
 ├── mocks/                       # Mock portals, sources, payments, WhatsApp, mail
 ├── tests/
 │   └── fixtures/                # Shared synthetic files (CVs, circulars, images)
@@ -76,7 +75,6 @@ applications/
 ├── adapters/        # sqlalchemy_repo.py, cache.py (Redis), outbox.py
 ├── api/             # user_routes.py, admin_routes.py, schemas.py
 ├── workflows/       # Temporal workflows and activities for this context
-├── seeds/           # Seed factories for this context's tables
 └── module.py        # Public interface
 services/core/tests/
 └── unit/applications/
@@ -123,7 +121,7 @@ specs/
 ```
 
 Rules:
-- A feature's code, tests, and seeds must trace back to its spec; the spec references requirement IDs.
+- A feature's code and tests must trace back to its spec; the spec references requirement IDs.
 - Specs are updated in the same pull request when behaviour changes.
 
 ## 4. Test file naming

@@ -30,7 +30,7 @@ Job discovery and application assistant for job seekers and students (Bangladesh
 
 - Follow the folder structure in `Planning/17-Project-Structure.md`; write a spec in `specs/<epic>-<feature>/` before coding a feature.
 - Tests: **unit tests only** in v1 — TypeScript `*.spec.ts(x)` next to code, Python `test_*.py` in `services/*/tests/unit/` (`Planning/14-Testing-and-Quality.md`).
-- Every new table ships with seed data (`Planning/18-Seed-Data.md`); local default admin is `admin@sober.com` / `admin@sober.com`.
+- No seed data (`Planning/18-Seed-Data.md`): every environment starts empty and unit tests build their own test data. The first Super Admin is the owner email in `.env` (`CAREERPILOT_OWNER_EMAIL`), who receives an email link to choose the password. Never reset, re-seed, or delete data the owner added locally.
 - Use Redis only as described in `Planning/Design/16-Redis-and-Caching.md` (never as source of truth).
 - All screens are designed by the UX/UI agent to `Planning/16-UX-Design.md`, responsive from small phones to desktop, with drag and drop where order matters.
 
@@ -43,7 +43,7 @@ Job discovery and application assistant for job seekers and students (Bangladesh
 - If code and requirements disagree, don't silently choose: mark the task `- [!]` with both options and your recommendation, then continue with other tasks.
 - Use the single definitions in the requirements: status model (§20.2), precedence (§38), user-only steps (§27.3), pre-submission checks (§27.4), pause (§47), submission timing (§49), circular archive (§50), compensation (§51), admin access (§53).
 - Never fabricate user facts, never solve CAPTCHAs or evade bot detection, never resubmit when the outcome is unknown, never log or return secrets or plain-text credentials.
-- Never send real applications, payments, or other email from local, dev, test, staging, or CI. The only exception is account email a person asks for themselves (registration and password-reset links, verification codes): it goes through the real mail service when credentials are set in `.env` (never committed), sent from `info@team-sober.com`; seeded `@sober.com` and reserved example domains always stay in Mailpit (`docs/runbooks/email-setup.md`).
+- Never send real applications, payments, or other email from local, dev, test, staging, or CI. The only exception is account email a person asks for themselves (registration and password-reset links, verification codes): it goes through the real mail service when credentials are set in `.env` (never committed), sent from `info@team-sober.com`; `@sober.com` and reserved example domains always stay in Mailpit (`docs/runbooks/email-setup.md`).
 - v1 UI is English only and light themes only: three themes (Sober default, Horizon, Orchid) chosen by a Super Admin for all users (`Planning/16-UX-Design.md` §7); all user-facing text goes through string catalogs and colours through theme tokens, never literal colours.
 - Build UI from the chosen templates, don't hand-roll: shadcn/ui and its blocks (web, admin), React Native Reusables (mobile). Credit "Developed by Team Sober" (https://team-sober.com/, URL from config) in footers, the About screen, and emails.
 - All tests must pass before every commit (git hooks + CI); never skip or disable tests to commit.
@@ -52,4 +52,4 @@ Job discovery and application assistant for job seekers and students (Bangladesh
 - Keep costs low: prefer free tiers and self-hosted open-source tools (`Planning/12-Cost-Plan.md`).
 - Every service emits OpenTelemetry logs, traces, and metrics for Grafana (`Planning/11-Observability.md`).
 - Requirements stay at version 1.0; edit in place, don't add revision rows.
-- When any requirement changes, update every affected document (requirements cross-references, `Planning/`, `Planning/Design/`, `specs/`, seed plan, README, CLAUDE.md) in the same change; a hook reminds you after each requirements edit.
+- When any requirement changes, update every affected document (requirements cross-references, `Planning/`, `Planning/Design/`, `specs/`, README, CLAUDE.md) in the same change; a hook reminds you after each requirements edit.

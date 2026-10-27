@@ -14,10 +14,10 @@
 
 No new endpoints. `POST /admin/v1/sources/{id}/check` now runs a real check; `409 source_not_configured` for sources without a connector.
 
-## Data and seeds
+## Data
 
 - `discovered_listings` (id, fingerprint, status, JSON document with sources and archived versions) and `discovered_listing_urls` (canonical URL → listing), both with audit and soft-delete columns. Migration `5b983c18e6b1`.
-- Seed: on startup, if the catalog is empty, every enabled configured source is checked once using recorded responses in `seeds/discovery/`.
+- On startup, if the catalog is empty, every enabled configured source is checked once (`discover_when_empty`). Since E11 no source is configured by default; the recorded responses live in `services/core/tests/fixtures/discovery/` for tests.
 
 ## Configuration
 

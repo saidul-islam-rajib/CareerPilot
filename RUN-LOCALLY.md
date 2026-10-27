@@ -24,8 +24,8 @@ The first build takes about 10 minutes; later starts take seconds. Leave out `-f
 
 | Open | URL | Sign in |
 |---|---|---|
-| User web app | http://localhost:3000 | `admin@sober.com` / `admin@sober.com` |
-| Admin app | http://localhost:3001 | `admin@sober.com` / `admin@sober.com` |
+| User web app | http://localhost:3000 | Create an account (email link) |
+| Admin app | http://localhost:3001 | The owner email from `.env` (email link on first start) |
 | User API docs | http://localhost:8000/docs | — |
 | Admin API docs | http://localhost:8001/docs | — |
 | Mailpit (all local email: registration and password-reset links, verification codes) | http://localhost:8025 | — |

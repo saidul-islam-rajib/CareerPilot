@@ -79,11 +79,11 @@ Agent access rule (standing authorization from the Product Owner):
 
 Agent working rules:
 
-- **Documents follow the requirements automatically.** Whenever a requirement is added, changed, or removed during development, the agent making the change (with the Documentation agent) updates every affected document in the same change: other requirement sections (acceptance criteria, test scenarios, decisions, cross-references), `Planning/`, `Planning/Design/`, `specs/`, the seed plan, `README.md`, and `CLAUDE.md`. A Claude Code hook (`scripts/hooks/requirements_changed.py`, configured in `.claude/settings.json`) reminds the agent automatically after every edit of the requirements file. A weekly Documentation agent run checks the whole document set for drift.
+- **Documents follow the requirements automatically.** Whenever a requirement is added, changed, or removed during development, the agent making the change (with the Documentation agent) updates every affected document in the same change: other requirement sections (acceptance criteria, test scenarios, decisions, cross-references), `Planning/`, `Planning/Design/`, `specs/`, `README.md`, and `CLAUDE.md`. A Claude Code hook (`scripts/hooks/requirements_changed.py`, configured in `.claude/settings.json`) reminds the agent automatically after every edit of the requirements file. A weekly Documentation agent run checks the whole document set for drift.
 - **Development rules.** All code follows [19-Development-Rules.md](19-Development-Rules.md); the Code Reviewer agent rejects any change that breaks it (hard-coded values, raw status strings, missing audit columns, physical deletes, SOLID violations).
 - **Specs first.** Before building a feature, the Business Analyst and Architect agents create or update its spec in `specs/<epic>-<feature>/` (requirements, design, tasks, test plan) ([17-Project-Structure.md](17-Project-Structure.md) §3).
 - **Designs by the UX/UI agent.** Every screen on web, admin, and mobile is designed by the UX/UI Designer agent to [16-UX-Design.md](16-UX-Design.md), responsive at all breakpoints, then checked by the UI Validation agent.
-- **Seeds with every table.** Any new table ships with seed data in the same change ([18-Seed-Data.md](18-Seed-Data.md)).
+- **No seed data.** Environments start empty and tests build their own data; product defaults go in `config/` ([18-Seed-Data.md](18-Seed-Data.md)).
 - **Redis by the rules.** Caching, rate limiting, sessions, and locks follow [Design/16-Redis-and-Caching.md](Design/16-Redis-and-Caching.md).
 - **Tests named and placed by convention** (`*.spec.ts(x)`, `test_*.py`) per [17-Project-Structure.md](17-Project-Structure.md) §4.
 

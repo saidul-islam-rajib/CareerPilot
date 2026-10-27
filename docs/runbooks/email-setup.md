@@ -11,7 +11,7 @@ CareerPilot sends account email (registration links, password-reset links, verif
 
 - `CAREERPILOT_MAIL_USER` and `CAREERPILOT_MAIL_PASSWORD` set → account email goes to real inboxes, in any environment.
 - Either one empty → account email goes to Mailpit (http://localhost:8025), as before.
-- Mail to `@sober.com` (seeded demo accounts) and reserved example domains (`example.com`, `.org`, `.net`) always stays in Mailpit.
+- Mail to `@sober.com` and reserved example domains (`example.com`, `.org`, `.net`) always stays in Mailpit.
 - Job-application email and daily digests never leave Mailpit outside production.
 - Settings that are not secret (sender address, SMTP host, port, security) live in `config/defaults/mail.yaml`.
 
@@ -35,7 +35,7 @@ CareerPilot sends account email (registration links, password-reset links, verif
    ```
 
 6. **Restart the API** so it reads the new values: `docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d user-api` (or `pnpm phone` when testing on a phone).
-7. **Test.** Register at http://localhost:3000/register, or on the phone after `pnpm phone`, with `yourname+test1@gmail.com` (Gmail delivers `+anything` addresses to the same inbox, so you can test new registrations repeatedly). The page answers at once and the email **Finish creating your CareerPilot account** arrives within seconds from `CareerPilot <info@team-sober.com>`; the first one may land in Spam, so mark it "Not spam". The seeded real-mailbox account (`Planning/18-Seed-Data.md`) is already registered, so registering it again sends **You already have a CareerPilot account** instead.
+7. **Test.** Register at http://localhost:3000/register, or on the phone after `pnpm phone`, with `yourname+test1@gmail.com` (Gmail delivers `+anything` addresses to the same inbox, so you can test new registrations repeatedly). The page answers at once and the email **Finish creating your CareerPilot account** arrives within seconds from `CareerPilot <info@team-sober.com>`; the first one may land in Spam, so mark it "Not spam". Registering an address that already has an account sends **You already have a CareerPilot account** instead.
 
 ## Production
 

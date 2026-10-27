@@ -2,7 +2,7 @@
 
 ## API
 
-## Data and seeds
+## Data
 
 ## Events
 

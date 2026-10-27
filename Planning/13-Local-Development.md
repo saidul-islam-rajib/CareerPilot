@@ -63,8 +63,7 @@ Rules:
 |---|---|
 | `make setup` | Install tools, copy `.env.example`, install dependencies, install git hooks |
 | `make up` | Start everything (core + observability + mocks) |
-| `make down` / `make reset` | Stop / stop and wipe local data |
-| `make seed` | Load synthetic users, postings, circulars (including Bangla PDFs), and portal scenarios |
+| `make down` | Stop (local data stays; there is no seed or reset step, see [18-Seed-Data.md](18-Seed-Data.md)) |
 | `make test` | All unit tests (backend, web, admin, mobile, packages) with coverage |
 | `make test-mobile` | Mobile unit tests only |
 | `make lint` / `make types` | Linters and type checks for Python and TypeScript |
@@ -75,7 +74,7 @@ Rules:
 
 - Android: Android Studio emulator (several screen sizes and Android versions) or a real phone with a development build.
 - iOS: iOS Simulator requires a Mac. Without a Mac, iOS builds and tests run on cloud build services (EAS) or CI macOS runners, and on real iPhones via development builds.
-- The mobile app points to the local API through the machine's network address; seeded test accounts sign in through local Keycloak.
+- The mobile app points to the local API through the machine's network address; accounts you create there (registration by email link) sign in as on the web.
 
 ## 5. Git hooks (tests must pass before commit)
 

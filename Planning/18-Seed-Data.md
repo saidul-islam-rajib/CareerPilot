@@ -1,60 +1,35 @@
 # Seed Data
 
-Every database table has seed data, so the whole platform can be explored and tested locally right after `make up && make seed`.
+CareerPilot has **no seed data**. Every environment (local, Docker, dev, CI, staging, production) starts empty: no sample users, admins, jobs, job sources, applications, or audit history. The Product Owner decided this on 2026-10-27 so the product is always tried the way a real person meets it (spec: `specs/E11-fresh-start/`).
 
-## 1. Principles
+## 1. What the system needs to run
 
-- **Every table is seeded.** A CI test runs the seeds on an empty database and fails if any table (excluding partition children and pure projections, which are rebuilt from seeded data) has zero rows.
-- **Idempotent.** Seeds upsert by natural keys, so running them twice changes nothing.
-- **Deterministic.** Generated data uses a fixed random seed, so every developer and agent gets the same data and tests are repeatable.
-- **Realistic.** Names, CVs, postings, and circulars look real (including Bangla circular PDFs and scanned images) but are synthetic; no real person's data except the accounts in §3.
-- **Safe.** Seeds that create users or credentials refuse to run when `APP_ENV` is `staging` or `production` (only reference data runs there).
-- **Audited like real data.** Seed rows fill all audit columns with the `system` actor (`created_by_type = system`); `demo` includes soft-deleted and anonymized rows so restore and recently-deleted screens can be tried.
-- **Enum metadata seeded.** Every enum value has an `enum_values` row (label key, colour token, order) in `base`; defaults come from `config/defaults`, not from seed code.
-- **Owned with the code.** Each bounded context keeps its seed factories in `services/core/src/careerpilot/<context>/seeds/`; shared files (PDFs, images, signatures, photos) live in `seeds/files/`.
+These are product defaults, not sample data, so they live in `config/` like every other default:
 
-## 2. Seed profiles
-
-| Profile | Contents | Used in |
-|---|---|---|
-| `base` (reference) | Countries, currencies, time zones, opportunity types and schemas, profile field definitions, question groups, platform settings (active theme `sober`), admin roles and policies, notification templates, feature flags, scoring model v1, country pack (Bangladesh: divisions, districts, upazilas, boards, grades, holidays), mock sources and plugins | All environments (production too) |
-| `demo` | Users covering every persona with complete profiles, photos, signatures, multiple emails/phones, documents and versions, tracks, rules, windows, pauses, compensation rules, excluded countries; opportunities of every type and state with archived circulars (English and Bangla, HTML/PDF/scanned); recommendations; applications in **every** submission and outcome status with Q&A, emails, files, evidence; approvals; government stages; academic plans; interviews, offers; payments; notifications; audit events; support tickets; reconciliation issues | Local, dev |
-| `scenarios` | Edge cases for automated tests: duplicates, reposts, conflicting deadlines, unclear countries, knock-out questions, outcome unknown, bounced email, expired approval, paused user, deletion grace period | Local, CI |
-
-Commands: `make seed` (base + demo), `make seed-scenarios`, `make seed-reset` (wipe and reseed).
-
-## 3. Local default accounts
-
-These accounts exist in **all local and dev environments** (local Docker, dev, CI). They are never created in staging or production.
-
-| Account | Realm / app | Email | Password | Role |
-|---|---|---|---|---|
-| Default admin | Admin app | `admin@sober.com` | `admin@sober.com` | Super Admin |
-| Default user | User web/mobile app | `admin@sober.com` | `admin@sober.com` | Job seeker with a complete demo profile |
-| Real-mailbox admin | Admin app | `saidul.rajib.online@gmail.com` | `Test@123#` | Super Admin (for flows that need a real inbox) |
-| Real-mailbox user | User web/mobile app | `saidul.rajib.online@gmail.com` | `Test@123#` | Job seeker (for testing real email delivery) |
-| Persona users | User app | `fresh.graduate@sober.com`, `remote.pro@sober.com`, `phd.applicant@sober.com`, `govt.seeker@sober.com`, `paused.user@sober.com`, `deleting.user@sober.com` | `admin@sober.com` | One per persona and lifecycle state |
-| Role admins | Admin app | `support@sober.com`, `operations@sober.com`, `readonly@sober.com` | `admin@sober.com` | One per admin role |
-
-Notes:
-- Admin and user accounts are separate accounts in separate realms, even with the same email (requirements §53.1).
-- The local Keycloak realms use a relaxed password policy so these passwords work; staging and production enforce the full policy.
-- Local email goes to Mailpit by default. Only when a developer explicitly enables real email sending in their local `.env` (`CAREERPILOT_MAIL_USER` and `CAREERPILOT_MAIL_PASSWORD`, their own sending credentials, never committed) does account email (registration and reset links, verification codes) reach real inboxes such as `saidul.rajib.online@gmail.com`; mail to `@sober.com` and reserved example domains always stays in Mailpit (`docs/runbooks/email-setup.md`). Because `saidul.rajib.online@gmail.com` is already registered, registering it again sends the "you already have an account" email; use `saidul.rajib.online+anything@gmail.com` to test a new registration in the same inbox.
-- The application refuses to start in staging or production if any of these default accounts or passwords exist.
-- Production gets its first Super Admin through a one-time bootstrap command using a secret from the secret store, with MFA enrolment required on first sign-in.
-
-## 4. Coverage map (by bounded context)
-
-| Context | Seeded tables (examples) |
+| Data | Where |
 |---|---|
-| Identity | users, admin_users, roles, policies, sessions, devices, consent_records, sign_in_events |
-| Profile | profiles, profile_facts, educations, employments, test_scores, referees, links, profile_changes |
-| Documents | documents, document_versions (CVs, transcripts, certificates, photos, signatures, a demo video), derived_files |
-| Preferences | tracks (4 named + custom), track_settings, excluded_countries, compensation_rules, submission_windows, pauses, auto_rules, auto_rule_versions, reusable_answers |
-| Discovery | sources, search_cycles (succeeded, partial, failed), raw_postings |
-| Opportunities | opportunity_types, opportunities (every state), opportunity_versions with archived files, fields with evidence, fraud_flags, duplicate_groups |
-| Matching | scoring_model_versions, recommendations, match_explanations |
-| Applications | applications (every status), application_events, approval_packages, approvals, questions, question_groups, qa_items, submitted_files, email_messages, evidence, payments, portal_accounts, portal_credentials (fake encrypted values) |
-| Notifications | notifications, delivery_attempts (delivered, failed, fallback), templates, digests, reports |
-| Academic, government, tracking | academic plans, test registrations, referee requests, outreach; govt stages, fee payments, admit cards; interviews, assessments, offers, contacts, tasks |
-| Operations | audit_events, outbox_events, inbox_events, reconciliation_runs and issues, support_tickets, incidents, platform_settings, feature_flags |
+| Enum catalog (label key, colour tone, order, terminal, active) | `config/defaults/enum-values.yaml`, served in public config as `enumValues` |
+| Default tracks for a new account (remote, international sponsored, Bangladesh onsite, Bangladesh government; each "approve each") | `config/defaults/tracks.yaml` |
+| Platform settings until a Super Admin saves them (active theme, daily application cap, approval validity, deletion grace, link lifetime) | `config/defaults/platform.yaml`, `ui.yaml`, `account.yaml`, `account-links.yaml` |
+| Job sources | None. Sources are added by admins; `discovery.sources` is empty by default. |
+
+## 2. The first Super Admin
+
+- The owner's email address goes in `.env` as `CAREERPILOT_OWNER_EMAIL` (never committed; production uses the secret store).
+- When the admin API starts and no admin exists, it creates a pending Super Admin for that address and emails a link to choose the password (same lifetime, single use, and token rules as user links). Once any admin exists, the setting is ignored.
+- An expired link is replaced from the admin app: **Forgot password?** on the sign-in page.
+
+## 3. Everyone else
+
+- People create user accounts themselves through registration by email link (requirements §13).
+- Super Admins manage further admin accounts in the admin app (requirements §53.2).
+
+## 4. Local data stays
+
+- Data created locally is never reset, re-seeded, or deleted by tooling. `docker compose up --build` keeps the database volume; nothing writes rows at start-up except the owner invitation above.
+- Resetting a local database is a deliberate act by the owner (back up first: `pg_dump`).
+
+## 5. Test data
+
+- Unit tests build their own data. Backend tests load `services/core/tests/fixtures/sample-data.json` and the discovery fixtures in `services/core/tests/fixtures/discovery/` through `careerpilot.testing`, injected with `ContainerOverrides`; TypeScript tests use the in-memory API test doubles in `packages/api-client`.
+- Test data never ships in an image (`services/*/tests` is excluded from the Docker context) and no environment loads it.

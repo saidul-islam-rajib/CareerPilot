@@ -28,7 +28,7 @@ Requirements: Docker Desktop (running) and Git. For mobile: Node.js LTS and an A
 git clone <repository-url> CareerPilot
 cd CareerPilot
 cp .env.example .env          # local-only defaults, never used outside your machine
-docker compose up -d --build  # PostgreSQL, Redis, Mailpit, migrations + demo seed, user API, admin API, web, admin
+docker compose up -d --build  # PostgreSQL, Redis, Mailpit, migrations, user API, admin API, web, admin (starts empty)
 ```
 
 Stop with `docker compose down` (add `-v` to wipe local data). The mobile app runs with `pnpm install && pnpm --filter @careerpilot/mobile start` (real backend from Docker; `pnpm mobile:demo` for demo data).
@@ -57,7 +57,7 @@ python -m venv .venv
 .venv/Scripts/python -m pip install -e "core[dev]" -e api
 set -a; . ../.env; set +a
 (cd core && ../.venv/Scripts/alembic upgrade head)
-APP_ENV=http .venv/Scripts/python -m careerpilot_api.dev_server   # user API :8000, admin API :8001, seeds an empty database
+APP_ENV=http .venv/Scripts/python -m careerpilot_api.dev_server   # user API :8000, admin API :8001
 ```
 
 `APP_ENV=local` keeps everything in memory (no database needed).
@@ -78,14 +78,11 @@ It resumes the latest Claude session, waits and retries when a limit is hit, and
 
 Developed by [Team Sober](https://team-sober.com/). Built with open-source software listed on the in-app open-source licences page.
 
-## Local default credentials
+## Accounts
 
-For **local and dev environments only** (never staging or production):
+There are no built-in accounts or sample data; every environment starts empty ([Planning/18-Seed-Data.md](Planning/18-Seed-Data.md)).
 
-| App | Email | Password |
-|---|---|---|
-| Admin app (Super Admin) | `admin@sober.com` | `admin@sober.com` |
-| User app (demo job seeker) | `admin@sober.com` | `admin@sober.com` |
-| Admin and user app, real mailbox (when real email is needed) | `saidul.rajib.online@gmail.com` | `Test@123#` |
+- **Admin app:** put the owner's email in `.env` as `CAREERPILOT_OWNER_EMAIL`. On the first start with no admins, that address receives a link to choose the Super Admin password. Lost the link? Use **Forgot password?** on the admin sign-in page.
+- **User app:** create an account with **Create account**; the email link lets you choose your password.
 
-More demo accounts (one per persona and admin role) are listed in [Planning/18-Seed-Data.md](Planning/18-Seed-Data.md). All local email is caught by Mailpit unless real sending is enabled in your own `.env`.
+All local email is caught by Mailpit unless real sending is enabled in your own `.env` ([docs/runbooks/email-setup.md](docs/runbooks/email-setup.md)).
