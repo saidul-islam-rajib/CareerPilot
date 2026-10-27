@@ -1,20 +1,11 @@
 import copy
 from collections.abc import Callable
-from typing import Any
 
 from careerpilot.candidate.models import (
-    ApplicationRecord,
-    ApprovalDetail,
     OpportunityDetail,
-    Preferences,
-    Profile,
-    SavedAnswer,
-    SignInEvent,
-    UserSummary,
 )
 from careerpilot.candidate.ports import Account, CandidateWorkspace
 from careerpilot.platform.enums import UserAccountStatus
-from careerpilot.platform.security import PasswordHasher
 
 
 class InMemoryAccountRepository:
@@ -66,27 +57,3 @@ class InMemoryWorkspaceRepository:
 
     def save(self, user_id: str, workspace: CandidateWorkspace) -> None:
         self._by_user[user_id] = copy.deepcopy(workspace)
-
-
-def workspace_from_seed(user_seed: dict[str, Any]) -> CandidateWorkspace:
-    return CandidateWorkspace(
-        profile=Profile.model_validate(user_seed["profile"]),
-        preferences=Preferences.model_validate(user_seed["settings"]),
-        track_opportunities={k: list(v) for k, v in user_seed["trackOpportunities"].items()},
-        approvals=[ApprovalDetail.model_validate(a) for a in user_seed["approvals"]],
-        applications=[ApplicationRecord.model_validate(a) for a in user_seed["applications"]],
-        sign_in_events=[SignInEvent.model_validate(e) for e in user_seed["signInEvents"]],
-        last_checked_at=str(user_seed["lastCheckedAt"]),
-        saved_answers=[SavedAnswer.model_validate(a) for a in user_seed.get("savedAnswers", [])],
-    )
-
-
-def accounts_from_seed(user_seed: dict[str, Any], hasher: PasswordHasher) -> list[Account]:
-    return [
-        Account(user=UserSummary.model_validate(a["user"]), password_hash=hasher.hash(str(a["password"])), status=UserAccountStatus.ACTIVE)
-        for a in user_seed["accounts"]
-    ]
-
-
-def opportunities_from_seed(user_seed: dict[str, Any]) -> list[OpportunityDetail]:
-    return [OpportunityDetail.model_validate(o) for o in user_seed["opportunities"]]

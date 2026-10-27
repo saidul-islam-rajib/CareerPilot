@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 
 const root = path.resolve(process.argv[2] ?? '.');
-const output = path.resolve(process.argv[3] ?? 'seeds/demo/demo-seed.json');
+const output = path.resolve(process.argv[3] ?? 'services/core/tests/fixtures/sample-data.json');
 const referenceNow = new Date(process.env.SEED_REFERENCE_NOW ?? '2026-10-20T06:00:00Z');
 
 const bundleFile = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'careerpilot-seed-')), 'api-client.mjs');

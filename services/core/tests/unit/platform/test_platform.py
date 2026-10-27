@@ -11,7 +11,7 @@ from careerpilot.platform.config import deep_merge, load_settings, with_web_addr
 from careerpilot.platform.enums import ThemeKey
 from careerpilot.platform.errors import DomainError, ErrorCode
 from careerpilot.platform.security import Argon2PasswordHasher, TokenService
-from careerpilot.platform.seed import load_demo_seed, shift_timestamps
+from careerpilot.testing import load_sample_data, shift_timestamps
 
 NOW = datetime(2026, 10, 20, 6, 0, tzinfo=UTC)
 
@@ -49,13 +49,13 @@ def test_tokens_verify_audience_and_expiry() -> None:
         service.verify(token, "user")
 
 
-def test_seed_timestamps_shift_to_now() -> None:
+def test_sample_data_timestamps_shift_to_now() -> None:
     shifted = shift_timestamps({"at": "2026-10-20T06:00:00.000Z", "name": "x"}, 3600)
     assert shifted == {"at": "2026-10-20T07:00:00.000Z", "name": "x"}
     later = NOW + timedelta(days=4)
-    seed = load_demo_seed(later)
-    assert seed["referenceNow"] == iso(later)
-    assert len(seed["user"]["opportunities"]) == 8
+    sample = load_sample_data(later)
+    assert sample["referenceNow"] == iso(later)
+    assert len(sample["user"]["opportunities"]) == 8
 
 
 def test_clock_helpers() -> None:

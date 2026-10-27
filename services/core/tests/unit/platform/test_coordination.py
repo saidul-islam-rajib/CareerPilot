@@ -20,6 +20,7 @@ from careerpilot.platform.coordination import (
 from careerpilot.platform.errors import DomainError, ErrorCode
 from careerpilot.platform.files import InMemoryFileStorage
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore, StoreUnavailableError
+from careerpilot.testing import load_sample_data, sample_repositories, sample_settings
 from tests.unit.conftest import CLIENT, TEST_SECRET, FakeHasher
 
 EMAIL = "admin@sober.com"
@@ -160,7 +161,8 @@ def test_metadata_cache_fails_open_when_store_is_unavailable(config: Coordinatio
 def redis_container(clock: FixedClock) -> Container:
     overrides = ContainerOverrides(
         file_storage=InMemoryFileStorage(),
-        settings=load_settings("local"),
+        settings=sample_settings(),
+        repositories=sample_repositories(load_sample_data(clock.now())),
         clock=clock,
         ids=SequentialIdGenerator(),
         hasher=FakeHasher(),

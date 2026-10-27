@@ -17,9 +17,10 @@ from careerpilot.discovery.screening import WarningSignScreen
 from careerpilot.discovery.service import DiscoveryContext, DiscoveryService
 from careerpilot.discovery.text import canonical_url, listing_fingerprint, plain_text
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
-from careerpilot.platform.config import DiscoveryConfig, SourceDefinition, load_settings, repository_root
+from careerpilot.platform.config import DiscoveryConfig, SourceDefinition, repository_root
 from careerpilot.platform.enums import OpportunityStatus, SourceStatus
 from careerpilot.platform.errors import DomainError
+from careerpilot.testing import sample_settings
 from tests.unit.conftest import CLIENT
 
 REMOTE = "src_remote_board"
@@ -39,7 +40,7 @@ class FakeFetcher:
 
 @pytest.fixture
 def config() -> DiscoveryConfig:
-    return load_settings("local").discovery
+    return sample_settings().discovery
 
 
 def fixture_text(config: DiscoveryConfig, source_id: str) -> str:

@@ -12,10 +12,11 @@ from careerpilot.candidate.adapters.sql import CandidateWorkspaceRow, SqlAccount
 from careerpilot.candidate.models import UserSummary
 from careerpilot.candidate.ports import Account
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
-from careerpilot.platform.config import PersistenceMode, load_settings
+from careerpilot.platform.config import PersistenceMode
 from careerpilot.platform.enums import ActorType, ApplicationFilter, ThemeKey, UserAccountStatus
 from careerpilot.platform.files import InMemoryFileStorage
 from careerpilot.platform.persistence import SQLITE_MEMORY_URL, Actor, Base, PhysicalDeleteError, acting_as, active, create_database
+from careerpilot.testing import load_sample_data, sample_database_repositories, sample_settings
 from tests.unit.conftest import CLIENT, DEMO_USER, TEST_SECRET, FakeHasher
 
 
@@ -73,7 +74,7 @@ def test_email_is_unique_among_active_accounts(clock: FixedClock) -> None:
 
 @pytest.fixture
 def database_container(clock: FixedClock) -> Container:
-    settings = load_settings("local")
+    settings = sample_settings()
     settings = settings.model_copy(update={"persistence": settings.persistence.model_copy(update={"mode": PersistenceMode.DATABASE})})
     database = create_database(SQLITE_MEMORY_URL, clock)
     Base.metadata.create_all(database.engine)
@@ -85,6 +86,7 @@ def database_container(clock: FixedClock) -> Container:
         hasher=FakeHasher(),
         token_secret=TEST_SECRET,
         database=database,
+        repositories=sample_database_repositories(load_sample_data(clock.now()), database),
     )
     return build_container(overrides)
 

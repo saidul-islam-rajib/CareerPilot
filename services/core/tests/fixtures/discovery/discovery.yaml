@@ -1,0 +1,22 @@
+discovery:
+  fetch_mode: fixture
+  fixture_root: services/core/tests/fixtures/discovery
+  sources:
+    src_remote_board:
+      connector: rss
+      url: https://weworkremotely.com/categories/remote-programming-jobs.rss
+      fixture: remote-board.rss
+      defaults:
+        type: job
+        work_arrangement: remote
+        country_code: ""
+        location: Remote
+    src_company_pages:
+      connector: greenhouse
+      url: https://boards-api.greenhouse.io/v1/boards/northwindlabs/jobs?content=true
+      fixture: northwind-greenhouse.json
+      defaults:
+        type: job
+        work_arrangement: hybrid
+        country_code: BD
+        organization: Northwind Labs

@@ -44,7 +44,7 @@ services:
     build:
       context: .
       dockerfile: infra/docker/api.Dockerfile
-    command: ["sh", "-c", "alembic upgrade head && python -m careerpilot_api.seed"]
+    command: ["alembic", "upgrade", "head"]
     environment:
       CAREERPILOT_MIGRATION_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       CAREERPILOT_DATABASE_URL: postgresql+psycopg://${CAREERPILOT_APP_DB_USER}:${CAREERPILOT_APP_DB_PASSWORD}@postgres:5432/${POSTGRES_DB}

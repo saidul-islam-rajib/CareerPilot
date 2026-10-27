@@ -204,13 +204,38 @@ class WarningSignConfig(Strict):
 
 class DiscoveryConfig(Strict):
     fetch_mode: FetchMode
-    fixture_root: str
+    fixture_root: str = ""
     user_agent: str
     timeout_seconds: float = Field(gt=0)
     max_listings_per_check: int = Field(gt=0)
     failing_after_failures: int = Field(gt=0)
     sources: dict[str, SourceDefinition]
     warning_signs: WarningSignConfig
+
+
+class EnumValueConfig(Strict):
+    enum_key: str
+    value: str
+    label_key: str
+    tone: str
+    sort_order: int
+    is_terminal: bool
+    is_active: bool
+
+
+class DefaultTrack(Strict):
+    id: str
+    kind: str
+    result_count: int = Field(gt=0)
+    position: int = Field(gt=0)
+
+
+class TracksConfig(Strict):
+    defaults: list[DefaultTrack]
+
+
+class PlatformDefaultsConfig(Strict):
+    daily_application_cap: int = Field(gt=0)
 
 
 class MatchingMode(StrEnum):
@@ -477,6 +502,9 @@ class Settings(Strict):
     mail: MailConfig
     tracking: TrackingConfig
     answers: AnswersConfig
+    enum_values: list[EnumValueConfig]
+    tracks: TracksConfig
+    platform: PlatformDefaultsConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

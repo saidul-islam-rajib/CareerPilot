@@ -7,7 +7,7 @@ useDefault = true
 description = "Local-only demo credentials and test fixtures that are documented as non-secret"
 paths = [
   '''\.env\.example$''',
-  '''seeds/demo/demo-seed\.json$''',
+  '''services/core/tests/fixtures/sample-data\.json$''',
   '''packages/api-client/src/.*\.seed\.ts$''',
   '''packages/api-client/src/test-support\.ts$''',
   '''(^|/)tests/''',

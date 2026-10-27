@@ -1,0 +1,6 @@
+tracks:
+  defaults:
+    - {id: trk_remote, kind: remote, result_count: 5, position: 1}
+    - {id: trk_intl, kind: international_sponsored, result_count: 5, position: 2}
+    - {id: trk_bd, kind: bangladesh_onsite, result_count: 5, position: 3}
+    - {id: trk_gov, kind: bangladesh_government, result_count: 5, position: 4}

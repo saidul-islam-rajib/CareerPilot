@@ -43,7 +43,7 @@ def apply_check(directory: Directory, row: AdminSourceRow, check: SourceCheck, f
     return updated
 
 
-def seed_discovery(discovery: DiscoveryService, directory: Directory, failing_after: int) -> bool:
+def discover_when_empty(discovery: DiscoveryService, directory: Directory, failing_after: int) -> bool:
     if discovery.listings():
         return False
     for row in directory.sources():

@@ -1,7 +1,7 @@
 import copy
-from typing import Any, TypeVar
+from typing import TypeVar
 
-from careerpilot.administration.adapters.documents import operations_from_document
+from careerpilot.administration.adapters.documents import empty_operations, operations_from_document
 from careerpilot.administration.models import (
     AdminAccount,
     AdminApplicationRow,
@@ -12,7 +12,6 @@ from careerpilot.administration.models import (
     PlatformSettings,
 )
 from careerpilot.administration.ports import AdminCredential, OperationsSnapshot
-from careerpilot.platform.security import PasswordHasher
 
 
 class InMemoryAdminAccountRepository:
@@ -66,12 +65,12 @@ def _replace(rows: list[Row], row: Row) -> list[Row]:
 
 
 class InMemoryDirectory:
-    def __init__(self, seed: dict[str, Any]) -> None:
-        self._users = [AdminUserRow.model_validate(u) for u in seed["users"]]
-        self._applications = [AdminApplicationRow.model_validate(a) for a in seed["applications"]]
-        self._opportunities = [AdminOpportunityRow.model_validate(o) for o in seed["opportunities"]]
-        self._sources = [AdminSourceRow.model_validate(s) for s in seed["sources"]]
-        self._operations = operations_from_document(seed)
+    def __init__(self) -> None:
+        self._users: list[AdminUserRow] = []
+        self._applications: list[AdminApplicationRow] = []
+        self._opportunities: list[AdminOpportunityRow] = []
+        self._sources: list[AdminSourceRow] = []
+        self._operations = empty_operations()
 
     def users(self) -> list[AdminUserRow]:
         return [u.model_copy() for u in self._users]
@@ -100,17 +99,5 @@ class InMemoryDirectory:
     def operations(self) -> OperationsSnapshot:
         return copy.deepcopy(self._operations)
 
-
-def admin_credentials_from_seed(seed: dict[str, Any], hasher: PasswordHasher) -> list[AdminCredential]:
-    return [
-        AdminCredential(account=AdminAccount.model_validate(a["account"]), password_hash=hasher.hash(str(a["password"])))
-        for a in seed["admins"]
-    ]
-
-
-def audit_from_seed(seed: dict[str, Any]) -> list[AuditEntry]:
-    return [AuditEntry.model_validate(e) for e in seed["audit"]]
-
-
-def platform_settings_from_seed(seed: dict[str, Any]) -> PlatformSettings:
-    return PlatformSettings.model_validate(seed["settings"])
+    def save_operations(self, document: dict[str, object]) -> None:
+        self._operations = operations_from_document(dict(document))

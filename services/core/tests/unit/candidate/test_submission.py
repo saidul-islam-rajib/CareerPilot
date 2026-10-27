@@ -7,7 +7,6 @@ import pytest
 from careerpilot.bootstrap import Container, ContainerOverrides, build_container
 from careerpilot.candidate.models import ApplicationRecord, SubmissionWindow
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
-from careerpilot.platform.config import load_settings
 from careerpilot.platform.email_delivery import (
     DeliveryError,
     DeliveryUncertainError,
@@ -26,6 +25,7 @@ from careerpilot.platform.enums import (
     SubmissionWindowKind,
 )
 from careerpilot.platform.files import InMemoryFileStorage
+from careerpilot.testing import load_sample_data, sample_repositories, sample_settings
 from tests.unit.conftest import CLIENT, DEMO_USER, TEST_SECRET, FakeHasher
 
 EMAIL_OPPORTUNITY = "opp_remote_frontend"
@@ -41,7 +41,8 @@ def sender() -> InMemoryEmailSender:
 @pytest.fixture
 def service(clock: FixedClock, sender: InMemoryEmailSender) -> Container:
     overrides = ContainerOverrides(
-        settings=load_settings("local"),
+        settings=sample_settings(),
+        repositories=sample_repositories(load_sample_data(clock.now())),
         clock=clock,
         ids=SequentialIdGenerator(),
         hasher=FakeHasher(),

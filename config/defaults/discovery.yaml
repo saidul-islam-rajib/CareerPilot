@@ -1,29 +1,10 @@
 discovery:
-  fetch_mode: fixture
-  fixture_root: seeds/discovery
+  fetch_mode: live
   user_agent: "CareerPilotBot/1.0 (+https://team-sober.com/)"
   timeout_seconds: 10
   max_listings_per_check: 200
   failing_after_failures: 3
-  sources:
-    src_remote_board:
-      connector: rss
-      url: https://weworkremotely.com/categories/remote-programming-jobs.rss
-      fixture: remote-board.rss
-      defaults:
-        type: job
-        work_arrangement: remote
-        country_code: ""
-        location: Remote
-    src_company_pages:
-      connector: greenhouse
-      url: https://boards-api.greenhouse.io/v1/boards/northwindlabs/jobs?content=true
-      fixture: northwind-greenhouse.json
-      defaults:
-        type: job
-        work_arrangement: hybrid
-        country_code: BD
-        organization: Northwind Labs
+  sources: {}
   warning_signs:
     upfront_fee:
       - registration fee

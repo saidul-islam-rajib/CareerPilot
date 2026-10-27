@@ -3,7 +3,7 @@ from typing import Any, cast
 
 from pydantic.alias_generators import to_camel
 
-from careerpilot.platform.config import SECONDS_PER_MINUTE, Settings
+from careerpilot.platform.config import SECONDS_PER_MINUTE, EnumValueConfig, Settings
 from careerpilot.platform.coordination import MetadataCache
 from careerpilot.platform.enums import ThemeKey
 
@@ -17,6 +17,10 @@ def camel_keys(value: Any) -> Any:
     if isinstance(value, list):
         return [camel_keys(v) for v in cast("list[Any]", value)]
     return value
+
+
+def enum_value_documents(values: list[EnumValueConfig]) -> list[dict[str, Any]]:
+    return [camel_keys(v.model_dump()) for v in values]
 
 
 class PublicConfigService:

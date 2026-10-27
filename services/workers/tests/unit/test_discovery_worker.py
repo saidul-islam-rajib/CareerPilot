@@ -9,6 +9,7 @@ from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
 from careerpilot.platform.config import load_settings
 from careerpilot.platform.email_delivery import InMemoryEmailSender
 from careerpilot.platform.files import InMemoryFileStorage
+from careerpilot.testing import load_sample_data, sample_repositories, sample_settings
 from careerpilot_workers.activities import DigestActivities, DiscoveryActivities, SubmissionActivities
 from careerpilot_workers.main import activity_plan, digest_schedule, discovery_schedule, submission_schedule
 from careerpilot_workers.workflows import ActivityPlan, QueuedItem
@@ -28,7 +29,8 @@ class FakeHasher:
 def container() -> Container:
     overrides = ContainerOverrides(
         file_storage=InMemoryFileStorage(),
-        settings=load_settings("local"),
+        settings=sample_settings(),
+        repositories=sample_repositories(load_sample_data(datetime(2026, 10, 20, 6, 0, tzinfo=UTC))),
         clock=FixedClock(datetime(2026, 10, 20, 6, 0, tzinfo=UTC)),
         ids=SequentialIdGenerator(),
         hasher=FakeHasher(),

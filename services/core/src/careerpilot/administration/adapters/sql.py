@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy import Boolean, DateTime, Integer, String, func, select
 from sqlalchemy.orm import Mapped, mapped_column
 
-from careerpilot.administration.adapters.documents import operations_from_document
+from careerpilot.administration.adapters.documents import empty_operations, operations_from_document
 from careerpilot.administration.models import (
     AdminAccount,
     AdminApplicationRow,
@@ -129,14 +129,15 @@ class SqlAdminAccountRepository:
 
 
 class SqlPlatformSettingsRepository:
-    def __init__(self, database: Database) -> None:
+    def __init__(self, database: Database, defaults: PlatformSettings) -> None:
         self._db = database
+        self._defaults = defaults
 
     def get(self) -> PlatformSettings:
         with self._db.unit_of_work() as session:
             row = session.get(PlatformSettingsRow, PLATFORM_SETTINGS_ID)
             if row is None:
-                raise LookupError(PLATFORM_SETTINGS_ID)
+                return self._defaults.model_copy(deep=True)
             return PlatformSettings.model_validate(row.document)
 
     def save(self, settings: PlatformSettings) -> None:
@@ -208,7 +209,7 @@ class SqlDirectory:
         with self._db.unit_of_work() as session:
             row = session.get(AdminProjectionRow, (ProjectionKind.OPERATIONS.value, OPERATIONS_ID))
             if row is None:
-                raise LookupError(OPERATIONS_ID)
+                return empty_operations()
             return operations_from_document(dict(row.document))
 
     def save_operations(self, document: dict[str, object]) -> None:

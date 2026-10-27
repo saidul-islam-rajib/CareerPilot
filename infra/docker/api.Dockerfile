@@ -2,7 +2,6 @@ FROM python:3.11.13-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_DEFAULT_TIMEOUT=120 PIP_RETRIES=10 APP_ENV=docker
 WORKDIR /app
 COPY config ./config
-COPY seeds ./seeds
 COPY packages/i18n/src/locales ./packages/i18n/src/locales
 COPY services/core ./services/core
 COPY services/api ./services/api

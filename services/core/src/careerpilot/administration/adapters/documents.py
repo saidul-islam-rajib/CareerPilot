@@ -14,5 +14,11 @@ def operations_from_document(document: dict[str, Any]) -> OperationsSnapshot:
     )
 
 
-def operations_document(seed: dict[str, Any]) -> dict[str, object]:
-    return {key: seed[key] for key in ("services", "notifications", "archivedCirculars", "userPhones", "secrets")}
+def empty_operations() -> OperationsSnapshot:
+    return OperationsSnapshot(
+        services=[],
+        notifications=NotificationCounts(sent=0, delivered=0, failed=0),
+        archived_circulars=0,
+        user_phones={},
+        user_secrets={},
+    )

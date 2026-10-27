@@ -1,15 +1,15 @@
 import os
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from importlib.metadata import version
 from pathlib import Path
-from typing import Any
 
 import anthropic
 
 from careerpilot.administration.context import AdminContext
-from careerpilot.administration.discovery_sync import SourceCheckRunner, seed_discovery
+from careerpilot.administration.discovery_sync import SourceCheckRunner, discover_when_empty
+from careerpilot.administration.models import EmergencyStop, PlatformSettings
 from careerpilot.administration.services import (
     AdminAccountService,
     AdminAuditService,
@@ -33,7 +33,7 @@ from careerpilot.candidate.services.digest import DigestContext, DigestService
 from careerpilot.candidate.services.opportunities import OpportunityService
 from careerpilot.candidate.services.preferences import PreferencesService
 from careerpilot.candidate.services.profile import ProfileService
-from careerpilot.candidate.services.public_config import PublicConfigService
+from careerpilot.candidate.services.public_config import PublicConfigService, enum_value_documents
 from careerpilot.candidate.services.submission import SubmissionContext, SubmissionService
 from careerpilot.candidate.services.verification import ContactVerificationService, VerificationContext
 from careerpilot.discovery.connectors.registry import ConnectorRegistry, first_party_connectors
@@ -73,8 +73,7 @@ from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, 
 from careerpilot.platform.one_time_codes import OneTimeCodes, random_token
 from careerpilot.platform.persistence import Database, create_database
 from careerpilot.platform.security import Argon2PasswordHasher, PasswordHasher, TokenService, token_secret_from_environment
-from careerpilot.platform.seed import load_demo_seed
-from careerpilot.repositories import in_memory_repositories, sql_repositories
+from careerpilot.repositories import Repositories, RepositoryFactory, WorkspaceFactory, in_memory_repositories, sql_repositories
 
 EMPTY_PROFILE_COMPLETENESS = 0
 PACKAGE = "careerpilot-core"
@@ -111,11 +110,26 @@ class Container:
     source_checks: SourceCheckRunner
 
 
-def empty_workspace_factory(settings: Settings, clock: Clock, demo: dict[str, Any]) -> Callable[[str], CandidateWorkspace]:
-    default_tracks = [Track.model_validate(t) for t in demo["user"]["settings"]["tracks"]]
+def default_tracks(settings: Settings) -> list[Track]:
+    return [
+        Track(id=t.id, kind=t.kind, result_count=t.result_count, mode=ApplicationMode.APPROVE_EACH, position=t.position)
+        for t in settings.tracks.defaults
+    ]
 
+
+def default_platform_settings(settings: Settings) -> PlatformSettings:
+    return PlatformSettings(
+        active_theme=settings.ui.active_theme,
+        emergency_stop=EmergencyStop(active=False),
+        daily_application_cap=settings.platform.daily_application_cap,
+        approval_validity_days=settings.account.approval_validity_days,
+        deletion_grace_days=settings.account.deletion_grace_days,
+    )
+
+
+def empty_workspace_factory(settings: Settings, clock: Clock) -> WorkspaceFactory:
     def create(user_id: str) -> CandidateWorkspace:
-        tracks = [t.model_copy(update={"mode": ApplicationMode.APPROVE_EACH}) for t in default_tracks]
+        tracks = default_tracks(settings)
         return CandidateWorkspace(
             profile=Profile(
                 id=f"prf_{user_id}",
@@ -148,7 +162,7 @@ class ContainerOverrides:
     ids: IdGenerator | None = None
     hasher: PasswordHasher | None = None
     token_secret: str | None = None
-    seed_path: Path | None = None
+    repositories: RepositoryFactory | None = None
     database_url: str | None = None
     database: Database | None = None
     cache_store: KeyValueStore | None = None
@@ -230,6 +244,16 @@ def matcher_for(settings: Settings, clock: Clock) -> Matcher:
     return rules
 
 
+def _repositories(
+    options: ContainerOverrides, database: Database | None, hasher: PasswordHasher, empty: WorkspaceFactory, defaults: PlatformSettings
+) -> Repositories:
+    if options.repositories is not None:
+        return options.repositories(hasher, empty, defaults)
+    if database is not None:
+        return sql_repositories(database, empty, defaults)
+    return in_memory_repositories(empty, defaults)
+
+
 def _database_url(settings: Settings, options: ContainerOverrides) -> str:
     url = options.database_url or os.environ.get(settings.persistence.database_url_env)
     if not url:
@@ -247,13 +271,11 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     tokens = TokenService(cfg.security, clk, secret)
     storage = SampleAwareStorage(options.file_storage or LocalFileStorage(storage_root(cfg)))
     file_links = FileLinkSigner(secret, clk, cfg.profile.storage.signed_url_ttl_seconds)
-    demo = load_demo_seed(clk.now(), options.seed_path)
-
-    empty = empty_workspace_factory(cfg, clk, demo)
+    empty = empty_workspace_factory(cfg, clk)
     database = (
         options.database or create_database(_database_url(cfg, options), clk) if cfg.persistence.mode is PersistenceMode.DATABASE else None
     )
-    repos = sql_repositories(database, demo, pwd, empty) if database else in_memory_repositories(demo, pwd, empty)
+    repos = _repositories(options, database, pwd, empty, default_platform_settings(cfg))
 
     candidate = CandidateContext(cfg, clk, gen, repos.accounts, repos.opportunities, repos.workspaces, pwd, tokens)
     admin = AdminContext(
@@ -296,7 +318,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
             apply_by_rule=approvals.approve_by_rule,
         )
     )
-    seed_discovery(discovery, repos.directory, cfg.discovery.failing_after_failures)
+    discover_when_empty(discovery, repos.directory, cfg.discovery.failing_after_failures)
     recommendations.refresh_all()
     source_checks = SourceCheckRunner(discovery, repos.directory, cfg.discovery.failing_after_failures, recommendations.refresh_all)
     sender = options.email_sender or email_sender_for(cfg)
@@ -315,7 +337,9 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     )
     release = release_fingerprint(cfg.model_dump_json(), version(PACKAGE))
     metadata = MetadataCache(cache_store, keys, cfg.coordination, release=release)
-    public_config = PublicConfigService(cfg, demo["enumValues"], lambda: repos.platform.get().active_theme, metadata, link_ttl_minutes)
+    public_config = PublicConfigService(
+        cfg, enum_value_documents(cfg.enum_values), lambda: repos.platform.get().active_theme, metadata, link_ttl_minutes
+    )
     public_config.invalidate()
     admin_settings = PlatformSettingsService(admin, public_config.invalidate)
     return Container(
