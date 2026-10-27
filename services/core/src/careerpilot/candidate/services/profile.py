@@ -2,7 +2,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import PurePath
 
-from careerpilot.candidate.context import CandidateContext
+from careerpilot.candidate.context import CandidateContext, ChangeListener, ignore_change
 from careerpilot.candidate.models import (
     CompletenessItem,
     Contact,
@@ -95,11 +95,14 @@ def completeness(profile: Profile, config: ProfileConfig) -> tuple[int, list[Com
 
 
 class ProfileService:
-    def __init__(self, context: CandidateContext, storage: FileStorage, links: FileLinkSigner) -> None:
+    def __init__(
+        self, context: CandidateContext, storage: FileStorage, links: FileLinkSigner, on_change: ChangeListener = ignore_change
+    ) -> None:
         self._ctx = context
         self._storage = storage
         self._links = links
         self._config = context.settings.profile
+        self._on_change = on_change
 
     def get(self, user_id: str) -> Profile:
         workspace = self._ctx.workspaces.get(user_id)
@@ -360,6 +363,7 @@ class ProfileService:
         change(workspace)
         workspace.profile.completeness = completeness(workspace.profile, self._config)[0]
         self._ctx.workspaces.save(user_id, workspace)
+        self._on_change(user_id)
         return workspace.profile
 
     def _apply_basics(self, user_id: str, workspace: CandidateWorkspace, changes: BasicsChanges) -> None:

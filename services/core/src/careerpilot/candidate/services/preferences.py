@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from careerpilot.candidate.context import CandidateContext
+from careerpilot.candidate.context import CandidateContext, ChangeListener, ignore_change
 from careerpilot.candidate.models import (
     DeletionRequest,
     NotificationPreferences,
@@ -37,8 +37,9 @@ def pause_until(now: datetime, duration: PauseDuration, amount: int | None) -> d
 
 
 class PreferencesService:
-    def __init__(self, context: CandidateContext) -> None:
+    def __init__(self, context: CandidateContext, on_change: ChangeListener = ignore_change) -> None:
         self._ctx = context
+        self._on_change = on_change
 
     def get(self, user_id: str) -> Preferences:
         return self._view(self._ctx.workspaces.get(user_id).preferences)
@@ -58,6 +59,7 @@ class PreferencesService:
         if mode is not None:
             track.mode = mode
         self._ctx.workspaces.save(user_id, workspace)
+        self._on_change(user_id)
         return track
 
     def pause(self, user_id: str, duration: PauseDuration, amount: int | None) -> Preferences:

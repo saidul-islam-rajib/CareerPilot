@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from careerpilot.candidate.models import ArchivedCircular, OpportunityDetail, OpportunityMatch, SourceRef, Track
 from careerpilot.candidate.ports import AccountRepository, CandidateWorkspace, OpportunityRepository, WorkspaceRepository
@@ -9,6 +9,15 @@ from careerpilot.matching.rules import is_eligible, sponsorship_evidence
 from careerpilot.platform.config import MatchingConfig
 from careerpilot.platform.enums import ApplicationMode, ApplicationRoute
 from careerpilot.platform.validation import EMAIL_IN_TEXT
+
+
+@dataclass
+class RematchState:
+    listings: list[Listing]
+    listed: set[str]
+    acted_on: set[str]
+    placed: set[str] = field(default_factory=set[str])
+    automatic: list[str] = field(default_factory=list[str])
 
 
 @dataclass(frozen=True)
@@ -64,10 +73,52 @@ class RecommendationService:
         workspace.track_opportunities[track.id] = [*current, *(listing.id for listing, _ in qualified)]
         return len(qualified)
 
+    def rematch(self, user_id: str) -> int:
+        workspace = self._ctx.workspaces.get(user_id)
+        listings = self._ctx.listings()
+        state = RematchState(listings=listings, listed={item.id for item in listings}, acted_on=acted_on_opportunities(workspace))
+        tracks = sorted(workspace.preferences.tracks, key=lambda t: t.position)
+        added = sum(self._rebuild_track(workspace, track, state) for track in tracks)
+        self._ctx.workspaces.save(user_id, workspace)
+        for opportunity_id in state.automatic:
+            self._ctx.apply_by_rule(user_id, opportunity_id)
+        return added
+
+    def _rebuild_track(self, workspace: CandidateWorkspace, track: Track, state: "RematchState") -> int:
+        previous = workspace.track_opportunities.get(track.id, [])
+        acted_on, placed = state.acted_on, state.placed
+        kept = [oid for oid in previous if (oid in acted_on or oid not in state.listed) and oid not in placed]
+        taken = acted_on | placed
+        candidates = [item for item in state.listings if item.id not in taken and is_eligible(item, track, self._ctx.config)]
+        assessed = [(item, self._ctx.matcher.assess(workspace.profile, track, item)) for item in candidates]
+        for item, match in assessed:
+            workspace.matches[item.id] = match
+        best = sorted(
+            ((item, match) for item, match in assessed if match.score >= self._ctx.config.min_score),
+            key=lambda pair: pair[1].score,
+            reverse=True,
+        )[: max(0, track.result_count - len(kept))]
+        for listing, match in best:
+            self._publish(listing, match)
+            if track.mode is ApplicationMode.AUTOMATIC and not match.has_hard_failure and listing.id not in previous:
+                state.automatic.append(listing.id)
+        chosen = [*kept, *(listing.id for listing, _ in best)]
+        placed.update(chosen)
+        workspace.track_opportunities[track.id] = chosen
+        return len([oid for oid in chosen if oid not in previous])
+
     def _publish(self, listing: Listing, match: OpportunityMatch) -> None:
         if self._ctx.opportunities.get(listing.id) is not None:
             return
         self._ctx.opportunities.save(opportunity_from_listing(listing, match, self._ctx.source_name, self._ctx.config))
+
+
+def acted_on_opportunities(workspace: CandidateWorkspace) -> set[str]:
+    return {
+        *workspace.decisions,
+        *(approval.opportunity.id for approval in workspace.approvals),
+        *(application.opportunity.id for application in workspace.applications),
+    }
 
 
 def opportunity_from_listing(
