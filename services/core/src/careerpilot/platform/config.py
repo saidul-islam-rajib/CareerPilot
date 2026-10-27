@@ -191,7 +191,14 @@ class ListingDefaults(Strict):
 class SourceDefinition(Strict):
     connector: str
     url: str
-    fixture: str
+    fixture: str = ""
+    defaults: ListingDefaults
+
+
+class SuggestedSource(Strict):
+    name: str
+    connector: str
+    url: str
     defaults: ListingDefaults
 
 
@@ -210,6 +217,7 @@ class DiscoveryConfig(Strict):
     max_listings_per_check: int = Field(gt=0)
     failing_after_failures: int = Field(gt=0)
     sources: dict[str, SourceDefinition]
+    suggested_sources: list[SuggestedSource] = Field(default_factory=list[SuggestedSource])
     warning_signs: WarningSignConfig
 
 

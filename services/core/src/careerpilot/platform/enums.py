@@ -191,6 +191,22 @@ class ActorType(StrEnum):
     AGENT = "agent"
 
 
+class OpportunityType(StrEnum):
+    JOB = "job"
+    GOVERNMENT_JOB = "government_job"
+    MASTERS = "masters"
+    PHD = "phd"
+    SCHOLARSHIP = "scholarship"
+    INTERNSHIP = "internship"
+
+
+class WorkArrangement(StrEnum):
+    REMOTE = "remote"
+    HYBRID = "hybrid"
+    ONSITE = "onsite"
+    NOT_STATED = "not_stated"
+
+
 class TrackKind(StrEnum):
     REMOTE = "remote"
     INTERNATIONAL_SPONSORED = "international_sponsored"

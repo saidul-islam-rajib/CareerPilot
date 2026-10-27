@@ -4,6 +4,7 @@ from fastapi import APIRouter, FastAPI, Request
 from fastapi.responses import JSONResponse, Response
 from pydantic import StrictInt
 
+from careerpilot.administration.models import NewSource
 from careerpilot.api.common import client_info, configure, no_content, ok
 from careerpilot.api.dependencies import CurrentAdmin, Paging, Services
 from careerpilot.api.instrumentation import instrument
@@ -131,6 +132,16 @@ def flag(opportunity_id: str, _: ReasonBody, admin: CurrentAdmin, services: Serv
 @router.post("/opportunities/{opportunity_id}/expire")
 def expire(opportunity_id: str, admin: CurrentAdmin, services: Services) -> JSONResponse:
     return ok(services.admin_catalog.set_opportunity_status(admin, opportunity_id, OpportunityStatus.EXPIRED, "opportunity.expired"))
+
+
+@router.get("/sources/suggestions")
+def source_suggestions(admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.admin_catalog.suggested_sources(admin))
+
+
+@router.post("/sources")
+def add_source(body: NewSource, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.admin_catalog.add_source(admin, body))
 
 
 @router.get("/sources")

@@ -1,3 +1,4 @@
+import re
 from collections import Counter
 from collections.abc import Callable
 from datetime import timedelta
@@ -18,13 +19,17 @@ from careerpilot.administration.models import (
     CountByKey,
     DailyCount,
     EmergencyStop,
+    NewSource,
     NotificationCounts,
     Page,
     PlatformSettings,
     ServiceStatus,
+    SourceDefaults,
+    SourceSetup,
 )
 from careerpilot.administration.permissions import permissions_for_role
 from careerpilot.administration.ports import AdminCredential
+from careerpilot.administration.sources import SourcePolicy, new_source_from_suggestion, same_address
 from careerpilot.platform.clock import iso, parse_iso
 from careerpilot.platform.config import AccountLinksConfig
 from careerpilot.platform.coordination import GuardScope, SignInGuard
@@ -41,11 +46,13 @@ from careerpilot.platform.enums import (
 )
 from careerpilot.platform.errors import DomainError, ErrorCode, conflict, not_found, validation_error
 from careerpilot.platform.model import CamelModel
-from careerpilot.platform.validation import require_email, require_password, require_text
+from careerpilot.platform.validation import require_email, require_name, require_password, require_text
 
 ISO_DATE_LENGTH = 10
 RECENT_APPLICATIONS_LIMIT = 5
 LINK_TTL_FIELD = "account_link_ttl_minutes"
+SOURCE_ID_PREFIX = "src"
+COUNTRY_CODE = re.compile(r"[A-Z]{2}")
 CANCELLABLE = frozenset({SubmissionStatus.APPROVED_QUEUED, SubmissionStatus.AWAITING_APPROVAL})
 
 
@@ -265,9 +272,10 @@ class AdminUserService:
 
 
 class AdminCatalogService:
-    def __init__(self, context: AdminContext, checks: SourceCheckRunner) -> None:
+    def __init__(self, context: AdminContext, checks: SourceCheckRunner, sources: SourcePolicy) -> None:
         self._ctx = context
         self._checks = checks
+        self._sources = sources
 
     def opportunities(self, actor: AdminActor, request: PageRequest) -> Page[AdminOpportunityRow]:
         actor.require(AdminArea.OPPORTUNITIES, PermissionAction.READ)
@@ -332,6 +340,52 @@ class AdminCatalogService:
         self._ctx.directory.save_application(updated)
         actor.record("application.cancelled", f"{updated.opportunity_title} · {updated.user_name}")
         return updated
+
+    def suggested_sources(self, actor: AdminActor) -> list[NewSource]:
+        actor.require(AdminArea.SOURCES, PermissionAction.READ)
+        return [new_source_from_suggestion(s) for s in self._sources.suggestions if not self._source_exists(s.url)]
+
+    def add_source(self, actor: AdminActor, source: NewSource) -> AdminSourceRow:
+        actor.require(AdminArea.SOURCES, PermissionAction.CREATE)
+        name = require_name(source.name, self._ctx.settings.validation.name)
+        if source.connector not in self._sources.connectors:
+            raise validation_error("source_connector")
+        url = self._sources.check_address(source.url)
+        if url is None:
+            raise validation_error("source_url")
+        if self._source_exists(url):
+            raise conflict("source_exists")
+        row = AdminSourceRow(
+            id=self._ctx.ids.next(SOURCE_ID_PREFIX),
+            name=name,
+            status=SourceStatus.HEALTHY,
+            enabled=True,
+            failuresLast24h=0,
+            opportunities_found=0,
+            setup=SourceSetup(connector=source.connector, url=url, defaults=self._clean_defaults(source)),
+        )
+        self._ctx.directory.save_source(row)
+        actor.record("source.added", name)
+        updated, check = self._checks.check(row.id)
+        actor.record("source.checked", f"{updated.name} · {check.outcome.value}")
+        return updated
+
+    def _clean_defaults(self, source: NewSource) -> SourceDefaults:
+        defaults = source.defaults
+        country = defaults.country_code.strip().upper()
+        if country and COUNTRY_CODE.fullmatch(country) is None:
+            raise validation_error("country_code")
+        optional = self._ctx.settings.validation.name
+        return defaults.model_copy(
+            update={
+                "country_code": country,
+                "location": require_text(defaults.location, optional) if defaults.location.strip() else "",
+                "organization": require_text(defaults.organization, optional) if defaults.organization.strip() else "",
+            }
+        )
+
+    def _source_exists(self, url: str) -> bool:
+        return any(row.setup is not None and same_address(row.setup.url, url) for row in self._ctx.directory.sources())
 
     def _source(self, source_id: str) -> AdminSourceRow:
         row = next((s for s in self._ctx.directory.sources() if s.id == source_id), None)

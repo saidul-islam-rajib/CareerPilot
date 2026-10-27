@@ -10,12 +10,14 @@ from careerpilot.platform.enums import (
     ApplicationMode,
     EmergencyStopScope,
     OpportunityStatus,
+    OpportunityType,
     OutcomeStatus,
     PermissionAction,
     SourceStatus,
     SubmissionStatus,
     ThemeKey,
     UserAccountStatus,
+    WorkArrangement,
 )
 from careerpilot.platform.model import CamelModel
 
@@ -99,6 +101,24 @@ class AdminOpportunityRow(CamelModel):
     applications_count: int
 
 
+class SourceDefaults(CamelModel):
+    type: OpportunityType
+    work_arrangement: WorkArrangement
+    country_code: str = ""
+    location: str = ""
+    organization: str = ""
+
+
+class SourceSetup(CamelModel):
+    connector: str
+    url: str
+    defaults: SourceDefaults
+
+
+class NewSource(SourceSetup):
+    name: str
+
+
 class AdminSourceRow(CamelModel):
     id: str
     name: str
@@ -107,6 +127,7 @@ class AdminSourceRow(CamelModel):
     last_success_at: str | None = None
     failures_last24h: int = Field(alias="failuresLast24h")
     opportunities_found: int
+    setup: SourceSetup | None = None
 
 
 class EmergencyStop(CamelModel):

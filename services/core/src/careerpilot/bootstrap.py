@@ -21,6 +21,7 @@ from careerpilot.administration.services import (
     PlatformSettingsService,
     effective_link_ttl_minutes,
 )
+from careerpilot.administration.sources import SourcePolicy, directory_definitions
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import Preferences, Profile, SubmissionWindow, Track
 from careerpilot.candidate.ports import CandidateWorkspace
@@ -40,6 +41,7 @@ from careerpilot.candidate.services.verification import ContactVerificationServi
 from careerpilot.discovery.connectors.registry import ConnectorRegistry, first_party_connectors
 from careerpilot.discovery.fetchers import fetcher_for
 from careerpilot.discovery.ports import Fetcher
+from careerpilot.discovery.safety import public_https_url
 from careerpilot.discovery.service import DiscoveryContext, DiscoveryService
 from careerpilot.matching.claude import ClaudeMatcher
 from careerpilot.matching.ports import Matcher
@@ -174,6 +176,7 @@ class ContainerOverrides:
     matcher: Matcher | None = None
     file_storage: FileStorage | None = None
     email_sender: EmailSender | None = None
+    address_check: Callable[[str], str | None] | None = None
 
 
 def _redis_store(settings: Settings, url_env: str) -> KeyValueStore:
@@ -296,15 +299,22 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     cache_store, coord_store = _stores(cfg, clk, options)
     keys = KeySpace(cfg.coordination)
     guard = SignInGuard(coord_store, keys, cfg.coordination)
+    registry = options.connectors or first_party_connectors()
     discovery = DiscoveryService(
         DiscoveryContext(
             config=cfg.discovery,
             clock=clk,
             ids=gen,
-            registry=options.connectors or first_party_connectors(),
+            registry=registry,
             fetcher=options.fetcher or fetcher_for(cfg.discovery),
             catalog=repos.listings,
+            extra_sources=lambda: directory_definitions(repos.directory),
         )
+    )
+    source_policy = SourcePolicy(
+        connectors=frozenset(registry.keys()),
+        check_address=options.address_check or public_https_url,
+        suggestions=cfg.discovery.suggested_sources,
     )
     opportunity_service = OpportunityService(candidate)
     approvals = ApprovalService(candidate, opportunity_service)
@@ -359,7 +369,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         admin_auth=AdminAuthService(admin, guard, admin_links),
         admin_dashboard=AdminDashboardService(admin),
         admin_users=AdminUserService(admin),
-        admin_catalog=AdminCatalogService(admin, source_checks),
+        admin_catalog=AdminCatalogService(admin, source_checks, source_policy),
         admin_settings=admin_settings,
         admin_audit=AdminAuditService(admin),
         admin_accounts=AdminAccountService(admin),

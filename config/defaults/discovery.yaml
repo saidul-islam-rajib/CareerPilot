@@ -5,6 +5,35 @@ discovery:
   max_listings_per_check: 200
   failing_after_failures: 3
   sources: {}
+  suggested_sources:
+    - name: "We Work Remotely: Programming"
+      connector: rss
+      url: https://weworkremotely.com/categories/remote-programming-jobs.rss
+      defaults: {type: job, work_arrangement: remote, country_code: "", location: Remote}
+    - name: "We Work Remotely: Design"
+      connector: rss
+      url: https://weworkremotely.com/categories/remote-design-jobs.rss
+      defaults: {type: job, work_arrangement: remote, country_code: "", location: Remote}
+    - name: "We Work Remotely: DevOps and Sysadmin"
+      connector: rss
+      url: https://weworkremotely.com/categories/remote-devops-sysadmin-jobs.rss
+      defaults: {type: job, work_arrangement: remote, country_code: "", location: Remote}
+    - name: "We Work Remotely: Product"
+      connector: rss
+      url: https://weworkremotely.com/categories/remote-product-jobs.rss
+      defaults: {type: job, work_arrangement: remote, country_code: "", location: Remote}
+    - name: "We Work Remotely: Customer Support"
+      connector: rss
+      url: https://weworkremotely.com/categories/remote-customer-support-jobs.rss
+      defaults: {type: job, work_arrangement: remote, country_code: "", location: Remote}
+    - name: "We Work Remotely: Sales and Marketing"
+      connector: rss
+      url: https://weworkremotely.com/categories/remote-sales-and-marketing-jobs.rss
+      defaults: {type: job, work_arrangement: remote, country_code: "", location: Remote}
+    - name: GitLab
+      connector: greenhouse
+      url: https://boards-api.greenhouse.io/v1/boards/gitlab/jobs?content=true
+      defaults: {type: job, work_arrangement: remote, country_code: "", location: Remote, organization: GitLab}
   warning_signs:
     upfront_fee:
       - registration fee

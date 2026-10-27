@@ -1,4 +1,5 @@
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from careerpilot.discovery.connectors.registry import ConnectorRegistry
@@ -15,11 +16,17 @@ from careerpilot.discovery.ports import Fetcher, FetchError, ListingCatalog
 from careerpilot.discovery.screening import WarningSignScreen
 from careerpilot.discovery.text import canonical_url, digest, listing_fingerprint
 from careerpilot.platform.clock import Clock, IdGenerator, iso
-from careerpilot.platform.config import DiscoveryConfig
+from careerpilot.platform.config import DiscoveryConfig, SourceDefinition
 from careerpilot.platform.enums import OpportunityStatus
 from careerpilot.platform.errors import conflict
 
 LISTING_ID_PREFIX = "opp"
+
+SourceDefinitions = Callable[[], dict[str, SourceDefinition]]
+
+
+def no_extra_sources() -> dict[str, SourceDefinition]:
+    return {}
 
 
 @dataclass(frozen=True)
@@ -30,6 +37,7 @@ class DiscoveryContext:
     registry: ConnectorRegistry
     fetcher: Fetcher
     catalog: ListingCatalog
+    extra_sources: SourceDefinitions = no_extra_sources
 
 
 class DiscoveryService:
@@ -40,13 +48,17 @@ class DiscoveryService:
         self._registry = context.registry
         self._fetcher = context.fetcher
         self._catalog = context.catalog
+        self._extra_sources = context.extra_sources
         self._screen = WarningSignScreen(context.config.warning_signs)
 
+    def definitions(self) -> dict[str, SourceDefinition]:
+        return {**self._config.sources, **self._extra_sources()}
+
     def is_configured(self, source_id: str) -> bool:
-        return source_id in self._config.sources
+        return source_id in self.definitions()
 
     def run(self, source_id: str) -> SourceCheck:
-        definition = self._config.sources.get(source_id)
+        definition = self.definitions().get(source_id)
         connector = self._registry.get(definition.connector) if definition else None
         if definition is None or connector is None:
             raise conflict("source_not_configured")
