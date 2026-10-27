@@ -3,7 +3,7 @@ import type { ReactElement } from 'react';
 import { QueryClient } from '@tanstack/react-query';
 import { render, type RenderResult } from '@testing-library/react';
 import type { Mock } from 'vitest';
-import { buildAdminDemoSeed, buildDemoSeed, createInMemoryAdminApi, sequentialIds, type AdminSession, type Clock } from '@careerpilot/api-client';
+import { buildAdminDemoSeed, buildDemoSeed, createInMemoryAdminApi, sequentialIds, type AdminSession, type Clock, type NewSource } from '@careerpilot/api-client';
 import { createMemoryStore, publicConfigFromDefaults, queryKeys } from '@careerpilot/client-core';
 import { TEST_LINK_TOKEN, createTestApi } from '@careerpilot/client-core/src/testing';
 import { parseAdminConfig, type AdminConfig } from '@/core/admin-config';
@@ -11,7 +11,12 @@ import { createAdminServices, type AdminApis, type AdminServices } from '@/core/
 import { Providers } from '@/core/providers';
 
 const require = createRequire(import.meta.url);
-const { loadClientConfig } = require('../../../../scripts/config/load-config.js') as { loadClientConfig: (env: string) => Record<string, unknown> };
+const { loadClientConfig, loadConfig } = require('../../../../scripts/config/load-config.js') as {
+  loadClientConfig: (env: string) => Record<string, unknown>;
+  loadConfig: (env: string) => { discovery: { suggestedSources: NewSource[] } };
+};
+
+export const suggestedSources = loadConfig('local').discovery.suggestedSources;
 
 export const testNow = new Date('2026-10-20T06:00:00Z');
 const testClock: Clock = { now: () => new Date(testNow) };
@@ -35,6 +40,7 @@ export function testApis(config: AdminConfig, clock: Clock): AdminApis {
       completeProfilePercent: config.admin.completeProfilePercent,
       linkTtlBounds: { min: config.accountLinks.minTtlMinutes, max: config.accountLinks.maxTtlMinutes },
       linkToken: TEST_LINK_TOKEN,
+      suggestedSources,
     }),
   };
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { AlertCircle, Plus } from 'lucide-react';
 import { ApiErrorDetail, isApiError, type AdminApplicationRow, type AdminOpportunityRow, type AdminSourceRow, type AuditEntry } from '@careerpilot/api-client';
 import { useFormat, useT } from '@careerpilot/client-core';
 import { AdminArea, ActorType, EnumKey, OpportunityStatus, PermissionAction, SourceStatus, StatusTone, SubmissionStatus, enumValues } from '@careerpilot/domain-ui-logic';
@@ -9,6 +10,7 @@ import { useAdminMutation } from '@/core/admin-queries';
 import { useAdminApi } from '@/core/admin-services';
 import { useCan } from '@/core/admin-session';
 import { ListPage } from '@/features/common/list-page';
+import { AddSourceDialog, SuggestedSources } from './source-forms';
 
 const CANCELLABLE: readonly SubmissionStatus[] = [SubmissionStatus.ApprovedQueued, SubmissionStatus.AwaitingApproval];
 
@@ -70,14 +72,25 @@ export function SourcesPage() {
   const api = useAdminApi();
   const format = useFormat();
   const canUpdate = useCan(AdminArea.Sources, PermissionAction.Update);
+  const canCreate = useCan(AdminArea.Sources, PermissionAction.Create);
+  const [adding, setAdding] = useState(false);
   const toggle = useAdminMutation(({ id, enabled }: { id: string; enabled: boolean }) => api.sources.setSourceEnabled(id, enabled));
   const check = useAdminMutation((id: string) => api.sources.runSourceCheck(id));
   return (
     <div className="flex flex-col gap-4">
       {check.error ? <Banner tone={StatusTone.Danger} icon={AlertCircle} title={t(sourceCheckErrorKey(check.error))} /> : null}
+      {canCreate ? <SuggestedSources /> : null}
+      {canCreate ? <AddSourceDialog open={adding} onOpenChange={setAdding} /> : null}
       <ListPage<AdminSourceRow>
         title={t('admin.sources.title')}
         resource="sources"
+        aside={
+          canCreate ? (
+            <Button icon={Plus} onClick={() => setAdding(true)}>
+              {t('admin.sources.add')}
+            </Button>
+          ) : null
+        }
         fetcher={(query) => api.sources.listSources(query)}
         rowKey={(s) => s.id}
         statusEnum={{ key: EnumKey.SourceStatus, values: enumValues(SourceStatus) }}

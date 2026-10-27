@@ -13,6 +13,7 @@ import type {
   SourceStatus,
   SubmissionStatus,
   UserAccountStatus,
+  WorkArrangement,
 } from '@careerpilot/domain-ui-logic';
 import type { ThemeKey } from '@careerpilot/ui-tokens';
 import type { IsoDateTime, SignInEvent, Track } from '../types';
@@ -136,6 +137,30 @@ export interface AdminOpportunityRow {
   applicationsCount: number;
 }
 
+export const SourceConnector = {
+  Rss: 'rss',
+  Greenhouse: 'greenhouse',
+} as const;
+export type SourceConnector = (typeof SourceConnector)[keyof typeof SourceConnector];
+
+export interface SourceDefaults {
+  type: OpportunityType;
+  workArrangement: WorkArrangement;
+  countryCode?: string;
+  location?: string;
+  organization?: string;
+}
+
+export interface SourceSetup {
+  connector: string;
+  url: string;
+  defaults: SourceDefaults;
+}
+
+export interface NewSource extends SourceSetup {
+  name: string;
+}
+
 export interface AdminSourceRow {
   id: string;
   name: string;
@@ -144,6 +169,7 @@ export interface AdminSourceRow {
   lastSuccessAt?: IsoDateTime;
   failuresLast24h: number;
   opportunitiesFound: number;
+  setup?: SourceSetup;
 }
 
 export interface AdminApplicationRow {

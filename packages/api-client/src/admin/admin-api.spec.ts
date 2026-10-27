@@ -8,13 +8,15 @@ import { sequentialIds } from '../ports';
 import { fixedClock, fixedNow } from '../test-support';
 import { buildAdminDemoSeed } from './admin-demo.seed';
 import { createHttpAdminApi } from './http-admin-api';
-import { createInMemoryAdminApi, paginate } from './in-memory-admin-api';
+import type { NewSource } from './admin-types';
+import { createInMemoryAdminApi, paginate, type InMemoryAdminApiOptions } from './in-memory-admin-api';
 import { can, permissionsForRole } from './permissions';
 
 const LINK_TOKEN = 'admin-link-token';
+const SUGGESTION: NewSource = { name: 'Remote jobs', connector: 'rss', url: 'https://jobs.example.org/remote.rss', defaults: { type: 'job', workArrangement: 'remote', location: 'Remote' } };
 const NEW_PASSWORD = 'Str0ng!Password';
 
-function createAdminApi() {
+function createAdminApi(extra: Partial<InMemoryAdminApiOptions> = {}) {
   const userState = buildDemoSeed(fixedNow);
   return createInMemoryAdminApi({
     state: buildAdminDemoSeed(fixedNow, userState, 5),
@@ -27,6 +29,7 @@ function createAdminApi() {
     completeProfilePercent: 80,
     linkTtlBounds: { min: 1, max: 60 },
     linkToken: LINK_TOKEN,
+    ...extra,
   });
 }
 
@@ -136,6 +139,18 @@ describe('in-memory admin api', () => {
     expect((await api.admins.setSuspended('adm_ops', true)).suspended).toBe(true);
     expect(await errorCode(api.admins.setSuspended('adm_super', true))).toBe(ApiErrorCode.Conflict);
     expect(await errorCode(api.auth.signIn({ email: 'operations@sober.com', password: 'admin@sober.com' }))).toBe(ApiErrorCode.InvalidCredentials);
+  });
+
+  it('adds sources from suggestions and refuses unsafe, unknown, or repeated ones', async () => {
+    const api = createAdminApi({ suggestedSources: [SUGGESTION] });
+    await api.auth.signIn({ email: 'admin@sober.com', password: 'admin@sober.com' });
+    expect(await api.sources.suggestedSources()).toEqual([SUGGESTION]);
+    const added = await api.sources.addSource(SUGGESTION);
+    expect(added.setup?.url).toBe(SUGGESTION.url);
+    expect(await api.sources.suggestedSources()).toEqual([]);
+    expect(await errorCode(api.sources.addSource(SUGGESTION))).toBe(ApiErrorCode.Conflict);
+    expect(await errorCode(api.sources.addSource({ ...SUGGESTION, url: 'http://jobs.example.org/feed.rss' }))).toBe(ApiErrorCode.Validation);
+    expect(await errorCode(api.sources.addSource({ ...SUGGESTION, url: 'https://jobs.example.org/a.rss', connector: 'ftp' }))).toBe(ApiErrorCode.Validation);
   });
 
   it('sets an admin password from an emailed link and signs in', async () => {

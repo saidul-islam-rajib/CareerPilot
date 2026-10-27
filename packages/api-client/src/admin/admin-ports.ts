@@ -8,6 +8,7 @@ import type {
   AdminOpportunityRow,
   AdminSession,
   AdminSourceRow,
+  NewSource,
   AdminUserDetail,
   AdminUserRow,
   AuditEntry,
@@ -47,6 +48,8 @@ export interface AdminOpportunitiesApi {
 
 export interface AdminSourcesApi {
   listSources(query: PageQuery): Promise<Page<AdminSourceRow>>;
+  suggestedSources(): Promise<NewSource[]>;
+  addSource(source: NewSource): Promise<AdminSourceRow>;
   setSourceEnabled(id: string, enabled: boolean): Promise<AdminSourceRow>;
   runSourceCheck(id: string): Promise<AdminSourceRow>;
 }

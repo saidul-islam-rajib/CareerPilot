@@ -44,6 +44,8 @@ export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
     },
     sources: {
       listSources: (query) => get(`/admin/v1/sources?${queryString(query)}`),
+      suggestedSources: () => get('/admin/v1/sources/suggestions'),
+      addSource: (source) => post('/admin/v1/sources', source),
       setSourceEnabled: (id, enabled) => patch(`/admin/v1/sources/${enc(id)}`, { enabled }),
       runSourceCheck: (id) => post(`/admin/v1/sources/${enc(id)}/check`),
     },

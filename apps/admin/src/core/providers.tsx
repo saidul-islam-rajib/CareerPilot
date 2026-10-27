@@ -4,7 +4,7 @@ import { useState, type PropsWithChildren } from 'react';
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import { AppServicesProvider, PublicConfigProvider, createQueryClient } from '@careerpilot/client-core';
 import { themes } from '@careerpilot/ui-tokens';
-import { AppTheme } from '@careerpilot/ui-web';
+import { AppTheme, ToastProvider } from '@careerpilot/ui-web';
 import { getAdminConfig } from './admin-config';
 import { AdminServicesProvider, createAdminServices, type AdminServices } from './admin-services';
 import { AdminSessionProvider } from './admin-session';
@@ -24,7 +24,9 @@ export function Providers({ services, queryClient, children }: PropsWithChildren
         <PublicConfigProvider>
           <AppTheme theme={themes[adminServices.config.ui.adminTheme]} className="min-h-dvh bg-surface text-foreground">
             <AdminServicesProvider services={adminServices}>
-              <AdminSessionProvider>{children}</AdminSessionProvider>
+              <ToastProvider>
+                <AdminSessionProvider>{children}</AdminSessionProvider>
+              </ToastProvider>
             </AdminServicesProvider>
           </AppTheme>
         </PublicConfigProvider>

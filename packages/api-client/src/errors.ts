@@ -18,6 +18,10 @@ export const ApiErrorDetail = {
   LinkInvalid: 'link_invalid',
   LinkExpired: 'link_expired',
   DeliveryFailed: 'delivery_failed',
+  SourceUrl: 'source_url',
+  SourceConnector: 'source_connector',
+  SourceExists: 'source_exists',
+  CountryCode: 'country_code',
 } as const;
 export type ApiErrorDetail = (typeof ApiErrorDetail)[keyof typeof ApiErrorDetail];
 

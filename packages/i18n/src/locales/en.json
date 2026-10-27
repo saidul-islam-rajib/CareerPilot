@@ -861,7 +861,36 @@
       "check": "Run check",
       "never": "Never",
       "notConfigured": "This source has no connector yet, so it can't be checked automatically.",
-      "checkFailed": "The check couldn't run. Try again."
+      "checkFailed": "The check couldn't run. Try again.",
+      "add": "Add source",
+      "addTitle": "Add a job source",
+      "addDescription": "Jobs from this source are checked now and then on the regular schedule, and matched to every user.",
+      "name": "Name",
+      "connector": "Type",
+      "connectors": {
+        "rss": "RSS feed",
+        "greenhouse": "Greenhouse job board"
+      },
+      "url": "Address",
+      "urlHint": "The https address of the feed or board.",
+      "jobType": "Kind of opportunity",
+      "workArrangement": "Work arrangement",
+      "location": "Location to use when a job doesn't say",
+      "organization": "Organization (optional)",
+      "countryCode": "Country code (optional)",
+      "countryHint": "Two letters, for example BD.",
+      "submit": "Add and check now",
+      "added": "Source added and checked. Its jobs are being matched to users.",
+      "suggestionsTitle": "Suggested sources",
+      "suggestionsBody": "Real public job feeds you can add with one click.",
+      "addSuggestion": "Add",
+      "addFailed": "We couldn't add this source. Try again.",
+      "errors": {
+        "url": "Use an https address on the public internet.",
+        "connector": "Choose RSS feed or Greenhouse job board.",
+        "exists": "This source has already been added.",
+        "countryCode": "Use a two-letter country code, or leave it empty."
+      }
     },
     "applications": {
       "title": "Applications",

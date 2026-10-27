@@ -11,7 +11,7 @@ import type { Clock, IdGenerator } from '../ports';
 import type { DemoState } from '../in-memory/demo.seed';
 import type { CareerPilotAdminApi } from './admin-ports';
 import type { AdminDemoAccount, AdminDemoState } from './admin-demo.seed';
-import type { AdminSummary, AdminUserDetail, CountByKey, Page, PageQuery } from './admin-types';
+import { SourceConnector, type AdminSourceRow, type AdminSummary, type AdminUserDetail, type CountByKey, type NewSource, type Page, type PageQuery } from './admin-types';
 import { permissionsForRole } from './permissions';
 
 export interface InMemoryAdminApiOptions {
@@ -25,9 +25,21 @@ export interface InMemoryAdminApiOptions {
   completeProfilePercent: number;
   linkTtlBounds: { min: number; max: number };
   linkToken: string;
+  suggestedSources?: NewSource[];
 }
 
 const DAY_MS = 86_400_000;
+const SOURCE_CONNECTORS: readonly string[] = Object.values(SourceConnector);
+const HTTPS_PROTOCOL = 'https:';
+
+function isHttpsAddress(address: string): boolean {
+  try {
+    const url = new URL(address.trim());
+    return url.protocol === HTTPS_PROTOCOL && url.hostname.length > 0 && !url.username && !url.password;
+  } catch {
+    return false;
+  }
+}
 const ISO_DATE_LENGTH = 10;
 
 function clone<T>(value: T): T {
@@ -82,6 +94,7 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
     record('admin.signed_in', match.account.email);
     return respond({ accessToken: ids.next('admin_token'), admin: currentAdmin, permissions: permissionsForRole(match.account.role) });
   };
+  const sourceAdded = (address: string) => state.sources.some((s) => s.setup?.url.trim().toLowerCase() === address.trim().toLowerCase());
   const findUser = (id: string) => state.users.find((u) => u.id === id);
   const userDetail = (id: string): AdminUserDetail | undefined => {
     const user = findUser(id);
@@ -230,6 +243,31 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
     },
     sources: {
       listSources: async (query) => respond(paginate(state.sources, query, (s) => s.name, (s) => s.status)),
+      suggestedSources: async () => respond((options.suggestedSources ?? []).filter((s) => !sourceAdded(s.url))),
+      async addSource(source) {
+        if (!SOURCE_CONNECTORS.includes(source.connector)) {
+          return fail(ApiErrorCode.Validation, ApiErrorDetail.SourceConnector);
+        }
+        if (!isHttpsAddress(source.url)) {
+          return fail(ApiErrorCode.Validation, ApiErrorDetail.SourceUrl);
+        }
+        if (sourceAdded(source.url)) {
+          return fail(ApiErrorCode.Conflict, ApiErrorDetail.SourceExists);
+        }
+        const row: AdminSourceRow = {
+          id: ids.next('src'),
+          name: source.name.trim(),
+          status: SourceStatus.Healthy,
+          enabled: true,
+          lastSuccessAt: nowIso(),
+          failuresLast24h: 0,
+          opportunitiesFound: 0,
+          setup: { connector: source.connector, url: source.url.trim(), defaults: source.defaults },
+        };
+        state.sources.unshift(row);
+        record('source.added', row.name);
+        return respond(row);
+      },
       async setSourceEnabled(id, enabled) {
         const source = state.sources.find((s) => s.id === id);
         if (!source) {
