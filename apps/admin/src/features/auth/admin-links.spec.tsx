@@ -1,14 +1,14 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { useAdminSession } from '@/core/admin-session';
 import { AdminRoutes } from '@/core/routes';
-import { navigation, renderAdmin, testConfig } from '@/test/render';
+import { TEST_LINK_TOKEN } from '@careerpilot/client-core/src/testing';
+import { navigation, renderAdmin } from '@/test/render';
 import { ForgotPasswordPage } from './forgot-password-page';
 import { SetPasswordPage } from './set-password-page';
 import { SignInPage } from './sign-in-page';
 
 const ADMIN_EMAIL = 'admin@sober.com';
 const NEW_PASSWORD = 'Str0ng!Password';
-const linkToken = () => testConfig().api.demoLinkToken;
 
 function SessionProbe() {
   const { status, admin } = useAdminSession();
@@ -38,7 +38,7 @@ describe('admin password links', () => {
         <SetPasswordPage />
         <SessionProbe />
       </>,
-      { signedIn: false, search: `token=${linkToken()}`, prepare: (services) => services.api.auth.requestPasswordLink({ email: ADMIN_EMAIL }) },
+      { signedIn: false, search: `token=${TEST_LINK_TOKEN}`, prepare: (services) => services.api.auth.requestPasswordLink({ email: ADMIN_EMAIL }) },
     );
     expect(await screen.findByText(ADMIN_EMAIL)).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: NEW_PASSWORD } });
@@ -52,7 +52,7 @@ describe('admin password links', () => {
   });
 
   it('explains links that are missing or no longer valid', async () => {
-    await renderAdmin(<SetPasswordPage />, { signedIn: false, search: `token=${linkToken()}` });
+    await renderAdmin(<SetPasswordPage />, { signedIn: false, search: `token=${TEST_LINK_TOKEN}` });
     expect(await screen.findByText("This link can't be used")).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Send me a new link' })).toHaveAttribute('href', AdminRoutes.forgotPassword);
   });

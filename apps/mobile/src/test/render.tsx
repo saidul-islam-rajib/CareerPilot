@@ -3,6 +3,7 @@ import { type AppConfig, type AppServices, createAppServices, createMemoryStore,
 import { QueryClient } from '@tanstack/react-query';
 import { render, type RenderResult } from '@testing-library/react-native';
 import type { Clock, Session } from '@careerpilot/api-client';
+import { createTestApi } from '@careerpilot/client-core/src/testing';
 import { AppProviders } from '@/core/providers/app-providers';
 
 const { loadClientConfig } = require('../../../../scripts/config/load-config') as { loadClientConfig: (env: string) => Record<string, unknown> };
@@ -11,8 +12,7 @@ export const testNow = new Date('2026-10-20T06:00:00Z');
 export const testClock: Clock = { now: () => new Date(testNow) };
 
 export function testConfig(): AppConfig {
-  const config = parseAppConfig({ careerpilot: loadClientConfig('local') });
-  return { ...config, api: { ...config.api, demoLatencyMs: 0 } };
+  return parseAppConfig({ careerpilot: loadClientConfig('local') });
 }
 
 export const testWindowMetrics = {
@@ -37,7 +37,8 @@ export interface RenderWithServices extends RenderResult {
 
 export function createTestServices(signedIn = true): AppServices {
   const store = createMemoryStore(signedIn ? { 'careerpilot.session': JSON.stringify(demoSession) } : {});
-  return createAppServices(testConfig(), store, testClock);
+  const config = testConfig();
+  return createAppServices(config, store, testClock, createTestApi(config, testClock));
 }
 
 function createTestQueryClient(services: AppServices): QueryClient {

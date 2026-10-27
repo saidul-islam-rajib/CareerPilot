@@ -1,5 +1,3 @@
-api:
-  mode: http
 http:
   cors_origins:
     - http://localhost:3000

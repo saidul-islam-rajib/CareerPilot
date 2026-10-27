@@ -1,10 +1,11 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { useSession } from '@careerpilot/client-core';
+import { TEST_LINK_TOKEN } from '@careerpilot/client-core/src/testing';
 import { Text } from '@/ui';
 import { createTestServices, mockParams, mockRouter, renderWithProviders } from '@/test/render';
 import { SetPasswordScreen } from './set-password-screen';
 
-const DEMO_LINK = { token: 'demo-link' };
+const EMAILED_LINK = { token: TEST_LINK_TOKEN };
 const REGISTRATION = { fullName: 'New Person', email: 'new.person@example.com', consent: true, consentDocuments: { terms: '1.0', privacy: '1.0' } };
 
 function SessionProbe() {
@@ -29,7 +30,7 @@ describe('SetPasswordScreen', () => {
   it('finishes registration with a confirmed password and signs in', async () => {
     const services = createTestServices(false);
     await services.api.auth.register(REGISTRATION);
-    mockParams.current = DEMO_LINK;
+    mockParams.current = EMAILED_LINK;
     await renderWithProviders(
       <>
         <SetPasswordScreen />
@@ -51,7 +52,7 @@ describe('SetPasswordScreen', () => {
   it('labels a password reset link', async () => {
     const services = createTestServices(false);
     await services.api.auth.requestPasswordReset('admin@sober.com');
-    mockParams.current = DEMO_LINK;
+    mockParams.current = EMAILED_LINK;
     await renderWithProviders(<SetPasswordScreen />, { services });
     expect(await screen.findByText(/choose a new password/)).toBeTruthy();
     expect(screen.getByTestId('set-password-submit').props.accessibilityLabel).toBe('Save new password');

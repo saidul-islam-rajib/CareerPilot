@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 import { AlertCircle, MailCheck, RotateCw } from '@/ui/icons';
-import { useDemoLinkToken, useLinkResend, useT } from '@careerpilot/client-core';
+import { useLinkResend, useT } from '@careerpilot/client-core';
 import { StatusTone, formatCountdown } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
@@ -12,7 +12,6 @@ export function CheckEmailCard({ email, onStartOver }: { email: string; onStartO
   const theme = useTheme();
   const router = useRouter();
   const link = useLinkResend(email);
-  const demoToken = useDemoLinkToken();
   return (
     <Card testID="check-email">
       <View style={{ alignItems: 'center', gap: theme.space.sm }}>
@@ -32,12 +31,6 @@ export function CheckEmailCard({ email, onStartOver }: { email: string; onStartO
         <Text tone={TextTone.Success} align="center" accessibilityLiveRegion="polite">
           {t('accountLinks.resent')}
         </Text>
-      ) : null}
-      {demoToken ? (
-        <View style={{ gap: theme.space.sm, padding: theme.space.md, borderRadius: theme.radius.control, backgroundColor: theme.colors.warningSubtle }}>
-          <Text>{t('accountLinks.demoNote')}</Text>
-          <Button label={t('accountLinks.openDemoLink')} variant={ButtonVariant.Outline} onPress={() => router.push(Routes.setPassword(demoToken))} testID="open-demo-link" />
-        </View>
       ) : null}
       <Button
         label={link.resendIn > 0 ? t('accountLinks.resendIn', { time: formatCountdown(link.resendIn) }) : t('accountLinks.resend')}

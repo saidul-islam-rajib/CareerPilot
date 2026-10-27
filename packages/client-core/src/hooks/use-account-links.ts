@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { Session } from '@careerpilot/api-client';
 import { validate, type FieldErrors, type SetPasswordInput } from '@careerpilot/validation';
-import { ApiMode } from '../config/client-config';
 import { usePublicConfig } from '../config/public-config';
 import { queryKeys } from '../query/query-keys';
 import { useApi, useServices } from '../services/app-services';
@@ -10,11 +9,6 @@ import { useSession } from '../session/session';
 import { accountLinkErrorKey, useSchemas } from './use-auth-forms';
 
 const MS_PER_SECOND = 1000;
-
-export function useDemoLinkToken(): string | undefined {
-  const { config } = useServices();
-  return config.api.mode === ApiMode.InMemory ? config.api.demoLinkToken : undefined;
-}
 
 export function useLinkResend(email: string) {
   const api = useApi();

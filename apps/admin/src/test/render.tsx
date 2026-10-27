@@ -3,10 +3,11 @@ import type { ReactElement } from 'react';
 import { QueryClient } from '@tanstack/react-query';
 import { render, type RenderResult } from '@testing-library/react';
 import type { Mock } from 'vitest';
-import type { AdminSession, Clock } from '@careerpilot/api-client';
+import { buildAdminDemoSeed, buildDemoSeed, createInMemoryAdminApi, sequentialIds, type AdminSession, type Clock } from '@careerpilot/api-client';
 import { createMemoryStore, publicConfigFromDefaults, queryKeys } from '@careerpilot/client-core';
+import { TEST_LINK_TOKEN, createTestApi } from '@careerpilot/client-core/src/testing';
 import { parseAdminConfig, type AdminConfig } from '@/core/admin-config';
-import { createAdminServices, type AdminServices } from '@/core/admin-services';
+import { createAdminServices, type AdminApis, type AdminServices } from '@/core/admin-services';
 import { Providers } from '@/core/providers';
 
 const require = createRequire(import.meta.url);
@@ -16,8 +17,26 @@ export const testNow = new Date('2026-10-20T06:00:00Z');
 const testClock: Clock = { now: () => new Date(testNow) };
 
 export function testConfig(): AdminConfig {
-  const config = parseAdminConfig(loadClientConfig('local'));
-  return { ...config, api: { ...config.api, demoLatencyMs: 0 } };
+  return parseAdminConfig(loadClientConfig('local'));
+}
+
+export function testApis(config: AdminConfig, clock: Clock): AdminApis {
+  const userState = buildDemoSeed(clock.now());
+  return {
+    user: createTestApi(config, clock),
+    admin: createInMemoryAdminApi({
+      state: buildAdminDemoSeed(clock.now(), userState, config.accountLinks.ttlMinutes),
+      userState,
+      clock,
+      ids: sequentialIds(),
+      latencyMs: 0,
+      recentWindowDays: config.account.recentWindowDays,
+      chartDays: config.admin.chartDays,
+      completeProfilePercent: config.admin.completeProfilePercent,
+      linkTtlBounds: { min: config.accountLinks.minTtlMinutes, max: config.accountLinks.maxTtlMinutes },
+      linkToken: TEST_LINK_TOKEN,
+    }),
+  };
 }
 
 export interface Navigation {
@@ -42,7 +61,8 @@ export async function renderAdmin(
   navigation.params = options.params ?? {};
   navigation.search = options.search ?? '';
   const store = createMemoryStore();
-  const services = createAdminServices(testConfig(), store, testClock);
+  const config = testConfig();
+  const services = createAdminServices(config, store, testClock, testApis(config, testClock));
   if (options.signedIn !== false) {
     const session = await adminSession(services, options.email);
     await store.set('careerpilot.admin.session', JSON.stringify(session));

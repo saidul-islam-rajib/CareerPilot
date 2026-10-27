@@ -9,6 +9,7 @@ from careerpilot.bootstrap import build_container
 
 async def serve() -> None:
     container = build_container()
+    container.invite_owner()
     http = container.settings.http
     servers = [
         uvicorn.Server(uvicorn.Config(create_user_app(container), host=http.host, port=http.user_api_port)),

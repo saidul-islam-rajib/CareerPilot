@@ -1,18 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { AlertCircle, MailCheck, RotateCw } from 'lucide-react';
-import { useDemoLinkToken, useLinkResend, useT } from '@careerpilot/client-core';
+import { useLinkResend, useT } from '@careerpilot/client-core';
 import { StatusTone, formatCountdown } from '@careerpilot/domain-ui-logic';
 import { Banner, Button, Card } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
 
 export function CheckEmailCard({ email, onStartOver }: { email: string; onStartOver: () => void }) {
   const t = useT();
-  const router = useRouter();
   const link = useLinkResend(email);
-  const demoToken = useDemoLinkToken();
   return (
     <Card className="gap-4 p-6">
       <div className="flex flex-col items-center gap-3 text-center">
@@ -28,14 +25,6 @@ export function CheckEmailCard({ email, onStartOver }: { email: string; onStartO
         <p role="status" className="text-center text-sm font-medium text-success">
           {t('accountLinks.resent')}
         </p>
-      ) : null}
-      {demoToken ? (
-        <div className="flex flex-col gap-3 rounded-control border border-warning bg-warning-subtle p-3 text-sm text-foreground">
-          <p>{t('accountLinks.demoNote')}</p>
-          <Button variant="outline" onClick={() => router.push(Routes.setPassword(demoToken))}>
-            {t('accountLinks.openDemoLink')}
-          </Button>
-        </div>
       ) : null}
       <Button variant="secondary" icon={RotateCw} fullWidth disabled={link.resendIn > 0} loading={link.resending} onClick={link.resend}>
         {link.resendIn > 0 ? t('accountLinks.resendIn', { time: formatCountdown(link.resendIn) }) : t('accountLinks.resend')}

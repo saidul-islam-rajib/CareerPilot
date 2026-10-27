@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { TEST_VERIFICATION_CODE } from '@careerpilot/client-core/src/testing';
 import { renderWithProviders } from '@/test/render';
 import { ProfilePage } from './profile-page';
 
@@ -178,7 +179,7 @@ describe('ProfilePage', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Verify' }));
     expect(await within(dialog).findByText("That code isn't right. Check it and try again.")).toBeInTheDocument();
     await user.clear(code);
-    await user.type(code, '246810');
+    await user.type(code, TEST_VERIFICATION_CODE);
     await user.click(within(dialog).getByRole('button', { name: 'Verify' }));
     expect(await screen.findByText('Email verified')).toBeInTheDocument();
     await waitFor(async () => expect((await services.api.profile.getProfile()).contacts.find((c) => c.id === 'c_email_personal')?.verified).toBe(true));

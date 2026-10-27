@@ -4,6 +4,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { render, type RenderResult } from '@testing-library/react';
 import type { Mock } from 'vitest';
 import type { Clock, Session } from '@careerpilot/api-client';
+import { createTestApi } from '@careerpilot/client-core/src/testing';
 import { createAppServices, createMemoryStore, parseAppConfig, publicConfigFromDefaults, queryKeys, type AppConfig, type AppServices } from '@careerpilot/client-core';
 import { Providers } from '@/core/providers';
 
@@ -14,8 +15,12 @@ export const testNow = new Date('2026-10-20T06:00:00Z');
 const DAY_MS = 86_400_000;
 
 export function testConfig(): AppConfig {
-  const config = parseAppConfig({ careerpilot: loadClientConfig('local') });
-  return { ...config, api: { ...config.api, demoLatencyMs: 0 } };
+  return parseAppConfig({ careerpilot: loadClientConfig('local') });
+}
+
+export function createTestServices(store: ReturnType<typeof createMemoryStore>, clock: Clock): AppServices {
+  const config = testConfig();
+  return createAppServices(config, store, clock, createTestApi(config, clock));
 }
 
 export const demoSession: Session = {
@@ -24,7 +29,7 @@ export const demoSession: Session = {
 };
 
 export function createSignedOutServices(): AppServices {
-  return createAppServices(testConfig(), createMemoryStore({}), { now: () => new Date(testNow) });
+  return createTestServices(createMemoryStore({}), { now: () => new Date(testNow) });
 }
 
 export interface Navigation {
@@ -47,7 +52,7 @@ export function renderWithProviders(
   const store = createMemoryStore(options.signedIn === false ? {} : { 'careerpilot.session': JSON.stringify(demoSession) });
   let offset = 0;
   const clock: Clock = { now: () => new Date(testNow.getTime() + offset) };
-  const services = options.services ?? createAppServices(testConfig(), store, clock);
+  const services = options.services ?? createTestServices(store, clock);
   offset = (options.laterByDays ?? 0) * DAY_MS;
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } } });
   queryClient.setQueryData(queryKeys.config, publicConfigFromDefaults(services.config));

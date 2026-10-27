@@ -1,6 +1,7 @@
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { TEST_VERIFICATION_CODE } from '@careerpilot/client-core/src/testing';
 import { mockParams, mockRouter, renderWithProviders } from '@/test/render';
 import { DocumentScreen } from './document-screen';
 import { EntryScreen } from './entry-screen';
@@ -167,7 +168,7 @@ describe('VerifyContactScreen', () => {
     await fireEvent.changeText(screen.getByTestId('verification-code'), '000000');
     await fireEvent.press(screen.getByTestId('verification-submit'));
     expect(await screen.findByText("That code isn't right. Check it and try again.")).toBeTruthy();
-    await fireEvent.changeText(screen.getByTestId('verification-code'), '246810');
+    await fireEvent.changeText(screen.getByTestId('verification-code'), TEST_VERIFICATION_CODE);
     await fireEvent.press(screen.getByTestId('verification-submit'));
     await waitFor(async () => expect((await services.api.profile.getProfile()).contacts.find((c) => c.id === 'c_email_personal')?.verified).toBe(true));
     await waitFor(() => expect(mockRouter.back).toHaveBeenCalled());

@@ -20,7 +20,7 @@ await build({
 const api = await import(pathToFileURL(bundleFile).href);
 const user = api.buildDemoSeed(referenceNow);
 const admin = api.buildAdminDemoSeed(referenceNow, user);
-const seed = { referenceNow: referenceNow.toISOString(), enumValues: api.enumValueSeed, user, admin };
+const seed = { referenceNow: referenceNow.toISOString(), enumValues: api.enumCatalog, user, admin };
 fs.mkdirSync(path.dirname(output), { recursive: true });
 fs.writeFileSync(output, `${JSON.stringify(seed, null, 2)}\n`);
 console.log(`demo seed written to ${path.relative(root, output)}`);

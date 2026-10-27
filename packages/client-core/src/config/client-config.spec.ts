@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
 import { ThemeKey } from '@careerpilot/ui-tokens';
-import { ApiMode, parseAppConfig, publicConfigFromDefaults } from './client-config';
+import { parseAppConfig, publicConfigFromDefaults } from './client-config';
 import { mergePublicConfig } from './public-config';
 
 const require = createRequire(import.meta.url);
@@ -39,7 +39,7 @@ describe('client config shipped to browsers and phones', () => {
 describe('app config', () => {
   it('parses the repository YAML defaults', () => {
     const config = parseAppConfig({ careerpilot: loadConfig('local') });
-    expect(config.api.mode).toBe(ApiMode.InMemory);
+    expect(config.api.baseUrl).toMatch(/^https?:\/\//);
     expect(config.ui.activeTheme).toBe(ThemeKey.Sober);
     expect(config.branding.developerUrl).toBe('https://team-sober.com/');
     expect(config.validation.password.minLength).toBeGreaterThan(0);

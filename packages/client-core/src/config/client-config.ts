@@ -1,13 +1,7 @@
 import { z } from 'zod';
 import { AnswerTopic, CompletenessKind, EnumKey, PauseDuration, ProfileFieldType, enumValues } from '@careerpilot/domain-ui-logic';
 import { THEME_KEYS, type ThemeKey } from '@careerpilot/ui-tokens';
-import { enumValueSeed, type PublicConfig } from '@careerpilot/api-client';
-
-export const ApiMode = {
-  InMemory: 'in_memory',
-  Http: 'http',
-} as const;
-export type ApiMode = (typeof ApiMode)[keyof typeof ApiMode];
+import { enumCatalog, type PublicConfig } from '@careerpilot/api-client';
 
 const SECONDS_PER_MINUTE = 60;
 const themeKey = z.enum(THEME_KEYS as [ThemeKey, ...ThemeKey[]]);
@@ -95,13 +89,9 @@ export const appConfigSchema = z.object({
     developerUrl: z.string().url(),
   }),
   api: z.object({
-    mode: z.enum([ApiMode.InMemory, ApiMode.Http]),
     baseUrl: z.string().url(),
     timeoutMs: z.number().int().positive(),
     uploadTimeoutMs: z.number().int().positive(),
-    demoLatencyMs: z.number().int().nonnegative(),
-    demoVerificationCode: z.string(),
-    demoLinkToken: z.string(),
   }),
   query: z.object({
     staleTimeMs: z.number().int().nonnegative(),
@@ -180,7 +170,7 @@ export function publicConfigFromDefaults(config: AppConfig): PublicConfig {
     display: config.display,
     locale: config.account.locale,
     defaultTimeZone: config.account.defaultTimeZone,
-    enumValues: enumValueSeed,
+    enumValues: enumCatalog,
     validationPolicy: config.validation,
     pauseOptions: config.account.pauseOptions,
     accountDeletionGraceDays: config.account.deletionGraceDays,

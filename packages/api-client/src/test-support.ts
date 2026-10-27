@@ -2,7 +2,7 @@ import { createRequire } from 'node:module';
 import { ThemeKey } from '@careerpilot/ui-tokens';
 import { AnswerTopic, PauseDuration } from '@careerpilot/domain-ui-logic';
 import { buildDemoSeed } from './in-memory/demo.seed';
-import { enumValueSeed } from './in-memory/enum-values.seed';
+import { enumCatalog } from './in-memory/enum-catalog';
 import { createInMemoryApi } from './in-memory/in-memory-api';
 import { sequentialIds, type Clock } from './ports';
 import type { ProfileSettings, PublicConfig } from './types';
@@ -27,7 +27,7 @@ export const testConfig: PublicConfig = {
   display: { strongMatchScore: 80, fairMatchScore: 65, urgentDeadlineDays: 3 },
   locale: 'en',
   defaultTimeZone: 'Asia/Dhaka',
-  enumValues: enumValueSeed,
+  enumValues: enumCatalog,
   validationPolicy: {
     password: { minLength: 10, maxLength: 128, requireMixedCase: true, requireDigit: true, requireSymbol: true },
     name: { minLength: 2, maxLength: 120 },

@@ -140,11 +140,6 @@ async function realBackend(host, serverUrl) {
   return { APP_ENV: dev.phoneAppEnv, [dev.apiUrlEnv]: apiUrl };
 }
 
-function demoData() {
-  console.warn('\nDocker is not running, so the app starts with demo data and sends no email. Start Docker Desktop and run this again for the real backend.\n');
-  return { APP_ENV: dev.demoAppEnv };
-}
-
 async function main() {
   const host = process.env[dev.phoneHostEnv] || lanAddress();
   if (!host) {
@@ -154,7 +149,11 @@ async function main() {
   const args = process.argv.slice(2);
   const port = await serverPort(args);
   const serverUrl = `http://${host}:${port}`;
-  const appSettings = (await realBackend(host, serverUrl)) ?? demoData();
+  const appSettings = await realBackend(host, serverUrl);
+  if (!appSettings) {
+    console.error('Docker is not running, so the API cannot start. Start Docker Desktop, then run this again.');
+    process.exit(1);
+  }
   startMetro(metroEnvironment(host, appSettings), port, args);
   warmBundles(serverUrl).catch(() => undefined);
 }

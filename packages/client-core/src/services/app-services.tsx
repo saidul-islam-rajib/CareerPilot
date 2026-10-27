@@ -17,15 +17,16 @@ export interface AppServices {
   tokens: TokenHolder;
 }
 
-export function createAppServices(config: AppConfig, store: KeyValueStore, clock: Clock = systemClock): AppServices {
+export function createAppServices(config: AppConfig, store: KeyValueStore, clock: Clock = systemClock, api?: CareerPilotApi): AppServices {
   const tokens: TokenHolder = {};
-  const api = createApi({
-    config,
-    clock,
-    getAccessToken: () => tokens.token,
-    onUnauthorized: () => tokens.onUnauthorized?.(),
-  });
-  return { config, api, store, clock, tokens };
+  const connected =
+    api ??
+    createApi({
+      config,
+      getAccessToken: () => tokens.token,
+      onUnauthorized: () => tokens.onUnauthorized?.(),
+    });
+  return { config, api: connected, store, clock, tokens };
 }
 
 const AppServicesContext = createContext<AppServices | undefined>(undefined);

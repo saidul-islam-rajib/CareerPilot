@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { useSession } from '@careerpilot/client-core';
+import { TEST_LINK_TOKEN } from '@careerpilot/client-core/src/testing';
 import { createSignedOutServices, navigation, renderWithProviders } from '@/test/render';
 import { ForgotPasswordPage } from './forgot-password-page';
 import { RegisterPage } from './register-page';
@@ -7,7 +8,7 @@ import { SetPasswordPage } from './set-password-page';
 import { SignInPage } from './sign-in-page';
 import { WelcomePage } from './welcome-page';
 
-const DEMO_LINK = '?token=demo-link';
+const EMAILED_LINK = `?token=${TEST_LINK_TOKEN}`;
 
 function SessionProbe() {
   const { status } = useSession();
@@ -84,8 +85,7 @@ describe('RegisterPage', () => {
     expect(screen.getByText(/expires in 5 minutes/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send a new link in 5:00' })).toBeDisabled();
     expect(screen.getByTestId('session')).toHaveTextContent('signed_out');
-    fireEvent.click(screen.getByRole('button', { name: 'Open the link' }));
-    expect(navigation.push).toHaveBeenCalledWith('/set-password?token=demo-link');
+    expect(screen.queryByRole('button', { name: 'Open the link' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Use a different email' }));
     expect(screen.getByLabelText('Full name')).toBeInTheDocument();
   });
@@ -119,7 +119,7 @@ describe('SetPasswordPage', () => {
         <SetPasswordPage />
         <SessionProbe />
       </>,
-      { signedIn: false, search: DEMO_LINK, services },
+      { signedIn: false, search: EMAILED_LINK, services },
     );
     expect(await screen.findByRole('heading', { name: 'Choose your password' })).toBeInTheDocument();
     expect(screen.getByText('Hi New Person, choose a password to finish creating your account.')).toBeInTheDocument();
@@ -136,7 +136,7 @@ describe('SetPasswordPage', () => {
   it('resets the password of an existing account', async () => {
     const services = createSignedOutServices();
     await services.api.auth.requestPasswordReset('admin@sober.com');
-    renderWithProviders(<SetPasswordPage />, { signedIn: false, search: DEMO_LINK, services });
+    renderWithProviders(<SetPasswordPage />, { signedIn: false, search: EMAILED_LINK, services });
     expect(await screen.findByRole('heading', { name: 'Choose a new password' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save new password' })).toBeInTheDocument();
   });

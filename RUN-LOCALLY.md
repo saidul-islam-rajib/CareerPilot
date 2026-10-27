@@ -59,24 +59,11 @@ docker compose exec redis-coord redis-cli FLUSHDB
 
 Install on your phone: **Expo Go** — [Android (Google Play)](https://play.google.com/store/apps/details?id=host.exp.exponent) · [iPhone (App Store)](https://apps.apple.com/app/expo-go/id982107779). The phone and the PC must be on the same Wi-Fi. The project uses Expo SDK 58; if Expo Go says the project is incompatible, update Expo Go from the store.
 
-Expo Go and Expo CLI must use the same Expo account, or both none, or Expo Go refuses to open the project. `pnpm phone` (B2) runs Expo CLI without an account, so keep Expo Go signed out for it. For B1, if you are signed in to Expo Go, sign in to Expo CLI on the PC with the same account once. Type your Expo username and password when asked:
-
-```powershell
-npx expo login --no-browser
-```
+Expo Go and Expo CLI must use the same Expo account, or both none, or Expo Go refuses to open the project. The start command below runs Expo CLI without an account, so keep Expo Go signed out.
 
 Optional, for an Android emulator on the PC: [Android Studio](https://developer.android.com/studio) → More Actions → Virtual Device Manager → create and start a phone. An iOS simulator needs a Mac with Xcode; on Windows use a real iPhone with Expo Go.
 
-### B1. Demo data (no backend needed)
-
-```powershell
-pnpm install
-pnpm mobile:demo
-```
-
-Scan the QR code: with the phone camera on iPhone, or from inside Expo Go on Android. In the terminal, press `a` to open the Android emulator, `w` for the browser, `r` to reload. Sign in with `admin@sober.com` / `admin@sober.com`. With demo data no email is sent: to verify an email address, enter the code `246810`; to create an account, tap **Open the link** on the **Check your email** screen and choose a password.
-
-### B2. Real backend and real email (Docker from option A)
+### Start the app (needs the Docker stack from option A)
 
 Stop any other Metro first (Ctrl+C in its window), then run the usual start command; it uses the real backend (`pnpm phone` does the same):
 
@@ -84,9 +71,9 @@ Stop any other Metro first (Ctrl+C in its window), then run the usual start comm
 pnpm --filter @careerpilot/mobile start
 ```
 
-If Docker isn't running, it says so and starts with demo data instead.
+If Docker isn't running, it says so and stops.
 
-It finds your PC's Wi-Fi address, opens the user API to your Wi-Fi, points email links at your PC, starts Metro against the real backend, and pre-builds the app so Expo Go opens it quickly. Scan the QR code it prints. When it says **Phone app is ready**, open the app. Keep Expo Go signed out (see above).
+It finds your PC's Wi-Fi address, opens the user API to your Wi-Fi, points email links at your PC, starts Metro against the real backend, and pre-builds the app so Expo Go opens it quickly. Scan the QR code it prints (phone camera on iPhone, or from inside Expo Go on Android). When it says **Phone app is ready**, open the app. In the terminal, press `r` to reload. Keep Expo Go signed out (see above).
 
 To create an account: register on the phone with your real email address. The link arrives from `info@team-sober.com` within seconds; check Spam the first time (setup: `docs/runbooks/email-setup.md`). Tap the link on the phone: it opens CareerPilot in the phone's browser, where you choose your password. Then go back to Expo Go and sign in. Addresses at `sober.com` and `example.*` never leave the PC; open those in Mailpit (http://localhost:8025).
 
@@ -97,19 +84,21 @@ Android emulator only: `$env:APP_ENV = "http"; $env:CAREERPILOT_API_URL = "http:
 ## C. Without Docker (fastest for front-end work)
 
 ```bash
-pnpm install
-pnpm --filter @careerpilot/web dev      # http://localhost:3000, built-in demo data
-pnpm --filter @careerpilot/admin dev    # http://localhost:3001, built-in demo data
-```
-
-Backend with Python only (in-memory data, no database or Redis needed):
-
-```bash
 cd services
 python -m venv .venv
 .venv/Scripts/python -m pip install -e "core[dev]" -e api
-.venv/Scripts/python -m careerpilot_api.dev_server   # user API :8000, admin API :8001
+.venv/Scripts/python -m careerpilot_api.dev_server   # user API :8000, admin API :8001, in memory, starts empty
 ```
+
+Then, in another terminal:
+
+```bash
+pnpm install
+pnpm --filter @careerpilot/web dev      # http://localhost:3000
+pnpm --filter @careerpilot/admin dev    # http://localhost:3001
+```
+
+Nothing is kept after the dev server stops. Set `CAREERPILOT_OWNER_EMAIL` in its environment to get the first admin link.
 
 ## Tests
 
@@ -127,7 +116,7 @@ cd services/core && ../.venv/Scripts/python -m pytest       # backend tests
 | Port already in use | Stop the other program, or stop old containers with `docker compose down`. |
 | "Too many attempts" | Wait 15 minutes or run the Redis `FLUSHDB` command above. |
 | Old screens after changing code | Rebuild with `--build` (option A). |
-| Phone shows "We couldn't load this" (option B2) | Check the phone can open `http://<your IPv4>:8000/v1/config` in its browser. If not: same Wi-Fi? `CAREERPILOT_USER_API_BIND=0.0.0.0` in `.env` and `docker compose up -d user-api`? Firewall allowed? |
+| Phone shows "We couldn't load this" (option B) | Check the phone can open `http://<your IPv4>:8000/v1/config` in its browser. If not: same Wi-Fi? `CAREERPILOT_USER_API_BIND=0.0.0.0` in `.env` and `docker compose up -d user-api`? Firewall allowed? |
 | Expo Go can't open the project / QR code times out | Same Wi-Fi on both; allow Node.js in Windows Firewall; or start with `pnpm --filter @careerpilot/mobile start --tunnel`. |
 | "Project is incompatible with this version of Expo Go" | Update Expo Go from the store (the project uses Expo SDK 58). |
 | "You're signed in to Expo Go as …, but not signed in to Expo CLI" | Stop Metro (`Ctrl+C`), run `npx expo login --no-browser` with the same Expo account, then start again. Or sign out of Expo Go on the phone. |

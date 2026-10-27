@@ -40,7 +40,7 @@ function rows(enumKey: EnumKey, values: Row[]): EnumValueMetadata[] {
   }));
 }
 
-export const enumValueSeed: EnumValueMetadata[] = [
+export const enumCatalog: EnumValueMetadata[] = [
   ...rows(EnumKey.SubmissionStatus, [
     [SubmissionStatus.NotStarted, StatusTone.Neutral],
     [SubmissionStatus.Preparing, StatusTone.Info],

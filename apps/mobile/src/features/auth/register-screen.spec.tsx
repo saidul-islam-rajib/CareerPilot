@@ -28,7 +28,7 @@ describe('RegisterScreen', () => {
     expect(await screen.findByText('You need to accept the Terms and Privacy Policy to continue.')).toBeTruthy();
   });
 
-  it('emails a link, stays signed out, and offers the demo link and a resend countdown', async () => {
+  it('emails a link, stays signed out, and offers a resend countdown', async () => {
     await renderWithProviders(
       <>
         <RegisterScreen />
@@ -43,8 +43,7 @@ describe('RegisterScreen', () => {
     expect(screen.getByText(/We've sent a link to new\.person@example\.com/)).toBeTruthy();
     expect(screen.getByTestId('resend-link').props.accessibilityState.disabled).toBe(true);
     expect(screen.getByTestId('session-probe').props.children).toBe('signed_out');
-    await fireEvent.press(screen.getByTestId('open-demo-link'));
-    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/set-password', params: { token: 'demo-link' } });
+    expect(screen.queryByTestId('open-demo-link')).toBeNull();
   });
 
   it('answers the same way for an email that already has an account', async () => {
