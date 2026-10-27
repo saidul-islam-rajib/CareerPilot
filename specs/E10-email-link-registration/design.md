@@ -19,7 +19,7 @@
 ## Local testing on a phone
 
 - `notifications.web_base_url_env` (`CAREERPILOT_WEB_BASE_URL`) overrides where email links point; its origin joins the allowed CORS origins. It must be an http(s) URL without credentials, query, or fragment, or the API refuses to start.
-- The mobile `start` script (`pnpm mobile`, `pnpm phone`; `scripts/dev/phone.mjs`, config `config/defaults/dev.yaml`) finds the PC's Wi-Fi address, restarts `user-api` reachable on the LAN with links pointing at the Metro server, and starts Metro in `http` mode against that API. Metro runs offline, so the manifest carries no Expo account and a signed-out Expo Go opens it. It then pre-builds the iOS, Android and web bundles. Emailed links open the mobile web build that Metro serves, so they work on the phone. Without Docker it starts with demo data and says so; `start:demo` (`pnpm mobile:demo`) always uses demo data.
+- The mobile `start` script (`pnpm mobile`, `pnpm phone`; `scripts/dev/phone.mjs`, config `config/defaults/dev.yaml`) finds the PC's Wi-Fi address, restarts `user-api` reachable on the LAN with links pointing at the Metro server, and starts Metro in `http` mode against that API. Expo Go (SDK 58) opens a project only when it and Expo CLI are signed in to the same Expo account, so Metro runs online and the manifest carries the CLI account. It then pre-builds the iOS, Android and web bundles. Emailed links open the mobile web build that Metro serves, so they work on the phone. Without Docker it starts with demo data and says so; `start:demo` (`pnpm mobile:demo`) always uses demo data.
 
 ## Backend
 

@@ -59,7 +59,7 @@ docker compose exec redis-coord redis-cli FLUSHDB
 
 Install on your phone: **Expo Go** — [Android (Google Play)](https://play.google.com/store/apps/details?id=host.exp.exponent) · [iPhone (App Store)](https://apps.apple.com/app/expo-go/id982107779). The phone and the PC must be on the same Wi-Fi. The project uses Expo SDK 58; if Expo Go says the project is incompatible, update Expo Go from the store.
 
-Expo Go and Expo CLI must use the same Expo account, or both none, or Expo Go refuses to open the project. The start command below runs Expo CLI without an account, so keep Expo Go signed out.
+Expo Go and Expo CLI must be signed in to the same Expo account, or Expo Go refuses to open the project. Check the PC's account with `npx expo whoami` (in `apps/mobile`), sign in to Expo Go on the phone with that account, and sign in to Expo CLI once if needed with `npx expo login --no-browser`.
 
 Optional, for an Android emulator on the PC: [Android Studio](https://developer.android.com/studio) → More Actions → Virtual Device Manager → create and start a phone. An iOS simulator needs a Mac with Xcode; on Windows use a real iPhone with Expo Go.
 
@@ -73,7 +73,7 @@ pnpm --filter @careerpilot/mobile start
 
 If Docker isn't running, it says so and stops.
 
-It finds your PC's Wi-Fi address, opens the user API to your Wi-Fi, points email links at your PC, starts Metro against the real backend, and pre-builds the app so Expo Go opens it quickly. Scan the QR code it prints (phone camera on iPhone, or from inside Expo Go on Android). When it says **Phone app is ready**, open the app. In the terminal, press `r` to reload. Keep Expo Go signed out (see above).
+It finds your PC's Wi-Fi address, opens the user API to your Wi-Fi, points email links at your PC, starts Metro against the real backend, and pre-builds the app so Expo Go opens it quickly. Scan the QR code it prints (phone camera on iPhone, or from inside Expo Go on Android). When it says **Phone app is ready**, open the app. In the terminal, press `r` to reload.
 
 To create an account: register on the phone with your real email address. The link arrives from `info@team-sober.com` within seconds; check Spam the first time (setup: `docs/runbooks/email-setup.md`). Tap the link on the phone: it opens CareerPilot in the phone's browser, where you choose your password. Then go back to Expo Go and sign in. Addresses at `sober.com` and `example.*` never leave the PC; open those in Mailpit (http://localhost:8025).
 

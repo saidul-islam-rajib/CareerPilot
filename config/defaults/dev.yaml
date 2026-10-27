@@ -2,7 +2,6 @@ dev:
   phone_app_env: http
   phone_server_port: 8081
   port_search_span: 20
-  expo_offline: true
   phone_host_env: CAREERPILOT_PHONE_HOST
   api_service: user-api
   compose_files: [docker-compose.yml, docker-compose.observability.yml]

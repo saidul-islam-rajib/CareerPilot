@@ -15,7 +15,6 @@ const MOBILE_FOLDER = 'apps/mobile';
 const PACKAGE_FILE = 'package.json';
 const EXPO_CLI = 'expo/bin/cli';
 const PACKAGER_HOSTNAME_ENV = 'REACT_NATIVE_PACKAGER_HOSTNAME';
-const EXPO_OFFLINE_ENV = 'EXPO_OFFLINE';
 const MILLISECONDS_PER_SECOND = 1000;
 const POLL_INTERVAL_MS = 1000;
 const SCRIPT_SOURCE = /<script[^>]+src="([^"]+)"/;
@@ -96,8 +95,7 @@ async function serverPort(args) {
 }
 
 function metroEnvironment(host, appSettings) {
-  const offline = dev.expoOffline ? { [EXPO_OFFLINE_ENV]: '1' } : {};
-  return { ...process.env, ...offline, ...appSettings, [PACKAGER_HOSTNAME_ENV]: host };
+  return { ...process.env, ...appSettings, [PACKAGER_HOSTNAME_ENV]: host };
 }
 
 function startMetro(env, port, args) {
