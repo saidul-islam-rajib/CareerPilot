@@ -5,6 +5,13 @@ import { HttpMethod, type HttpClient } from './http-client';
 const enc = encodeURIComponent;
 const FILE_FIELD = 'file';
 
+export type NativeFilePart = { name: string; type: string } & ({ bytes: () => Promise<Uint8Array> } | { uri: string | undefined });
+
+export function nativeFilePart(file: UploadSource): NativeFilePart {
+  const described = { name: file.name, type: file.type };
+  return file.bytes ? { ...described, bytes: file.bytes } : { ...described, uri: file.uri };
+}
+
 export function uploadForm(file: UploadSource, fields: Record<string, string | undefined> = {}): FormData {
   const form = new FormData();
   for (const [key, value] of Object.entries(fields)) {
@@ -15,7 +22,7 @@ export function uploadForm(file: UploadSource, fields: Record<string, string | u
   if (file.blob) {
     form.append(FILE_FIELD, file.blob, file.name);
   } else {
-    form.append(FILE_FIELD, { uri: file.uri, name: file.name, type: file.type } as unknown as Blob);
+    form.append(FILE_FIELD, nativeFilePart(file) as unknown as Blob);
   }
   return form;
 }

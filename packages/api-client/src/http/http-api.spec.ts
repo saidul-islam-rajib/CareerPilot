@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ApiErrorCode, isApiError } from '../errors';
 import { ApplicationFilter } from '../types';
-import { createHttpApi } from './http-api';
+import { createHttpApi, nativeFilePart } from './http-api';
 import { createHttpClient } from './http-client';
 
 function jsonResponse(status: number, body?: unknown): Response {
@@ -113,6 +113,14 @@ describe('http profile api', () => {
     expect(form.get('name')).toBe('My CV');
     expect(form.get('kind')).toBe('cv');
     expect((form.get('file') as File).name).toBe('cv.pdf');
+  });
+
+  it('sends phone files as named parts that read their own bytes', async () => {
+    const bytes = async () => new Uint8Array([37, 80, 68, 70]);
+    const fromPhone = nativeFilePart({ name: 'My CV.pdf', type: 'application/pdf', size: 4, uri: 'file:///cache/4f2a.pdf', bytes });
+    expect(fromPhone).toEqual({ name: 'My CV.pdf', type: 'application/pdf', bytes });
+    expect(await (fromPhone as { bytes: () => Promise<Uint8Array> }).bytes()).toEqual(new Uint8Array([37, 80, 68, 70]));
+    expect(nativeFilePart({ name: 'photo.jpg', type: 'image/jpeg', size: 1, uri: 'file:///cache/p.jpg' })).toEqual({ name: 'photo.jpg', type: 'image/jpeg', uri: 'file:///cache/p.jpg' });
   });
 
   it('removes with DELETE and encodes section paths', async () => {

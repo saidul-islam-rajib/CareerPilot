@@ -1,4 +1,5 @@
 import * as DocumentPicker from 'expo-document-picker';
+import { File as LocalFile } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { Award, Briefcase, ClipboardCheck, FileText, FolderGit2, GraduationCap, Languages, Link, Trophy, Users, type LucideIcon } from '@/ui/icons';
 import type { UploadSource } from '@careerpilot/api-client';
@@ -38,6 +39,7 @@ export function toUploadSource(asset: PickedAsset): UploadSource {
     size: asset.size ?? asset.file?.size ?? 0,
     uri: asset.uri,
     blob: asset.file,
+    bytes: asset.file ? undefined : () => new LocalFile(asset.uri).bytes(),
   };
 }
 

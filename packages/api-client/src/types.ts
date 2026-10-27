@@ -444,6 +444,7 @@ export interface UploadSource {
   size: number;
   blob?: Blob;
   uri?: string;
+  bytes?: () => Promise<Uint8Array>;
 }
 
 export interface BasicsChanges {
