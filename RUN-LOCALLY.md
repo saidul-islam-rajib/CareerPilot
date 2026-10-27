@@ -59,7 +59,7 @@ docker compose exec redis-coord redis-cli FLUSHDB
 
 Install on your phone: **Expo Go** — [Android (Google Play)](https://play.google.com/store/apps/details?id=host.exp.exponent) · [iPhone (App Store)](https://apps.apple.com/app/expo-go/id982107779). The phone and the PC must be on the same Wi-Fi. The project uses Expo SDK 58; if Expo Go says the project is incompatible, update Expo Go from the store.
 
-If you are signed in to an Expo account in Expo Go, sign in to Expo CLI on the PC with the same account once, or Expo Go refuses to open the project. Type your Expo username and password when asked:
+Expo Go and Expo CLI must use the same Expo account, or both none, or Expo Go refuses to open the project. `pnpm phone` (B2) runs Expo CLI without an account, so keep Expo Go signed out for it. For B1, if you are signed in to Expo Go, sign in to Expo CLI on the PC with the same account once. Type your Expo username and password when asked:
 
 ```powershell
 npx expo login --no-browser
@@ -76,23 +76,21 @@ pnpm --filter @careerpilot/mobile start
 
 Scan the QR code: with the phone camera on iPhone, or from inside Expo Go on Android. In the terminal, press `a` to open the Android emulator, `w` for the browser, `r` to reload. Sign in with `admin@sober.com` / `admin@sober.com`. With demo data no email is sent: to verify an email address, enter the code `246810`; to create an account, tap **Open the link** on the **Check your email** screen and choose a password.
 
-### B2. Real backend (Docker from option A)
+### B2. Real backend and real email (Docker from option A)
 
-1. Find your PC's Wi-Fi address: run `ipconfig` and copy the **IPv4 Address** of the Wi-Fi adapter (for example `192.168.0.103`).
-2. Let the user API accept connections from your Wi-Fi: in `.env` set `CAREERPILOT_USER_API_BIND=0.0.0.0`, then run `docker compose up -d user-api`. Set it back to `127.0.0.1` when you're done.
-3. Start the app against that address (PowerShell):
+Stop any other Metro first (Ctrl+C in its window), then:
 
 ```powershell
-$env:APP_ENV = "http"; $env:CAREERPILOT_API_URL = "http://192.168.0.103:8000"; pnpm --filter @careerpilot/mobile start
+pnpm phone
 ```
 
-Git Bash: `APP_ENV=http CAREERPILOT_API_URL=http://192.168.0.103:8000 pnpm --filter @careerpilot/mobile start`
+It finds your PC's Wi-Fi address, opens the user API to your Wi-Fi, points email links at your PC, starts Metro against the real backend, and pre-builds the app so Expo Go opens it quickly. Scan the QR code it prints. When it says **Phone app is ready**, open the app. Keep Expo Go signed out (see above).
 
-Android emulator only (no `.env` change needed): use `http://10.0.2.2:8000` as the address. Browser on the PC: `APP_ENV=http pnpm --filter @careerpilot/mobile web`.
+To create an account: register on the phone with your real email address. The link arrives from `info@team-sober.com` within seconds; check Spam the first time (setup: `docs/runbooks/email-setup.md`). Tap the link on the phone: it opens CareerPilot in the phone's browser, where you choose your password. Then go back to Expo Go and sign in. Addresses at `sober.com` and `example.*` never leave the PC; open those in Mailpit (http://localhost:8025).
 
-When Windows Firewall asks about Node.js or Docker, allow **Private networks**.
+If port 8081 is busy, it uses the next free port. To choose the address yourself, set `CAREERPILOT_PHONE_HOST`. Pass Expo options after it, for example `pnpm phone --clear`. When Windows Firewall asks about Node.js or Docker, allow **Private networks**. `docker compose up -d user-api` puts email links back to the PC web app.
 
-To create an account from the phone: register in the app, then open Mailpit (http://localhost:8025) on the PC and click the link in the email. It opens the web app, where you choose your password. Then sign in on the phone with that email and password.
+Android emulator only: `$env:APP_ENV = "http"; $env:CAREERPILOT_API_URL = "http://10.0.2.2:8000"; pnpm --filter @careerpilot/mobile start`. Browser on the PC: `APP_ENV=http pnpm --filter @careerpilot/mobile web`.
 
 ## C. Without Docker (fastest for front-end work)
 

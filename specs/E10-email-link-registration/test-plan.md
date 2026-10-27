@@ -6,3 +6,6 @@
 - `packages/validation`: `register` without password, `setPassword` policy and confirmation.
 - `apps/web/src/features/auth`: register sends and shows the check-your-email card with resend; set-password checks the link, shows invalid and expired states, enforces the policy, and signs in.
 - `apps/mobile/src/features/auth`: the same flows on the register and set-password screens.
+- `services/core/tests/unit/platform/test_email_delivery.py`: the background courier retries retryable failures, stops on permanent ones, withdraws the link after the last try, and never resends an unknown outcome.
+- `services/core/tests/unit/platform/test_platform.py`: the web address override moves email links and allows that origin, refuses unsafe values, and the mail sandbox list holds only seed and example domains.
+- `packages/client-core/src/config/client-config.spec.ts`: the `dev` section never ships to the apps.

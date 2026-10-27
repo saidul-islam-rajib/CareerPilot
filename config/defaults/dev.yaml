@@ -1,0 +1,17 @@
+dev:
+  phone_app_env: http
+  phone_server_port: 8081
+  port_search_span: 20
+  expo_offline: true
+  phone_host_env: CAREERPILOT_PHONE_HOST
+  api_service: user-api
+  compose_files: [docker-compose.yml, docker-compose.observability.yml]
+  api_bind_env: CAREERPILOT_USER_API_BIND
+  api_bind_address: 0.0.0.0
+  api_url_env: CAREERPILOT_API_URL
+  api_check_path: /v1/config
+  wait_seconds: 120
+  preferred_adapters: [wi-fi, wlan, wireless, ethernet]
+  ignored_adapters: [vethernet, wsl, hyper-v, virtualbox, vmware, docker, loopback, bluetooth, tailscale, zerotier]
+  ignored_address_prefixes: ["169.254."]
+  warm_platforms: [ios, android]

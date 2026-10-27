@@ -11,7 +11,7 @@ const { loadConfig, loadClientConfig, clientConfig } = require('../../../../scri
   clientConfig: (config: Record<string, unknown>) => Record<string, unknown>;
 };
 
-const SERVER_ONLY = ['mail', 'persistence', 'security', 'coordination', 'submission', 'discovery', 'matching', 'workers', 'http', 'observability'];
+const SERVER_ONLY = ['mail', 'persistence', 'security', 'coordination', 'submission', 'discovery', 'matching', 'workers', 'http', 'observability', 'dev'];
 
 describe('client config shipped to browsers and phones', () => {
   it('holds everything the apps need', () => {
