@@ -11,6 +11,9 @@ import { createHttpAdminApi } from './http-admin-api';
 import { createInMemoryAdminApi, paginate } from './in-memory-admin-api';
 import { can, permissionsForRole } from './permissions';
 
+const LINK_TOKEN = 'admin-link-token';
+const NEW_PASSWORD = 'Str0ng!Password';
+
 function createAdminApi() {
   const userState = buildDemoSeed(fixedNow);
   return createInMemoryAdminApi({
@@ -23,6 +26,7 @@ function createAdminApi() {
     chartDays: 14,
     completeProfilePercent: 80,
     linkTtlBounds: { min: 1, max: 60 },
+    linkToken: LINK_TOKEN,
   });
 }
 
@@ -133,6 +137,19 @@ describe('in-memory admin api', () => {
     expect(await errorCode(api.admins.setSuspended('adm_super', true))).toBe(ApiErrorCode.Conflict);
     expect(await errorCode(api.auth.signIn({ email: 'operations@sober.com', password: 'admin@sober.com' }))).toBe(ApiErrorCode.InvalidCredentials);
   });
+
+  it('sets an admin password from an emailed link and signs in', async () => {
+    const api = createAdminApi();
+    expect(await errorCode(api.auth.inspectAccountLink(LINK_TOKEN))).toBe(ApiErrorCode.Validation);
+    await api.auth.requestPasswordLink({ email: 'nobody@example.com' });
+    expect(await errorCode(api.auth.inspectAccountLink(LINK_TOKEN))).toBe(ApiErrorCode.Validation);
+    await api.auth.requestPasswordLink({ email: ' ADMIN@sober.com ' });
+    expect((await api.auth.inspectAccountLink(LINK_TOKEN)).email).toBe('admin@sober.com');
+    const session = await api.auth.completeAccountLink({ token: LINK_TOKEN, password: NEW_PASSWORD });
+    expect(session.admin.email).toBe('admin@sober.com');
+    expect(await errorCode(api.auth.inspectAccountLink(LINK_TOKEN))).toBe(ApiErrorCode.Validation);
+    expect((await api.auth.signIn({ email: 'admin@sober.com', password: NEW_PASSWORD })).admin.email).toBe('admin@sober.com');
+  });
 });
 
 describe('http admin api', () => {
@@ -141,5 +158,21 @@ describe('http admin api', () => {
     const api = createHttpAdminApi(createHttpClient({ baseUrl: 'https://admin.example.com', timeoutMs: 1000, fetchFn: fetchFn as unknown as typeof fetch, getAccessToken: () => 'a' }));
     await api.users.listUsers({ page: 2, pageSize: 10, search: 'ay', status: 'active' });
     expect((fetchFn.mock.calls[0] as unknown as [string])[0]).toBe('https://admin.example.com/admin/v1/users?page=2&pageSize=10&search=ay&status=active');
+  });
+
+  it('sends admin link tokens in request bodies, never in the path', async () => {
+    const fetchFn = vi.fn(async () => new Response(JSON.stringify({}), { status: 200 }));
+    const api = createHttpAdminApi(createHttpClient({ baseUrl: 'https://admin.example.com', timeoutMs: 1000, fetchFn: fetchFn as unknown as typeof fetch, getAccessToken: () => undefined }));
+    await api.auth.requestPasswordLink({ email: 'owner@example.com' });
+    await api.auth.inspectAccountLink(LINK_TOKEN);
+    await api.auth.completeAccountLink({ token: LINK_TOKEN, password: NEW_PASSWORD });
+    const calls = fetchFn.mock.calls as unknown as [string, RequestInit][];
+    expect(calls.map(([url]) => url)).toEqual([
+      'https://admin.example.com/admin/v1/auth/password-link',
+      'https://admin.example.com/admin/v1/auth/account-links/inspect',
+      'https://admin.example.com/admin/v1/auth/account-links/complete',
+    ]);
+    expect(calls.every(([url]) => !url.includes(LINK_TOKEN))).toBe(true);
+    expect(String(calls[1]?.[1].body)).toContain(LINK_TOKEN);
   });
 });

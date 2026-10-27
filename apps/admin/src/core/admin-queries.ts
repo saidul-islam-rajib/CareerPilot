@@ -12,6 +12,7 @@ export const adminKeys = {
   user: (id: string) => ['admin', 'user', id] as const,
   settings: ['admin', 'settings'] as const,
   admins: ['admin', 'admins'] as const,
+  link: (token: string) => ['admin', 'link', token] as const,
 };
 
 export function useAdminMutation<TArgs, TResult>(run: (args: TArgs) => Promise<TResult>) {

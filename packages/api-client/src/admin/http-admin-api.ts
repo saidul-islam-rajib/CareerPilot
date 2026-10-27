@@ -25,6 +25,9 @@ export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
     auth: {
       signIn: (request) => post('/admin/v1/auth/sign-in', request),
       signOut: () => post('/admin/v1/auth/sign-out'),
+      requestPasswordLink: (request) => post('/admin/v1/auth/password-link', request),
+      inspectAccountLink: (token) => post('/admin/v1/auth/account-links/inspect', { token }),
+      completeAccountLink: (request) => post('/admin/v1/auth/account-links/complete', request),
     },
     dashboard: { getDashboard: () => get('/admin/v1/dashboard') },
     users: {

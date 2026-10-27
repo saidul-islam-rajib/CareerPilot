@@ -1,16 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useMutation } from '@tanstack/react-query';
 import { AlertCircle, ShieldCheck } from 'lucide-react';
 import { type SignInRequest } from '@careerpilot/api-client';
 import { authErrorKey, useSchemas, useT } from '@careerpilot/client-core';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { validate, type FieldErrors } from '@careerpilot/validation';
-import { Banner, BrandMark, Button, Card, TeamSoberCredit, TextField } from '@careerpilot/ui-web';
+import { Banner, Button, Card, TextField } from '@careerpilot/ui-web';
 import { useAdminApi } from '@/core/admin-services';
 import { useAdminSession } from '@/core/admin-session';
-import { teamSoberLogoSrc } from '@/core/brand-assets';
+import { AdminRoutes } from '@/core/routes';
+import { AuthLayout } from './auth-layout';
 
 export function SignInPage() {
   const t = useT();
@@ -32,11 +34,7 @@ export function SignInPage() {
   };
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center gap-6 px-4 py-10">
-      <div className="flex items-center gap-3">
-        <BrandMark className="size-12" />
-        <span className="text-2xl font-bold">{t('admin.appName')}</span>
-      </div>
+    <AuthLayout>
       <div className="flex flex-col gap-1">
         <h1 className="text-xl font-bold">{t('admin.signInTitle')}</h1>
         <p className="flex items-center gap-2 text-sm text-muted">
@@ -61,9 +59,11 @@ export function SignInPage() {
           <Button type="submit" fullWidth loading={signIn.isPending}>
             {t('auth.signIn')}
           </Button>
+          <Link href={AdminRoutes.forgotPassword} className="text-center text-sm font-semibold text-primary hover:underline">
+            {t('auth.forgotPassword')}
+          </Link>
         </form>
       </Card>
-      <TeamSoberCredit logoSrc={teamSoberLogoSrc} compact />
-    </main>
+    </AuthLayout>
   );
 }

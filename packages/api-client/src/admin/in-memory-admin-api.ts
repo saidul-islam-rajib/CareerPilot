@@ -6,11 +6,11 @@ import {
   SubmissionStatus,
   UserAccountStatus,
 } from '@careerpilot/domain-ui-logic';
-import { ApiError, ApiErrorCode } from '../errors';
+import { ApiError, ApiErrorCode, ApiErrorDetail } from '../errors';
 import type { Clock, IdGenerator } from '../ports';
 import type { DemoState } from '../in-memory/demo.seed';
 import type { CareerPilotAdminApi } from './admin-ports';
-import type { AdminDemoState } from './admin-demo.seed';
+import type { AdminDemoAccount, AdminDemoState } from './admin-demo.seed';
 import type { AdminSummary, AdminUserDetail, CountByKey, Page, PageQuery } from './admin-types';
 import { permissionsForRole } from './permissions';
 
@@ -24,6 +24,7 @@ export interface InMemoryAdminApiOptions {
   chartDays: number;
   completeProfilePercent: number;
   linkTtlBounds: { min: number; max: number };
+  linkToken: string;
 }
 
 const DAY_MS = 86_400_000;
@@ -57,7 +58,8 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
   let currentAdmin: AdminSummary | undefined;
 
   const respond = <T>(value: T): Promise<T> => new Promise((resolve) => setTimeout(() => resolve(clone(value)), options.latencyMs));
-  const fail = (code: ApiErrorCode): Promise<never> => new Promise((_, reject) => setTimeout(() => reject(new ApiError(code)), options.latencyMs));
+  const fail = (code: ApiErrorCode, detail?: string): Promise<never> =>
+    new Promise((_, reject) => setTimeout(() => reject(new ApiError(code, undefined, detail)), options.latencyMs));
   const nowIso = () => clock.now().toISOString();
 
   const record = (action: string, target: string) => {
@@ -71,6 +73,15 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
     });
   };
 
+  let linkedAdminId: string | undefined;
+  const findAdmin = (email: string) => state.admins.find((a) => a.account.email.toLowerCase() === email.trim().toLowerCase());
+  const linkedAdmin = (token: string) => (token === options.linkToken ? state.admins.find((a) => a.account.id === linkedAdminId) : undefined);
+  const startSession = (match: AdminDemoAccount) => {
+    currentAdmin = { id: match.account.id, fullName: match.account.fullName, email: match.account.email, role: match.account.role };
+    match.account.lastSignInAt = nowIso();
+    record('admin.signed_in', match.account.email);
+    return respond({ accessToken: ids.next('admin_token'), admin: currentAdmin, permissions: permissionsForRole(match.account.role) });
+  };
   const findUser = (id: string) => state.users.find((u) => u.id === id);
   const userDetail = (id: string): AdminUserDetail | undefined => {
     const user = findUser(id);
@@ -101,18 +112,33 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
   return {
     auth: {
       async signIn(request) {
-        const match = state.admins.find((a) => a.account.email.toLowerCase() === request.email.trim().toLowerCase() && a.password === request.password);
-        if (!match || match.account.suspended) {
+        const match = findAdmin(request.email);
+        if (!match || match.account.suspended || match.password !== request.password) {
           return fail(ApiErrorCode.InvalidCredentials);
         }
-        currentAdmin = { id: match.account.id, fullName: match.account.fullName, email: match.account.email, role: match.account.role };
-        match.account.lastSignInAt = nowIso();
-        record('admin.signed_in', match.account.email);
-        return respond({ accessToken: ids.next('admin_token'), admin: currentAdmin, permissions: permissionsForRole(match.account.role) });
+        return startSession(match);
       },
       async signOut() {
         currentAdmin = undefined;
         return respond(undefined);
+      },
+      async requestPasswordLink(request) {
+        const match = findAdmin(request.email);
+        linkedAdminId = match && !match.account.suspended ? match.account.id : linkedAdminId;
+        return respond(undefined);
+      },
+      async inspectAccountLink(token) {
+        const match = linkedAdmin(token);
+        return match ? respond({ fullName: match.account.fullName, email: match.account.email }) : fail(ApiErrorCode.Validation, ApiErrorDetail.LinkInvalid);
+      },
+      async completeAccountLink(request) {
+        const match = linkedAdmin(request.token);
+        if (!match) {
+          return fail(ApiErrorCode.Validation, ApiErrorDetail.LinkInvalid);
+        }
+        match.password = request.password;
+        linkedAdminId = undefined;
+        return startSession(match);
       },
     },
     dashboard: {

@@ -1,9 +1,10 @@
 import type { AdminRole } from '@careerpilot/domain-ui-logic';
-import type { SignInRequest } from '../types';
+import type { CompleteAccountLinkRequest, SignInRequest } from '../types';
 import type {
   AdminAccount,
   AdminApplicationRow,
   AdminDashboard,
+  AdminLinkDetails,
   AdminOpportunityRow,
   AdminSession,
   AdminSourceRow,
@@ -13,6 +14,7 @@ import type {
   EmergencyStopRequest,
   Page,
   PageQuery,
+  PasswordLinkRequest,
   PlatformSettings,
   PlatformSettingsUpdate,
 } from './admin-types';
@@ -20,6 +22,9 @@ import type {
 export interface AdminAuthApi {
   signIn(request: SignInRequest): Promise<AdminSession>;
   signOut(): Promise<void>;
+  requestPasswordLink(request: PasswordLinkRequest): Promise<void>;
+  inspectAccountLink(token: string): Promise<AdminLinkDetails>;
+  completeAccountLink(request: CompleteAccountLinkRequest): Promise<AdminSession>;
 }
 
 export interface AdminDashboardApi {

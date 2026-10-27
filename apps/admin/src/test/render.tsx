@@ -25,6 +25,7 @@ export interface Navigation {
   replace: Mock;
   back: Mock;
   params: Record<string, string>;
+  search: string;
   pathname: string;
 }
 
@@ -34,14 +35,19 @@ export async function adminSession(services: AdminServices, email = 'admin@sober
   return services.api.auth.signIn({ email, password: 'admin@sober.com' });
 }
 
-export async function renderAdmin(ui: ReactElement, options: { email?: string; signedIn?: boolean; params?: Record<string, string> } = {}): Promise<RenderResult & { services: AdminServices }> {
+export async function renderAdmin(
+  ui: ReactElement,
+  options: { email?: string; signedIn?: boolean; params?: Record<string, string>; search?: string; prepare?: (services: AdminServices) => Promise<unknown> } = {},
+): Promise<RenderResult & { services: AdminServices }> {
   navigation.params = options.params ?? {};
+  navigation.search = options.search ?? '';
   const store = createMemoryStore();
   const services = createAdminServices(testConfig(), store, testClock);
   if (options.signedIn !== false) {
     const session = await adminSession(services, options.email);
     await store.set('careerpilot.admin.session', JSON.stringify(session));
   }
+  await options.prepare?.(services);
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } } });
   queryClient.setQueryData(queryKeys.config, publicConfigFromDefaults(services.config));
   const result = render(

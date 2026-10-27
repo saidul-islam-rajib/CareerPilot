@@ -66,13 +66,17 @@ export function useAccountLink(token: string) {
 export function useSetPasswordForm(token: string) {
   const api = useApi();
   const session = useSession();
+  return useChoosePasswordForm<Session>((password) => api.auth.completeAccountLink({ token, password }), session.start);
+}
+
+export function useChoosePasswordForm<Result>(complete: (password: string) => Promise<Result>, onDone: (result: Result) => unknown) {
   const schemas = useSchemas();
   const { config } = usePublicConfig();
   const [values, setValues] = useState<SetPasswordInput>({ password: '', confirmPassword: '' });
   const [errors, setErrors] = useState<FieldErrors>({});
   const mutation = useMutation({
-    mutationFn: (input: SetPasswordInput) => api.auth.completeAccountLink({ token, password: input.password }),
-    onSuccess: (result: Session) => session.start(result),
+    mutationFn: (input: SetPasswordInput) => complete(input.password),
+    onSuccess: (result: Result) => onDone(result),
   });
   const submit = () => {
     const result = validate(schemas.setPassword, values);

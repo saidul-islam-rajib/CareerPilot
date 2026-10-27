@@ -1,5 +1,7 @@
 export const AdminRoutes = {
   signIn: '/sign-in',
+  setPassword: '/set-password',
+  forgotPassword: '/forgot-password',
   dashboard: '/',
   users: '/users',
   user: (id: string) => `/users/${encodeURIComponent(id)}`,

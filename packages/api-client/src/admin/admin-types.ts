@@ -24,6 +24,15 @@ export interface AdminSummary {
   role: AdminRole;
 }
 
+export interface AdminLinkDetails {
+  fullName: string;
+  email: string;
+}
+
+export interface PasswordLinkRequest {
+  email: string;
+}
+
 export interface AdminSession {
   accessToken: string;
   admin: AdminSummary;

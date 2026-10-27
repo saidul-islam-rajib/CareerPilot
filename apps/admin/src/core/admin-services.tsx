@@ -48,6 +48,7 @@ export function createAdminServices(config: AdminConfig, store: KeyValueStore, c
           chartDays: config.admin.chartDays,
           completeProfilePercent: config.admin.completeProfilePercent,
           linkTtlBounds: { min: config.accountLinks.minTtlMinutes, max: config.accountLinks.maxTtlMinutes },
+          linkToken: config.api.demoLinkToken,
         });
   return { config, api, store, clock, tokens, userServices };
 }

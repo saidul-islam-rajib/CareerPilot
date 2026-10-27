@@ -18,6 +18,7 @@ export const navigation = {
   replace: vi.fn(),
   back: vi.fn(),
   params: {} as Record<string, string>,
+  search: '',
   pathname: '/',
 };
 
@@ -25,6 +26,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: navigation.push, replace: navigation.replace, back: navigation.back }),
   useParams: () => navigation.params,
   usePathname: () => navigation.pathname,
+  useSearchParams: () => new URLSearchParams(navigation.search),
 }));
 
 vi.mock('next/link', () => ({
