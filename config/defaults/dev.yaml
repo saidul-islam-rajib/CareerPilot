@@ -1,5 +1,6 @@
 dev:
   phone_app_env: http
+  demo_app_env: local
   phone_server_port: 8081
   port_search_span: 20
   expo_offline: true

@@ -31,7 +31,7 @@ cp .env.example .env          # local-only defaults, never used outside your mac
 docker compose up -d --build  # PostgreSQL, Redis, Mailpit, migrations + demo seed, user API, admin API, web, admin
 ```
 
-Stop with `docker compose down` (add `-v` to wipe local data). The mobile app runs with `pnpm install && pnpm --filter @careerpilot/mobile start`.
+Stop with `docker compose down` (add `-v` to wipe local data). The mobile app runs with `pnpm install && pnpm --filter @careerpilot/mobile start` (real backend from Docker; `pnpm mobile:demo` for demo data).
 
 | Service | URL |
 |---|---|

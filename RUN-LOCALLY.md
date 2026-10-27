@@ -71,18 +71,20 @@ Optional, for an Android emulator on the PC: [Android Studio](https://developer.
 
 ```powershell
 pnpm install
-pnpm --filter @careerpilot/mobile start
+pnpm mobile:demo
 ```
 
 Scan the QR code: with the phone camera on iPhone, or from inside Expo Go on Android. In the terminal, press `a` to open the Android emulator, `w` for the browser, `r` to reload. Sign in with `admin@sober.com` / `admin@sober.com`. With demo data no email is sent: to verify an email address, enter the code `246810`; to create an account, tap **Open the link** on the **Check your email** screen and choose a password.
 
 ### B2. Real backend and real email (Docker from option A)
 
-Stop any other Metro first (Ctrl+C in its window), then:
+Stop any other Metro first (Ctrl+C in its window), then run the usual start command; it uses the real backend (`pnpm phone` does the same):
 
 ```powershell
-pnpm phone
+pnpm --filter @careerpilot/mobile start
 ```
+
+If Docker isn't running, it says so and starts with demo data instead.
 
 It finds your PC's Wi-Fi address, opens the user API to your Wi-Fi, points email links at your PC, starts Metro against the real backend, and pre-builds the app so Expo Go opens it quickly. Scan the QR code it prints. When it says **Phone app is ready**, open the app. Keep Expo Go signed out (see above).
 

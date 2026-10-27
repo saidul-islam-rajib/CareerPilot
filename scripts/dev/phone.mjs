@@ -95,9 +95,12 @@ async function serverPort(args) {
   return dev.phoneServerPort;
 }
 
-function startMetro(host, port, apiUrl, args) {
+function metroEnvironment(host, appSettings) {
   const offline = dev.expoOffline ? { [EXPO_OFFLINE_ENV]: '1' } : {};
-  const env = { ...process.env, ...offline, APP_ENV: dev.phoneAppEnv, [dev.apiUrlEnv]: apiUrl, [PACKAGER_HOSTNAME_ENV]: host };
+  return { ...process.env, ...offline, ...appSettings, [PACKAGER_HOSTNAME_ENV]: host };
+}
+
+function startMetro(env, port, args) {
   const portArgs = args.includes(PORT_FLAG) ? [] : [PORT_FLAG, String(port)];
   const mobileRoot = join(ROOT, MOBILE_FOLDER);
   const expoCli = createRequire(join(mobileRoot, PACKAGE_FILE)).resolve(EXPO_CLI);
@@ -122,7 +125,24 @@ async function warmBundles(serverUrl) {
   if (script) {
     await download(new URL(script, serverUrl));
   }
-  console.log(`\nPhone app is ready: open it in Expo Go now. Email links open ${serverUrl}`);
+  console.log('\nPhone app is ready: open it in Expo Go now.');
+}
+
+async function realBackend(host, serverUrl) {
+  const apiUrl = `http://${host}:${http.userApiPort}`;
+  if (!startApi(serverUrl)) {
+    return undefined;
+  }
+  if (!(await waitFor(`${apiUrl}${dev.apiCheckPath}`))) {
+    console.warn(`The API is not answering at ${apiUrl}. If Windows Firewall asks, allow Docker on private networks.`);
+  }
+  console.log(`\nReal backend: ${apiUrl} (real email). Email links open ${serverUrl}\n`);
+  return { APP_ENV: dev.phoneAppEnv, [dev.apiUrlEnv]: apiUrl };
+}
+
+function demoData() {
+  console.warn('\nDocker is not running, so the app starts with demo data and sends no email. Start Docker Desktop and run this again for the real backend.\n');
+  return { APP_ENV: dev.demoAppEnv };
 }
 
 async function main() {
@@ -133,17 +153,9 @@ async function main() {
   }
   const args = process.argv.slice(2);
   const port = await serverPort(args);
-  const apiUrl = `http://${host}:${http.userApiPort}`;
   const serverUrl = `http://${host}:${port}`;
-  console.log(`CareerPilot for your phone\n  API (real backend, real email): ${apiUrl}\n  Email links open:               ${serverUrl}\n`);
-  if (!startApi(serverUrl)) {
-    console.error('Docker did not start the API. Start Docker Desktop, then run `pnpm phone` again.');
-    process.exit(1);
-  }
-  if (!(await waitFor(`${apiUrl}${dev.apiCheckPath}`))) {
-    console.warn(`The API is not answering at ${apiUrl}. If Windows Firewall asks, allow Docker on private networks.`);
-  }
-  startMetro(host, port, apiUrl, args);
+  const appSettings = (await realBackend(host, serverUrl)) ?? demoData();
+  startMetro(metroEnvironment(host, appSettings), port, args);
   warmBundles(serverUrl).catch(() => undefined);
 }
 
