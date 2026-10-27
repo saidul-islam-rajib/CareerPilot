@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import type { LucideIcon } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 
@@ -14,7 +15,12 @@ export interface IconProps {
   color?: string;
 }
 
+const HIDDEN_FROM_SCREEN_READERS = Platform.select({
+  web: { 'aria-hidden': true },
+  default: { accessibilityElementsHidden: true, importantForAccessibility: 'no' as const },
+});
+
 export function Icon({ icon: Glyph, size = IconSize.Medium, color }: IconProps) {
   const theme = useTheme();
-  return <Glyph size={theme.iconSize[size]} color={color ?? theme.colors.text} strokeWidth={theme.iconStroke} accessibilityElementsHidden importantForAccessibility="no" />;
+  return <Glyph size={theme.iconSize[size]} color={color ?? theme.colors.text} strokeWidth={theme.iconStroke} {...HIDDEN_FROM_SCREEN_READERS} />;
 }
