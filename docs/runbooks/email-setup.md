@@ -4,8 +4,8 @@ CareerPilot sends account email (registration links, password-reset links, verif
 
 | Direction | Who does it |
 |---|---|
-| Receiving `info@team-sober.com` | Cloudflare Email Routing forwards it to `saidul.rajib.online@gmail.com` |
-| Sending as `info@team-sober.com` | Gmail SMTP (`smtp.gmail.com:587`, STARTTLS) signed in as `saidul.rajib.online@gmail.com` |
+| Receiving `info@team-sober.com` | Cloudflare Email Routing forwards it to your Gmail inbox |
+| Sending as `info@team-sober.com` | Gmail SMTP (`smtp.gmail.com:587`, STARTTLS) signed in as the Gmail account in `CAREERPILOT_MAIL_USER` (kept only in `.env`, never in a committed file) |
 
 ## How CareerPilot decides
 
@@ -23,19 +23,19 @@ CareerPilot sends account email (registration links, password-reset links, verif
 
 ## Steps for the owner (needs your Google and Cloudflare accounts)
 
-1. **Cloudflare: make sure `info@team-sober.com` forwards to Gmail.** Dashboard → `team-sober.com` → Email → Email Routing → Routing rules. There must be a rule `info@team-sober.com → saidul.rajib.online@gmail.com`, and that Gmail address must be a verified destination. Check by sending any email to `info@team-sober.com`; it should arrive in `saidul.rajib.online@gmail.com`.
-2. **Google: turn on 2-Step Verification** for `saidul.rajib.online@gmail.com` (https://myaccount.google.com/security).
+1. **Cloudflare: make sure `info@team-sober.com` forwards to Gmail.** Dashboard → `team-sober.com` → Email → Email Routing → Routing rules. There must be a rule from `info@team-sober.com` to your Gmail address, and that address must be a verified destination. Check by sending any email to `info@team-sober.com`; it should arrive in that inbox.
+2. **Google: turn on 2-Step Verification** for the Gmail account that will send (https://myaccount.google.com/security).
 3. **Google: create an App Password** at https://myaccount.google.com/apppasswords, name it `CareerPilot`, and copy the 16 characters. Your normal Gmail password does not work for SMTP.
-4. **Gmail: add the send-as alias.** In `saidul.rajib.online@gmail.com`: Settings (gear) → See all settings → Accounts and Import → Send mail as → Add another email address. Name `CareerPilot`, email `info@team-sober.com`, keep "Treat as an alias" ticked, choose "Send through Gmail". Gmail emails a confirmation code to `info@team-sober.com`; Cloudflare forwards it to the same inbox. Click the link or paste the code. Without this, Gmail refuses to send as `info@team-sober.com`.
+4. **Gmail: add the send-as alias.** In the sending Gmail account: Settings (gear) → See all settings → Accounts and Import → Send mail as → Add another email address. Name `CareerPilot`, email `info@team-sober.com`, keep "Treat as an alias" ticked, choose "Send through Gmail". Gmail emails a confirmation code to `info@team-sober.com`; Cloudflare forwards it to your inbox. Click the link or paste the code. Without this, Gmail sends from the Gmail address instead of `info@team-sober.com`.
 5. **Put the App Password in `.env`** in the project folder (the file is ignored by git; never commit it):
 
    ```
-   CAREERPILOT_MAIL_USER=saidul.rajib.online@gmail.com
+   CAREERPILOT_MAIL_USER=your-sending-account@gmail.com
    CAREERPILOT_MAIL_PASSWORD=your-16-character-app-password
    ```
 
-6. **Restart the API** so it reads the new values: `docker compose up -d user-api`.
-7. **Test.** Register at http://localhost:3000/register with `saidul.rajib.online+test1@gmail.com` (Gmail delivers `+anything` addresses to the same inbox, so you can test new registrations repeatedly). The email **Finish creating your CareerPilot account** arrives from `CareerPilot <info@team-sober.com>`; the first one may land in Spam, so mark it "Not spam". `saidul.rajib.online@gmail.com` itself is already registered, so registering it again sends **You already have a CareerPilot account** instead.
+6. **Restart the API** so it reads the new values: `docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d user-api` (or `pnpm phone` when testing on a phone).
+7. **Test.** Register at http://localhost:3000/register, or on the phone after `pnpm phone`, with `yourname+test1@gmail.com` (Gmail delivers `+anything` addresses to the same inbox, so you can test new registrations repeatedly). The page answers at once and the email **Finish creating your CareerPilot account** arrives within seconds from `CareerPilot <info@team-sober.com>`; the first one may land in Spam, so mark it "Not spam". The seeded real-mailbox account (`Planning/18-Seed-Data.md`) is already registered, so registering it again sends **You already have a CareerPilot account** instead.
 
 ## Production
 
@@ -45,10 +45,11 @@ Set the same two values in the production secret store and restart the API; noth
 
 | Symptom | Fix |
 |---|---|
-| Page says "We couldn't send the email" | Gmail rejected the login: create a new App Password (step 3) and update `.env`, then `docker compose up -d user-api`. |
+| No email arrives, and Grafana logs (http://localhost:3100) show `email_not_delivered` | The API sends in the background and retries; after the last try it withdraws the link so a new one can be requested at once. If Gmail rejected the login, create a new App Password (step 3), update `.env`, and restart the API (step 6). |
 | Mail arrives "from" the Gmail address instead of `info@team-sober.com` | The send-as alias is missing or unverified (step 4). |
 | Mail lands in Spam | Mark it "Not spam" once. For production volume, add DMARC (below) or move to a provider with DKIM for `team-sober.com` (Brevo or Resend free tiers); only the SMTP host, user, and password change. |
 | Nothing arrives at all | The address may be at a protected domain (`@sober.com`, `example.com`): look in Mailpit. |
+| The link opens `localhost` on the phone and fails | Start the phone app with `pnpm phone`: it points email links at your PC's Wi-Fi address. |
 
 ## Optional: DMARC
 
