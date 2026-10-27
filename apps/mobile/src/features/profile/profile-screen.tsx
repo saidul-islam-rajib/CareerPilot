@@ -73,39 +73,46 @@ function ContactRow({ contact, onPress }: { contact: Contact; onPress: () => voi
   const { config } = usePublicConfig();
   const canVerify = !contact.verified && (contact.kind === ContactKind.Email || config.verification.smsEnabled);
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`${t('common.edit')}: ${contact.value}`} onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space.sm, paddingVertical: theme.space.sm }}>
-      <Icon icon={contact.kind === ContactKind.Email ? Mail : Phone} color={theme.colors.primary} />
-      <View style={{ flex: 1, gap: theme.space.xxs }}>
-        <Text variant={TextVariant.Subheading} numberOfLines={1}>
-          {contact.value}
-        </Text>
-        <Row gap={theme.space.xs} wrap>
-          <Text variant={TextVariant.Caption} tone={TextTone.Muted}>
-            {contact.label}
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space.sm }}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${t('common.edit')}: ${contact.value}`}
+        onPress={onPress}
+        style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: theme.space.sm, paddingVertical: theme.space.sm }}
+      >
+        <Icon icon={contact.kind === ContactKind.Email ? Mail : Phone} color={theme.colors.primary} />
+        <View style={{ flex: 1, gap: theme.space.xxs }}>
+          <Text variant={TextVariant.Subheading} numberOfLines={1}>
+            {contact.value}
           </Text>
-          {contact.verified ? (
-            <Icon icon={BadgeCheck} size={IconSize.Small} color={theme.colors.success} />
-          ) : (
+          <Row gap={theme.space.xs} wrap>
             <Text variant={TextVariant.Caption} tone={TextTone.Muted}>
-              {t('profile.notVerified')}
+              {contact.label}
             </Text>
-          )}
-          {contact.isPrimary ? <Badge label={t('common.primary')} tone={StatusTone.Primary} /> : null}
-          {canVerify ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('verification.verifyContact', { value: contact.value })}
-              hitSlop={theme.space.sm}
-              onPress={() => router.push(Routes.verifyContact(contact.id))}
-            >
-              <Text variant={TextVariant.Caption} tone={TextTone.Primary}>
-                {t('verification.verify')}
+            {contact.verified ? (
+              <Icon icon={BadgeCheck} size={IconSize.Small} color={theme.colors.success} />
+            ) : (
+              <Text variant={TextVariant.Caption} tone={TextTone.Muted}>
+                {t('profile.notVerified')}
               </Text>
-            </Pressable>
-          ) : null}
-        </Row>
-      </View>
-    </Pressable>
+            )}
+            {contact.isPrimary ? <Badge label={t('common.primary')} tone={StatusTone.Primary} /> : null}
+          </Row>
+        </View>
+      </Pressable>
+      {canVerify ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('verification.verifyContact', { value: contact.value })}
+          hitSlop={theme.space.sm}
+          onPress={() => router.push(Routes.verifyContact(contact.id))}
+        >
+          <Text variant={TextVariant.Caption} tone={TextTone.Primary}>
+            {t('verification.verify')}
+          </Text>
+        </Pressable>
+      ) : null}
+    </View>
   );
 }
 

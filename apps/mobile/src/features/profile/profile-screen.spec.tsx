@@ -1,6 +1,6 @@
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { TEST_VERIFICATION_CODE } from '@careerpilot/client-core/src/testing';
 import { mockParams, mockRouter, renderWithProviders } from '@/test/render';
 import { DocumentScreen } from './document-screen';
@@ -24,6 +24,14 @@ describe('ProfileScreen', () => {
     for (const title of ['About', 'Emails and phones', 'Experience', 'Education', 'Skills', 'Documents', 'Languages', 'Tests and scores', 'Referees']) {
       expect(screen.getByText(title)).toBeTruthy();
     }
+  });
+
+  it('keeps the verify action beside the contact, not inside its edit button', async () => {
+    await renderWithProviders(<ProfileScreen />);
+    const verify = await screen.findByLabelText('Verify ayesha.personal@example.com');
+    expect(within(screen.getByLabelText('Edit: ayesha.personal@example.com')).queryByLabelText('Verify ayesha.personal@example.com')).toBeNull();
+    await fireEvent.press(verify);
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/profile/verify-contact', params: { id: 'c_email_personal' } });
   });
 
   it('reorders contacts with the accessible move buttons', async () => {
