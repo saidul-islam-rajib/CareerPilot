@@ -1,5 +1,6 @@
 import re
 from collections.abc import Callable
+from dataclasses import replace
 from typing import Any, cast
 from urllib.parse import urlsplit
 
@@ -153,11 +154,9 @@ class HtmlConnector:
         except FetchError:
             return listing
         postings = detail.job_postings()
-        if not postings:
-            return listing
-        richer = self._from_posting(postings[0], definition, listing.url, detail)
+        richer = self._from_posting(postings[0], definition, listing.url, detail) if postings else None
         if richer is None:
-            return listing
+            return replace(listing, description=detail.body_text())
         return RawListing(
             url=listing.url,
             title=listing.title,

@@ -195,3 +195,14 @@ def test_html_pages_list_job_links_and_enrich_the_first_ones() -> None:
     first, second = feed.listings
     assert (first.description, first.work_arrangement) == ("SQL and dashboards", "remote")
     assert (second.organization, second.description) == ("Acme", "")
+
+
+def test_job_pages_without_structured_data_give_their_description_text() -> None:
+    microdata = '<div itemscope><span itemprop="description"><p>Lead <b>solutions</b></p><script>x()</script></span><p>Footer</p></div>'
+    article = "<nav>Menu</nav><article><h1>Role</h1><p>Send your CV to jobs@acme.example.org</p></article>"
+    pages = {
+        "https://acme.example.org/jobs/backend-engineer-12": microdata,
+        "https://acme.example.org/jobs/frontend-engineer-13": article,
+    }
+    feed = HtmlConnector(lambda url: pages[url], max_details=2).parse(LISTED_PAGE, definition("html", "https://acme.example.org/careers"))
+    assert [j.description for j in feed.listings] == ["Lead solutions", "Role Send your CV to jobs@acme.example.org"]

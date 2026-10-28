@@ -15,6 +15,16 @@ TYPE = "@type"
 DASHES = (chr(0x2013), chr(0x2014))
 TITLE_SEPARATORS = (" | ", " - ", " :: ", *(f" {dash} " for dash in DASHES))
 HOST_PREFIXES = ("www.", "careers.", "career.", "jobs.", "job.")
+DESCRIPTION_PROPERTY = "description"
+CONTENT_TAGS = frozenset({"main", "article"})
+HIDDEN_TAGS = frozenset({"script", "style", "noscript", "template", "svg"})
+
+
+@dataclass
+class Capture:
+    tag: str
+    depth: int = 1
+    parts: list[str] = field(default_factory=list[str])
 
 
 @dataclass
@@ -31,6 +41,11 @@ class PageScan:
     anchors: list[Anchor] = field(default_factory=list[Anchor])
     feeds: list[str] = field(default_factory=list[str])
     structured: list[Any] = field(default_factory=list[Any])
+    description: str = ""
+    main_text: str = ""
+
+    def body_text(self) -> str:
+        return self.description or self.main_text
 
     def job_postings(self) -> list[dict[str, Any]]:
         found: list[dict[str, Any]] = []
@@ -79,9 +94,13 @@ class _Scanner(HTMLParser):
         self._in_title = False
         self._in_json_ld = False
         self._json_text: list[str] = []
+        self._hidden = 0
+        self._description: Capture | None = None
+        self._content: Capture | None = None
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         values = {key: value or "" for key, value in attrs}
+        self._open_captures(tag, values)
         if tag == "a" and values.get("href"):
             self._anchor = urljoin(self._page.url, values["href"].strip())
             self._anchor_text = []
@@ -95,7 +114,33 @@ class _Scanner(HTMLParser):
         elif tag == "link" and values.get("type", "").lower() in FEED_TYPES and values.get("href"):
             self._page.feeds.append(urljoin(self._page.url, values["href"].strip()))
 
+    def _open_captures(self, tag: str, values: dict[str, str]) -> None:
+        if tag in HIDDEN_TAGS:
+            self._hidden += 1
+        for capture in (self._description, self._content):
+            if capture is not None and capture.tag == tag:
+                capture.depth += 1
+        if self._description is None and not self._page.description and values.get("itemprop", "").lower() == DESCRIPTION_PROPERTY:
+            self._description = Capture(tag)
+        if self._content is None and not self._page.main_text and tag in CONTENT_TAGS:
+            self._content = Capture(tag)
+
+    def _close_captures(self, tag: str) -> None:
+        if tag in HIDDEN_TAGS and self._hidden:
+            self._hidden -= 1
+        if self._description is not None and self._description.tag == tag:
+            self._description.depth -= 1
+            if not self._description.depth:
+                self._page.description = plain_text(" ".join(self._description.parts))
+                self._description = None
+        if self._content is not None and self._content.tag == tag:
+            self._content.depth -= 1
+            if not self._content.depth:
+                self._page.main_text = plain_text(" ".join(self._content.parts))
+                self._content = None
+
     def handle_endtag(self, tag: str) -> None:
+        self._close_captures(tag)
         if tag == "a" and self._anchor is not None:
             self._page.anchors.append(Anchor(url=self._anchor, text=plain_text(" ".join(self._anchor_text))))
             self._anchor = None
@@ -109,6 +154,10 @@ class _Scanner(HTMLParser):
                 return
 
     def handle_data(self, data: str) -> None:
+        if not self._hidden:
+            for capture in (self._description, self._content):
+                if capture is not None:
+                    capture.parts.append(data)
         if self._anchor is not None:
             self._anchor_text.append(data)
         if self._in_title:
