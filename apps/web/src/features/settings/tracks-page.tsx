@@ -1,30 +1,26 @@
 'use client';
 
 import type { Track } from '@careerpilot/api-client';
-import { trackTitle, useEnumDisplay, usePublicConfig, useSettings, useT, useUpdateTrack } from '@careerpilot/client-core';
+import { trackTitle, useEnumDisplay, useSettings, useT, useTrackEditor } from '@careerpilot/client-core';
 import { ApplicationMode, EnumKey, enumValues } from '@careerpilot/domain-ui-logic';
 import { Card, CardTitle, ErrorState, LoadingState, PageHeader, Segmented, Stepper } from '@careerpilot/ui-web';
 
 function TrackEditor({ track }: { track: Track }) {
   const t = useT();
   const display = useEnumDisplay();
-  const { config } = usePublicConfig();
-  const update = useUpdateTrack();
-  const bounds = config.validationPolicy.track;
+  const editor = useTrackEditor(track);
   const modes = enumValues(ApplicationMode).map((mode) => ({ value: mode, label: display(EnumKey.ApplicationMode, mode).label }));
   return (
     <Card className="gap-3">
-      <CardTitle className="text-lg">{trackTitle(track, t)}</CardTitle>
+      <div className="flex items-center justify-between gap-2">
+        <CardTitle className="text-lg">{trackTitle(track, t)}</CardTitle>
+        {editor.saving ? <span className="text-xs text-muted">{t('common.saving')}</span> : null}
+      </div>
       <p className="text-sm text-muted">{t('settings.resultCount')}</p>
-      <Stepper
-        name={t('settings.resultCount')}
-        value={track.resultCount}
-        min={bounds.minResultCount}
-        max={bounds.maxResultCount}
-        onChange={(resultCount) => update.mutate({ id: track.id, update: { resultCount } })}
-      />
+      <Stepper name={t('settings.resultCount')} value={editor.count} min={editor.min} max={editor.max} onChange={editor.changeCount} />
       <p className="text-sm text-muted">{t('settings.applicationMode')}</p>
-      <Segmented options={modes} value={track.mode} onChange={(mode) => update.mutate({ id: track.id, update: { mode } })} label={t('settings.applicationMode')} />
+      <Segmented options={modes} value={editor.mode} onChange={editor.changeMode} label={t('settings.applicationMode')} />
+      {editor.failed ? <p role="alert" className="text-sm text-danger">{t('settings.trackSaveFailed')}</p> : null}
     </Card>
   );
 }

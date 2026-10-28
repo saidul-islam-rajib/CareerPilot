@@ -107,6 +107,7 @@ export const appConfigSchema = z.object({
   ui: z.object({
     activeTheme: themeKey,
     adminTheme: themeKey,
+    saveDelayMs: z.number().int().positive(),
   }),
   validation: z.object({
     password: z.object({

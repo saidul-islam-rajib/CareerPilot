@@ -31,6 +31,16 @@ describe('TracksScreen', () => {
       expect(track).toMatchObject({ resultCount: 6, mode: ApplicationMode.Automatic });
     });
   });
+
+  it('shows each tap at once and accepts a typed number', async () => {
+    const { services } = await renderWithProviders(<TracksScreen />);
+    const increase = (await screen.findAllByLabelText('Increase Matches shown per day'))[0]!;
+    await fireEvent.press(increase);
+    await fireEvent.press(increase);
+    expect(screen.getAllByLabelText('Matches shown per day: 7')[0]).toBeTruthy();
+    await fireEvent.changeText(screen.getAllByLabelText('Matches shown per day: 7')[0]!, '20');
+    await waitFor(async () => expect((await services.api.settings.getSettings()).tracks.find((t) => t.id === 'trk_remote')?.resultCount).toBe(20));
+  });
 });
 
 describe('PauseScreen', () => {

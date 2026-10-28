@@ -74,6 +74,7 @@ class DisplayConfig(Strict):
 class UiConfig(Strict):
     active_theme: ThemeKey
     admin_theme: ThemeKey
+    save_delay_ms: int = Field(gt=0)
 
 
 class PasswordPolicy(Strict):

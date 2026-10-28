@@ -90,6 +90,22 @@ describe('TracksPage', () => {
       expect(track).toMatchObject({ resultCount: 6, mode: ApplicationMode.Automatic });
     });
   });
+
+  it('shows each click at once, saves the final count, and accepts a typed number', async () => {
+    const { services } = renderWithProviders(<TracksPage />);
+    const increase = (await screen.findAllByRole('button', { name: 'Increase Matches shown per day' }))[0]!;
+    fireEvent.click(increase);
+    fireEvent.click(increase);
+    fireEvent.click(increase);
+    const count = screen.getAllByRole('spinbutton')[0]!;
+    expect(count).toHaveValue(8);
+    await waitFor(async () => expect((await services.api.settings.getSettings()).tracks.find((t) => t.id === 'trk_remote')?.resultCount).toBe(8));
+    fireEvent.change(count, { target: { value: '25' } });
+    await waitFor(async () => expect((await services.api.settings.getSettings()).tracks.find((t) => t.id === 'trk_remote')?.resultCount).toBe(25));
+    fireEvent.change(count, { target: { value: '999' } });
+    fireEvent.blur(count);
+    expect(count).toHaveValue(25);
+  });
 });
 
 describe('PausePage', () => {

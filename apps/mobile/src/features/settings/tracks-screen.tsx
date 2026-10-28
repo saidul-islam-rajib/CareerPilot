@@ -1,27 +1,30 @@
 import { ApplicationMode, EnumKey, enumValues } from '@careerpilot/domain-ui-logic';
-import { trackTitle, useEnumDisplay, usePublicConfig, useSettings, useT, useUpdateTrack } from '@careerpilot/client-core';
+import { trackTitle, useEnumDisplay, useSettings, useT, useTrackEditor } from '@careerpilot/client-core';
 import type { Track } from '@careerpilot/api-client';
 import { Card, ErrorState, LoadingState, Screen, Segmented, Stepper, Text, TextTone, TextVariant } from '@/ui';
 
 function TrackEditor({ track }: { track: Track }) {
   const t = useT();
   const display = useEnumDisplay();
-  const { config } = usePublicConfig();
-  const update = useUpdateTrack();
-  const bounds = config.validationPolicy.track;
+  const editor = useTrackEditor(track);
   const modes = enumValues(ApplicationMode).map((mode) => ({ value: mode, label: display(EnumKey.ApplicationMode, mode).label }));
-  const setCount = (resultCount: number) => update.mutate({ id: track.id, update: { resultCount } });
   return (
     <Card>
       <Text variant={TextVariant.Heading}>{trackTitle(track, t)}</Text>
       <Text variant={TextVariant.Label} tone={TextTone.Muted}>
         {t('settings.resultCount')}
       </Text>
-      <Stepper name={t('settings.resultCount')} value={track.resultCount} min={bounds.minResultCount} max={bounds.maxResultCount} onChange={setCount} />
+      <Stepper name={t('settings.resultCount')} value={editor.count} min={editor.min} max={editor.max} onChange={editor.changeCount} />
       <Text variant={TextVariant.Label} tone={TextTone.Muted}>
         {t('settings.applicationMode')}
       </Text>
-      <Segmented options={modes} value={track.mode} onChange={(mode) => update.mutate({ id: track.id, update: { mode } })} accessibilityLabel={t('settings.applicationMode')} />
+      <Segmented options={modes} value={editor.mode} onChange={editor.changeMode} accessibilityLabel={t('settings.applicationMode')} />
+      {editor.saving ? (
+        <Text variant={TextVariant.Caption} tone={TextTone.Muted}>
+          {t('common.saving')}
+        </Text>
+      ) : null}
+      {editor.failed ? <Text tone={TextTone.Danger}>{t('settings.trackSaveFailed')}</Text> : null}
     </Card>
   );
 }

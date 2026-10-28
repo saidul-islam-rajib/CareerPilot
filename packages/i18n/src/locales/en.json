@@ -46,6 +46,7 @@
     "decrease": "Decrease {name}",
     "increase": "Increase {name}",
     "valueOf": "{name}: {value}",
+    "range": "{min}–{max}",
     "undo": "Undo",
     "remove": "Remove",
     "upload": "Upload",
@@ -481,6 +482,7 @@
   "settings": {
     "title": "More",
     "tracks": "Tracks",
+    "trackSaveFailed": "We couldn't save this track. Try again.",
     "tracksBody": "Choose how many matches each track shows and how you apply.",
     "resultCount": "Matches shown per day",
     "applicationMode": "How to apply",

@@ -4,3 +4,5 @@ ui:
   # Super Admins override it at runtime in platform_settings.
   active_theme: sober
   admin_theme: sober
+  # Wait this long after the last change before saving a setting the user is adjusting (+/−, typing).
+  save_delay_ms: 700

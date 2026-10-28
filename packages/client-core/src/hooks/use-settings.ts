@@ -1,7 +1,10 @@
+import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { NotificationPreferences, PasswordChange, PauseOption, Settings, SubmissionWindow, TrackUpdate } from '@careerpilot/api-client';
+import type { NotificationPreferences, PasswordChange, PauseOption, Settings, SubmissionWindow, Track, TrackUpdate } from '@careerpilot/api-client';
+import type { ApplicationMode } from '@careerpilot/domain-ui-logic';
+import { usePublicConfig } from '../config/public-config';
 import { queryKeys } from '../query/query-keys';
-import { useApi } from '../services/app-services';
+import { useApi, useServices } from '../services/app-services';
 
 export function useSettings() {
   const api = useApi();
@@ -61,4 +64,46 @@ export function useSignInActivity() {
 export function useAccountDeletion() {
   const api = useApi();
   return useMutation({ mutationFn: () => api.settings.requestAccountDeletion() });
+}
+
+export function clampCount(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, Math.round(value)));
+}
+
+export function useTrackEditor(track: Track) {
+  const update = useUpdateTrack();
+  const { config } = usePublicConfig();
+  const services = useServices();
+  const bounds = config.validationPolicy.track;
+  const [count, setCount] = useState(track.resultCount);
+  const [mode, setMode] = useState(track.mode);
+  const pending = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    if (pending.current === undefined && !update.isPending) {
+      setCount(track.resultCount);
+      setMode(track.mode);
+    }
+  }, [track.resultCount, track.mode, update.isPending]);
+
+  useEffect(() => () => clearTimeout(pending.current), []);
+
+  const changeCount = (next: number) => {
+    const value = clampCount(next, bounds.minResultCount, bounds.maxResultCount);
+    setCount(value);
+    clearTimeout(pending.current);
+    pending.current = setTimeout(() => {
+      pending.current = undefined;
+      if (value !== track.resultCount) {
+        update.mutate({ id: track.id, update: { resultCount: value } });
+      }
+    }, services.config.ui.saveDelayMs);
+  };
+
+  const changeMode = (next: ApplicationMode) => {
+    setMode(next);
+    update.mutate({ id: track.id, update: { mode: next } });
+  };
+
+  return { count, mode, min: bounds.minResultCount, max: bounds.maxResultCount, changeCount, changeMode, saving: update.isPending, failed: update.isError };
 }
