@@ -102,8 +102,8 @@ class AdminOpportunityRow(CamelModel):
 
 
 class SourceDefaults(CamelModel):
-    type: OpportunityType
-    work_arrangement: WorkArrangement
+    type: OpportunityType = OpportunityType.JOB
+    work_arrangement: WorkArrangement = WorkArrangement.NOT_STATED
     country_code: str = ""
     location: str = ""
     organization: str = ""
@@ -112,11 +112,15 @@ class SourceDefaults(CamelModel):
 class SourceSetup(CamelModel):
     connector: str
     url: str
+    site_url: str = ""
     defaults: SourceDefaults
 
 
-class NewSource(SourceSetup):
-    name: str
+class NewSource(CamelModel):
+    url: str
+    name: str = ""
+    connector: str = ""
+    defaults: SourceDefaults = Field(default_factory=SourceDefaults)
 
 
 class AdminSourceRow(CamelModel):
@@ -128,6 +132,8 @@ class AdminSourceRow(CamelModel):
     failures_last24h: int = Field(alias="failuresLast24h")
     opportunities_found: int
     setup: SourceSetup | None = None
+    last_checked_at: str | None = None
+    last_error: str = ""
 
 
 class EmergencyStop(CamelModel):

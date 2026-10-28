@@ -39,8 +39,9 @@ from careerpilot.candidate.services.public_config import PublicConfigService, en
 from careerpilot.candidate.services.submission import SubmissionContext, SubmissionService
 from careerpilot.candidate.services.verification import ContactVerificationService, VerificationContext
 from careerpilot.discovery.connectors.registry import ConnectorRegistry, first_party_connectors
-from careerpilot.discovery.fetchers import fetcher_for
+from careerpilot.discovery.fetchers import PageFetcher, fetcher_for, page_fetcher_for
 from careerpilot.discovery.ports import Fetcher
+from careerpilot.discovery.resolver import SourceResolver
 from careerpilot.discovery.safety import public_https_url
 from careerpilot.discovery.service import DiscoveryContext, DiscoveryService
 from careerpilot.matching.claude import ClaudeMatcher
@@ -177,6 +178,7 @@ class ContainerOverrides:
     file_storage: FileStorage | None = None
     email_sender: EmailSender | None = None
     address_check: Callable[[str], str | None] | None = None
+    page_fetcher: PageFetcher | None = None
 
 
 def _redis_store(settings: Settings, url_env: str) -> KeyValueStore:
@@ -299,7 +301,8 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     cache_store, coord_store = _stores(cfg, clk, options)
     keys = KeySpace(cfg.coordination)
     guard = SignInGuard(coord_store, keys, cfg.coordination)
-    registry = options.connectors or first_party_connectors()
+    fetch_page = options.page_fetcher or page_fetcher_for(cfg.discovery)
+    registry = options.connectors or first_party_connectors(lambda url: fetch_page(url)[1], cfg.discovery.max_detail_pages)
     discovery = DiscoveryService(
         DiscoveryContext(
             config=cfg.discovery,
@@ -315,6 +318,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         connectors=frozenset(registry.keys()),
         check_address=options.address_check or public_https_url,
         suggestions=cfg.discovery.suggested_sources,
+        resolve=SourceResolver(fetch_page, options.connectors or first_party_connectors(), cfg.discovery).resolve,
     )
     opportunity_service = OpportunityService(candidate)
     approvals = ApprovalService(candidate, opportunity_service)
@@ -332,7 +336,9 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     )
     discover_when_empty(discovery, repos.directory, cfg.discovery.failing_after_failures)
     recommendations.refresh_all()
-    source_checks = SourceCheckRunner(discovery, repos.directory, cfg.discovery.failing_after_failures, recommendations.refresh_all)
+    source_checks = SourceCheckRunner(
+        discovery, repos.directory, cfg.discovery.failing_after_failures, recommendations.refresh_all, source_policy.healed
+    )
     sender = options.email_sender or email_sender_for(cfg)
     digests = DigestService(DigestContext(candidate=candidate, sender=sender))
     submissions = SubmissionService(SubmissionContext(candidate=candidate, platform=repos.platform.get, sender=sender, storage=storage))

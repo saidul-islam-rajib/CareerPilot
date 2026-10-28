@@ -9,8 +9,12 @@ from careerpilot.platform.config import DiscoveryConfig, FetchMode, SourceDefini
 
 USER_AGENT_HEADER = "User-Agent"
 UNSAFE_ADDRESS = "unsafe_address"
+HTTP_STATUS = "http_status"
+UNREACHABLE = "unreachable"
+PAGES_UNAVAILABLE = "pages_unavailable"
 
 AddressCheck = Callable[[str], str | None]
+PageFetcher = Callable[[str], tuple[str, str]]
 
 
 class UnsafeAddressError(Exception):
@@ -34,6 +38,12 @@ class HttpFetcher:
         self._check_address = check_address
 
     def fetch(self, definition: SourceDefinition) -> str:
+        return self.fetch_url(definition.url)[1]
+
+    def fetch_page(self, url: str) -> str:
+        return self.fetch_url(url)[1]
+
+    def fetch_url(self, url: str) -> tuple[str, str]:
         try:
             with httpx.Client(
                 headers={USER_AGENT_HEADER: self._config.user_agent},
@@ -41,13 +51,15 @@ class HttpFetcher:
                 follow_redirects=True,
                 event_hooks={"request": [self._guard]},
             ) as client:
-                response = client.get(definition.url)
+                response = client.get(url)
                 response.raise_for_status()
         except UnsafeAddressError as error:
             raise FetchError(UNSAFE_ADDRESS) from error
+        except httpx.HTTPStatusError as error:
+            raise FetchError(HTTP_STATUS) from error
         except httpx.HTTPError as error:
-            raise FetchError(type(error).__name__) from error
-        return response.text
+            raise FetchError(UNREACHABLE) from error
+        return str(response.url), response.text
 
     def _guard(self, request: httpx.Request) -> None:
         if self._check_address(str(request.url)) is None:
@@ -58,3 +70,11 @@ def fetcher_for(config: DiscoveryConfig) -> Fetcher:
     if config.fetch_mode is FetchMode.LIVE:
         return HttpFetcher(config)
     return FixtureFetcher(repository_root() / config.fixture_root)
+
+
+def no_pages(_url: str) -> tuple[str, str]:
+    raise FetchError(PAGES_UNAVAILABLE)
+
+
+def page_fetcher_for(config: DiscoveryConfig) -> PageFetcher:
+    return HttpFetcher(config).fetch_url if config.fetch_mode is FetchMode.LIVE else no_pages

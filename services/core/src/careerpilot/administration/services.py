@@ -30,6 +30,8 @@ from careerpilot.administration.models import (
 from careerpilot.administration.permissions import permissions_for_role
 from careerpilot.administration.ports import AdminCredential
 from careerpilot.administration.sources import SourcePolicy, new_source_from_suggestion, same_address
+from careerpilot.discovery.pages import host_name
+from careerpilot.discovery.resolver import normalized_link
 from careerpilot.platform.clock import iso, parse_iso
 from careerpilot.platform.config import AccountLinksConfig
 from careerpilot.platform.coordination import GuardScope, SignInGuard
@@ -347,14 +349,15 @@ class AdminCatalogService:
 
     def add_source(self, actor: AdminActor, source: NewSource) -> AdminSourceRow:
         actor.require(AdminArea.SOURCES, PermissionAction.CREATE)
-        name = require_name(source.name, self._ctx.settings.validation.name)
-        if source.connector not in self._sources.connectors:
-            raise validation_error("source_connector")
-        url = self._sources.check_address(source.url)
-        if url is None:
+        site_url = self._sources.check_address(normalized_link(source.url))
+        if site_url is None:
             raise validation_error("source_url")
-        if self._source_exists(url):
+        if self._source_exists(site_url):
             raise conflict("source_exists")
+        setup, found_name = self._setup(source, site_url)
+        if self._source_exists(setup.url):
+            raise conflict("source_exists")
+        name = require_name(source.name.strip() or found_name or host_name(site_url), self._ctx.settings.validation.name)
         row = AdminSourceRow(
             id=self._ctx.ids.next(SOURCE_ID_PREFIX),
             name=name,
@@ -362,13 +365,24 @@ class AdminCatalogService:
             enabled=True,
             failuresLast24h=0,
             opportunities_found=0,
-            setup=SourceSetup(connector=source.connector, url=url, defaults=self._clean_defaults(source)),
+            setup=setup,
         )
         self._ctx.directory.save_source(row)
         actor.record("source.added", name)
         updated, check = self._checks.check(row.id)
         actor.record("source.checked", f"{updated.name} · {check.outcome.value}")
         return updated
+
+    def _setup(self, source: NewSource, site_url: str) -> tuple[SourceSetup, str]:
+        defaults = self._clean_defaults(source)
+        if source.connector:
+            if source.connector not in self._sources.connectors:
+                raise validation_error("source_connector")
+            return SourceSetup(connector=source.connector, url=site_url, site_url=site_url, defaults=defaults), ""
+        resolved = self._sources.resolved_setup(site_url, defaults)
+        if resolved is None:
+            raise validation_error("jobs_not_found")
+        return resolved
 
     def _clean_defaults(self, source: NewSource) -> SourceDefaults:
         defaults = source.defaults
@@ -385,7 +399,10 @@ class AdminCatalogService:
         )
 
     def _source_exists(self, url: str) -> bool:
-        return any(row.setup is not None and same_address(row.setup.url, url) for row in self._ctx.directory.sources())
+        return any(
+            row.setup is not None and (same_address(row.setup.url, url) or same_address(row.setup.site_url, url))
+            for row in self._ctx.directory.sources()
+        )
 
     def _source(self, source_id: str) -> AdminSourceRow:
         row = next((s for s in self._ctx.directory.sources() if s.id == source_id), None)

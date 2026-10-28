@@ -1,6 +1,6 @@
 from collections.abc import Callable
 
-from careerpilot.administration.models import AdminOpportunityRow, AdminSourceRow
+from careerpilot.administration.models import AdminOpportunityRow, AdminSourceRow, SourceSetup
 from careerpilot.administration.ports import Directory
 from careerpilot.discovery.models import CheckOutcome, Listing, ListingChange, SourceCheck
 from careerpilot.discovery.service import DiscoveryService
@@ -8,6 +8,9 @@ from careerpilot.platform.enums import SourceStatus
 from careerpilot.platform.errors import conflict, not_found
 
 NO_APPLICATIONS = 0
+NO_JOBS_FOUND = "no_jobs_found"
+
+SetupHealer = Callable[[SourceSetup], SourceSetup | None]
 
 
 def opportunity_row(listing: Listing) -> AdminOpportunityRow:
@@ -28,10 +31,19 @@ def source_row_after(row: AdminSourceRow, check: SourceCheck, failing_after: int
     if check.outcome is CheckOutcome.FAILED:
         failures = row.failures_last24h + 1
         status = SourceStatus.FAILING if failures >= failing_after else SourceStatus.DEGRADED
-        return row.model_copy(update={"failures_last24h": failures, "status": status})
-    status = SourceStatus.HEALTHY if check.outcome is CheckOutcome.SUCCEEDED else SourceStatus.DEGRADED
+        return row.model_copy(
+            update={"failures_last24h": failures, "status": status, "last_checked_at": check.checked_at, "last_error": check.error or ""}
+        )
+    status = SourceStatus.HEALTHY if check.outcome is CheckOutcome.SUCCEEDED and check.found else SourceStatus.DEGRADED
     return row.model_copy(
-        update={"last_success_at": check.checked_at, "failures_last24h": 0, "status": status, "opportunities_found": found}
+        update={
+            "last_success_at": check.checked_at,
+            "last_checked_at": check.checked_at,
+            "failures_last24h": 0,
+            "status": status,
+            "opportunities_found": found,
+            "last_error": "" if check.found else NO_JOBS_FOUND,
+        }
     )
 
 
@@ -52,14 +64,28 @@ def discover_when_empty(discovery: DiscoveryService, directory: Directory, faili
     return True
 
 
+def no_healing(_setup: SourceSetup) -> SourceSetup | None:
+    return None
+
+
+def needs_healing(check: SourceCheck) -> bool:
+    return check.outcome is CheckOutcome.FAILED or check.found == 0
+
+
 class SourceCheckRunner:
     def __init__(
-        self, discovery: DiscoveryService, directory: Directory, failing_after: int, on_new_listings: Callable[[], object]
+        self,
+        discovery: DiscoveryService,
+        directory: Directory,
+        failing_after: int,
+        on_new_listings: Callable[[], object],
+        heal: SetupHealer = no_healing,
     ) -> None:
         self._discovery = discovery
         self._directory = directory
         self._failing_after = failing_after
         self._on_new_listings = on_new_listings
+        self._heal = heal
 
     def due_sources(self) -> list[str]:
         return [row.id for row in self._directory.sources() if row.enabled and self._discovery.is_configured(row.id)]
@@ -71,7 +97,19 @@ class SourceCheckRunner:
         if not row.enabled:
             raise conflict("source_disabled")
         check = self._discovery.run(source_id)
+        if needs_healing(check):
+            healed = self._healed(row)
+            if healed is not None:
+                row, check = healed, self._discovery.run(source_id)
         updated = apply_check(self._directory, row, check, self._failing_after)
         if check.listings(ListingChange.NEW):
             self._on_new_listings()
         return updated, check
+
+    def _healed(self, row: AdminSourceRow) -> AdminSourceRow | None:
+        setup = self._heal(row.setup) if row.setup is not None else None
+        if setup is None or row.setup is None or (setup.connector, setup.url) == (row.setup.connector, row.setup.url):
+            return None
+        healed = row.model_copy(update={"setup": setup})
+        self._directory.save_source(healed)
+        return healed

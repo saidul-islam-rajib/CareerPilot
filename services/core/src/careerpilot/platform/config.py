@@ -209,6 +209,13 @@ class WarningSignConfig(Strict):
     free_mail_domains: list[str]
 
 
+class JobBoardPattern(Strict):
+    connector: str
+    pattern: str
+    api: str
+    reserved: list[str] = Field(default_factory=list[str])
+
+
 class DiscoveryConfig(Strict):
     fetch_mode: FetchMode
     fixture_root: str = ""
@@ -216,6 +223,13 @@ class DiscoveryConfig(Strict):
     timeout_seconds: float = Field(gt=0)
     max_listings_per_check: int = Field(gt=0)
     failing_after_failures: int = Field(gt=0)
+    max_resolve_pages: int = Field(gt=0)
+    max_career_links: int = Field(gt=0)
+    min_job_links: int = Field(gt=0)
+    enough_job_links: int = Field(gt=0)
+    max_detail_pages: int = Field(ge=0)
+    job_page_paths: list[str]
+    job_boards: list[JobBoardPattern]
     sources: dict[str, SourceDefinition]
     suggested_sources: list[SuggestedSource] = Field(default_factory=list[SuggestedSource])
     warning_signs: WarningSignConfig

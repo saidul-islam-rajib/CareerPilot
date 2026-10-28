@@ -102,7 +102,7 @@ def test_registry_rejects_incompatible_plugins() -> None:
 
     with pytest.raises(ValueError, match="rss"):
         ConnectorRegistry([OldConnector()])
-    assert first_party_connectors().keys() == ["greenhouse", "rss"]
+    assert first_party_connectors().keys() == ["ashby", "easyjobs", "greenhouse", "html", "lever", "rss", "smartrecruiters", "workable"]
 
 
 def test_fingerprint_and_url_ignore_formatting() -> None:

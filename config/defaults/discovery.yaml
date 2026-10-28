@@ -4,6 +4,45 @@ discovery:
   timeout_seconds: 10
   max_listings_per_check: 200
   failing_after_failures: 3
+  max_resolve_pages: 10
+  max_career_links: 5
+  min_job_links: 2
+  enough_job_links: 10
+  max_detail_pages: 15
+  job_page_paths:
+    - /careers
+    - /career
+    - /jobs
+    - /join-us
+    - /careers/jobs
+    - /search/
+  job_boards:
+    - connector: greenhouse
+      pattern: '(?:boards|job-boards)\.(?:eu\.)?greenhouse\.io/(?:embed/job_board(?:/js)?\?for=)?([A-Za-z0-9_-]+)'
+      api: "https://boards-api.greenhouse.io/v1/boards/{token}/jobs?content=true"
+      reserved: [embed, v1]
+    - connector: greenhouse
+      pattern: 'boards-api\.greenhouse\.io/v1/boards/([A-Za-z0-9_-]+)'
+      api: "https://boards-api.greenhouse.io/v1/boards/{token}/jobs?content=true"
+    - connector: lever
+      pattern: '(?:jobs\.lever\.co|api\.lever\.co/v0/postings)/([A-Za-z0-9_.-]+)'
+      api: "https://api.lever.co/v0/postings/{token}?mode=json"
+    - connector: ashby
+      pattern: '(?:jobs\.ashbyhq\.com|api\.ashbyhq\.com/posting-api/job-board)/([A-Za-z0-9_.%-]+)'
+      api: "https://api.ashbyhq.com/posting-api/job-board/{token}"
+      reserved: [api]
+    - connector: workable
+      pattern: '(?:apply\.workable\.com|[a-z0-9-]+\.workable\.com/api/v1/widget/accounts)/([A-Za-z0-9_-]+)'
+      api: "https://apply.workable.com/api/v1/widget/accounts/{token}?details=true"
+      reserved: [api, j]
+    - connector: smartrecruiters
+      pattern: '(?:careers|jobs)\.smartrecruiters\.com/([A-Za-z0-9_-]+)'
+      api: "https://api.smartrecruiters.com/v1/companies/{token}/postings"
+      reserved: [api, embed]
+    - connector: easyjobs
+      pattern: '([a-z0-9][a-z0-9-]*)\.easy\.jobs'
+      api: "https://{token}.easy.jobs/api/career/home"
+      reserved: [www, app, api, blog]
   sources: {}
   suggested_sources:
     - name: "We Work Remotely: Programming"

@@ -1,3 +1,4 @@
+import json
 from collections.abc import Callable
 
 import pytest
@@ -24,14 +25,38 @@ FEED_URL = "https://jobs.example.org/remote.rss"
 UNSAFE_URL = "https://intranet.example.org/feed.rss"
 FIXTURES = repository_root() / DISCOVERY_FIXTURES_FILE.parent
 REMOTE = SourceDefaults(type=OpportunityType.JOB, work_arrangement=WorkArrangement.REMOTE, location="Remote")
+SITE = "https://acme.example.org"
+LEVER_API = "https://api.lever.co/v0/postings/acme?mode=json"
+LEVER_BODY = json.dumps(
+    [
+        {"text": "Backend Engineer", "hostedUrl": "https://jobs.lever.co/acme/1", "descriptionPlain": "Python APIs"},
+        {"text": "Data Analyst", "hostedUrl": "https://jobs.lever.co/acme/2", "descriptionPlain": "SQL"},
+    ]
+)
+ACME_HOME = (
+    '<html><head><meta property="og:site_name" content="Acme"></head><body><a href="https://jobs.lever.co/acme">Careers</a></body></html>'
+)
+
+
+class FakeSite:
+    def __init__(self) -> None:
+        self.pages: dict[str, str] = {}
+
+    def __call__(self, url: str) -> tuple[str, str]:
+        if url not in self.pages:
+            raise FetchError("unreachable")
+        return url, self.pages[url]
 
 
 class RecordingFetcher:
-    def __init__(self) -> None:
+    def __init__(self, site: FakeSite) -> None:
         self.fetched: list[str] = []
+        self.site = site
 
     def fetch(self, definition: SourceDefinition) -> str:
         self.fetched.append(definition.url)
+        if definition.url in self.site.pages:
+            return self.site.pages[definition.url]
         fixture = "northwind-greenhouse.json" if definition.connector == "greenhouse" else "remote-board.rss"
         return (FIXTURES / fixture).read_text(encoding="utf-8")
 
@@ -41,12 +66,17 @@ def accept_except(*unsafe: str) -> Callable[[str], str | None]:
 
 
 @pytest.fixture
-def fetcher() -> RecordingFetcher:
-    return RecordingFetcher()
+def site() -> FakeSite:
+    return FakeSite()
 
 
 @pytest.fixture
-def app(clock: FixedClock, outbox: InMemoryEmailSender, fetcher: RecordingFetcher) -> Container:
+def fetcher(site: FakeSite) -> RecordingFetcher:
+    return RecordingFetcher(site)
+
+
+@pytest.fixture
+def app(clock: FixedClock, outbox: InMemoryEmailSender, fetcher: RecordingFetcher, site: FakeSite) -> Container:
     overrides = ContainerOverrides(
         settings=sample_settings(),
         repositories=sample_repositories(load_sample_data(clock.now())),
@@ -58,6 +88,7 @@ def app(clock: FixedClock, outbox: InMemoryEmailSender, fetcher: RecordingFetche
         email_sender=outbox,
         fetcher=fetcher,
         address_check=accept_except(UNSAFE_URL),
+        page_fetcher=site,
     )
     return build_container(overrides)
 
@@ -154,3 +185,35 @@ def test_live_fetches_stop_at_unsafe_addresses_before_connecting() -> None:
                 connector="rss", url=FEED_URL, defaults=ListingDefaults(type="job", work_arrangement="remote", country_code="")
             )
         )
+
+
+def test_a_website_link_alone_finds_the_job_board_and_its_jobs(app: Container, site: FakeSite) -> None:
+    site.pages.update({SITE: ACME_HOME, LEVER_API: LEVER_BODY})
+    row = app.admin_catalog.add_source(actor(app), NewSource(url="acme.example.org"))
+    assert row.setup is not None
+    assert (row.name, row.setup.connector, row.setup.url, row.setup.site_url) == ("Acme", "lever", LEVER_API, SITE)
+    assert (row.status, row.opportunities_found, row.last_error) == (SourceStatus.HEALTHY, 2, "")
+    titles = {listing.title for listing in app.discovery.listings() if listing.organization == "Acme"}
+    assert titles == {"Backend Engineer", "Data Analyst"}
+
+
+def test_a_website_without_jobs_is_refused_and_not_saved(app: Container) -> None:
+    admin = actor(app)
+    before = len(app.admin_catalog.sources(admin, PageRequest(page_size=500)).items)
+    outcome = failure(lambda: app.admin_catalog.add_source(admin, NewSource(url="https://empty.example.org")))
+    assert outcome == (ErrorCode.VALIDATION, "jobs_not_found")
+    assert len(app.admin_catalog.sources(admin, PageRequest(page_size=500)).items) == before
+
+
+def test_a_source_saved_with_the_wrong_reader_heals_itself_on_the_next_check(app: Container, site: FakeSite) -> None:
+    site.pages.update({SITE: ACME_HOME, LEVER_API: LEVER_BODY})
+    row = app.admin_catalog.add_source(actor(app), NewSource(url=SITE, name="Acme", connector="rss"))
+    assert row.setup is not None
+    assert (row.setup.connector, row.setup.url, row.status, row.opportunities_found) == ("lever", LEVER_API, SourceStatus.HEALTHY, 2)
+
+
+def test_failed_checks_show_why_until_a_check_succeeds(app: Container) -> None:
+    admin = actor(app)
+    row = app.admin_catalog.add_source(admin, NewSource(url=FEED_URL, name="Broken board", connector="lever"))
+    assert (row.status, row.last_error) == (SourceStatus.DEGRADED, "invalid_board")
+    assert row.last_checked_at is not None
