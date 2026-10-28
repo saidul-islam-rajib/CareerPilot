@@ -5,7 +5,7 @@ import { trackTitle, useEnumDisplay, useSettings, useT, useTrackEditor } from '@
 import { ApplicationMode, EnumKey, enumValues } from '@careerpilot/domain-ui-logic';
 import { Card, CardTitle, ErrorState, LoadingState, PageHeader, Segmented, Stepper } from '@careerpilot/ui-web';
 
-function TrackEditor({ track }: { track: Track }) {
+function TrackEditor({ track, homeCountry }: { track: Track; homeCountry: string }) {
   const t = useT();
   const display = useEnumDisplay();
   const editor = useTrackEditor(track);
@@ -13,7 +13,7 @@ function TrackEditor({ track }: { track: Track }) {
   return (
     <Card className="gap-3">
       <div className="flex items-center justify-between gap-2">
-        <CardTitle className="text-lg">{trackTitle(track, t)}</CardTitle>
+        <CardTitle className="text-lg">{trackTitle(track, t, homeCountry)}</CardTitle>
         {editor.saving ? <span className="text-xs text-muted">{t('common.saving')}</span> : null}
       </div>
       <p className="text-sm text-muted">{t('settings.resultCount')}</p>
@@ -37,7 +37,7 @@ export function TracksPage() {
         {[...(settings.data?.tracks ?? [])]
           .sort((a, b) => a.position - b.position)
           .map((track) => (
-            <TrackEditor key={track.id} track={track} />
+            <TrackEditor key={track.id} track={track} homeCountry={settings.data?.homeCountry ?? ''} />
           ))}
       </div>
     </>

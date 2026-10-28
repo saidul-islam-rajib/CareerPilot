@@ -7,7 +7,7 @@ import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { ComingUpSection } from '@/features/applications/follow-up-screens';
-import { OpportunityCard } from '@/features/opportunities/opportunity-card';
+import { TodayTracks } from './today-tracks';
 import { Banner, BrandMark, Button, ButtonVariant, Card, EmptyState, ErrorState, LoadingState, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
 
 function StatTile({ label, value, onPress }: { label: string; value: number; onPress?: () => void }) {
@@ -74,17 +74,7 @@ export function HomeScreen() {
 
             {dashboard.data.upcoming.length > 0 ? <ComingUpSection items={dashboard.data.upcoming} /> : null}
 
-            {dashboard.data.tracks.map(({ track, opportunities }) => (
-              <Section key={track.id} title={trackTitle(track, t)}>
-                {opportunities.length === 0 ? (
-                  <EmptyState body={t('home.trackEmpty')} />
-                ) : (
-                  opportunities.map((opportunity) => (
-                    <OpportunityCard key={opportunity.id} opportunity={opportunity} onPress={() => router.push(Routes.opportunity(opportunity.id))} />
-                  ))
-                )}
-              </Section>
-            ))}
+            <TodayTracks dashboard={dashboard.data} />
           </>
         ) : null}
       </Screen>

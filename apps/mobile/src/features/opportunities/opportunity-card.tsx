@@ -1,6 +1,6 @@
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useFormat, usePublicConfig, useT } from '@careerpilot/client-core';
-import { Building2, CalendarClock, MapPin } from '@/ui/icons';
+import { Building2, CalendarClock, MapPin, Star } from '@/ui/icons';
 import { EnumKey, StatusTone } from '@careerpilot/domain-ui-logic';
 import type { DisplaySettings, OpportunitySummary } from '@careerpilot/api-client';
 import { useTheme } from '@/core/theme/theme';
@@ -13,7 +13,13 @@ export function matchTone(score: number, display: DisplaySettings): StatusTone {
   return score >= display.fairMatchScore ? StatusTone.Primary : StatusTone.Neutral;
 }
 
-export function OpportunityCard({ opportunity, onPress }: { opportunity: OpportunitySummary; onPress: () => void }) {
+export interface FavoriteToggle {
+  active: boolean;
+  label: string;
+  onToggle: () => void;
+}
+
+export function OpportunityCard({ opportunity, onPress, favorite }: { opportunity: OpportunitySummary; onPress: () => void; favorite?: FavoriteToggle }) {
   const theme = useTheme();
   const t = useT();
   const format = useFormat();
@@ -56,6 +62,18 @@ export function OpportunityCard({ opportunity, onPress }: { opportunity: Opportu
           <Text variant={TextVariant.Label} style={{ marginLeft: 'auto' }}>
             {salary}
           </Text>
+        ) : null}
+        {favorite ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={favorite.label}
+            accessibilityState={{ selected: favorite.active }}
+            onPress={favorite.onToggle}
+            hitSlop={theme.space.sm}
+            style={{ marginLeft: salary ? 0 : 'auto', minWidth: theme.touchTarget, minHeight: theme.touchTarget, alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Icon icon={Star} color={favorite.active ? theme.colors.warning : theme.colors.textMuted} fill={favorite.active ? theme.colors.warning : undefined} />
+          </Pressable>
         ) : null}
       </Row>
     </Card>

@@ -129,6 +129,7 @@ export interface SettingsApi {
   resume(): Promise<Settings>;
   updateSubmissionWindow(window: SubmissionWindow): Promise<Settings>;
   updateExcludedCountries(countries: string[]): Promise<Settings>;
+  updateFavoriteCompanies(companies: string[]): Promise<Settings>;
   listSignInActivity(): Promise<SignInEvent[]>;
   requestAccountDeletion(): Promise<DeletionRequest>;
   changePassword(change: PasswordChange): Promise<void>;

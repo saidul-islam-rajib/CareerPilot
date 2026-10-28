@@ -83,6 +83,7 @@ class UiConfig(Strict):
     active_theme: ThemeKey
     admin_theme: ThemeKey
     save_delay_ms: int = Field(gt=0)
+    search_suggestion_limit: int = Field(gt=0)
     submission_window_presets: list[TimeRangePreset]
 
 

@@ -46,10 +46,43 @@ describe('HomePage', () => {
     renderWithProviders(<HomePage />);
     expect(await screen.findByText('Hello, Ayesha')).toBeInTheDocument();
     expect(await screen.findByLabelText('Awaiting approval: 2')).toHaveAttribute('href', '/approvals');
-    expect(await screen.findByRole('heading', { name: 'Bangladesh government' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Government jobs in Bangladesh' })).toBeInTheDocument();
+    const home = screen.getByRole('heading', { name: 'On-site jobs in Bangladesh' });
+    const remote = screen.getByRole('heading', { name: 'Remote jobs' });
+    expect(home.compareDocumentPosition(remote) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(await screen.findByRole('link', { name: /Senior Frontend Engineer/ })).toHaveAttribute('href', '/opportunities/opp_remote_frontend');
     expect(await screen.findByRole('heading', { name: 'Coming up' })).toBeInTheDocument();
     expect(await screen.findByRole('link', { name: /First interview with the engineering manager/ })).toHaveAttribute('href', '/applications/app_bay');
+  });
+});
+
+describe('Today search, sections, and favorites', () => {
+  it('suggests companies and roles from the jobs shown and filters the lists', async () => {
+    renderWithProviders(<HomePage />);
+    const search = await screen.findByRole('combobox', { name: 'Search jobs by company or role' });
+    fireEvent.change(search, { target: { value: 'north' } });
+    const option = await screen.findByRole('option', { name: /Northwind Labs/ });
+    fireEvent.mouseDown(option);
+    expect(search).toHaveValue('Northwind Labs');
+    expect(await screen.findByText(/jobs? match/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Senior Frontend Engineer/ })).toBeInTheDocument();
+    fireEvent.change(search, { target: { value: 'zzzz' } });
+    expect(await screen.findByText(/No jobs on Today match/)).toBeInTheDocument();
+  });
+
+  it('collapses and expands a track', async () => {
+    renderWithProviders(<HomePage />);
+    const toggle = await screen.findByRole('button', { name: 'Hide Remote jobs' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.click(toggle);
+    expect(screen.getByRole('button', { name: 'Show Remote jobs' })).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('marks a company as a favorite', async () => {
+    const { services } = renderWithProviders(<HomePage />);
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Add Northwind Labs to favorites' }))[0]!);
+    expect(await screen.findByText('Northwind Labs is a favorite. Its jobs come first.')).toBeInTheDocument();
+    expect((await services.api.settings.getSettings()).favoriteCompanies).toEqual(['Northwind Labs']);
   });
 });
 

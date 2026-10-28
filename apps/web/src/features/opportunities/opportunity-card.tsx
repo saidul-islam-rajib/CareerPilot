@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Building2, CalendarClock, MapPin } from 'lucide-react';
+import { Building2, CalendarClock, MapPin, Star } from 'lucide-react';
 import type { DisplaySettings, OpportunitySummary } from '@careerpilot/api-client';
 import { useFormat, usePublicConfig, useT } from '@careerpilot/client-core';
 import { EnumKey, RequirementCheck, StatusTone } from '@careerpilot/domain-ui-logic';
@@ -15,16 +15,27 @@ export function matchTone(score: number, display: DisplaySettings): StatusTone {
   return score >= display.fairMatchScore ? StatusTone.Primary : StatusTone.Neutral;
 }
 
-export function OpportunityCard({ opportunity, href }: { opportunity: OpportunitySummary; href?: string }) {
+export interface FavoriteToggle {
+  active: boolean;
+  label: string;
+  onToggle: () => void;
+}
+
+export function OpportunityCard({ opportunity, href, favorite }: { opportunity: OpportunitySummary; href?: string; favorite?: FavoriteToggle }) {
   const t = useT();
   const format = useFormat();
   const { config } = usePublicConfig();
   const salary = format.money(opportunity.compensation);
   const urgent = opportunity.deadline !== undefined && format.daysLeft(opportunity.deadline) <= config.display.urgentDeadlineDays;
   return (
+    <div className="relative">
     <Link
       href={href ?? Routes.opportunity(opportunity.id)}
-      className="flex flex-col gap-2 rounded-card border border-border bg-card p-4 transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+      className={cn(
+        'flex h-full flex-col gap-2 rounded-card border bg-card p-4 transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+        favorite?.active ? 'border-warning' : 'border-border',
+        favorite ? 'pb-12' : undefined,
+      )}
     >
       <div className="flex items-start gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -53,5 +64,18 @@ export function OpportunityCard({ opportunity, href }: { opportunity: Opportunit
         {salary ? <span className="font-medium text-foreground">{salary}</span> : null}
       </div>
     </Link>
+    {favorite ? (
+      <button
+        type="button"
+        onClick={favorite.onToggle}
+        aria-pressed={favorite.active}
+        aria-label={favorite.label}
+        title={favorite.label}
+        className="absolute bottom-2 right-2 flex size-10 items-center justify-center rounded-full text-muted transition-colors hover:bg-surface hover:text-warning focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+      >
+        <Star className={cn('size-5', favorite.active ? 'fill-warning text-warning' : undefined)} aria-hidden />
+      </button>
+    ) : null}
+    </div>
   );
 }

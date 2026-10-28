@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { Camera, ChevronRight, Crop, MapPin, Pencil, Trash2, UserRound } from 'lucide-react';
 import type { Profile } from '@careerpilot/api-client';
 import type { PhotoCrop } from '@careerpilot/domain-ui-logic';
-import { profileErrorKey, useProfileSettings, useRemovePhoto, useSetPhoto, useSetPhotoCrop, useT, useUpdateBasics } from '@careerpilot/client-core';
+import { countryName, profileErrorKey, usePublicConfig, useProfileSettings, useRemovePhoto, useSetPhoto, useSetPhotoCrop, useT, useUpdateBasics } from '@careerpilot/client-core';
 import { Avatar, Button, Card, FormDialog, ImageViewer, OverflowMenu, PhotoCropDialog, ProgressRing, TextAreaField, TextField, checkFile } from '@careerpilot/ui-web';
 import { sectionAnchor, uploadSource, useProfileFeedback, useUploadRules } from './profile-support';
 
@@ -14,6 +14,7 @@ export const BasicsField = {
   FullName: 'fullName',
   Headline: 'headline',
   Location: 'location',
+  CountryCode: 'countryCode',
   Summary: 'summary',
 } as const;
 export type BasicsField = (typeof BasicsField)[keyof typeof BasicsField];
@@ -23,7 +24,15 @@ export function BasicsDialog({ profile, open, onOpenChange }: { profile: Profile
   const feedback = useProfileFeedback();
   const { settings } = useProfileSettings();
   const update = useUpdateBasics();
-  const [values, setValues] = useState({ fullName: profile.fullName, headline: profile.headline, location: profile.location, summary: profile.summary });
+  const { config } = usePublicConfig();
+  const locale = config.locale;
+  const [values, setValues] = useState({
+    fullName: profile.fullName,
+    headline: profile.headline,
+    location: profile.location,
+    countryCode: profile.countryCode ?? '',
+    summary: profile.summary,
+  });
   const [error, setError] = useState<string>();
   const set = (field: BasicsField, value: string) => setValues((current) => ({ ...current, [field]: value }));
   const submit = () => {
@@ -45,6 +54,14 @@ export function BasicsDialog({ profile, open, onOpenChange }: { profile: Profile
       <TextField label={t('profile.fullName')} autoComplete="name" value={values.fullName} onChange={(e) => set(BasicsField.FullName, e.target.value)} required />
       <TextField label={t('profile.headline')} hint={t('profile.headlineHint')} value={values.headline} maxLength={limits.headlineMaxLength} onChange={(e) => set(BasicsField.Headline, e.target.value)} />
       <TextField label={t('profile.location')} hint={t('profile.locationHint')} autoComplete="address-level2" value={values.location} maxLength={limits.locationMaxLength} onChange={(e) => set(BasicsField.Location, e.target.value)} />
+      <TextField
+        label={t('profile.country')}
+        hint={values.countryCode.trim().length === 2 ? countryName(values.countryCode, locale) : t('profile.countryHint')}
+        autoComplete="country"
+        value={values.countryCode}
+        maxLength={2}
+        onChange={(e) => set(BasicsField.CountryCode, e.target.value.toUpperCase())}
+      />
       <TextAreaField label={t('profile.summary')} hint={t('profile.summaryHint')} value={values.summary} maxLength={limits.summaryMaxLength} rows={6} onChange={(e) => set(BasicsField.Summary, e.target.value)} />
     </FormDialog>
   );

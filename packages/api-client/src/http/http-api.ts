@@ -118,6 +118,7 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       resume: () => post('/v1/settings/resume'),
       updateSubmissionWindow: (window) => put('/v1/settings/submission-window', window),
       updateExcludedCountries: (countries) => put('/v1/settings/excluded-countries', { countries }),
+      updateFavoriteCompanies: (companies) => put('/v1/settings/favorite-companies', { companies }),
       listSignInActivity: () => get('/v1/account/sign-in-activity'),
       requestAccountDeletion: () => post('/v1/account/deletion'),
       changePassword: (change) => post('/v1/account/password', change),

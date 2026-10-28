@@ -13,6 +13,7 @@ export interface IconProps {
   icon: LucideIcon;
   size?: IconSize;
   color?: string;
+  fill?: string;
 }
 
 const HIDDEN_FROM_SCREEN_READERS = Platform.select({
@@ -20,7 +21,7 @@ const HIDDEN_FROM_SCREEN_READERS = Platform.select({
   default: { accessibilityElementsHidden: true, importantForAccessibility: 'no' as const },
 });
 
-export function Icon({ icon: Glyph, size = IconSize.Medium, color }: IconProps) {
+export function Icon({ icon: Glyph, size = IconSize.Medium, color, fill }: IconProps) {
   const theme = useTheme();
-  return <Glyph size={theme.iconSize[size]} color={color ?? theme.colors.text} strokeWidth={theme.iconStroke} {...HIDDEN_FROM_SCREEN_READERS} />;
+  return <Glyph size={theme.iconSize[size]} color={color ?? theme.colors.text} fill={fill ?? 'none'} strokeWidth={theme.iconStroke} {...HIDDEN_FROM_SCREEN_READERS} />;
 }

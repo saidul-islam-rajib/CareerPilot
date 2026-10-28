@@ -9,7 +9,7 @@ import { trackTitle, useAddJobByLink, useDashboard, useFormat, useResume, useSer
 import { EnumKey, StatusTone } from '@careerpilot/domain-ui-logic';
 import { Badge, Banner, Button, Card, EmptyState, EnumBadge, ErrorState, FormDialog, LoadingState, PageHeader, Section, TextField, cn, useToast } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
-import { OpportunityCard } from '@/features/opportunities/opportunity-card';
+import { TodayTracks } from './today-tracks';
 
 function StatTile({ label, value, href }: { label: string; value: number; href?: string }) {
   const content = (
@@ -141,19 +141,7 @@ export function HomePage() {
           </div>
           <p className="text-xs text-muted">{t('home.lastChecked', { date: format.dateTime(dashboard.data.lastCheckedAt) })}</p>
           {dashboard.data.upcoming.length > 0 ? <ComingUp items={dashboard.data.upcoming} /> : null}
-          {dashboard.data.tracks.map(({ track, opportunities }) => (
-            <Section key={track.id} title={trackTitle(track, t)}>
-              {opportunities.length === 0 ? (
-                <EmptyState body={t('home.trackEmpty')} />
-              ) : (
-                <div className="grid gap-3 md:grid-cols-2">
-                  {opportunities.map((opportunity) => (
-                    <OpportunityCard key={opportunity.id} opportunity={opportunity} />
-                  ))}
-                </div>
-              )}
-            </Section>
-          ))}
+          <TodayTracks dashboard={dashboard.data} />
         </>
       ) : null}
     </>

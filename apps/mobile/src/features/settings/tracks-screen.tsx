@@ -3,14 +3,14 @@ import { trackTitle, useEnumDisplay, useSettings, useT, useTrackEditor } from '@
 import type { Track } from '@careerpilot/api-client';
 import { Card, ErrorState, LoadingState, Screen, Segmented, Stepper, Text, TextTone, TextVariant } from '@/ui';
 
-function TrackEditor({ track }: { track: Track }) {
+function TrackEditor({ track, homeCountry }: { track: Track; homeCountry: string }) {
   const t = useT();
   const display = useEnumDisplay();
   const editor = useTrackEditor(track);
   const modes = enumValues(ApplicationMode).map((mode) => ({ value: mode, label: display(EnumKey.ApplicationMode, mode).label }));
   return (
     <Card>
-      <Text variant={TextVariant.Heading}>{trackTitle(track, t)}</Text>
+      <Text variant={TextVariant.Heading}>{trackTitle(track, t, homeCountry)}</Text>
       <Text variant={TextVariant.Label} tone={TextTone.Muted}>
         {t('settings.resultCount')}
       </Text>
@@ -44,7 +44,7 @@ export function TracksScreen() {
       {[...settings.data.tracks]
         .sort((a, b) => a.position - b.position)
         .map((track) => (
-          <TrackEditor key={track.id} track={track} />
+          <TrackEditor key={track.id} track={track} homeCountry={settings.data.homeCountry} />
         ))}
     </Screen>
   );

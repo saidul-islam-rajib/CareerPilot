@@ -7,6 +7,7 @@ export * from './hooks/track-title';
 export * from './hooks/use-account-forms';
 export * from './hooks/use-answers';
 export * from './hooks/use-job-sources';
+export * from './hooks/use-dashboard-view';
 export * from './hooks/use-applications';
 export * from './hooks/use-approvals';
 export * from './hooks/use-contact-verification';

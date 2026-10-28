@@ -71,6 +71,7 @@ export { default as Send } from 'lucide-react-native/icons/send';
 export { default as ShieldAlert } from 'lucide-react-native/icons/shield-alert';
 export { default as ShieldCheck } from 'lucide-react-native/icons/shield-check';
 export { default as Sparkles } from 'lucide-react-native/icons/sparkles';
+export { default as Star } from 'lucide-react-native/icons/star';
 export { default as Trash2 } from 'lucide-react-native/icons/trash';
 export { default as Trophy } from 'lucide-react-native/icons/trophy';
 export { default as Upload } from 'lucide-react-native/icons/upload';

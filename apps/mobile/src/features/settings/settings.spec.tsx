@@ -21,11 +21,13 @@ describe('MoreScreen', () => {
   });
 });
 
+const REMOTE_INDEX = 1;
+
 describe('TracksScreen', () => {
   it('changes the result count and application mode of a track', async () => {
     const { services } = await renderWithProviders(<TracksScreen />);
-    await fireEvent.press((await screen.findAllByLabelText('Increase Matches shown per day'))[0]!);
-    await fireEvent.press(screen.getAllByRole('tab', { name: 'Apply automatically within my rules' })[0]!);
+    await fireEvent.press((await screen.findAllByLabelText('Increase Matches shown per day'))[REMOTE_INDEX]!);
+    await fireEvent.press(screen.getAllByRole('tab', { name: 'Apply automatically within my rules' })[REMOTE_INDEX]!);
     await waitFor(async () => {
       const track = (await services.api.settings.getSettings()).tracks.find((t) => t.id === 'trk_remote');
       expect(track).toMatchObject({ resultCount: 6, mode: ApplicationMode.Automatic });
@@ -34,7 +36,7 @@ describe('TracksScreen', () => {
 
   it('shows each tap at once and accepts a typed number', async () => {
     const { services } = await renderWithProviders(<TracksScreen />);
-    const increase = (await screen.findAllByLabelText('Increase Matches shown per day'))[0]!;
+    const increase = (await screen.findAllByLabelText('Increase Matches shown per day'))[REMOTE_INDEX]!;
     await fireEvent.press(increase);
     await fireEvent.press(increase);
     expect(screen.getAllByLabelText('Matches shown per day: 7')[0]).toBeTruthy();

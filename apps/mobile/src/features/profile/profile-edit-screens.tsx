@@ -3,19 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View } from 'react-native';
 import { AlertCircle } from '@/ui/icons';
 import type { Contact, Profile } from '@careerpilot/api-client';
-import {
-  profileErrorKey,
-  useAddContact,
-  useProfile,
-  useProfileSettings,
-  useRemoveContact,
-  useRestoreContact,
-  useSetPrimaryContact,
-  useSetSkills,
-  useT,
-  useUpdateBasics,
-  useUpdateContact,
-} from '@careerpilot/client-core';
+import { countryName, profileErrorKey, useAddContact, useProfile, useProfileSettings, usePublicConfig, useRemoveContact, useRestoreContact, useSetPrimaryContact, useSetSkills, useT, useUpdateBasics, useUpdateContact } from '@careerpilot/client-core';
 import { ContactKind, StatusTone } from '@careerpilot/domain-ui-logic';
 import { cleanText, normalizeSkills } from '@careerpilot/dynamic-forms';
 import { useTheme } from '@/core/theme/theme';
@@ -47,7 +35,14 @@ function BasicsForm({ profile }: { profile: Profile }) {
   const feedback = useProfileFeedback();
   const { settings } = useProfileSettings();
   const update = useUpdateBasics();
-  const [values, setValues] = useState({ fullName: profile.fullName, headline: profile.headline, location: profile.location, summary: profile.summary });
+  const { config } = usePublicConfig();
+  const [values, setValues] = useState({
+    fullName: profile.fullName,
+    headline: profile.headline,
+    location: profile.location,
+    countryCode: profile.countryCode ?? '',
+    summary: profile.summary,
+  });
   const [error, setError] = useState<string>();
   const limits = settings.limits;
   const save = () => {
@@ -69,6 +64,16 @@ function BasicsForm({ profile }: { profile: Profile }) {
       <TextField label={t('profile.fullName')} autoComplete="name" value={values.fullName} onChangeText={(fullName) => setValues((v) => ({ ...v, fullName }))} />
       <TextField label={t('profile.headline')} hint={t('profile.headlineHint')} maxLength={limits.headlineMaxLength} value={values.headline} onChangeText={(headline) => setValues((v) => ({ ...v, headline }))} />
       <TextField label={t('profile.location')} hint={t('profile.locationHint')} maxLength={limits.locationMaxLength} value={values.location} onChangeText={(location) => setValues((v) => ({ ...v, location }))} />
+      <TextField
+        label={t('profile.country')}
+        hint={values.countryCode.trim().length === 2 ? countryName(values.countryCode, config.locale) : t('profile.countryHint')}
+        value={values.countryCode}
+        maxLength={2}
+        autoCapitalize="characters"
+        autoCorrect={false}
+        onChangeText={(countryCode) => setValues((v) => ({ ...v, countryCode: countryCode.toUpperCase() }))}
+        testID="basics-country"
+      />
       <TextField
         label={t('profile.summary')}
         hint={t('profile.summaryHint')}

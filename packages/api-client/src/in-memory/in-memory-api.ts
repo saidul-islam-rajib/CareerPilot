@@ -8,6 +8,7 @@ import {
   SubmissionStatus,
   SubmissionWindowKind,
   TimelineActor,
+  TrackKind,
 } from '@careerpilot/domain-ui-logic';
 import { isHttpsAddress, sameAddress, secureAddress } from '../addresses';
 import { ApiError, ApiErrorCode, ApiErrorDetail } from '../errors';
@@ -74,6 +75,15 @@ function notFound(): never {
 function toSummary(detail: OpportunityDetail): OpportunitySummary {
   const { description, matchFactors, requirements, source, circular, route, ...summary } = detail;
   return summary;
+}
+
+const HOME_COUNTRY = 'BD';
+const LEAD_TRACK_KINDS: readonly string[] = [TrackKind.BangladeshOnsite];
+
+function orderTracks<T extends { kind: string; position: number }>(tracks: readonly T[]): T[] {
+  return [...tracks]
+    .sort((a, b) => Number(LEAD_TRACK_KINDS.includes(b.kind)) - Number(LEAD_TRACK_KINDS.includes(a.kind)) || a.position - b.position)
+    .map((track, index) => ({ ...track, position: index + 1 }));
 }
 
 const COUNTRY_CODE = /^[A-Z]{2}$/;
@@ -184,14 +194,15 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     dashboard: {
       async getDashboard() {
         const weekAgo = clock.now().getTime() - options.recentWindowDays * DAY_MS;
-        const tracks = [...state.settings.tracks]
-          .sort((a, b) => a.position - b.position)
+        const applied = new Set(state.applications.map((a) => a.opportunity.id));
+        const favorites = new Set(state.settings.favoriteCompanies.map((c) => c.toLowerCase()));
+        const tracks = orderTracks(state.settings.tracks)
           .map((track) => ({
             track,
             opportunities: (state.trackOpportunities[track.id] ?? [])
               .map(findOpportunity)
-              .filter((o) => o.decision !== OpportunityDecision.Dismissed)
-              .sort((a, b) => b.matchScore - a.matchScore)
+              .filter((o) => o.decision !== OpportunityDecision.Dismissed && !applied.has(o.id))
+              .sort((a, b) => Number(favorites.has(b.organization.toLowerCase())) - Number(favorites.has(a.organization.toLowerCase())) || b.matchScore - a.matchScore)
               .slice(0, track.resultCount)
               .map(toSummary),
           }));
@@ -206,6 +217,8 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
           lastCheckedAt: state.lastCheckedAt,
           tracks,
           upcoming: followUps.upcoming(),
+          homeCountry: state.profile.countryCode || HOME_COUNTRY,
+          favoriteCompanies: state.settings.favoriteCompanies,
         });
       },
     },
@@ -310,7 +323,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     sources: jobSources,
     profile: createProfileStore({ profile: state.profile, config, clock, ids, respond, reject: failWith, verificationCode: options.demoVerificationCode }),
     settings: {
-      getSettings: async () => respond(state.settings),
+      getSettings: async () => respond({ ...state.settings, tracks: orderTracks(state.settings.tracks), homeCountry: state.profile.countryCode || HOME_COUNTRY }),
       async updateTrack(id, update) {
         const track = state.settings.tracks.find((t) => t.id === id) ?? notFound();
         const bounds = config.validationPolicy.track;
@@ -333,6 +346,11 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
       },
       async updateSubmissionWindow(window) {
         state.settings.submissionWindow = window;
+        return respond(state.settings);
+      },
+      async updateFavoriteCompanies(companies) {
+        const names = companies.map((c) => c.trim()).filter(Boolean);
+        state.settings.favoriteCompanies = names.filter((name, index) => names.findIndex((other) => other.toLowerCase() === name.toLowerCase()) === index);
         return respond(state.settings);
       },
       async updateExcludedCountries(countries) {

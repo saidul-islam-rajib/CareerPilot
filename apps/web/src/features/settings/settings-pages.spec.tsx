@@ -80,11 +80,13 @@ describe('PasswordPage', () => {
   });
 });
 
+const REMOTE_INDEX = 1;
+
 describe('TracksPage', () => {
   it('changes result count and mode', async () => {
     const { services } = renderWithProviders(<TracksPage />);
-    fireEvent.click((await screen.findAllByRole('button', { name: 'Increase Matches shown per day' }))[0]!);
-    fireEvent.click(screen.getAllByRole('radio', { name: 'Apply automatically within my rules' })[0]!);
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Increase Matches shown per day' }))[REMOTE_INDEX]!);
+    fireEvent.click(screen.getAllByRole('radio', { name: 'Apply automatically within my rules' })[REMOTE_INDEX]!);
     await waitFor(async () => {
       const track = (await services.api.settings.getSettings()).tracks.find((t) => t.id === 'trk_remote');
       expect(track).toMatchObject({ resultCount: 6, mode: ApplicationMode.Automatic });
@@ -93,11 +95,11 @@ describe('TracksPage', () => {
 
   it('shows each click at once, saves the final count, and accepts a typed number', async () => {
     const { services } = renderWithProviders(<TracksPage />);
-    const increase = (await screen.findAllByRole('button', { name: 'Increase Matches shown per day' }))[0]!;
+    const increase = (await screen.findAllByRole('button', { name: 'Increase Matches shown per day' }))[REMOTE_INDEX]!;
     fireEvent.click(increase);
     fireEvent.click(increase);
     fireEvent.click(increase);
-    const count = screen.getAllByRole('spinbutton')[0]!;
+    const count = screen.getAllByRole('spinbutton')[REMOTE_INDEX]!;
     expect(count).toHaveValue(8);
     await waitFor(async () => expect((await services.api.settings.getSettings()).tracks.find((t) => t.id === 'trk_remote')?.resultCount).toBe(8));
     fireEvent.change(count, { target: { value: '25' } });

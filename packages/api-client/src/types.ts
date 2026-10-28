@@ -217,6 +217,8 @@ export interface DashboardSummary {
   lastCheckedAt: IsoDateTime;
   tracks: TrackDigest[];
   upcoming: UpcomingTask[];
+  homeCountry: string;
+  favoriteCompanies: string[];
 }
 
 export const AnswerSource = {
@@ -400,6 +402,7 @@ export interface Profile {
   fullName: string;
   headline: string;
   location: string;
+  countryCode?: string;
   summary: string;
   photoUrl?: string;
   photoCrop?: PhotoCrop;
@@ -460,6 +463,7 @@ export interface BasicsChanges {
   fullName?: string;
   headline?: string;
   location?: string;
+  countryCode?: string;
   summary?: string;
 }
 
@@ -508,6 +512,8 @@ export interface Settings {
   timeZone: string;
   notifications: NotificationPreferences;
   excludedCountries: string[];
+  favoriteCompanies: string[];
+  homeCountry: string;
 }
 
 export interface TrackUpdate {

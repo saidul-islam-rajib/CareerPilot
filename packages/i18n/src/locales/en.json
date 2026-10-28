@@ -158,7 +158,21 @@
     "pausedIndefinitely": "Paused until you resume",
     "resume": "Resume",
     "trackEmpty": "No new matches on this track today.",
-    "lastChecked": "Sources checked {date}"
+    "lastChecked": "Sources checked {date}",
+    "searchLabel": "Search jobs by company or role",
+    "searchPlaceholder": "Company or job title",
+    "searchClear": "Clear search",
+    "suggestionCompany": "Company",
+    "suggestionRole": "Role",
+    "searchResults": "{count} jobs match “{query}”",
+    "searchEmpty": "No jobs on Today match “{query}”.",
+    "collapse": "Hide {track}",
+    "expand": "Show {track}",
+    "trackCount": "{count} jobs",
+    "favorite": "Add {company} to favorites",
+    "unfavorite": "Remove {company} from favorites",
+    "favoriteAdded": "{company} is a favorite. Its jobs come first.",
+    "favoriteRemoved": "{company} removed from favorites."
   },
   "opportunity": {
     "addedByLink": "Added by you from a link",
@@ -478,7 +492,9 @@
     "uploadPdf": "Upload PDF",
     "editSkills": "Edit skills",
     "openDocument": "Open document",
-    "monthHint": "Use YYYY-MM, for example 2024-03."
+    "monthHint": "Use YYYY-MM, for example 2024-03.",
+    "country": "Home country (2-letter code)",
+    "countryHint": "For example BD or SG. Jobs in this country are listed first."
   },
   "settings": {
     "title": "More",
@@ -572,11 +588,26 @@
     "digestPreviewOff": "Turn on the daily digest to get this email.",
     "digestPreviewQuiet": "Only sections with something new are included. Nothing is sent on quiet days.",
     "digestPreviewSections": {
-      "matches": { "title": "New matches", "body": "Opportunities that fit your tracks." },
-      "approvals": { "title": "Waiting for your approval", "body": "With the date to approve by." },
-      "sent": { "title": "Applications sent", "body": "What CareerPilot sent for you." },
-      "attention": { "title": "Needs your attention", "body": "Applications that need information or a step from you." },
-      "closing": { "title": "Closing soon", "body": "Deadlines in the next few days you haven't applied to." }
+      "matches": {
+        "title": "New matches",
+        "body": "Opportunities that fit your tracks."
+      },
+      "approvals": {
+        "title": "Waiting for your approval",
+        "body": "With the date to approve by."
+      },
+      "sent": {
+        "title": "Applications sent",
+        "body": "What CareerPilot sent for you."
+      },
+      "attention": {
+        "title": "Needs your attention",
+        "body": "Applications that need information or a step from you."
+      },
+      "closing": {
+        "title": "Closing soon",
+        "body": "Deadlines in the next few days you haven't applied to."
+      }
     },
     "unsavedChanges": "You have unsaved changes."
   },
@@ -605,7 +636,11 @@
     "international_sponsored": "International with visa sponsorship",
     "bangladesh_onsite": "Bangladesh on-site",
     "bangladesh_government": "Bangladesh government",
-    "custom": "Custom track"
+    "custom": "Custom track",
+    "home": {
+      "bangladesh_onsite": "On-site jobs in {country}",
+      "bangladesh_government": "Government jobs in {country}"
+    }
   },
   "enums": {
     "submission_status": {
