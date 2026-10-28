@@ -3,11 +3,13 @@ import {
   OpportunityStatus,
   OpportunityType,
   OutcomeStatus,
+  SourceReview,
   SourceStatus,
   SubmissionStatus,
   UserAccountStatus,
   WorkArrangement,
 } from '@careerpilot/domain-ui-logic';
+import { isHttpsAddress, sameAddress, secureAddress, siteName } from '../addresses';
 import { ApiError, ApiErrorCode, ApiErrorDetail } from '../errors';
 import type { Clock, IdGenerator } from '../ports';
 import type { DemoState } from '../in-memory/demo.seed';
@@ -32,24 +34,6 @@ export interface InMemoryAdminApiOptions {
 
 const DAY_MS = 86_400_000;
 const SOURCE_CONNECTORS: readonly string[] = Object.values(SourceConnector);
-const HTTPS_PROTOCOL = 'https:';
-const SECURE_SCHEME = 'https://';
-const INSECURE_SCHEME = /^http:\/\//i;
-const SCHEME_PATTERN = /^[a-z]+:\/\//i;
-
-function secureAddress(address: string): string {
-  const trimmed = address.trim().replace(INSECURE_SCHEME, SECURE_SCHEME);
-  return SCHEME_PATTERN.test(trimmed) ? trimmed : `${SECURE_SCHEME}${trimmed}`;
-}
-
-function isHttpsAddress(address: string): boolean {
-  try {
-    const url = new URL(address.trim());
-    return url.protocol === HTTPS_PROTOCOL && url.hostname.length > 0 && !url.username && !url.password;
-  } catch {
-    return false;
-  }
-}
 const ISO_DATE_LENGTH = 10;
 
 function clone<T>(value: T): T {
@@ -104,7 +88,8 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
     record('admin.signed_in', match.account.email);
     return respond({ accessToken: ids.next('admin_token'), admin: currentAdmin, permissions: permissionsForRole(match.account.role) });
   };
-  const sourceAdded = (address: string) => state.sources.some((s) => s.setup?.url.trim().toLowerCase() === address.trim().toLowerCase());
+  const sourceAt = (address: string) => state.sources.find((s) => !!s.setup && (sameAddress(s.setup.url, address) || sameAddress(s.setup.siteUrl ?? '', address)));
+  const sourceAdded = (address: string) => sourceAt(address) !== undefined;
   const findUser = (id: string) => state.users.find((u) => u.id === id);
   const userDetail = (id: string): AdminUserDetail | undefined => {
     const user = findUser(id);
@@ -263,18 +248,21 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
         if (!isHttpsAddress(url)) {
           return fail(ApiErrorCode.Validation, ApiErrorDetail.SourceUrl);
         }
-        if (sourceAdded(url)) {
-          return fail(ApiErrorCode.Conflict, ApiErrorDetail.SourceExists);
+        const existing = sourceAt(url);
+        if (existing) {
+          return fail(ApiErrorCode.Conflict, existing.review === SourceReview.Approved ? ApiErrorDetail.SourceExists : ApiErrorDetail.SourcePending);
         }
         const row: AdminSourceRow = {
           id: ids.next('src'),
-          name: source.name?.trim() || new URL(url).hostname,
+          name: source.name?.trim() || siteName(url),
           status: SourceStatus.Healthy,
           enabled: true,
           lastSuccessAt: nowIso(),
           failuresLast24h: 0,
           opportunitiesFound: 0,
           setup: { connector, url, siteUrl: url, defaults: source.defaults ?? { type: OpportunityType.Job, workArrangement: WorkArrangement.NotStated } },
+          review: SourceReview.Approved,
+          ownerIds: [],
         };
         state.sources.unshift(row);
         record('source.added', row.name);
@@ -302,6 +290,25 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
         source.failuresLast24h = 0;
         source.status = SourceStatus.Healthy;
         record('source.checked', source.name);
+        return respond(source);
+      },
+      sourceRequests: async () =>
+        respond(state.sources.filter((s) => s.review === SourceReview.Pending && s.enabled).sort((a, b) => (a.requestedAt ?? '').localeCompare(b.requestedAt ?? ''))),
+      async reviewSource(id, decision) {
+        const source = state.sources.find((s) => s.id === id);
+        if (!source) {
+          return fail(ApiErrorCode.NotFound);
+        }
+        if (decision.review === SourceReview.Pending || !decision.note.trim()) {
+          return fail(ApiErrorCode.Validation);
+        }
+        if (source.review === SourceReview.Approved) {
+          return fail(ApiErrorCode.Conflict, ApiErrorDetail.SourceReviewed);
+        }
+        source.review = decision.review;
+        source.reviewNote = decision.note.trim();
+        source.reviewedAt = nowIso();
+        record(`source.${decision.review}`, `${source.name} · ${source.reviewNote}`);
         return respond(source);
       },
     },

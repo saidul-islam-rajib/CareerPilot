@@ -68,6 +68,7 @@ class PublicConfigService:
                 "name": {"minLength": policy.name.min_length, "maxLength": policy.name.max_length},
                 "email": {"maxLength": policy.email.max_length},
                 "answer": {"maxLength": policy.answer.max_length},
+                "note": {"maxLength": policy.note.max_length},
                 "track": {"minResultCount": policy.track.min_result_count, "maxResultCount": policy.track.max_result_count},
             },
             "pauseOptions": [
@@ -87,6 +88,7 @@ class PublicConfigService:
             },
             "openSourceComponents": [{"name": c.name, "licence": c.licence, "url": str(c.url)} for c in s.open_source_components],
             "tracking": camel_keys(s.tracking.model_dump(mode="json")),
+            "jobSources": {"maxPerUser": s.job_sources.max_per_user},
             "answers": {
                 "questionMaxLength": s.answers.question_max_length,
                 "maxSavedAnswers": s.answers.max_saved_answers,

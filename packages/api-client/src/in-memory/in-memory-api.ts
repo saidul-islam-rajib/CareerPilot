@@ -26,6 +26,7 @@ import type { DemoState } from './demo.seed';
 import { createAccountLinks } from './account-links';
 import { createAnswers, hasBlankAnswers } from './answers';
 import { createFollowUps } from './follow-ups';
+import { createJobSources } from './job-sources';
 import { createProfileStore } from './profile-store';
 
 export interface InMemoryApiOptions {
@@ -112,6 +113,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
   };
 
   const followUps = createFollowUps({ applications: state.applications, config, clock, ids, respond, reject: failWith });
+  const jobSources = createJobSources({ sources: state.jobSources, limit: config.jobSources.maxPerUser, clock, ids, respond, reject: failWith });
   const answers = createAnswers({ saved: state.savedAnswers, approvals: state.approvals, applications: state.applications, config, clock, ids, respond, reject: failWith });
   const accountLinks = createAccountLinks({
     accounts: state.accounts,
@@ -290,6 +292,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
       setTaskStatus: followUps.setTaskStatus,
     },
     answers: answers.api,
+    sources: jobSources,
     profile: createProfileStore({ profile: state.profile, config, clock, ids, respond, reject: failWith, verificationCode: options.demoVerificationCode }),
     settings: {
       getSettings: async () => respond(state.settings),

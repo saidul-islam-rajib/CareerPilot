@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, Clock, Info, KeyRound, ListOrdered, LogOut, MessageSquareText, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2 } from 'lucide-react';
+import { Bell, Clock, Globe, Info, KeyRound, ListOrdered, LogOut, MessageSquareText, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2 } from 'lucide-react';
 import { usePublicConfig, useSession, useT } from '@careerpilot/client-core';
 import { Card, ListRow, PageHeader, Separator, TeamSoberCredit } from '@careerpilot/ui-web';
 import { teamSoberLogoSrc } from '@/core/brand-assets';
@@ -22,6 +22,8 @@ export function SettingsPage() {
           <ListRow icon={Clock} title={t('settings.submissionWindow')} subtitle={t('settings.submissionWindowBody')} href={Routes.submissionWindow} />
           <Separator />
           <ListRow icon={MessageSquareText} title={t('answers.title')} subtitle={t('answers.menuBody')} href={Routes.answers} />
+          <Separator />
+          <ListRow icon={Globe} title={t('sources.title')} subtitle={t('sources.menuBody')} href={Routes.sources} />
         </Card>
         <Card>
           <ListRow icon={Bell} title={t('settings.notifications')} subtitle={t('settings.digestBody')} href={Routes.notifications} />

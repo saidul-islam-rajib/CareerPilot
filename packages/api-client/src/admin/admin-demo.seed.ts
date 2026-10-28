@@ -7,6 +7,7 @@ import {
   OpportunityType,
   OutcomeStatus,
   ServiceHealth,
+  SourceReview,
   SourceStatus,
   SubmissionStatus,
   UserAccountStatus,
@@ -98,13 +99,13 @@ export function buildAdminDemoSeed(now: Date, userState: DemoState, accountLinkT
   );
 
   const sources: AdminSourceRow[] = [
-    { id: 'src_remote_board', name: 'Remote job board', status: SourceStatus.Healthy, enabled: true, lastSuccessAt: at(0), failuresLast24h: 0, opportunitiesFound: 412 },
-    { id: 'src_bd_portal', name: 'Bangladesh job portal', status: SourceStatus.Healthy, enabled: true, lastSuccessAt: at(0), failuresLast24h: 1, opportunitiesFound: 1280 },
-    { id: 'src_gov_notices', name: 'Government recruitment notices', status: SourceStatus.Degraded, enabled: true, lastSuccessAt: at(-1), failuresLast24h: 4, opportunitiesFound: 96 },
-    { id: 'src_intl_board', name: 'International job board', status: SourceStatus.Healthy, enabled: true, lastSuccessAt: at(0), failuresLast24h: 0, opportunitiesFound: 640 },
-    { id: 'src_university', name: 'University admissions pages', status: SourceStatus.Failing, enabled: true, lastSuccessAt: at(-3), failuresLast24h: 12, opportunitiesFound: 58 },
-    { id: 'src_company_pages', name: 'Company career pages', status: SourceStatus.Healthy, enabled: true, lastSuccessAt: at(0), failuresLast24h: 2, opportunitiesFound: 305 },
-    { id: 'src_legacy_feed', name: 'Legacy RSS feed', status: SourceStatus.Disabled, enabled: false, failuresLast24h: 0, opportunitiesFound: 0 },
+    { id: 'src_remote_board', name: 'Remote job board', status: SourceStatus.Healthy, enabled: true, lastSuccessAt: at(0), failuresLast24h: 0, opportunitiesFound: 412, review: SourceReview.Approved, ownerIds: [] },
+    { id: 'src_bd_portal', name: 'Bangladesh job portal', status: SourceStatus.Healthy, enabled: true, lastSuccessAt: at(0), failuresLast24h: 1, opportunitiesFound: 1280, review: SourceReview.Approved, ownerIds: [] },
+    { id: 'src_gov_notices', name: 'Government recruitment notices', status: SourceStatus.Degraded, enabled: true, lastSuccessAt: at(-1), failuresLast24h: 4, opportunitiesFound: 96, review: SourceReview.Approved, ownerIds: [] },
+    { id: 'src_intl_board', name: 'International job board', status: SourceStatus.Healthy, enabled: true, lastSuccessAt: at(0), failuresLast24h: 0, opportunitiesFound: 640, review: SourceReview.Approved, ownerIds: [] },
+    { id: 'src_university', name: 'University admissions pages', status: SourceStatus.Failing, enabled: true, lastSuccessAt: at(-3), failuresLast24h: 12, opportunitiesFound: 58, review: SourceReview.Approved, ownerIds: [] },
+    { id: 'src_company_pages', name: 'Company career pages', status: SourceStatus.Healthy, enabled: true, lastSuccessAt: at(0), failuresLast24h: 2, opportunitiesFound: 305, review: SourceReview.Approved, ownerIds: [] },
+    { id: 'src_legacy_feed', name: 'Legacy RSS feed', status: SourceStatus.Disabled, enabled: false, failuresLast24h: 0, opportunitiesFound: 0, review: SourceReview.Approved, ownerIds: [] },
   ];
 
   const modes = enumValues(ApplicationMode).filter((m) => m !== ApplicationMode.Off);

@@ -16,6 +16,9 @@ export interface ValidationPolicy {
   answer: {
     maxLength: number;
   };
+  note: {
+    maxLength: number;
+  };
   track: {
     minResultCount: number;
     maxResultCount: number;

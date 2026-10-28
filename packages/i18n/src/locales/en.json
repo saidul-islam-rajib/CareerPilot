@@ -900,6 +900,24 @@
       "suggestionsTitle": "Suggested sources",
       "suggestionsBody": "Real public job feeds you can add with one click.",
       "addSuggestion": "Add",
+      "requestsTitle": "Waiting for review",
+      "requestsBody": "Sites users added for themselves. Approve to share their jobs with everyone, or keep them just for the people who added them.",
+      "requestedBy": "Added by {count} users",
+      "requestedByOne": "Added by 1 user",
+      "requestNote": "Reason: {note}",
+      "approve": "Approve",
+      "reject": "Keep private",
+      "approveTitle": "Share {name} with everyone?",
+      "rejectTitle": "Keep {name} private?",
+      "approveBody": "Its jobs will be matched to every user.",
+      "rejectBody": "The users who added it keep getting its jobs. They'll see your reason.",
+      "justification": "Justification",
+      "justificationHint": "Why you made this decision. Recorded in the audit log and shown to the users who added it.",
+      "approved": "{name} is now shared with everyone.",
+      "rejected": "{name} stays private.",
+      "reviewFailed": "We couldn't save the decision. Try again.",
+      "review": "Review",
+      "personal": "Users only",
       "addFailed": "We couldn't add this source. Try again.",
       "lastProblem": "Last problem",
       "problems": {
@@ -917,7 +935,8 @@
         "connector": "Choose how to read this source, or Find automatically.",
         "exists": "This source has already been added.",
         "countryCode": "Use a two-letter country code, or leave it empty.",
-        "jobsNotFound": "We couldn't find job listings on this site. Try its careers page or job board link."
+        "jobsNotFound": "We couldn't find job listings on this site. Try its careers page or job board link.",
+        "pending": "A user already added this site. Review it under Waiting for review."
       }
     },
     "applications": {
@@ -1088,6 +1107,58 @@
     "forgotBody": "Enter your admin email address. If it belongs to an admin account, we'll email you a link to choose a password.",
     "forgotSubmit": "Email me a link",
     "sentBody": "If {email} belongs to an admin account, a link is on its way. It expires in {minutes} minutes."
+  },
+  "sources": {
+    "title": "Job sources",
+    "menuBody": "Add company websites so their jobs reach your matches",
+    "body": "Paste a company's website, careers page, or job board link. CareerPilot finds the jobs there, matches them to your profile, and prepares applications like any other job. An administrator reviews each new site before sharing it with everyone.",
+    "add": "Add a source",
+    "addTitle": "Add a job source",
+    "addBody": "We look for the jobs on the site now. This can take up to a minute.",
+    "url": "Website link",
+    "urlHint": "For example brainstation-23.com or https://careers.example.com",
+    "name": "Name (optional)",
+    "nameHint": "Leave empty to use the name found on the site.",
+    "note": "Why this site? (optional)",
+    "noteHint": "Helps the administrator decide whether to share it with everyone.",
+    "submit": "Find jobs and add",
+    "finding": "Finding jobs…",
+    "added": "{name} added with {count} jobs. Matching jobs appear in your lists.",
+    "mine": "Your sources",
+    "count": "{count} of {max}",
+    "empty": "You haven't added any sources yet. Jobs from the sources everyone shares already reach your matches.",
+    "jobsFound": "{count} jobs found",
+    "lastChecked": "Checked {time}",
+    "notChecked": "Not checked yet",
+    "visit": "Open site",
+    "remove": "Remove source",
+    "removeTitle": "Remove {name}?",
+    "removeBody": "New jobs from this site stop reaching your matches. Jobs already in your lists stay.",
+    "removed": "{name} removed",
+    "reviewNote": "Administrator: {note}",
+    "reviewHint": {
+      "pending": "Only you see its jobs until an administrator shares it with everyone.",
+      "approved": "Everyone using CareerPilot now gets jobs from this site.",
+      "rejected": "Kept just for you. You still get its jobs."
+    },
+    "problems": {
+      "invalid_feed": "The address isn't a job feed. We'll look for the jobs again on the next check.",
+      "invalid_board": "The job board didn't answer as expected.",
+      "http_status": "The site refused the request or the page is gone.",
+      "unreachable": "The site couldn't be reached. We'll try again.",
+      "unsafe_address": "The address isn't on the public internet.",
+      "no_jobs_found": "No open jobs right now.",
+      "other": "The last check failed. We'll try again."
+    },
+    "errors": {
+      "url": "Use a website on the public internet.",
+      "jobsNotFound": "We couldn't find job listings on this site. Try its careers page or job board link.",
+      "exists": "You've already added this site.",
+      "shared": "This site is already a source for everyone, so its jobs already reach your matches.",
+      "limit": "You've reached the limit for sources. Remove one to add another.",
+      "disabled": "An administrator turned this site off.",
+      "generic": "We couldn't add this source. Try again."
+    }
   },
   "answers": {
     "title": "Saved answers",

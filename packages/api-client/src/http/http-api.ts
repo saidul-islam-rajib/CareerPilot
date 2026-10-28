@@ -78,6 +78,11 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       removeAnswer: (id) => del(`/v1/answers/${enc(id)}`),
       restoreAnswer: (id) => post(`/v1/answers/${enc(id)}/restore`),
     },
+    sources: {
+      listSources: () => get('/v1/sources'),
+      addSource: (input) => post('/v1/sources', input),
+      removeSource: (id) => del(`/v1/sources/${enc(id)}`),
+    },
     profile: {
       getProfile: () => get('/v1/profile'),
       updateBasics: (changes) => patch('/v1/profile', changes),

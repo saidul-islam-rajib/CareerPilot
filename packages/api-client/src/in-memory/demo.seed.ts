@@ -28,6 +28,7 @@ import {
   type ProfileDocument,
   type ProfileEntry,
   type SavedAnswer,
+  type UserSource,
   type Settings,
   type SignInEvent,
   type UserSummary,
@@ -54,6 +55,7 @@ export interface DemoState {
   signInEvents: SignInEvent[];
   lastCheckedAt: string;
   savedAnswers: SavedAnswer[];
+  jobSources: UserSource[];
 }
 
 const DAY_MS = 86_400_000;
@@ -493,6 +495,7 @@ export function buildDemoSeed(now: Date): DemoState {
     settings,
     signInEvents,
     lastCheckedAt: at(0, -1),
+    jobSources: [],
     savedAnswers: [
       {
         id: 'ans_notice',

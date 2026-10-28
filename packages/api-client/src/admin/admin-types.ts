@@ -10,6 +10,7 @@ import type {
   OutcomeStatus,
   PermissionAction,
   ServiceHealth,
+  SourceReview,
   SourceStatus,
   SubmissionStatus,
   UserAccountStatus,
@@ -182,6 +183,17 @@ export interface AdminSourceRow {
   setup?: SourceSetup;
   lastCheckedAt?: IsoDateTime;
   lastError?: string;
+  review: SourceReview;
+  ownerIds: string[];
+  requestedAt?: IsoDateTime;
+  requestNote?: string;
+  reviewedAt?: IsoDateTime;
+  reviewNote?: string;
+}
+
+export interface SourceDecision {
+  review: SourceReview;
+  note: string;
 }
 
 export interface AdminApplicationRow {

@@ -138,7 +138,7 @@ def test_removing_a_source_stops_it_once_nobody_uses_it_and_it_can_come_back(app
 def test_sites_without_jobs_are_refused_and_users_have_a_limit(app: Container, site: FakeSite) -> None:
     empty = NewUserSource(url="https://empty.example.org")
     assert failure(lambda: app.user_sources.add(DEMO_USER, empty)) == (ErrorCode.VALIDATION, "jobs_not_found")
-    for index in range(app.settings.discovery.max_sources_per_user):
+    for index in range(app.settings.job_sources.max_per_user):
         site.pages[f"https://api.lever.co/v0/postings/team{index}?mode=json"] = LEVER_BODY
         app.user_sources.add(DEMO_USER, NewUserSource(url=f"https://jobs.lever.co/team{index}"))
     acme_site(site)

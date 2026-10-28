@@ -16,6 +16,8 @@ import type {
   PauseScope,
   PhotoCrop,
   RequirementCheck,
+  SourceReview,
+  SourceStatus,
   SponsorshipEvidence,
   SubmissionStatus,
   SubmissionWindowKind,
@@ -108,7 +110,12 @@ export interface PublicConfig {
   accountLinks: AccountLinkSettings;
   tracking: TrackingSettings;
   answers: AnswerSettings;
+  jobSources: JobSourceSettings;
   profile: ProfileSettings;
+}
+
+export interface JobSourceSettings {
+  maxPerUser: number;
 }
 
 export interface VerificationSettings {
@@ -534,6 +541,25 @@ export interface SavedAnswerInput {
   topic: AnswerTopic;
   question: string;
   answer: string;
+}
+
+export interface UserSource {
+  id: string;
+  name: string;
+  siteUrl: string;
+  status: SourceStatus;
+  review: SourceReview;
+  jobsFound: number;
+  addedAt?: IsoDateTime;
+  lastCheckedAt?: IsoDateTime;
+  lastError?: string;
+  reviewNote?: string;
+}
+
+export interface NewUserSource {
+  url: string;
+  name?: string;
+  note?: string;
 }
 
 export interface QuestionGroup {

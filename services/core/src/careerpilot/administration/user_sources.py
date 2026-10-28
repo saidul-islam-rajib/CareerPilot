@@ -45,7 +45,7 @@ class UserSourceService:
         self._checks = context.checks
         self._policy = context.policy
         self._refresh = context.refresh
-        self._limit = context.admin.settings.discovery.max_sources_per_user
+        self._limit = context.admin.settings.job_sources.max_per_user
 
     def mine(self, user_id: str) -> list[UserSource]:
         rows = sorted(self._owned(user_id), key=lambda row: row.requested_at or "", reverse=True)

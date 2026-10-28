@@ -119,6 +119,7 @@ export const appConfigSchema = z.object({
     name: z.object({ minLength: z.number().int().positive(), maxLength: z.number().int().positive() }),
     email: z.object({ maxLength: z.number().int().positive() }),
     answer: z.object({ maxLength: z.number().int().positive() }),
+    note: z.object({ maxLength: z.number().int().positive() }),
     track: z.object({ minResultCount: z.number().int().positive(), maxResultCount: z.number().int().positive() }),
   }),
   openSourceComponents: z.array(z.object({ name: z.string(), licence: z.string(), url: z.string().url() })),
@@ -132,6 +133,7 @@ export const appConfigSchema = z.object({
     followUpAfterDays: z.number().int().positive(),
     defaultTaskTime: z.string(),
   }),
+  jobSources: z.object({ maxPerUser: z.number().int().positive() }),
   answers: z.object({
     questionMaxLength: z.number().int().positive(),
     maxSavedAnswers: z.number().int().positive(),
@@ -180,6 +182,7 @@ export function publicConfigFromDefaults(config: AppConfig): PublicConfig {
     notifications: config.notifications,
     tracking: config.tracking,
     answers: config.answers,
+    jobSources: config.jobSources,
     verification: {
       codeLength: config.verification.codeLength,
       codeTtlSeconds: config.verification.codeTtlSeconds,

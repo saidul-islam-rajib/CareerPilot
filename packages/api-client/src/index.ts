@@ -12,3 +12,4 @@ export * from './admin/permissions';
 export * from './admin/admin-demo.seed';
 export * from './admin/in-memory-admin-api';
 export * from './admin/http-admin-api';
+export * from './addresses';

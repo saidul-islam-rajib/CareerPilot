@@ -225,6 +225,10 @@ class JsonJobFields(Strict):
     location: list[str]
 
 
+class JobSourcesConfig(Strict):
+    max_per_user: int = Field(gt=0)
+
+
 class DiscoveryConfig(Strict):
     fetch_mode: FetchMode
     fixture_root: str = ""
@@ -232,7 +236,6 @@ class DiscoveryConfig(Strict):
     timeout_seconds: float = Field(gt=0)
     max_listings_per_check: int = Field(gt=0)
     failing_after_failures: int = Field(gt=0)
-    max_sources_per_user: int = Field(gt=0)
     max_resolve_pages: int = Field(gt=0)
     max_career_links: int = Field(gt=0)
     min_job_links: int = Field(gt=0)
@@ -529,6 +532,7 @@ class Settings(Strict):
     observability: ObservabilityConfig
     coordination: CoordinationConfig
     discovery: DiscoveryConfig
+    job_sources: JobSourcesConfig
     matching: MatchingConfig
     workers: WorkersConfig
     profile: ProfileConfig

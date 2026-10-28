@@ -9,6 +9,7 @@ import type {
   AdminSession,
   AdminSourceRow,
   NewSource,
+  SourceDecision,
   AdminUserDetail,
   AdminUserRow,
   AuditEntry,
@@ -52,6 +53,8 @@ export interface AdminSourcesApi {
   addSource(source: NewSource): Promise<AdminSourceRow>;
   setSourceEnabled(id: string, enabled: boolean): Promise<AdminSourceRow>;
   runSourceCheck(id: string): Promise<AdminSourceRow>;
+  sourceRequests(): Promise<AdminSourceRow[]>;
+  reviewSource(id: string, decision: SourceDecision): Promise<AdminSourceRow>;
 }
 
 export interface AdminApplicationsApi {

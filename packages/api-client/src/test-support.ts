@@ -33,6 +33,7 @@ export const testConfig: PublicConfig = {
     name: { minLength: 2, maxLength: 120 },
     email: { maxLength: 254 },
     answer: { maxLength: 4000 },
+    note: { maxLength: 1000 },
     track: { minResultCount: 1, maxResultCount: 50 },
   },
   pauseOptions: [
@@ -62,6 +63,7 @@ export const testConfig: PublicConfig = {
     followUpAfterDays: 14,
     defaultTaskTime: '09:00',
   },
+  jobSources: { maxPerUser: 10 },
   answers: {
     questionMaxLength: 300,
     maxSavedAnswers: 100,

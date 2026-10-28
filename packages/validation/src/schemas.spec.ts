@@ -7,6 +7,7 @@ const policy: ValidationPolicy = {
   name: { minLength: 2, maxLength: 120 },
   email: { maxLength: 254 },
   answer: { maxLength: 4000 },
+  note: { maxLength: 1000 },
   track: { minResultCount: 1, maxResultCount: 50 },
 };
 const schemas = createSchemas(policy);

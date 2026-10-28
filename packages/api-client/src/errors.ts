@@ -23,6 +23,11 @@ export const ApiErrorDetail = {
   SourceExists: 'source_exists',
   CountryCode: 'country_code',
   JobsNotFound: 'jobs_not_found',
+  SourceShared: 'source_shared',
+  SourcePending: 'source_pending',
+  SourceLimit: 'source_limit',
+  SourceDisabled: 'source_disabled',
+  SourceReviewed: 'source_reviewed',
 } as const;
 export type ApiErrorDetail = (typeof ApiErrorDetail)[keyof typeof ApiErrorDetail];
 

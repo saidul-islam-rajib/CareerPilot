@@ -15,6 +15,7 @@ import type {
   DeletionRequest,
   DocumentChanges,
   DocumentInput,
+  NewUserSource,
   NotificationPreferences,
   OpportunityDetail,
   OutcomeUpdate,
@@ -34,6 +35,7 @@ import type {
   Track,
   TrackUpdate,
   UploadSource,
+  UserSource,
   VerificationChallenge,
 } from './types';
 
@@ -85,6 +87,12 @@ export interface AnswersApi {
   restoreAnswer(id: string): Promise<QuestionBank>;
 }
 
+export interface SourcesApi {
+  listSources(): Promise<UserSource[]>;
+  addSource(input: NewUserSource): Promise<UserSource>;
+  removeSource(id: string): Promise<void>;
+}
+
 export interface ProfileApi {
   getProfile(): Promise<Profile>;
   updateBasics(changes: BasicsChanges): Promise<Profile>;
@@ -133,6 +141,7 @@ export interface CareerPilotApi {
   approvals: ApprovalApi;
   applications: ApplicationApi;
   answers: AnswersApi;
+  sources: SourcesApi;
   profile: ProfileApi;
   settings: SettingsApi;
 }
