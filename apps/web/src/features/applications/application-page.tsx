@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Archive, FileText, Mail, Pencil, ShieldCheck } from 'lucide-react';
+import { Archive, ExternalLink, FileText, Mail, Pencil, ShieldCheck } from 'lucide-react';
 import { useApplication, useFormat, useT } from '@careerpilot/client-core';
-import { EnumKey, TimelineActor } from '@careerpilot/domain-ui-logic';
-import { Button, Card, EnumBadge, ErrorState, ListRow, LoadingState, PageHeader, Section, cn } from '@careerpilot/ui-web';
+import { EnumKey, StatusTone, SubmissionStatus, TimelineActor } from '@careerpilot/domain-ui-logic';
+import { Banner, Button, Card, EnumBadge, ErrorState, ListRow, LoadingState, PageHeader, Section, cn } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
 import { FollowUpsSection, OutcomeDialog } from './follow-ups';
 
@@ -36,6 +36,19 @@ export function ApplicationPage() {
     <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <div className="flex min-w-0 flex-col gap-6">
         <PageHeader title={a.opportunity.title} description={`${a.opportunity.organization} · ${a.opportunity.location}`} />
+        {a.submissionStatus === SubmissionStatus.ManualActionRequired ? (
+          <Banner
+            tone={StatusTone.Warning}
+            icon={ExternalLink}
+            title={t('applications.finishOnSite')}
+            body={t('applications.finishOnSiteBody')}
+            action={
+              <a href={a.circular.originalUrl} target="_blank" rel="noreferrer noopener" className="text-sm font-semibold text-primary underline-offset-2 hover:underline">
+                {t('applications.openApplicationPage')}
+              </a>
+            }
+          />
+        ) : null}
         <FollowUpsSection application={a} />
         <Section title={t('applications.timeline')}>
           <Card>

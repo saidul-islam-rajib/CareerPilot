@@ -95,6 +95,13 @@ describe('Applications', () => {
     expect(await screen.findByText('Email sent to careers@baydigital.example.com')).toBeInTheDocument();
     expect(screen.getByText('Email delivered; no bounce received within 48 hours')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Original circular/ })).toHaveAttribute('href', '/opportunities/opp_bd_dhaka/circular');
+    expect(screen.queryByText("Finish this application on the employer's site")).not.toBeInTheDocument();
+  });
+
+  it('points to the employer site when only the user can finish the application', async () => {
+    renderWithProviders(<ApplicationPage />, { params: { id: 'app_harbour' } });
+    expect(await screen.findByText("Finish this application on the employer's site")).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open the application page' })).toHaveAttribute('href', expect.stringMatching(/^https:\/\//));
   });
 });
 

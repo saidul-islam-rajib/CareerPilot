@@ -1,11 +1,12 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useApplication, useFormat, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
-import { Archive, FileText, Mail, Pencil, ShieldCheck } from '@/ui/icons';
-import { EnumKey, TimelineActor } from '@careerpilot/domain-ui-logic';
+import * as WebBrowser from 'expo-web-browser';
+import { Archive, ExternalLink, FileText, Mail, Pencil, ShieldCheck } from '@/ui/icons';
+import { EnumKey, StatusTone, SubmissionStatus, TimelineActor } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
-import { Button, ButtonVariant, Card, Divider, EmptyState, EnumBadge, ErrorState, ListRow, LoadingState, Row, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
+import { Banner, Button, ButtonVariant, Card, Divider, EmptyState, EnumBadge, ErrorState, ListRow, LoadingState, Row, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
 import { FollowUpsCard } from './follow-up-screens';
 
 const KILOBYTE = 1024;
@@ -42,6 +43,15 @@ export function ApplicationScreen() {
             {a.opportunity.organization} · {a.opportunity.location}
           </Text>
         </View>
+        {a.submissionStatus === SubmissionStatus.ManualActionRequired ? (
+          <Banner
+            tone={StatusTone.Warning}
+            icon={ExternalLink}
+            title={t('applications.finishOnSite')}
+            body={t('applications.finishOnSiteBody')}
+            action={<Button label={t('applications.openApplicationPage')} icon={ExternalLink} variant={ButtonVariant.Secondary} onPress={() => void WebBrowser.openBrowserAsync(a.circular.originalUrl)} testID="open-application-page" />}
+          />
+        ) : null}
 
         <Card>
           <ListRow title={t('applications.submission')} trailing={<EnumBadge enumKey={EnumKey.SubmissionStatus} value={a.submissionStatus} />} />

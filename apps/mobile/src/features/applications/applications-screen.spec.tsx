@@ -38,6 +38,13 @@ describe('ApplicationScreen', () => {
     expect(screen.getByText('Ayesha-Rahman-CV.pdf')).toBeTruthy();
   });
 
+  it('points to the employer site when only the user can finish the application', async () => {
+    mockParams.current = { id: 'app_harbour' };
+    await renderWithProviders(<ApplicationScreen />);
+    expect(await screen.findByText("Finish this application on the employer's site")).toBeTruthy();
+    expect(screen.getByTestId('open-application-page')).toBeTruthy();
+  });
+
   it('says when no confirmation has been received', async () => {
     mockParams.current = { id: 'app_meghna' };
     await renderWithProviders(<ApplicationScreen />);

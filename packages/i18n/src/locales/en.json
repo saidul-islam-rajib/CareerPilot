@@ -206,6 +206,9 @@
     "confirmApproveBody": "CareerPilot will submit exactly what you see here to {employer}."
   },
   "applications": {
+    "finishOnSite": "Finish this application on the employer's site",
+    "finishOnSiteBody": "This employer only accepts applications through their own site, so CareerPilot can't submit it for you. Your CV and answers below are ready to copy.",
+    "openApplicationPage": "Open the application page",
     "title": "Applications",
     "empty": "You haven't applied to anything yet.",
     "filterAll": "All",
