@@ -8,4 +8,5 @@
 - [x] Admin sets the per-user source limit in Platform settings (default 10, range 1 to 100 from config); users see the current limit
 - [x] Automatic mode applies to every unhandled listed job; application emails need an apply phrase and exclude accommodation and privacy contacts
 - [x] Saved job routes follow the email rules; the submitter uses the current route; address checks use one lookup and retry once
-- [ ] Docker rebuild and phone reload for the limit and automatic-apply fixes
+- [x] Portal applications show "Finish on the employer's site" with a link to the application page (web and mobile)
+- [x] Docker rebuilt, worker restarted on the new code, Metro restarted with --clear
