@@ -30,6 +30,7 @@ export { default as Eye } from 'lucide-react-native/icons/eye';
 export { default as EyeOff } from 'lucide-react-native/icons/eye-off';
 export { default as FileSearch } from 'lucide-react-native/icons/file-search';
 export { default as FileText } from 'lucide-react-native/icons/file-text';
+export { default as Globe } from 'lucide-react-native/icons/globe';
 export { default as FolderGit2 } from 'lucide-react-native/icons/folder-git-2';
 export { default as GraduationCap } from 'lucide-react-native/icons/graduation-cap';
 export { default as GripVertical } from 'lucide-react-native/icons/grip-vertical';
