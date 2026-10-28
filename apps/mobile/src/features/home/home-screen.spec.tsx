@@ -1,6 +1,7 @@
-import { fireEvent, screen } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { PauseDuration } from '@careerpilot/domain-ui-logic';
 import { mockRouter, renderWithProviders } from '@/test/render';
+import { AddJobByLinkScreen } from '@/features/opportunities/add-job-by-link-screen';
 import { HomeScreen } from './home-screen';
 
 describe('HomeScreen', () => {
@@ -31,5 +32,16 @@ describe('HomeScreen', () => {
     await fireEvent.press(view.getByText('Resume'));
     await view.findByText('Hello, Ayesha');
     expect(await services.api.settings.getSettings()).not.toHaveProperty('pause');
+  });
+});
+
+describe('AddJobByLinkScreen', () => {
+  it('reads a pasted job link and opens the job', async () => {
+    await renderWithProviders(<AddJobByLinkScreen />);
+    await fireEvent.press(await screen.findByTestId('job-link-submit'));
+    expect(await screen.findByText('This field is required.')).toBeTruthy();
+    await fireEvent.changeText(screen.getByTestId('job-link-url'), 'careers.example.com/northwind/senior-frontend');
+    await fireEvent.press(screen.getByTestId('job-link-submit'));
+    await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith({ pathname: '/opportunity/[id]', params: { id: 'opp_remote_frontend' } }));
   });
 });

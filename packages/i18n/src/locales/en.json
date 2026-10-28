@@ -161,6 +161,7 @@
     "lastChecked": "Sources checked {date}"
   },
   "opportunity": {
+    "addedByLink": "Added by you from a link",
     "match": "{score}% match",
     "matchExplanation": "Why this matches",
     "requirements": "Requirements",
@@ -1186,6 +1187,21 @@
       "limit": "You've reached the limit for sources. Remove one to add another.",
       "disabled": "An administrator turned this site off.",
       "generic": "We couldn't add this source. Try again."
+    }
+  },
+  "jobLink": {
+    "add": "Add a job by link",
+    "title": "Add a job by link",
+    "body": "Paste the link to any job posting. CareerPilot reads it, scores it against your profile, and adds it to your list so you can apply.",
+    "url": "Job posting link",
+    "urlHint": "For example https://careers.example.com/jobs/123",
+    "submit": "Add job",
+    "reading": "Reading the posting…",
+    "added": "{title} added to your list.",
+    "errors": {
+      "url": "Use a link on the public internet.",
+      "notFound": "We couldn't read a job from that page. Try the posting's own page.",
+      "generic": "We couldn't add this job. Try again."
     }
   },
   "answers": {

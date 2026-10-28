@@ -9,7 +9,8 @@ import {
   SubmissionWindowKind,
   TimelineActor,
 } from '@careerpilot/domain-ui-logic';
-import { ApiError, ApiErrorCode } from '../errors';
+import { isHttpsAddress, sameAddress, secureAddress } from '../addresses';
+import { ApiError, ApiErrorCode, ApiErrorDetail } from '../errors';
 import type { CareerPilotApi, Clock, IdGenerator } from '../ports';
 import {
   AnswerSource,
@@ -211,6 +212,18 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
       async decide(id, decision) {
         findOpportunity(id).decision = decision;
         return respond(undefined);
+      },
+      async addByLink(url) {
+        const address = secureAddress(url);
+        if (!isHttpsAddress(address)) {
+          return failWith(ApiErrorCode.Validation, ApiErrorDetail.JobUrl);
+        }
+        const found = state.opportunities.find((o) => sameAddress(o.source.url, address));
+        if (!found) {
+          return failWith(ApiErrorCode.Validation, ApiErrorDetail.JobNotFound);
+        }
+        found.decision = OpportunityDecision.Saved;
+        return respond(found);
       },
       async prepareApplication(id) {
         const existing = state.approvals.find((a) => a.opportunity.id === id && a.state === ApprovalState.Pending);

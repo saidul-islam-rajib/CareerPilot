@@ -113,6 +113,9 @@ class HtmlConnector:
         found = [listing for listing in listings if listing is not None]
         return ParsedFeed(listings=found, skipped=len(listings) - len(found))
 
+    def from_posting(self, posting: dict[str, Any], definition: SourceDefinition, url: str, page: PageScan) -> RawListing | None:
+        return self._from_posting(posting, definition, url, page)
+
     def _from_posting(self, posting: dict[str, Any], definition: SourceDefinition, url: str, page: PageScan) -> RawListing | None:
         title = plain_text(str(posting.get("title") or ""))
         if not title:

@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { trackTitle, useDashboard, useFormat, useResume, useSession, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PauseCircle } from '@/ui/icons';
+import { Link2, PauseCircle } from '@/ui/icons';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
@@ -44,6 +44,7 @@ export function HomeScreen() {
             <Text tone={TextTone.Muted}>{t('home.summary')}</Text>
           </View>
         </View>
+        <Button label={t('jobLink.add')} icon={Link2} variant={ButtonVariant.Outline} onPress={() => router.push(Routes.addJobByLink)} testID="add-job-by-link" />
 
         {dashboard.isPending ? <LoadingState /> : null}
         {dashboard.isError ? <ErrorState onRetry={() => void dashboard.refetch()} /> : null}

@@ -44,6 +44,7 @@ export { default as KeyRound } from 'lucide-react-native/icons/key-round';
 export { default as Languages } from 'lucide-react-native/icons/languages';
 export { default as Lightbulb } from 'lucide-react-native/icons/lightbulb';
 export { default as Link } from 'lucide-react-native/icons/link';
+export { default as Link2 } from 'lucide-react-native/icons/link-2';
 export { default as ListOrdered } from 'lucide-react-native/icons/list-ordered';
 export { default as LogOut } from 'lucide-react-native/icons/log-out';
 export { default as Mail } from 'lucide-react-native/icons/mail';

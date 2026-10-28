@@ -54,6 +54,7 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       getOpportunity: (id) => get(`/v1/opportunities/${enc(id)}`),
       decide: (id, decision) => put(`/v1/opportunities/${enc(id)}/decision`, { decision }),
       prepareApplication: (id) => post(`/v1/opportunities/${enc(id)}/applications`),
+      addByLink: (url) => post('/v1/opportunities/by-link', { url }),
     },
     approvals: {
       listApprovals: () => get('/v1/approvals'),

@@ -7,7 +7,7 @@ from careerpilot.discovery.models import Listing
 from careerpilot.matching.ports import Matcher
 from careerpilot.matching.rules import is_eligible, sponsorship_evidence
 from careerpilot.platform.config import ApplicationEmailConfig, MatchingConfig
-from careerpilot.platform.enums import ApplicationMode, ApplicationRoute
+from careerpilot.platform.enums import ApplicationMode, ApplicationRoute, OpportunityDecision
 from careerpilot.platform.validation import EMAIL_IN_TEXT
 
 
@@ -114,6 +114,23 @@ class RecommendationService:
         placed.update(chosen)
         workspace.track_opportunities[track.id] = chosen
         return len([oid for oid in chosen if oid not in previous])
+
+    def place(self, user_id: str, listing: Listing) -> str:
+        workspace = self._ctx.workspaces.get(user_id)
+        listed = {oid for ids in workspace.track_opportunities.values() for oid in ids}
+        if listing.id not in listed:
+            tracks = sorted(workspace.preferences.tracks, key=lambda t: t.position)
+            eligible = [track for track in tracks if is_eligible(listing, track, self._ctx.config)] or tracks[:1]
+            assessed = [(track, self._ctx.matcher.assess(workspace.profile, track, listing)) for track in eligible]
+            if not assessed:
+                return listing.id
+            track, match = max(assessed, key=lambda pair: pair[1].score)
+            workspace.matches[listing.id] = match
+            workspace.track_opportunities[track.id] = [listing.id, *workspace.track_opportunities.get(track.id, [])]
+            self._publish(listing, match)
+        workspace.decisions[listing.id] = OpportunityDecision.SAVED
+        self._ctx.workspaces.save(user_id, workspace)
+        return listing.id
 
     def _publish(self, listing: Listing, match: OpportunityMatch) -> None:
         if self._ctx.opportunities.get(listing.id) is not None:

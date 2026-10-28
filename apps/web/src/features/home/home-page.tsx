@@ -1,11 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { CalendarClock, ChevronRight, PauseCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { CalendarClock, ChevronRight, Link2, PauseCircle } from 'lucide-react';
 import type { UpcomingTask } from '@careerpilot/api-client';
-import { trackTitle, useDashboard, useFormat, useResume, useServices, useSession, useT } from '@careerpilot/client-core';
+import { trackTitle, useAddJobByLink, useDashboard, useFormat, useResume, useServices, useSession, useT } from '@careerpilot/client-core';
 import { EnumKey, StatusTone } from '@careerpilot/domain-ui-logic';
-import { Badge, Banner, Button, Card, EmptyState, EnumBadge, ErrorState, LoadingState, PageHeader, Section, cn } from '@careerpilot/ui-web';
+import { Badge, Banner, Button, Card, EmptyState, EnumBadge, ErrorState, FormDialog, LoadingState, PageHeader, Section, TextField, cn, useToast } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
 import { OpportunityCard } from '@/features/opportunities/opportunity-card';
 
@@ -68,6 +70,31 @@ function ComingUp({ items }: { items: UpcomingTask[] }) {
   );
 }
 
+function AddJobByLinkDialog({ onClose }: { onClose: () => void }) {
+  const t = useT();
+  const router = useRouter();
+  const toast = useToast();
+  const form = useAddJobByLink((opportunity) => {
+    toast.show({ message: t('jobLink.added', { title: opportunity.title }) });
+    onClose();
+    router.push(Routes.opportunity(opportunity.id));
+  });
+  return (
+    <FormDialog
+      open
+      onOpenChange={(open) => !open && onClose()}
+      title={t('jobLink.title')}
+      description={t('jobLink.body')}
+      submitLabel={form.adding ? t('jobLink.reading') : t('jobLink.submit')}
+      submitting={form.adding}
+      error={form.formError ? t(form.formError) : undefined}
+      onSubmit={form.submit}
+    >
+      <TextField label={t('jobLink.url')} inputMode="url" autoComplete="url" value={form.url} onChange={(e) => form.setUrl(e.target.value)} error={form.error} hint={t('jobLink.urlHint')} />
+    </FormDialog>
+  );
+}
+
 export function HomePage() {
   const t = useT();
   const format = useFormat();
@@ -75,10 +102,20 @@ export function HomePage() {
   const dashboard = useDashboard();
   const resume = useResume();
   const firstName = user?.fullName.split(' ')[0] ?? '';
+  const [addingLink, setAddingLink] = useState(0);
 
   return (
     <>
-      <PageHeader title={t('home.greeting', { name: firstName })} description={t('home.summary')} />
+      <PageHeader
+        title={t('home.greeting', { name: firstName })}
+        description={t('home.summary')}
+        actions={
+          <Button variant="outline" icon={Link2} onClick={() => setAddingLink((count) => count + 1)}>
+            {t('jobLink.add')}
+          </Button>
+        }
+      />
+      {addingLink > 0 ? <AddJobByLinkDialog key={addingLink} onClose={() => setAddingLink(0)} /> : null}
       {dashboard.isPending ? <LoadingState /> : null}
       {dashboard.isError ? <ErrorState onRetry={() => void dashboard.refetch()} /> : null}
       {dashboard.data ? (

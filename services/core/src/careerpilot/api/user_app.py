@@ -62,6 +62,10 @@ class CompleteLinkBody(CamelModel):
     password: str
 
 
+class JobLinkBody(CamelModel):
+    url: str
+
+
 class DecisionBody(CamelModel):
     decision: OpportunityDecision
 
@@ -178,6 +182,11 @@ def opportunity(opportunity_id: str, user: CurrentUser, services: Services) -> J
 def decide(opportunity_id: str, body: DecisionBody, user: CurrentUser, services: Services) -> Response:
     services.opportunities.decide(user.id, opportunity_id, body.decision)
     return no_content()
+
+
+@router.post("/opportunities/by-link")
+def add_job_by_link(body: JobLinkBody, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.job_links.add(user.id, body.url))
 
 
 @router.post("/opportunities/{opportunity_id}/applications")

@@ -78,6 +78,17 @@ class DiscoveryService:
     def listings(self) -> list[Listing]:
         return self._catalog.list_all()
 
+    def listing_for(self, source_id: str, raw: RawListing) -> Listing:
+        url = canonical_url(raw.url)
+        existing = self._catalog.find_by_url(url)
+        if existing is not None:
+            return existing
+        listing = self._new_listing(
+            source_id, raw, url, listing_fingerprint(raw.organization, raw.title, raw.location), iso(self._clock.now())
+        )
+        self._catalog.save(listing)
+        return listing
+
     def _absorb(self, source_id: str, raw: RawListing, at: str) -> tuple[ListingChange, Listing]:
         url = canonical_url(raw.url)
         fingerprint = listing_fingerprint(raw.organization, raw.title, raw.location)

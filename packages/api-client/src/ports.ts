@@ -60,6 +60,7 @@ export interface OpportunityApi {
   getOpportunity(id: string): Promise<OpportunityDetail>;
   decide(id: string, decision: OpportunityDecision): Promise<void>;
   prepareApplication(id: string): Promise<ApprovalSummary>;
+  addByLink(url: string): Promise<OpportunityDetail>;
 }
 
 export interface ApprovalApi {

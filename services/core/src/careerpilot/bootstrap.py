@@ -11,7 +11,7 @@ from careerpilot.administration.account_links import AdminLinkContext, AdminLink
 from careerpilot.administration.context import AdminContext
 from careerpilot.administration.discovery_sync import SourceCheckRunner, discover_when_empty
 from careerpilot.administration.limits import effective_source_limit
-from careerpilot.administration.models import EmergencyStop, PlatformSettings
+from careerpilot.administration.models import AdminSourceRow, EmergencyStop, PlatformSettings
 from careerpilot.administration.services import (
     AdminAccountService,
     AdminAuditService,
@@ -22,7 +22,7 @@ from careerpilot.administration.services import (
     PlatformSettingsService,
     effective_link_ttl_minutes,
 )
-from careerpilot.administration.sources import SourcePolicy, directory_definitions, listing_visibility
+from careerpilot.administration.sources import SourcePolicy, directory_definitions, is_link_source, listing_visibility
 from careerpilot.administration.user_sources import UserSourceContext, UserSourceService
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import Preferences, Profile, SubmissionWindow, Track
@@ -34,6 +34,7 @@ from careerpilot.candidate.services.approvals import ApprovalService
 from careerpilot.candidate.services.auth import AuthService
 from careerpilot.candidate.services.dashboard import DashboardService
 from careerpilot.candidate.services.digest import DigestContext, DigestService
+from careerpilot.candidate.services.job_links import JobLinkContext, JobLinkService
 from careerpilot.candidate.services.opportunities import OpportunityService
 from careerpilot.candidate.services.preferences import PreferencesService
 from careerpilot.candidate.services.profile import ProfileService
@@ -43,6 +44,7 @@ from careerpilot.candidate.services.verification import ContactVerificationServi
 from careerpilot.discovery.connectors.json_jobs import JsonJobsConnector
 from careerpilot.discovery.connectors.registry import ConnectorRegistry, first_party_connectors
 from careerpilot.discovery.fetchers import PageFetcher, fetcher_for, page_fetcher_for
+from careerpilot.discovery.job_links import JobLinkReader
 from careerpilot.discovery.models import Listing
 from careerpilot.discovery.ports import Fetcher
 from careerpilot.discovery.resolver import SourceResolver
@@ -78,6 +80,7 @@ from careerpilot.platform.email_delivery import (
 from careerpilot.platform.enums import ApplicationMode, DeliveryMode, SmtpSecurity, SubmissionWindowKind
 from careerpilot.platform.files import FileLinkSigner, FileStorage, LocalFileStorage, SampleAwareStorage
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore
+from careerpilot.platform.messages import translate
 from careerpilot.platform.one_time_codes import OneTimeCodes, random_token
 from careerpilot.platform.persistence import Database, create_database
 from careerpilot.platform.security import Argon2PasswordHasher, PasswordHasher, TokenService, token_secret_from_environment
@@ -116,6 +119,7 @@ class Container:
     verification: ContactVerificationService
     answers: AnswerService
     user_sources: UserSourceService
+    job_links: JobLinkService
     source_checks: SourceCheckRunner
     invite_owner: Callable[[], bool]
 
@@ -281,6 +285,12 @@ def visible_listings(discovery: DiscoveryService, visibility: Callable[[str], Ca
     return for_user
 
 
+def source_display_name(rows: list[AdminSourceRow], source_id: str) -> str:
+    if is_link_source(source_id):
+        return translate("opportunity.addedByLink")
+    return next((row.name for row in rows if row.id == source_id), source_id)
+
+
 def build_container(overrides: ContainerOverrides | None = None) -> Container:
     options = overrides or ContainerOverrides()
     cfg = options.settings or with_web_address(load_settings())
@@ -341,7 +351,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
             config=cfg.matching,
             matcher=options.matcher or matcher_for(cfg, clk),
             listings=visible_listings(discovery, listing_visibility(repos.directory.sources)),
-            source_name=lambda source_id: next((s.name for s in repos.directory.sources() if s.id == source_id), source_id),
+            source_name=lambda source_id: source_display_name(repos.directory.sources(), source_id),
             accounts=repos.accounts,
             opportunities=repos.opportunities,
             workspaces=repos.workspaces,
@@ -405,6 +415,15 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         digests=digests,
         verification=verification,
         answers=AnswerService(candidate),
+        job_links=JobLinkService(
+            JobLinkContext(
+                check_address=options.address_check or public_https_url,
+                reader=JobLinkReader(fetch_page),
+                discovery=discovery,
+                recommendations=recommendations,
+                opportunities=opportunity_service,
+            )
+        ),
         user_sources=UserSourceService(
             UserSourceContext(admin=admin, checks=source_checks, policy=source_policy, refresh=recommendations.rematch)
         ),

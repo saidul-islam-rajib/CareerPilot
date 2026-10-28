@@ -12,6 +12,7 @@ from careerpilot.platform.enums import SourceReview
 SourceLookup = Callable[[str], ResolvedSource | None]
 SITE_PREFIX = "www."
 SOURCE_ID_PREFIX = "src"
+LINK_SOURCE_PREFIX = "link:"
 
 
 def nothing_found(_link: str) -> ResolvedSource | None:
@@ -95,12 +96,26 @@ def is_shared(row: AdminSourceRow) -> bool:
     return row.review is SourceReview.APPROVED
 
 
+def link_source_id(user_id: str) -> str:
+    return f"{LINK_SOURCE_PREFIX}{user_id}"
+
+
+def is_link_source(source_id: str) -> bool:
+    return source_id.startswith(LINK_SOURCE_PREFIX)
+
+
 def listing_visibility(sources: Callable[[], list[AdminSourceRow]]) -> Callable[[str], Callable[[Listing], bool]]:
     def for_user(user_id: str) -> Callable[[Listing], bool]:
         private = {row.id: set(row.owner_ids) for row in sources() if not is_shared(row)}
+        own_links = link_source_id(user_id)
+
+        def open_to_user(source_id: str) -> bool:
+            if is_link_source(source_id):
+                return source_id == own_links
+            return source_id not in private or user_id in private[source_id]
 
         def visible(listing: Listing) -> bool:
-            return any(source.source_id not in private or user_id in private[source.source_id] for source in listing.sources)
+            return any(open_to_user(source.source_id) for source in listing.sources)
 
         return visible
 

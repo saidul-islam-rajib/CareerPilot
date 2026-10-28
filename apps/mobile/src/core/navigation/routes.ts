@@ -10,6 +10,7 @@ export const Routes = {
   profile: '/profile',
   more: '/more',
   opportunity: (id: string) => ({ pathname: '/opportunity/[id]', params: { id } }) as const,
+  addJobByLink: '/opportunity/add',
   approval: (id: string) => ({ pathname: '/approval/[id]', params: { id } }) as const,
   application: (id: string) => ({ pathname: '/application/[id]', params: { id } }) as const,
   followUp: (applicationId: string, taskId?: string, suggested = false) =>

@@ -29,6 +29,8 @@ export const ApiErrorDetail = {
   SourceDisabled: 'source_disabled',
   SourceReviewed: 'source_reviewed',
   MaxSourcesPerUser: 'max_sources_per_user',
+  JobUrl: 'job_url',
+  JobNotFound: 'job_not_found',
 } as const;
 export type ApiErrorDetail = (typeof ApiErrorDetail)[keyof typeof ApiErrorDetail];
 

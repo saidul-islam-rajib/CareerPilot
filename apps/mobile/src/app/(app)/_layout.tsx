@@ -17,6 +17,7 @@ export default function SignedInLayout() {
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="opportunity/[id]" options={{ title: '' }} />
+      <Stack.Screen name="opportunity/add" options={{ title: t('jobLink.title') }} />
       <Stack.Screen name="approval/[id]" options={{ title: t('approvals.title') }} />
       <Stack.Screen name="application/[id]" options={{ title: t('applications.record') }} />
       <Stack.Screen name="follow-up" options={{ title: t('applications.followUps') }} />

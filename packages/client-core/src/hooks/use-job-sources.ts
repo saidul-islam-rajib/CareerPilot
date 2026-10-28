@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ApiErrorDetail, isApiError, type NewUserSource, type UserSource } from '@careerpilot/api-client';
+import { ApiErrorDetail, isApiError, type NewUserSource, type OpportunityDetail, type UserSource } from '@careerpilot/api-client';
 import { SourceReview } from '@careerpilot/domain-ui-logic';
 import { ValidationMessage, type FieldErrors } from '@careerpilot/validation';
 import { usePublicConfig } from '../config/public-config';
@@ -92,5 +92,47 @@ export function useAddJobSourceForm(onAdded?: (source: UserSource) => void) {
     adding: mutation.isPending,
     formError: mutation.error ? sourceErrorKey(mutation.error) : undefined,
     reset: () => mutation.reset(),
+  };
+}
+
+const JOB_LINK_ERROR_KEYS: Readonly<Record<string, string>> = {
+  [ApiErrorDetail.JobUrl]: 'jobLink.errors.url',
+  [ApiErrorDetail.JobNotFound]: 'jobLink.errors.notFound',
+};
+
+export function jobLinkErrorKey(error: unknown): string {
+  return (isApiError(error) && JOB_LINK_ERROR_KEYS[error.detail ?? '']) || 'jobLink.errors.generic';
+}
+
+export function useAddJobByLink(onAdded: (opportunity: OpportunityDetail) => void) {
+  const api = useApi();
+  const client = useQueryClient();
+  const [url, setUrl] = useState('');
+  const [error, setError] = useState<string>();
+  const mutation = useMutation({
+    mutationFn: (link: string) => api.opportunities.addByLink(link),
+    onSuccess: async (opportunity) => {
+      setUrl('');
+      client.setQueryData(queryKeys.opportunity(opportunity.id), opportunity);
+      await client.invalidateQueries({ queryKey: queryKeys.dashboard });
+      onAdded(opportunity);
+    },
+  });
+  return {
+    url,
+    error,
+    setUrl: (value: string) => {
+      setUrl(value);
+      setError(undefined);
+    },
+    submit: () => {
+      if (!url.trim()) {
+        setError(ValidationMessage.Required);
+        return;
+      }
+      mutation.mutate(url.trim());
+    },
+    adding: mutation.isPending,
+    formError: mutation.error ? jobLinkErrorKey(mutation.error) : undefined,
   };
 }

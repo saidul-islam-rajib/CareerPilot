@@ -28,6 +28,20 @@ describe('AppShell', () => {
 });
 
 describe('HomePage', () => {
+  it('adds a job from a pasted link and opens it', async () => {
+    renderWithProviders(<HomePage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Add a job by link' }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add job' }));
+    expect(await within(dialog).findByText('This field is required.')).toBeInTheDocument();
+    fireEvent.change(within(dialog).getByLabelText('Job posting link'), { target: { value: 'https://unknown.example.com/job' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add job' }));
+    expect(await within(dialog).findByText("We couldn't read a job from that page. Try the posting's own page.")).toBeInTheDocument();
+    fireEvent.change(within(dialog).getByLabelText('Job posting link'), { target: { value: 'careers.example.com/northwind/senior-frontend' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add job' }));
+    await waitFor(() => expect(navigation.push).toHaveBeenCalledWith('/opportunities/opp_remote_frontend'));
+  });
+
   it('shows counts and tracks', async () => {
     renderWithProviders(<HomePage />);
     expect(await screen.findByText('Hello, Ayesha')).toBeInTheDocument();
