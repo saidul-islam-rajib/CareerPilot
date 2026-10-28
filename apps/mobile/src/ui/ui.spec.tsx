@@ -5,7 +5,7 @@ import { splitTemplate } from './linked-text';
 import { targetIndex } from './sortable-list';
 import { Stepper } from './stepper';
 import { TextField } from './text-field';
-import { clampZoom } from './zoomable-image';
+import { boundTranslation, clampZoom, focalTranslation } from './zoomable-image';
 
 describe('pure ui helpers', () => {
   it('splits catalog templates around placeholders', async () => {
@@ -28,6 +28,11 @@ describe('pure ui helpers', () => {
   it('clamps zoom levels', async () => {
     expect(clampZoom(9, 1, 5)).toBe(5);
     expect(clampZoom(0.2, 1, 5)).toBe(1);
+    expect(focalTranslation(100, 0, 2)).toBe(-100);
+    expect(focalTranslation(0, 40, 2)).toBe(80);
+    expect(boundTranslation(500, 200, 2)).toBe(100);
+    expect(boundTranslation(-500, 200, 2)).toBe(-100);
+    expect(boundTranslation(30, 200, 1)).toBe(0);
   });
 });
 

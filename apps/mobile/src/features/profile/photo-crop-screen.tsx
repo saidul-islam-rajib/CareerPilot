@@ -117,7 +117,7 @@ export function PhotoCropScreen() {
   };
 
   return (
-    <Screen testID="photo-crop-screen">
+    <Screen testID="photo-crop-screen" scroll={false}>
       <Card>
         <Text tone={TextTone.Muted}>{t('profile.adjustPhotoHint')}</Text>
         <GestureDetector gesture={Gesture.Simultaneous(pan, pinch)}>

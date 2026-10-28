@@ -23,9 +23,9 @@ export default function SignedInLayout() {
       <Stack.Screen name="follow-up" options={{ title: t('applications.followUps') }} />
       <Stack.Screen name="outcome" options={{ title: t('applications.updateOutcome') }} />
       <Stack.Screen name="circular/[opportunityId]" options={{ title: t('applications.circular'), presentation: 'modal' }} />
-      <Stack.Screen name="viewer" options={{ headerShown: false, presentation: 'fullScreenModal', animation: 'fade' }} />
+      <Stack.Screen name="viewer" options={{ headerShown: false, presentation: 'fullScreenModal', animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="profile/basics" options={{ title: t('profile.editBasics') }} />
-      <Stack.Screen name="profile/photo" options={{ title: t('profile.adjustPhoto') }} />
+      <Stack.Screen name="profile/photo" options={{ title: t('profile.adjustPhoto'), gestureEnabled: false }} />
       <Stack.Screen name="profile/verify-contact" options={{ title: t('verification.title') }} />
       <Stack.Screen name="profile/contact" options={{ title: t('profile.contacts') }} />
       <Stack.Screen name="profile/entry" options={{ title: t('profile.title') }} />
