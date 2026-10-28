@@ -7,6 +7,7 @@ from careerpilot.candidate.models import OpportunityMatch, Profile, Track
 from careerpilot.discovery.models import Listing
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator, iso
 from careerpilot.platform.email_delivery import InMemoryEmailSender
+from careerpilot.platform.enums import ApplicationMode, OpportunityDecision
 from careerpilot.platform.files import InMemoryFileStorage
 from careerpilot.testing import load_sample_data, sample_repositories, sample_settings
 from tests.unit.conftest import DEMO_USER, TEST_SECRET, FakeHasher
@@ -89,3 +90,22 @@ def test_changing_a_track_rematches_within_its_new_size(app: Container) -> None:
     add_skill(app, "Python")
     app.preferences.update_track(DEMO_USER, REMOTE_TRACK, len(ACTED_ON_REMOTE), None)
     assert placements(app)[REMOTE_TRACK] == ACTED_ON_REMOTE
+
+
+def handled_ids(app: Container) -> set[str]:
+    workspace = app.recommendations._ctx.workspaces.get(DEMO_USER)  # pyright: ignore[reportPrivateUsage]
+    return {approval.opportunity.id for approval in workspace.approvals}
+
+
+def test_switching_a_track_to_automatic_applies_to_the_jobs_already_listed(app: Container) -> None:
+    add_skill(app, "Python")
+    assert PYTHON_LISTING not in handled_ids(app)
+    app.preferences.update_track(DEMO_USER, REMOTE_TRACK, None, ApplicationMode.AUTOMATIC)
+    assert PYTHON_LISTING in handled_ids(app)
+
+
+def test_automatic_mode_skips_jobs_the_user_dismissed(app: Container) -> None:
+    add_skill(app, "Python")
+    app.opportunities.decide(DEMO_USER, PYTHON_LISTING, OpportunityDecision.DISMISSED)
+    app.preferences.update_track(DEMO_USER, REMOTE_TRACK, None, ApplicationMode.AUTOMATIC)
+    assert PYTHON_LISTING not in handled_ids(app)

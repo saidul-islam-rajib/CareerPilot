@@ -305,6 +305,12 @@ class SponsorshipPhrases(Strict):
     positive: list[str]
 
 
+class ApplicationEmailConfig(Strict):
+    window_chars: int = Field(gt=0)
+    phrases: list[str]
+    excluded_words: list[str]
+
+
 class MatchingConfig(Strict):
     mode: MatchingMode
     model: str
@@ -316,6 +322,7 @@ class MatchingConfig(Strict):
     min_score: int = Field(ge=0, le=100)
     include_flagged: bool
     default_route: str
+    application_email: ApplicationEmailConfig
     weights: MatchWeights
     track_rules: dict[str, TrackRule]
     sponsorship: SponsorshipPhrases

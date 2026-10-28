@@ -9,6 +9,35 @@ matching:
   min_score: 50
   include_flagged: false
   default_route: ats_portal
+  application_email:
+    window_chars: 160
+    phrases:
+      - send your cv
+      - send your resume
+      - send cv
+      - send resume
+      - send your application
+      - send applications
+      - applications should be sent
+      - email your cv
+      - email your resume
+      - email your application
+      - mail your cv
+      - mail your resume
+      - forward your cv
+      - forward your resume
+      - drop your cv
+      - submit your cv
+      - submit your resume
+      - apply by email
+      - apply via email
+      - apply through email
+      - apply with your cv
+      - interested candidates
+      - candidates may send
+      - cv to
+      - resume to
+    excluded_words: [accommodation, accessibility, privacy, noreply, no-reply, donotreply, legal, dpo, gdpr, security, press, media, abuse, unsubscribe, compliance, ethics, eeo]
   weights:
     base: 30
     title: 30

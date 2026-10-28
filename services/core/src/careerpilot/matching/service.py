@@ -6,7 +6,7 @@ from careerpilot.candidate.ports import AccountRepository, CandidateWorkspace, O
 from careerpilot.discovery.models import Listing
 from careerpilot.matching.ports import Matcher
 from careerpilot.matching.rules import is_eligible, sponsorship_evidence
-from careerpilot.platform.config import MatchingConfig
+from careerpilot.platform.config import ApplicationEmailConfig, MatchingConfig
 from careerpilot.platform.enums import ApplicationMode, ApplicationRoute
 from careerpilot.platform.validation import EMAIL_IN_TEXT
 
@@ -17,7 +17,6 @@ class RematchState:
     listed: set[str]
     acted_on: set[str]
     placed: set[str] = field(default_factory=set[str])
-    automatic: list[str] = field(default_factory=list[str])
 
 
 @dataclass(frozen=True)
@@ -43,15 +42,17 @@ class RecommendationService:
         workspace = self._ctx.workspaces.get(user_id)
         listings = self._ctx.listings(user_id)
         assessed_before = len(workspace.matches)
-        automatic: list[str] = []
-        added = sum(self._refresh_track(workspace, track, listings, automatic) for track in workspace.preferences.tracks)
+        added = sum(self._refresh_track(workspace, track, listings) for track in workspace.preferences.tracks)
         if added or len(workspace.matches) != assessed_before:
             self._ctx.workspaces.save(user_id, workspace)
-        for opportunity_id in automatic:
-            self._ctx.apply_by_rule(user_id, opportunity_id)
+        self._apply_automatic(user_id, workspace)
         return added
 
-    def _refresh_track(self, workspace: CandidateWorkspace, track: Track, listings: list[Listing], automatic: list[str]) -> int:
+    def _apply_automatic(self, user_id: str, workspace: CandidateWorkspace) -> None:
+        for opportunity_id in automatic_candidates(workspace):
+            self._ctx.apply_by_rule(user_id, opportunity_id)
+
+    def _refresh_track(self, workspace: CandidateWorkspace, track: Track, listings: list[Listing]) -> int:
         current = workspace.track_opportunities.get(track.id, [])
         candidates = [
             item
@@ -68,8 +69,6 @@ class RecommendationService:
         )[: max(0, track.result_count - len(current))]
         for listing, match in qualified:
             self._publish(listing, match)
-            if track.mode is ApplicationMode.AUTOMATIC and not match.has_hard_failure:
-                automatic.append(listing.id)
         workspace.track_opportunities[track.id] = [*current, *(listing.id for listing, _ in qualified)]
         return len(qualified)
 
@@ -80,8 +79,7 @@ class RecommendationService:
         tracks = sorted(workspace.preferences.tracks, key=lambda t: t.position)
         added = sum(self._rebuild_track(workspace, track, state) for track in tracks)
         self._ctx.workspaces.save(user_id, workspace)
-        for opportunity_id in state.automatic:
-            self._ctx.apply_by_rule(user_id, opportunity_id)
+        self._apply_automatic(user_id, workspace)
         return added
 
     def _rebuild_track(self, workspace: CandidateWorkspace, track: Track, state: "RematchState") -> int:
@@ -100,8 +98,6 @@ class RecommendationService:
         )[: max(0, track.result_count - len(kept))]
         for listing, match in best:
             self._publish(listing, match)
-            if track.mode is ApplicationMode.AUTOMATIC and not match.has_hard_failure and listing.id not in previous:
-                state.automatic.append(listing.id)
         chosen = [*kept, *(listing.id for listing, _ in best)]
         placed.update(chosen)
         workspace.track_opportunities[track.id] = chosen
@@ -121,13 +117,37 @@ def acted_on_opportunities(workspace: CandidateWorkspace) -> set[str]:
     }
 
 
+def application_email(text: str, config: ApplicationEmailConfig) -> str | None:
+    lowered = text.lower()
+    for found in EMAIL_IN_TEXT.finditer(text):
+        local = found.group(0).split("@", 1)[0].lower()
+        before = lowered[max(0, found.start() - config.window_chars) : found.start()]
+        if any(word in local for word in config.excluded_words):
+            continue
+        if any(phrase in before for phrase in config.phrases):
+            return found.group(0).rstrip(".")
+    return None
+
+
+def automatic_candidates(workspace: CandidateWorkspace) -> list[str]:
+    handled = acted_on_opportunities(workspace)
+    chosen: list[str] = []
+    for track in sorted(workspace.preferences.tracks, key=lambda t: t.position):
+        if track.mode is not ApplicationMode.AUTOMATIC:
+            continue
+        for opportunity_id in workspace.track_opportunities.get(track.id, []):
+            match = workspace.matches.get(opportunity_id)
+            if opportunity_id not in handled and opportunity_id not in chosen and match is not None and not match.has_hard_failure:
+                chosen.append(opportunity_id)
+    return chosen
+
+
 def opportunity_from_listing(
     listing: Listing, match: OpportunityMatch, source_name: Callable[[str], str], config: MatchingConfig
 ) -> OpportunityDetail:
     source = listing.sources[0]
     original = listing.versions[0]
-    found = EMAIL_IN_TEXT.search(listing.description)
-    email = found.group(0) if found else None
+    email = application_email(listing.description, config.application_email)
     return OpportunityDetail(
         id=listing.id,
         type=listing.type,
