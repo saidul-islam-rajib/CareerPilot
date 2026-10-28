@@ -672,6 +672,11 @@
       "failing": "Failing",
       "disabled": "Disabled"
     },
+    "source_review": {
+      "approved": "Shared with everyone",
+      "pending": "Waiting for review",
+      "rejected": "Just for you"
+    },
     "opportunity_status": {
       "active": "Active",
       "expired": "Expired",

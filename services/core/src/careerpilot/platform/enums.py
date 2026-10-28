@@ -146,6 +146,12 @@ class SourceStatus(StrEnum):
     DISABLED = "disabled"
 
 
+class SourceReview(StrEnum):
+    APPROVED = "approved"
+    PENDING = "pending"
+    REJECTED = "rejected"
+
+
 class OpportunityStatus(StrEnum):
     ACTIVE = "active"
     EXPIRED = "expired"

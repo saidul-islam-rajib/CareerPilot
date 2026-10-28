@@ -24,7 +24,7 @@ class RematchState:
 class RecommendationContext:
     config: MatchingConfig
     matcher: Matcher
-    listings: Callable[[], list[Listing]]
+    listings: Callable[[str], list[Listing]]
     source_name: Callable[[str], str]
     accounts: AccountRepository
     opportunities: OpportunityRepository
@@ -41,7 +41,7 @@ class RecommendationService:
 
     def refresh(self, user_id: str) -> int:
         workspace = self._ctx.workspaces.get(user_id)
-        listings = self._ctx.listings()
+        listings = self._ctx.listings(user_id)
         assessed_before = len(workspace.matches)
         automatic: list[str] = []
         added = sum(self._refresh_track(workspace, track, listings, automatic) for track in workspace.preferences.tracks)
@@ -75,7 +75,7 @@ class RecommendationService:
 
     def rematch(self, user_id: str) -> int:
         workspace = self._ctx.workspaces.get(user_id)
-        listings = self._ctx.listings()
+        listings = self._ctx.listings(user_id)
         state = RematchState(listings=listings, listed={item.id for item in listings}, acted_on=acted_on_opportunities(workspace))
         tracks = sorted(workspace.preferences.tracks, key=lambda t: t.position)
         added = sum(self._rebuild_track(workspace, track, state) for track in tracks)

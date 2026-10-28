@@ -4,6 +4,7 @@ discovery:
   timeout_seconds: 10
   max_listings_per_check: 200
   failing_after_failures: 3
+  max_sources_per_user: 10
   max_resolve_pages: 10
   max_career_links: 5
   min_job_links: 2

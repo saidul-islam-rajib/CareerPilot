@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, FastAPI, Query, Request
 from fastapi.responses import JSONResponse, Response
 
+from careerpilot.administration.models import NewUserSource
 from careerpilot.api import profile_routes
 from careerpilot.api.common import client_info, configure, no_content, ok
 from careerpilot.api.dependencies import CurrentUser, Services
@@ -222,6 +223,22 @@ def remove_saved_answer(answer_id: str, user: CurrentUser, services: Services) -
 @router.post("/answers/{answer_id}/restore")
 def restore_saved_answer(answer_id: str, user: CurrentUser, services: Services) -> JSONResponse:
     return ok(services.answers.restore(user.id, answer_id))
+
+
+@router.get("/sources")
+def my_sources(user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.user_sources.mine(user.id))
+
+
+@router.post("/sources")
+def add_my_source(body: NewUserSource, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.user_sources.add(user.id, body))
+
+
+@router.delete("/sources/{source_id}")
+def remove_my_source(source_id: str, user: CurrentUser, services: Services) -> Response:
+    services.user_sources.remove(user.id, source_id)
+    return no_content()
 
 
 @router.post("/approvals/{approval_id}/approve")

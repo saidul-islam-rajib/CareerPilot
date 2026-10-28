@@ -12,6 +12,8 @@ validation:
     max_length: 254
   answer:
     max_length: 4000
+  note:
+    max_length: 1000
   track:
     min_result_count: 1
     max_result_count: 50

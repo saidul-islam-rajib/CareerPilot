@@ -169,6 +169,13 @@ export const SourceStatus = {
 } as const;
 export type SourceStatus = (typeof SourceStatus)[keyof typeof SourceStatus];
 
+export const SourceReview = {
+  Approved: 'approved',
+  Pending: 'pending',
+  Rejected: 'rejected',
+} as const;
+export type SourceReview = (typeof SourceReview)[keyof typeof SourceReview];
+
 export const OpportunityStatus = {
   Active: 'active',
   Expired: 'expired',
@@ -322,6 +329,7 @@ export const EnumKey = {
   ApprovalState: 'approval_state',
   UserAccountStatus: 'user_account_status',
   SourceStatus: 'source_status',
+  SourceReview: 'source_review',
   OpportunityStatus: 'opportunity_status',
   AdminRole: 'admin_role',
   ServiceHealth: 'service_health',

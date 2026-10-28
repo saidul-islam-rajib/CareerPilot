@@ -1,12 +1,17 @@
 from collections.abc import Callable
 from dataclasses import dataclass
+from urllib.parse import urlsplit
 
-from careerpilot.administration.models import NewSource, SourceDefaults, SourceSetup
+from careerpilot.administration.models import AdminSourceRow, NewSource, SourceDefaults, SourceSetup
 from careerpilot.administration.ports import Directory
+from careerpilot.discovery.models import Listing
 from careerpilot.discovery.resolver import ResolvedSource
 from careerpilot.platform.config import ListingDefaults, SourceDefinition, SuggestedSource
+from careerpilot.platform.enums import SourceReview
 
 SourceLookup = Callable[[str], ResolvedSource | None]
+SITE_PREFIX = "www."
+SOURCE_ID_PREFIX = "src"
 
 
 def nothing_found(_link: str) -> ResolvedSource | None:
@@ -67,5 +72,40 @@ def new_source_from_suggestion(suggestion: SuggestedSource) -> NewSource:
     )
 
 
+def address_key(url: str) -> str:
+    parts = urlsplit(url.strip().lower())
+    host = (parts.hostname or "").removeprefix(SITE_PREFIX)
+    path = parts.path.rstrip("/")
+    return f"{host}{path}?{parts.query}" if parts.query else f"{host}{path}"
+
+
 def same_address(left: str, right: str) -> bool:
-    return left.strip().rstrip("/").lower() == right.strip().rstrip("/").lower()
+    return bool(left.strip()) and bool(right.strip()) and address_key(left) == address_key(right)
+
+
+def source_at(rows: list[AdminSourceRow], *urls: str) -> AdminSourceRow | None:
+    for row in rows:
+        setup = row.setup
+        if setup is not None and any(same_address(known, url) for known in (setup.url, setup.site_url) for url in urls):
+            return row
+    return None
+
+
+def is_shared(row: AdminSourceRow) -> bool:
+    return row.review is SourceReview.APPROVED
+
+
+def listing_visibility(sources: Callable[[], list[AdminSourceRow]]) -> Callable[[str], Callable[[Listing], bool]]:
+    def for_user(user_id: str) -> Callable[[Listing], bool]:
+        private = {row.id: set(row.owner_ids) for row in sources() if not is_shared(row)}
+
+        def visible(listing: Listing) -> bool:
+            return any(source.source_id not in private or user_id in private[source.source_id] for source in listing.sources)
+
+        return visible
+
+    return for_user
+
+
+def no_follow_up() -> int:
+    return 0

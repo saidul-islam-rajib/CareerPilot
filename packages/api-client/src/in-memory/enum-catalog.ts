@@ -14,6 +14,7 @@ import {
   OpportunityDecision,
   UserAccountStatus,
   SourceStatus,
+  SourceReview,
   OpportunityStatus,
   AdminRole,
   ServiceHealth,
@@ -140,6 +141,11 @@ export const enumCatalog: EnumValueMetadata[] = [
     [SourceStatus.Degraded, StatusTone.Warning],
     [SourceStatus.Failing, StatusTone.Danger],
     [SourceStatus.Disabled, StatusTone.Neutral],
+  ]),
+  ...rows(EnumKey.SourceReview, [
+    [SourceReview.Approved, StatusTone.Success, true],
+    [SourceReview.Pending, StatusTone.Warning],
+    [SourceReview.Rejected, StatusTone.Neutral, true],
   ]),
   ...rows(EnumKey.OpportunityStatus, [
     [OpportunityStatus.Active, StatusTone.Success],

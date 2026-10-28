@@ -13,6 +13,7 @@ from careerpilot.platform.enums import (
     OpportunityType,
     OutcomeStatus,
     PermissionAction,
+    SourceReview,
     SourceStatus,
     SubmissionStatus,
     ThemeKey,
@@ -134,6 +135,36 @@ class AdminSourceRow(CamelModel):
     setup: SourceSetup | None = None
     last_checked_at: str | None = None
     last_error: str = ""
+    review: SourceReview = SourceReview.APPROVED
+    owner_ids: list[str] = Field(default_factory=list[str])
+    requested_at: str | None = None
+    request_note: str = ""
+    reviewed_at: str | None = None
+    review_note: str = ""
+
+
+class UserSource(CamelModel):
+    id: str
+    name: str
+    site_url: str
+    status: SourceStatus
+    review: SourceReview
+    jobs_found: int
+    added_at: str | None = None
+    last_checked_at: str | None = None
+    last_error: str = ""
+    review_note: str = ""
+
+
+class NewUserSource(CamelModel):
+    url: str
+    name: str = ""
+    note: str = ""
+
+
+class SourceDecision(CamelModel):
+    review: SourceReview
+    note: str
 
 
 class EmergencyStop(CamelModel):

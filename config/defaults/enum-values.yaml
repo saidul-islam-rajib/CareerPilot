@@ -73,6 +73,9 @@ enum_values:
   - {enum_key: source_status, value: degraded, label_key: enums.source_status.degraded, tone: warning, sort_order: 2, is_terminal: false, is_active: true}
   - {enum_key: source_status, value: failing, label_key: enums.source_status.failing, tone: danger, sort_order: 3, is_terminal: false, is_active: true}
   - {enum_key: source_status, value: disabled, label_key: enums.source_status.disabled, tone: neutral, sort_order: 4, is_terminal: false, is_active: true}
+  - {enum_key: source_review, value: approved, label_key: enums.source_review.approved, tone: success, sort_order: 1, is_terminal: true, is_active: true}
+  - {enum_key: source_review, value: pending, label_key: enums.source_review.pending, tone: warning, sort_order: 2, is_terminal: false, is_active: true}
+  - {enum_key: source_review, value: rejected, label_key: enums.source_review.rejected, tone: neutral, sort_order: 3, is_terminal: true, is_active: true}
   - {enum_key: opportunity_status, value: active, label_key: enums.opportunity_status.active, tone: success, sort_order: 1, is_terminal: false, is_active: true}
   - {enum_key: opportunity_status, value: expired, label_key: enums.opportunity_status.expired, tone: neutral, sort_order: 2, is_terminal: true, is_active: true}
   - {enum_key: opportunity_status, value: flagged, label_key: enums.opportunity_status.flagged, tone: danger, sort_order: 3, is_terminal: false, is_active: true}

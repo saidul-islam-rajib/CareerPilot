@@ -21,7 +21,8 @@ from careerpilot.administration.services import (
     PlatformSettingsService,
     effective_link_ttl_minutes,
 )
-from careerpilot.administration.sources import SourcePolicy, directory_definitions
+from careerpilot.administration.sources import SourcePolicy, directory_definitions, listing_visibility
+from careerpilot.administration.user_sources import UserSourceContext, UserSourceService
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import Preferences, Profile, SubmissionWindow, Track
 from careerpilot.candidate.ports import CandidateWorkspace
@@ -41,6 +42,7 @@ from careerpilot.candidate.services.verification import ContactVerificationServi
 from careerpilot.discovery.connectors.json_jobs import JsonJobsConnector
 from careerpilot.discovery.connectors.registry import ConnectorRegistry, first_party_connectors
 from careerpilot.discovery.fetchers import PageFetcher, fetcher_for, page_fetcher_for
+from careerpilot.discovery.models import Listing
 from careerpilot.discovery.ports import Fetcher
 from careerpilot.discovery.resolver import SourceResolver
 from careerpilot.discovery.safety import public_https_url
@@ -112,6 +114,7 @@ class Container:
     digests: DigestService
     verification: ContactVerificationService
     answers: AnswerService
+    user_sources: UserSourceService
     source_checks: SourceCheckRunner
     invite_owner: Callable[[], bool]
 
@@ -269,6 +272,14 @@ def _database_url(settings: Settings, options: ContainerOverrides) -> str:
     return url
 
 
+def visible_listings(discovery: DiscoveryService, visibility: Callable[[str], Callable[[Listing], bool]]) -> Callable[[str], list[Listing]]:
+    def for_user(user_id: str) -> list[Listing]:
+        visible = visibility(user_id)
+        return [listing for listing in discovery.listings() if visible(listing)]
+
+    return for_user
+
+
 def build_container(overrides: ContainerOverrides | None = None) -> Container:
     options = overrides or ContainerOverrides()
     cfg = options.settings or with_web_address(load_settings())
@@ -328,7 +339,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         RecommendationContext(
             config=cfg.matching,
             matcher=options.matcher or matcher_for(cfg, clk),
-            listings=discovery.listings,
+            listings=visible_listings(discovery, listing_visibility(repos.directory.sources)),
             source_name=lambda source_id: next((s.name for s in repos.directory.sources() if s.id == source_id), source_id),
             accounts=repos.accounts,
             opportunities=repos.opportunities,
@@ -377,7 +388,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         admin_auth=AdminAuthService(admin, guard, admin_links),
         admin_dashboard=AdminDashboardService(admin),
         admin_users=AdminUserService(admin),
-        admin_catalog=AdminCatalogService(admin, source_checks, source_policy),
+        admin_catalog=AdminCatalogService(admin, source_checks, source_policy, recommendations.refresh_all),
         admin_settings=admin_settings,
         admin_audit=AdminAuditService(admin),
         admin_accounts=AdminAccountService(admin),
@@ -390,5 +401,8 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         digests=digests,
         verification=verification,
         answers=AnswerService(candidate),
+        user_sources=UserSourceService(
+            UserSourceContext(admin=admin, checks=source_checks, policy=source_policy, refresh=recommendations.refresh)
+        ),
         invite_owner=lambda: invite_owner(admin, admin_links),
     )

@@ -99,6 +99,7 @@ class ValidationConfig(Strict):
     name: LengthPolicy
     email: LengthPolicy
     answer: LengthPolicy
+    note: LengthPolicy
     track: TrackPolicy
 
 
@@ -231,6 +232,7 @@ class DiscoveryConfig(Strict):
     timeout_seconds: float = Field(gt=0)
     max_listings_per_check: int = Field(gt=0)
     failing_after_failures: int = Field(gt=0)
+    max_sources_per_user: int = Field(gt=0)
     max_resolve_pages: int = Field(gt=0)
     max_career_links: int = Field(gt=0)
     min_job_links: int = Field(gt=0)

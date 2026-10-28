@@ -24,12 +24,20 @@ from careerpilot.administration.models import (
     Page,
     PlatformSettings,
     ServiceStatus,
+    SourceDecision,
     SourceDefaults,
     SourceSetup,
 )
 from careerpilot.administration.permissions import permissions_for_role
 from careerpilot.administration.ports import AdminCredential
-from careerpilot.administration.sources import SourcePolicy, new_source_from_suggestion, same_address
+from careerpilot.administration.sources import (
+    SOURCE_ID_PREFIX,
+    SourcePolicy,
+    is_shared,
+    new_source_from_suggestion,
+    no_follow_up,
+    source_at,
+)
 from careerpilot.discovery.pages import host_name
 from careerpilot.discovery.resolver import normalized_link
 from careerpilot.platform.clock import iso, parse_iso
@@ -41,6 +49,7 @@ from careerpilot.platform.enums import (
     EmergencyStopScope,
     OpportunityStatus,
     PermissionAction,
+    SourceReview,
     SourceStatus,
     SubmissionStatus,
     ThemeKey,
@@ -53,7 +62,6 @@ from careerpilot.platform.validation import require_email, require_name, require
 ISO_DATE_LENGTH = 10
 RECENT_APPLICATIONS_LIMIT = 5
 LINK_TTL_FIELD = "account_link_ttl_minutes"
-SOURCE_ID_PREFIX = "src"
 COUNTRY_CODE = re.compile(r"[A-Z]{2}")
 CANCELLABLE = frozenset({SubmissionStatus.APPROVED_QUEUED, SubmissionStatus.AWAITING_APPROVAL})
 
@@ -274,10 +282,13 @@ class AdminUserService:
 
 
 class AdminCatalogService:
-    def __init__(self, context: AdminContext, checks: SourceCheckRunner, sources: SourcePolicy) -> None:
+    def __init__(
+        self, context: AdminContext, checks: SourceCheckRunner, sources: SourcePolicy, on_shared: Callable[[], object] = no_follow_up
+    ) -> None:
         self._ctx = context
         self._checks = checks
         self._sources = sources
+        self._on_shared = on_shared
 
     def opportunities(self, actor: AdminActor, request: PageRequest) -> Page[AdminOpportunityRow]:
         actor.require(AdminArea.OPPORTUNITIES, PermissionAction.READ)
@@ -352,11 +363,9 @@ class AdminCatalogService:
         site_url = self._sources.check_address(normalized_link(source.url))
         if site_url is None:
             raise validation_error("source_url")
-        if self._source_exists(site_url):
-            raise conflict("source_exists")
+        self._refuse_duplicate(site_url)
         setup, found_name = self._setup(source, site_url)
-        if self._source_exists(setup.url):
-            raise conflict("source_exists")
+        self._refuse_duplicate(setup.url)
         name = require_name(source.name.strip() or found_name or host_name(site_url), self._ctx.settings.validation.name)
         row = AdminSourceRow(
             id=self._ctx.ids.next(SOURCE_ID_PREFIX),
@@ -398,11 +407,33 @@ class AdminCatalogService:
             }
         )
 
+    def source_requests(self, actor: AdminActor) -> list[AdminSourceRow]:
+        actor.require(AdminArea.SOURCES, PermissionAction.READ)
+        pending = [row for row in self._ctx.directory.sources() if row.review is SourceReview.PENDING and row.enabled]
+        return sorted(pending, key=lambda row: row.requested_at or "")
+
+    def review_source(self, actor: AdminActor, source_id: str, decision: SourceDecision) -> AdminSourceRow:
+        actor.require(AdminArea.SOURCES, PermissionAction.UPDATE)
+        if decision.review is SourceReview.PENDING:
+            raise validation_error("source_review")
+        note = require_text(decision.note, self._ctx.settings.validation.note)
+        row = self._source(source_id)
+        if row.review is SourceReview.APPROVED:
+            raise conflict("source_reviewed")
+        reviewed = row.model_copy(update={"review": decision.review, "review_note": note, "reviewed_at": iso(self._ctx.clock.now())})
+        self._ctx.directory.save_source(reviewed)
+        actor.record(f"source.{decision.review.value}", f"{reviewed.name} · {note}")
+        if decision.review is SourceReview.APPROVED:
+            self._on_shared()
+        return reviewed
+
+    def _refuse_duplicate(self, url: str) -> None:
+        existing = source_at(self._ctx.directory.sources(), url)
+        if existing is not None:
+            raise conflict("source_exists" if is_shared(existing) else "source_pending")
+
     def _source_exists(self, url: str) -> bool:
-        return any(
-            row.setup is not None and (same_address(row.setup.url, url) or same_address(row.setup.site_url, url))
-            for row in self._ctx.directory.sources()
-        )
+        return source_at(self._ctx.directory.sources(), url) is not None
 
     def _source(self, source_id: str) -> AdminSourceRow:
         row = next((s for s in self._ctx.directory.sources() if s.id == source_id), None)
