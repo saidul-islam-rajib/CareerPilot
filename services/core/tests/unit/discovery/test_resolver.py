@@ -92,3 +92,27 @@ def test_career_pages_that_load_jobs_with_scripts_use_the_job_api(config: Discov
     pages = FakePages({f"{SITE}career": career, f"{SITE}static/career-1.js": script, f"{SITE}api/get-jobs-info": api})
     assert resolve(config, pages, f"{SITE}career") == ResolvedSource("json", f"{SITE}api/get-jobs-info", "Acme Air", 1)
     assert f"{SITE}api/icons" not in pages.fetched
+
+
+def test_hiring_platform_boards_are_found_from_a_link_on_the_site(config: DiscoveryConfig) -> None:
+    api = "https://jsapi.recruiterbox.com/v1/openings?client_name=acme&limit=100"
+    opening = {
+        "title": "DevOps Administrator",
+        "hosted_url": "https://acme.hire.trakstar.com/jobs/1/",
+        "location": {"city": "Dhaka", "country": "Bangladesh"},
+    }
+    home = '<html><body><a href="https://acme.recruiterbox.com/">Current Openings</a></body></html>'
+    pages = FakePages({SITE: home, api: json.dumps({"objects": [opening]})})
+    assert resolve(config, pages, SITE) == ResolvedSource("json", api, "Acme", 1)
+
+
+def test_a_real_board_with_no_openings_today_is_still_accepted(config: DiscoveryConfig) -> None:
+    careers = '<html><head><meta property="og:site_name" content="Acme"></head><body><a href="https://www.pinpointhq.com">Powered by</a></body></html>'
+    pages = FakePages({SITE: careers, f"{SITE}postings.json": json.dumps({"data": []})})
+    assert resolve(config, pages, SITE) == ResolvedSource("json", f"{SITE}postings.json", "Acme", 0)
+
+
+def test_unknown_apis_without_jobs_are_never_accepted(config: DiscoveryConfig) -> None:
+    career = '<html><head><title>Careers | Acme</title><script src="/static/career.js"></script></head></html>'
+    pages = FakePages({f"{SITE}career": career, f"{SITE}static/career.js": 'fetch("/api/jobs-list")', f"{SITE}api/jobs-list": "[]"})
+    assert resolve(config, pages, f"{SITE}career") is None

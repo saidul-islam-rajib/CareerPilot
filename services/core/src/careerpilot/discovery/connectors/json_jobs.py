@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from typing import Any, cast
 from urllib.parse import urljoin
 
-from careerpilot.discovery.connectors.boards import items, json_document, mapping, text
+from careerpilot.discovery.connectors.boards import items, joined, json_document, mapping, text
 from careerpilot.discovery.models import ParsedFeed, RawListing
 from careerpilot.discovery.ports import CONNECTOR_INTERFACE_VERSION
 from careerpilot.discovery.text import iso_or_none, plain_text
@@ -11,6 +11,7 @@ from careerpilot.platform.clock import iso
 from careerpilot.platform.config import JsonJobFields, SourceDefinition
 
 MAX_DEPTH = 4
+PLACE_KEYS = ("city", "state", "region", "province", "country")
 LINK_PREFIXES = ("https://", "http://", "/")
 END_OF_DAY = {"hour": 23, "minute": 59, "second": 59}
 
@@ -35,7 +36,8 @@ def _scalar(value: Any) -> str:
     if isinstance(value, str | int | float):
         return text(value)
     if isinstance(value, dict):
-        return text(cast("dict[str, Any]", value).get("name"))
+        fields = cast("dict[str, Any]", value)
+        return text(fields.get("name")) or joined(*(text(part) for key, part in fields.items() if key in PLACE_KEYS))
     if isinstance(value, list):
         return " ".join(part for part in (_scalar(entry) for entry in cast("list[Any]", value)) if part)
     return ""

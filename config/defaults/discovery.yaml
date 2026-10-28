@@ -13,8 +13,8 @@ discovery:
   max_script_scans: 4
   json_fields:
     title: [title, job_title, jobTitle, position, position_name, designation, job_category, name]
-    link: [url, absolute_url, hostedUrl, jobUrl, job_url, apply_link, applyLink, apply_url, applyUrl, application_url, link]
-    deadline: [deadline, expire_at, expires_at, closing_date, closingDate, last_date, lastDate, validThrough, application_deadline]
+    link: [url, absolute_url, hostedUrl, hosted_url, jobUrl, job_url, apply_link, applyLink, apply_url, applyUrl, application_url, link]
+    deadline: [deadline, deadline_at, close_date, expire_at, expires_at, closing_date, closingDate, last_date, lastDate, validThrough, application_deadline]
     description: [description, job_description, details, summary, requirements, responsibilities]
     location: [location, job_location, city]
   date_formats: ["%d %B, %Y", "%d %B %Y", "%B %d, %Y", "%d %b, %Y", "%d %b %Y", "%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y"]
@@ -25,6 +25,10 @@ discovery:
     - /join-us
     - /careers/jobs
     - /search/
+  job_platforms:
+    - connector: json
+      marker: pinpointhq.com
+      path: /postings.json
   job_boards:
     - connector: greenhouse
       pattern: '(?:boards|job-boards)\.(?:eu\.)?greenhouse\.io/(?:embed/job_board(?:/js)?\?for=)?([A-Za-z0-9_-]+)'
@@ -48,6 +52,14 @@ discovery:
       pattern: '(?:careers|jobs)\.smartrecruiters\.com/([A-Za-z0-9_-]+)'
       api: "https://api.smartrecruiters.com/v1/companies/{token}/postings"
       reserved: [api, embed]
+    - connector: json
+      pattern: '([a-z0-9][a-z0-9-]*)\.(?:recruiterbox\.com|hire\.trakstar\.com)'
+      api: "https://jsapi.recruiterbox.com/v1/openings?client_name={token}&limit=100"
+      reserved: [www, app, api, jsapi]
+    - connector: json
+      pattern: '([a-z0-9][a-z0-9-]*)\.pinpointhq\.com'
+      api: "https://{token}.pinpointhq.com/postings.json"
+      reserved: [www, app, api, developers, help]
     - connector: easyjobs
       pattern: '([a-z0-9][a-z0-9-]*)\.easy\.jobs'
       api: "https://{token}.easy.jobs/api/career/home"

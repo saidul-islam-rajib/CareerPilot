@@ -14,7 +14,9 @@
 | `json` | a site's own job API (found in its career page scripts): the largest list of records with a title and a link, fields named in `discovery.json_fields`, dates in `discovery.date_formats` | site name |
 | `html` | any page: schema.org `JobPosting` JSON-LD first, else links that look like job pages; the first `discovery.max_detail_pages` links are opened for their JSON-LD details | site name |
 
-Board link patterns and API addresses live in `discovery.job_boards` (config), so a new board is a config change plus a reader.
+Board link patterns and API addresses live in `discovery.job_boards` (config), so a new board is a config change plus a reader. Trakstar Hire / Recruiterbox (`{client}.recruiterbox.com`, `{client}.hire.trakstar.com` → `jsapi.recruiterbox.com/v1/openings?client_name={client}`) and Pinpoint (`{company}.pinpointhq.com/postings.json`) use the `json` reader. Career sites on their own domain that are powered by a platform are found by a marker in the page (`discovery.job_platforms`, e.g. `pinpointhq.com` → `{site}/postings.json`).
+
+A job board, platform API, or job feed that answers correctly but has no openings today is kept as a fallback and accepted when nothing with jobs is found (the source shows "No open jobs right now" and is checked on schedule). Script-found APIs and HTML pages still need at least one job.
 
 ## Resolver
 

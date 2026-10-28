@@ -234,6 +234,12 @@ class JobSourcesConfig(Strict):
         return self.min_limit <= limit <= self.max_limit
 
 
+class JobPlatformMarker(Strict):
+    connector: str
+    marker: str
+    path: str
+
+
 class DiscoveryConfig(Strict):
     fetch_mode: FetchMode
     fixture_root: str = ""
@@ -252,6 +258,7 @@ class DiscoveryConfig(Strict):
     date_formats: list[str]
     job_page_paths: list[str]
     job_boards: list[JobBoardPattern]
+    job_platforms: list[JobPlatformMarker]
     sources: dict[str, SourceDefinition]
     suggested_sources: list[SuggestedSource] = Field(default_factory=list[SuggestedSource])
     warning_signs: WarningSignConfig

@@ -53,6 +53,7 @@ class Crawl:
     seen: set[str] = field(default_factory=set[str])
     hosts: set[str] = field(default_factory=set[str])
     best: ResolvedSource | None = None
+    fallback: ResolvedSource | None = None
 
     def next_url(self) -> str | None:
         while self.budget > 0 and (self.career or self.guesses):
@@ -121,7 +122,7 @@ class SourceResolver:
             found = self._visit(crawl, final_url, body)
             if found:
                 return found
-        return crawl.best
+        return crawl.best or crawl.fallback
 
     def _visit(self, crawl: Crawl, url: str, body: str) -> ResolvedSource | None:
         if looks_like_feed(body):
@@ -137,12 +138,19 @@ class SourceResolver:
         return found
 
     def _published(self, crawl: Crawl, url: str, body: str, page: PageScan) -> ResolvedSource | None:
-        boards = (self._board(board, crawl.organization) for board in known_boards(self._config.job_boards, body))
-        feeds = (self._probe(RSS, feed, crawl.organization) for feed in page.feeds if JOB_FEED_WORDS.search(feed))
-        found = next((candidate for candidate in chain(boards, feeds) if candidate is not None), None)
-        if found is None and page.job_postings():
-            return self._accept(HTML, url, body, crawl.organization, 1)
-        return found
+        organization = crawl.organization
+        candidates = chain(
+            (self._board(board, organization) for board in known_boards(self._config.job_boards, body)),
+            (self._probe(p.connector, urljoin(url, p.path), organization, 0) for p in self._config.job_platforms if p.marker in body),
+            (self._probe(RSS, feed, organization, 0) for feed in page.feeds if JOB_FEED_WORDS.search(feed)),
+        )
+        for candidate in candidates:
+            if candidate is not None and candidate.found:
+                return candidate
+            crawl.fallback = crawl.fallback or candidate
+        if page.job_postings():
+            return self._accept(HTML, url, body, organization, 1)
+        return None
 
     def _listed(self, crawl: Crawl, url: str, body: str, count: int) -> ResolvedSource | None:
         if count >= self._config.min_job_links:
@@ -162,7 +170,7 @@ class SourceResolver:
             except FetchError:
                 continue
             for api in self._job_apis(crawl, url, code):
-                found = self._probe(JSON, api, crawl.organization)
+                found = self._probe(JSON, api, crawl.organization, 1)
                 if found:
                     return found
         return None
@@ -191,14 +199,14 @@ class SourceResolver:
             crawl.guesses.extend(urljoin(url, path) for path in self._config.job_page_paths)
 
     def _board(self, board: Board, organization: str) -> ResolvedSource | None:
-        return self._probe(board.connector, board.url, organization or board.label)
+        return self._probe(board.connector, board.url, organization or board.label, 0)
 
-    def _probe(self, connector: str, url: str, organization: str) -> ResolvedSource | None:
+    def _probe(self, connector: str, url: str, organization: str, minimum: int) -> ResolvedSource | None:
         try:
             _final, body = self._fetch_page(url)
         except FetchError:
             return None
-        return self._accept(connector, url, body, organization, 1)
+        return self._accept(connector, url, body, organization, minimum)
 
     def _accept(self, connector: str, url: str, body: str, organization: str, minimum: int) -> ResolvedSource | None:
         reader = self._registry.get(connector)
@@ -211,7 +219,7 @@ class SourceResolver:
             return None
         if len(feed.listings) < minimum:
             return None
-        name = feed.listings[0].organization or organization
+        name = (feed.listings[0].organization if feed.listings else "") or organization
         return ResolvedSource(connector=connector, url=url, name=name, found=len(feed.listings))
 
 
