@@ -22,6 +22,7 @@ export const ApiErrorDetail = {
   SourceConnector: 'source_connector',
   SourceExists: 'source_exists',
   CountryCode: 'country_code',
+  JobsNotFound: 'jobs_not_found',
 } as const;
 export type ApiErrorDetail = (typeof ApiErrorDetail)[keyof typeof ApiErrorDetail];
 

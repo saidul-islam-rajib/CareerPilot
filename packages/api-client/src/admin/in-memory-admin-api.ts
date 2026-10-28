@@ -1,10 +1,12 @@
 import {
   ActorType,
   OpportunityStatus,
+  OpportunityType,
   OutcomeStatus,
   SourceStatus,
   SubmissionStatus,
   UserAccountStatus,
+  WorkArrangement,
 } from '@careerpilot/domain-ui-logic';
 import { ApiError, ApiErrorCode, ApiErrorDetail } from '../errors';
 import type { Clock, IdGenerator } from '../ports';
@@ -31,6 +33,14 @@ export interface InMemoryAdminApiOptions {
 const DAY_MS = 86_400_000;
 const SOURCE_CONNECTORS: readonly string[] = Object.values(SourceConnector);
 const HTTPS_PROTOCOL = 'https:';
+const SECURE_SCHEME = 'https://';
+const INSECURE_SCHEME = /^http:\/\//i;
+const SCHEME_PATTERN = /^[a-z]+:\/\//i;
+
+function secureAddress(address: string): string {
+  const trimmed = address.trim().replace(INSECURE_SCHEME, SECURE_SCHEME);
+  return SCHEME_PATTERN.test(trimmed) ? trimmed : `${SECURE_SCHEME}${trimmed}`;
+}
 
 function isHttpsAddress(address: string): boolean {
   try {
@@ -245,24 +255,26 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
       listSources: async (query) => respond(paginate(state.sources, query, (s) => s.name, (s) => s.status)),
       suggestedSources: async () => respond((options.suggestedSources ?? []).filter((s) => !sourceAdded(s.url))),
       async addSource(source) {
-        if (!SOURCE_CONNECTORS.includes(source.connector)) {
+        const connector = source.connector || SourceConnector.Html;
+        const url = secureAddress(source.url);
+        if (!SOURCE_CONNECTORS.includes(connector)) {
           return fail(ApiErrorCode.Validation, ApiErrorDetail.SourceConnector);
         }
-        if (!isHttpsAddress(source.url)) {
+        if (!isHttpsAddress(url)) {
           return fail(ApiErrorCode.Validation, ApiErrorDetail.SourceUrl);
         }
-        if (sourceAdded(source.url)) {
+        if (sourceAdded(url)) {
           return fail(ApiErrorCode.Conflict, ApiErrorDetail.SourceExists);
         }
         const row: AdminSourceRow = {
           id: ids.next('src'),
-          name: source.name.trim(),
+          name: source.name?.trim() || new URL(url).hostname,
           status: SourceStatus.Healthy,
           enabled: true,
           lastSuccessAt: nowIso(),
           failuresLast24h: 0,
           opportunitiesFound: 0,
-          setup: { connector: source.connector, url: source.url.trim(), defaults: source.defaults },
+          setup: { connector, url, siteUrl: url, defaults: source.defaults ?? { type: OpportunityType.Job, workArrangement: WorkArrangement.NotStated } },
         };
         state.sources.unshift(row);
         record('source.added', row.name);

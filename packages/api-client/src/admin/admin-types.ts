@@ -140,6 +140,12 @@ export interface AdminOpportunityRow {
 export const SourceConnector = {
   Rss: 'rss',
   Greenhouse: 'greenhouse',
+  Lever: 'lever',
+  Ashby: 'ashby',
+  Workable: 'workable',
+  SmartRecruiters: 'smartrecruiters',
+  EasyJobs: 'easyjobs',
+  Html: 'html',
 } as const;
 export type SourceConnector = (typeof SourceConnector)[keyof typeof SourceConnector];
 
@@ -154,11 +160,15 @@ export interface SourceDefaults {
 export interface SourceSetup {
   connector: string;
   url: string;
+  siteUrl?: string;
   defaults: SourceDefaults;
 }
 
-export interface NewSource extends SourceSetup {
-  name: string;
+export interface NewSource {
+  url: string;
+  name?: string;
+  connector?: string;
+  defaults?: SourceDefaults;
 }
 
 export interface AdminSourceRow {
@@ -170,6 +180,8 @@ export interface AdminSourceRow {
   failuresLast24h: number;
   opportunitiesFound: number;
   setup?: SourceSetup;
+  lastCheckedAt?: IsoDateTime;
+  lastError?: string;
 }
 
 export interface AdminApplicationRow {

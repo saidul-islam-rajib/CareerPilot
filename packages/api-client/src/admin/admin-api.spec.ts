@@ -149,8 +149,16 @@ describe('in-memory admin api', () => {
     expect(added.setup?.url).toBe(SUGGESTION.url);
     expect(await api.sources.suggestedSources()).toEqual([]);
     expect(await errorCode(api.sources.addSource(SUGGESTION))).toBe(ApiErrorCode.Conflict);
-    expect(await errorCode(api.sources.addSource({ ...SUGGESTION, url: 'http://jobs.example.org/feed.rss' }))).toBe(ApiErrorCode.Validation);
+    expect(await errorCode(api.sources.addSource({ ...SUGGESTION, url: 'ftp://jobs.example.org/feed.rss' }))).toBe(ApiErrorCode.Validation);
     expect(await errorCode(api.sources.addSource({ ...SUGGESTION, url: 'https://jobs.example.org/a.rss', connector: 'ftp' }))).toBe(ApiErrorCode.Validation);
+  });
+
+  it('adds a source from a bare website link', async () => {
+    const api = createAdminApi();
+    await api.auth.signIn({ email: 'admin@sober.com', password: 'admin@sober.com' });
+    const added = await api.sources.addSource({ url: ' http://careers.example.org ' });
+    expect(added.name).toBe('careers.example.org');
+    expect(added.setup).toMatchObject({ url: 'https://careers.example.org', siteUrl: 'https://careers.example.org' });
   });
 
   it('sets an admin password from an emailed link and signs in', async () => {

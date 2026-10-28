@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import { SourceConnector, isApiError, type NewSource, type SourceDefaults } from '@careerpilot/api-client';
 import { useT } from '@careerpilot/client-core';
 import { OpportunityType, WorkArrangement, enumValues } from '@careerpilot/domain-ui-logic';
@@ -15,19 +15,50 @@ const SOURCE_ERROR_KEYS: Readonly<Record<string, string>> = {
   source_connector: 'admin.sources.errors.connector',
   source_exists: 'admin.sources.errors.exists',
   country_code: 'admin.sources.errors.countryCode',
+  jobs_not_found: 'admin.sources.errors.jobsNotFound',
 };
+const SOURCE_PROBLEMS: readonly string[] = [
+  'invalid_feed',
+  'invalid_board',
+  'http_status',
+  'unreachable',
+  'unsafe_address',
+  'no_jobs_found',
+  'pages_unavailable',
+];
+const OTHER_PROBLEM = 'other';
 const ADD_FAILED = 'admin.sources.addFailed';
 const REQUIRED = 'validation.required';
+const AUTO = 'auto';
 
-const EMPTY_SOURCE: NewSource = {
-  name: '',
-  connector: SourceConnector.Rss,
+interface SourceForm {
+  url: string;
+  name: string;
+  connector: string;
+  defaults: SourceDefaults;
+}
+
+const EMPTY_SOURCE: SourceForm = {
   url: '',
-  defaults: { type: OpportunityType.Job, workArrangement: WorkArrangement.Remote, countryCode: '', location: '', organization: '' },
+  name: '',
+  connector: AUTO,
+  defaults: { type: OpportunityType.Job, workArrangement: WorkArrangement.NotStated, countryCode: '', location: '', organization: '' },
 };
 
 export function sourceErrorKey(error: unknown): string {
   return (isApiError(error) && SOURCE_ERROR_KEYS[error.detail ?? '']) || ADD_FAILED;
+}
+
+export function sourceProblemKey(problem: string): string {
+  return `admin.sources.problems.${SOURCE_PROBLEMS.includes(problem) ? problem : OTHER_PROBLEM}`;
+}
+
+export function newSourceFrom(form: SourceForm, withOptions: boolean): NewSource {
+  const base = { url: form.url.trim(), name: form.name.trim() };
+  if (!withOptions) {
+    return base;
+  }
+  return { ...base, connector: form.connector === AUTO ? '' : form.connector, defaults: form.defaults };
 }
 
 function useAddSource(onAdded: () => void) {
@@ -36,7 +67,7 @@ function useAddSource(onAdded: () => void) {
   const t = useT();
   return useAdminMutation(async (source: NewSource) => {
     const row = await api.sources.addSource(source);
-    toast.show({ message: t('admin.sources.added') });
+    toast.show({ message: t('admin.sources.added', { name: row.name, count: row.opportunitiesFound }) });
     onAdded();
     return row;
   });
@@ -44,18 +75,20 @@ function useAddSource(onAdded: () => void) {
 
 export function AddSourceDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const t = useT();
-  const [values, setValues] = useState<NewSource>(EMPTY_SOURCE);
-  const [errors, setErrors] = useState<{ name?: string; url?: string }>({});
+  const [values, setValues] = useState<SourceForm>(EMPTY_SOURCE);
+  const [showOptions, setShowOptions] = useState(false);
+  const [urlError, setUrlError] = useState<string>();
   const add = useAddSource(() => {
     onOpenChange(false);
     setValues(EMPTY_SOURCE);
+    setShowOptions(false);
   });
   const setDefault = (field: keyof SourceDefaults, value: string) => setValues((v) => ({ ...v, defaults: { ...v.defaults, [field]: value } }));
   const submit = () => {
-    const missing = { name: values.name.trim() ? undefined : REQUIRED, url: values.url.trim() ? undefined : REQUIRED };
-    setErrors(missing);
-    if (!missing.name && !missing.url) {
-      add.mutate(values);
+    const missing = values.url.trim() ? undefined : REQUIRED;
+    setUrlError(missing);
+    if (!missing) {
+      add.mutate(newSourceFrom(values, showOptions));
     }
   };
   const options = (prefix: string, keys: string[]) => keys.map((value) => ({ value, label: t(`${prefix}.${value}`) }));
@@ -65,48 +98,61 @@ export function AddSourceDialog({ open, onOpenChange }: { open: boolean; onOpenC
       onOpenChange={onOpenChange}
       title={t('admin.sources.addTitle')}
       description={t('admin.sources.addDescription')}
-      submitLabel={t('admin.sources.submit')}
+      submitLabel={add.isPending ? t('admin.sources.finding') : t('admin.sources.submit')}
       submitting={add.isPending}
       error={add.error ? t(sourceErrorKey(add.error)) : undefined}
       onSubmit={submit}
     >
-      <TextField label={t('admin.sources.name')} value={values.name} onChange={(e) => setValues((v) => ({ ...v, name: e.target.value }))} error={errors.name} />
-      <SelectField
-        label={t('admin.sources.connector')}
-        options={options('admin.sources.connectors', Object.values(SourceConnector))}
-        value={values.connector}
-        onValueChange={(connector) => setValues((v) => ({ ...v, connector }))}
-      />
       <TextField
         label={t('admin.sources.url')}
-        type="url"
+        type="text"
         inputMode="url"
+        autoComplete="url"
         value={values.url}
         onChange={(e) => setValues((v) => ({ ...v, url: e.target.value }))}
-        error={errors.url}
+        error={urlError}
         hint={t('admin.sources.urlHint')}
       />
-      <SelectField
-        label={t('admin.sources.jobType')}
-        options={options('enums.opportunity_type', enumValues(OpportunityType))}
-        value={values.defaults.type}
-        onValueChange={(type) => setDefault('type', type)}
-      />
-      <SelectField
-        label={t('admin.sources.workArrangement')}
-        options={options('enums.work_arrangement', enumValues(WorkArrangement))}
-        value={values.defaults.workArrangement}
-        onValueChange={(arrangement) => setDefault('workArrangement', arrangement)}
-      />
-      <TextField label={t('admin.sources.location')} value={values.defaults.location ?? ''} onChange={(e) => setDefault('location', e.target.value)} />
-      <TextField label={t('admin.sources.organization')} value={values.defaults.organization ?? ''} onChange={(e) => setDefault('organization', e.target.value)} />
       <TextField
-        label={t('admin.sources.countryCode')}
-        value={values.defaults.countryCode ?? ''}
-        onChange={(e) => setDefault('countryCode', e.target.value)}
-        hint={t('admin.sources.countryHint')}
-        maxLength={2}
+        label={t('admin.sources.name')}
+        value={values.name}
+        onChange={(e) => setValues((v) => ({ ...v, name: e.target.value }))}
+        hint={t('admin.sources.nameHint')}
       />
+      <Button type="button" variant="ghost" size="sm" icon={showOptions ? ChevronUp : ChevronDown} onClick={() => setShowOptions((shown) => !shown)} aria-expanded={showOptions}>
+        {showOptions ? t('admin.sources.fewerOptions') : t('admin.sources.moreOptions')}
+      </Button>
+      {showOptions ? (
+        <>
+          <SelectField
+            label={t('admin.sources.connector')}
+            options={options('admin.sources.connectors', [AUTO, ...Object.values(SourceConnector)])}
+            value={values.connector}
+            onValueChange={(connector) => setValues((v) => ({ ...v, connector }))}
+          />
+          <SelectField
+            label={t('admin.sources.jobType')}
+            options={options('enums.opportunity_type', enumValues(OpportunityType))}
+            value={values.defaults.type}
+            onValueChange={(type) => setDefault('type', type)}
+          />
+          <SelectField
+            label={t('admin.sources.workArrangement')}
+            options={options('enums.work_arrangement', enumValues(WorkArrangement))}
+            value={values.defaults.workArrangement}
+            onValueChange={(arrangement) => setDefault('workArrangement', arrangement)}
+          />
+          <TextField label={t('admin.sources.location')} value={values.defaults.location ?? ''} onChange={(e) => setDefault('location', e.target.value)} />
+          <TextField label={t('admin.sources.organization')} value={values.defaults.organization ?? ''} onChange={(e) => setDefault('organization', e.target.value)} />
+          <TextField
+            label={t('admin.sources.countryCode')}
+            value={values.defaults.countryCode ?? ''}
+            onChange={(e) => setDefault('countryCode', e.target.value)}
+            hint={t('admin.sources.countryHint')}
+            maxLength={2}
+          />
+        </>
+      ) : null}
     </FormDialog>
   );
 }

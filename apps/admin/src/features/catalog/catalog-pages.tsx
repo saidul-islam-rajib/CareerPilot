@@ -10,7 +10,7 @@ import { useAdminMutation } from '@/core/admin-queries';
 import { useAdminApi } from '@/core/admin-services';
 import { useCan } from '@/core/admin-session';
 import { ListPage } from '@/features/common/list-page';
-import { AddSourceDialog, SuggestedSources } from './source-forms';
+import { AddSourceDialog, SuggestedSources, sourceProblemKey } from './source-forms';
 
 const CANCELLABLE: readonly SubmissionStatus[] = [SubmissionStatus.ApprovedQueued, SubmissionStatus.AwaitingApproval];
 
@@ -95,8 +95,26 @@ export function SourcesPage() {
         rowKey={(s) => s.id}
         statusEnum={{ key: EnumKey.SourceStatus, values: enumValues(SourceStatus) }}
         columns={[
-          { key: 'name', header: t('admin.columns.source'), cell: (s) => <span className="font-semibold">{s.name}</span> },
-          { key: 'status', header: t('admin.columns.status'), cell: (s) => <EnumBadge enumKey={EnumKey.SourceStatus} value={s.status} /> },
+          {
+            key: 'name',
+            header: t('admin.columns.source'),
+            cell: (s) => (
+              <span className="flex min-w-0 flex-col">
+                <span className="font-semibold">{s.name}</span>
+                {s.setup ? <span className="max-w-64 truncate text-xs text-muted">{s.setup.siteUrl || s.setup.url}</span> : null}
+              </span>
+            ),
+          },
+          {
+            key: 'status',
+            header: t('admin.columns.status'),
+            cell: (s) => (
+              <span className="flex flex-col gap-1">
+                <EnumBadge enumKey={EnumKey.SourceStatus} value={s.status} />
+                {s.lastError ? <span className="max-w-56 text-xs text-muted">{t(sourceProblemKey(s.lastError))}</span> : null}
+              </span>
+            ),
+          },
           { key: 'lastSuccess', header: t('admin.columns.lastSuccess'), cell: (s) => (s.lastSuccessAt ? format.dateTime(s.lastSuccessAt) : t('admin.sources.never')) },
           { key: 'failures', header: t('admin.columns.failures'), cell: (s) => s.failuresLast24h, className: 'text-right tabular-nums' },
           { key: 'found', header: t('admin.columns.found'), cell: (s) => s.opportunitiesFound, className: 'text-right tabular-nums' },
