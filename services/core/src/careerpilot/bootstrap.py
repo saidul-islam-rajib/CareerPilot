@@ -53,7 +53,7 @@ from careerpilot.discovery.service import DiscoveryContext, DiscoveryService
 from careerpilot.matching.claude import ClaudeMatcher
 from careerpilot.matching.ports import Matcher
 from careerpilot.matching.rules import RuleBasedMatcher
-from careerpilot.matching.service import RecommendationContext, RecommendationService
+from careerpilot.matching.service import RecommendationContext, RecommendationService, UserDefaults
 from careerpilot.platform.clock import Clock, IdGenerator, SystemClock, UuidIdGenerator, iso
 from careerpilot.platform.config import (
     CoordinationMode,
@@ -356,6 +356,8 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
             opportunities=repos.opportunities,
             workspaces=repos.workspaces,
             apply_by_rule=approvals.approve_by_rule,
+            clock=clk,
+            defaults=UserDefaults(country_code=cfg.account.default_country_code, lead_kinds=cfg.tracks.lead_kinds),
         )
     )
     discover_when_empty(discovery, repos.directory, cfg.discovery.failing_after_failures)

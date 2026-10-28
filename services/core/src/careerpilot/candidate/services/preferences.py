@@ -11,10 +11,11 @@ from careerpilot.candidate.models import (
     SubmissionWindow,
     Track,
 )
+from careerpilot.candidate.tracks import home_country, ordered_tracks
 from careerpilot.platform.clock import iso
 from careerpilot.platform.enums import ApplicationMode, PauseDuration, PauseScope, SubmissionWindowKind
 from careerpilot.platform.errors import not_found, validation_error
-from careerpilot.platform.validation import require_result_count, require_time
+from careerpilot.platform.validation import require_result_count, require_text, require_time
 
 MONTHS_PER_YEAR = 12
 COUNTRY_CODE = re.compile(r"[A-Z]{2}")
@@ -44,12 +45,36 @@ class PreferencesService:
         self._on_change = on_change
 
     def get(self, user_id: str) -> Preferences:
-        return self._view(self._ctx.workspaces.get(user_id).preferences)
+        return self._view_of(user_id)
+
+    def _view_of(self, user_id: str) -> Preferences:
+        workspace = self._ctx.workspaces.get(user_id)
+        settings = self._ctx.settings
+        preferences = self._view(workspace.preferences)
+        return preferences.model_copy(
+            update={
+                "tracks": ordered_tracks(preferences.tracks, settings.tracks.lead_kinds),
+                "home_country": home_country(workspace, settings.account.default_country_code),
+            }
+        )
 
     def _view(self, preferences: Preferences) -> Preferences:
         notifications = preferences.notifications
         effective = notifications.digest_time or self._ctx.settings.notifications.default_digest_time
         return preferences.model_copy(update={"notifications": notifications.model_copy(update={"digest_time": effective})})
+
+    def update_favorite_companies(self, user_id: str, companies: list[str]) -> Preferences:
+        names: list[str] = []
+        for company in companies:
+            name = require_text(company, self._ctx.settings.validation.name)
+            if name.casefold() not in {existing.casefold() for existing in names}:
+                names.append(name)
+        if len(names) > self._ctx.settings.account.max_favorite_companies:
+            raise validation_error("favorite_limit")
+        workspace = self._ctx.workspaces.get(user_id)
+        workspace.preferences.favorite_companies = names
+        self._ctx.workspaces.save(user_id, workspace)
+        return self._view_of(user_id)
 
     def update_track(self, user_id: str, track_id: str, result_count: int | None, mode: ApplicationMode | None) -> Track:
         workspace = self._ctx.workspaces.get(user_id)
@@ -73,13 +98,13 @@ class PreferencesService:
         workspace = self._ctx.workspaces.get(user_id)
         workspace.preferences.pause = PauseState(scope=PauseScope.ALL, started_at=iso(now), until=iso(until) if until else None)
         self._ctx.workspaces.save(user_id, workspace)
-        return self._view(workspace.preferences)
+        return self._view_of(user_id)
 
     def resume(self, user_id: str) -> Preferences:
         workspace = self._ctx.workspaces.get(user_id)
         workspace.preferences.pause = None
         self._ctx.workspaces.save(user_id, workspace)
-        return self._view(workspace.preferences)
+        return self._view_of(user_id)
 
     def update_notifications(self, user_id: str, digest_enabled: bool | None, digest_time: str | None) -> Preferences:
         workspace = self._ctx.workspaces.get(user_id)
@@ -89,7 +114,7 @@ class PreferencesService:
             digest_time=current.digest_time if digest_time is None else require_time(digest_time),
         )
         self._ctx.workspaces.save(user_id, workspace)
-        return self._view(workspace.preferences)
+        return self._view_of(user_id)
 
     def update_submission_window(self, user_id: str, window: SubmissionWindow) -> Preferences:
         if window.kind is SubmissionWindowKind.DAILY_WINDOW:
@@ -99,7 +124,7 @@ class PreferencesService:
         workspace = self._ctx.workspaces.get(user_id)
         workspace.preferences.submission_window = window
         self._ctx.workspaces.save(user_id, workspace)
-        return self._view(workspace.preferences)
+        return self._view_of(user_id)
 
     def update_excluded_countries(self, user_id: str, countries: list[str]) -> Preferences:
         codes = sorted({code.strip().upper() for code in countries if code.strip()})
@@ -109,7 +134,7 @@ class PreferencesService:
         workspace.preferences.excluded_countries = codes
         self._ctx.workspaces.save(user_id, workspace)
         self._on_change(user_id)
-        return self._view(self._ctx.workspaces.get(user_id).preferences)
+        return self._view_of(user_id)
 
     def sign_in_activity(self, user_id: str) -> list[SignInEvent]:
         return sorted(self._ctx.workspaces.get(user_id).sign_in_events, key=lambda e: e.at, reverse=True)

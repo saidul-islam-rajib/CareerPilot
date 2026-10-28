@@ -62,6 +62,10 @@ class CompleteLinkBody(CamelModel):
     password: str
 
 
+class FavoriteCompaniesBody(CamelModel):
+    companies: list[str]
+
+
 class ExcludedCountriesBody(CamelModel):
     countries: list[str]
 
@@ -324,6 +328,11 @@ def update_notifications(body: NotificationsBody, user: CurrentUser, services: S
 @router.put("/settings/submission-window")
 def submission_window(body: SubmissionWindow, user: CurrentUser, services: Services) -> JSONResponse:
     return ok(services.preferences.update_submission_window(user.id, body))
+
+
+@router.put("/settings/favorite-companies")
+def favorite_companies(body: FavoriteCompaniesBody, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.preferences.update_favorite_companies(user.id, body.companies))
 
 
 @router.put("/settings/excluded-countries")

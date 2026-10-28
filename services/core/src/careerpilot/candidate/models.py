@@ -371,6 +371,7 @@ class Profile(CamelModel):
     full_name: str
     headline: str
     location: str = ""
+    country_code: str = ""
     summary: str = ""
     photo: StoredFile | None = None
     photo_url: str | None = None
@@ -435,6 +436,8 @@ class Preferences(CamelModel):
     time_zone: str
     notifications: NotificationPreferences = Field(default_factory=NotificationPreferences)
     excluded_countries: list[str] = Field(default_factory=list[str])
+    favorite_companies: list[str] = Field(default_factory=list[str])
+    home_country: str = ""
 
 
 class SignInEvent(CamelModel):
@@ -476,3 +479,5 @@ class DashboardSummary(CamelModel):
     last_checked_at: str
     tracks: list[TrackDigest]
     upcoming: list[UpcomingTask] = Field(default_factory=list[UpcomingTask])
+    home_country: str = ""
+    favorite_companies: list[str] = Field(default_factory=list[str])

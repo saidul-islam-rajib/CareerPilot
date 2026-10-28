@@ -54,7 +54,8 @@ def app(clock: FixedClock, outbox: InMemoryEmailSender) -> Container:
 
 
 def placements(app: Container) -> dict[str, list[str]]:
-    return {digest.track.id: [o.id for o in digest.opportunities] for digest in app.dashboard.get(DEMO_USER).tracks}
+    workspace = app.recommendations._ctx.workspaces.get(DEMO_USER)  # pyright: ignore[reportPrivateUsage]
+    return {track_id: list(ids) for track_id, ids in workspace.track_opportunities.items()}
 
 
 def add_skill(app: Container, skill: str) -> None:

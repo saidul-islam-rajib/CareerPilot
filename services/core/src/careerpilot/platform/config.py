@@ -46,6 +46,8 @@ class PauseOptionConfig(Strict):
 class AccountConfig(Strict):
     locale: str
     default_time_zone: str
+    default_country_code: str = Field(pattern=r"^[A-Z]{2}$")
+    max_favorite_companies: int = Field(gt=0)
     deletion_grace_days: int = Field(gt=0)
     approval_validity_days: int = Field(gt=0)
     recent_window_days: int = Field(gt=0)
@@ -290,6 +292,7 @@ class DefaultTrack(Strict):
 
 
 class TracksConfig(Strict):
+    lead_kinds: list[str] = Field(default_factory=list[str])
     defaults: list[DefaultTrack]
 
 
@@ -319,6 +322,8 @@ class TrackRule(Strict):
     exclude_country_codes: list[str] = Field(default_factory=list[str])
     types: list[str] = Field(default_factory=list[str])
     require_sponsorship: bool = False
+    home_country: bool = False
+    exclude_home_country: bool = False
 
 
 class SponsorshipPhrases(Strict):
@@ -344,6 +349,7 @@ class MatchingConfig(Strict):
     include_flagged: bool
     default_route: str
     application_email: ApplicationEmailConfig
+    reapply_cooldown_days: int = Field(ge=0)
     weights: MatchWeights
     track_rules: dict[str, TrackRule]
     sponsorship: SponsorshipPhrases

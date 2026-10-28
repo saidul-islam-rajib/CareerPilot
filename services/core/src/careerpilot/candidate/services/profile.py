@@ -1,3 +1,4 @@
+import re
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import PurePath
@@ -39,6 +40,8 @@ FIRST_POSITION = 1
 FILE_NAME_FALLBACK = "document"
 ACCOUNT_EMAIL_LABEL = "profile.accountEmailLabel"
 
+COUNTRY_CODE = re.compile(r"[A-Z]{2}")
+
 
 @dataclass(frozen=True)
 class Upload:
@@ -51,6 +54,7 @@ class BasicsChanges:
     full_name: str | None = None
     headline: str | None = None
     location: str | None = None
+    country_code: str | None = None
     summary: str | None = None
 
 
@@ -378,6 +382,11 @@ class ProfileService:
             profile.location = require_length(clean_text(changes.location), limits.location_max_length, "location")
         if changes.summary is not None:
             profile.summary = require_length(clean_multiline(changes.summary), limits.summary_max_length, "summary")
+        if changes.country_code is not None:
+            code = changes.country_code.strip().upper()
+            if code and COUNTRY_CODE.fullmatch(code) is None:
+                raise validation_error("country_code")
+            profile.country_code = code
 
     def _sync_account_name(self, user_id: str, full_name: str) -> None:
         account = self._ctx.accounts.get(user_id)

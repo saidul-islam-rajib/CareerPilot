@@ -30,7 +30,7 @@ def track_rule(config: MatchingConfig, track: Track) -> TrackRule:
     return config.track_rules.get(track.kind, TrackRule())
 
 
-def is_eligible(listing: Listing, track: Track, config: MatchingConfig) -> bool:
+def is_eligible(listing: Listing, track: Track, config: MatchingConfig, home_country: str = "") -> bool:
     rule = track_rule(config, track)
     if listing.status is not OpportunityStatus.ACTIVE and not (config.include_flagged and listing.status is OpportunityStatus.FLAGGED):
         return False
@@ -39,6 +39,8 @@ def is_eligible(listing: Listing, track: Track, config: MatchingConfig) -> bool:
         not rule.country_codes or listing.country_code in rule.country_codes,
         not rule.exclude_country_codes or listing.country_code not in rule.exclude_country_codes,
         not rule.types or listing.type in rule.types,
+        not rule.home_country or listing.country_code == home_country,
+        not rule.exclude_home_country or listing.country_code != home_country,
     ]
     return all(checks)
 

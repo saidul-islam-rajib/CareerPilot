@@ -44,16 +44,19 @@ matching:
     skill: 8
     max_skills: 4
     arrangement: 10
+  # Do not suggest the same company and role again within this many days of applying.
+  reapply_cooldown_days: 15
   track_rules:
     remote:
       work_arrangements: [remote]
     international_sponsored:
-      exclude_country_codes: [BD]
+      exclude_home_country: true
       require_sponsorship: true
     bangladesh_onsite:
-      country_codes: [BD]
+      home_country: true
       work_arrangements: [onsite, hybrid]
     bangladesh_government:
+      home_country: true
       types: [government_job]
     custom:
       types: [masters, phd, scholarship]

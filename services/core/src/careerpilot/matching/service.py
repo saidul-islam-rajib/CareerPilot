@@ -3,9 +3,11 @@ from dataclasses import dataclass, field
 
 from careerpilot.candidate.models import ArchivedCircular, OpportunityDetail, OpportunityMatch, SourceRef, Track
 from careerpilot.candidate.ports import AccountRepository, CandidateWorkspace, OpportunityRepository, WorkspaceRepository
+from careerpilot.candidate.tracks import UserScope, ordered_tracks, role_key, user_scope
 from careerpilot.discovery.models import Listing
 from careerpilot.matching.ports import Matcher
 from careerpilot.matching.rules import is_eligible, sponsorship_evidence
+from careerpilot.platform.clock import Clock
 from careerpilot.platform.config import ApplicationEmailConfig, MatchingConfig
 from careerpilot.platform.enums import ApplicationMode, ApplicationRoute, OpportunityDecision
 from careerpilot.platform.validation import EMAIL_IN_TEXT
@@ -16,7 +18,14 @@ class RematchState:
     listings: list[Listing]
     listed: set[str]
     acted_on: set[str]
+    scope: UserScope
     placed: set[str] = field(default_factory=set[str])
+
+
+@dataclass(frozen=True)
+class UserDefaults:
+    country_code: str
+    lead_kinds: list[str]
 
 
 @dataclass(frozen=True)
@@ -29,6 +38,8 @@ class RecommendationContext:
     opportunities: OpportunityRepository
     workspaces: WorkspaceRepository
     apply_by_rule: Callable[[str, str], None]
+    clock: Clock
+    defaults: UserDefaults
 
 
 class RecommendationService:
@@ -42,7 +53,8 @@ class RecommendationService:
         workspace = self._ctx.workspaces.get(user_id)
         listings = self._ctx.listings(user_id)
         assessed_before = len(workspace.matches)
-        added = sum(self._refresh_track(workspace, track, listings) for track in workspace.preferences.tracks)
+        scope = self._scope(workspace)
+        added = sum(self._refresh_track(workspace, track, listings, scope) for track in self._tracks(workspace))
         if added or len(workspace.matches) != assessed_before:
             self._ctx.workspaces.save(user_id, workspace)
         self._sync_routes(workspace, listings)
@@ -63,16 +75,24 @@ class RecommendationService:
         for opportunity_id in automatic_candidates(workspace):
             self._ctx.apply_by_rule(user_id, opportunity_id)
 
-    def _refresh_track(self, workspace: CandidateWorkspace, track: Track, listings: list[Listing]) -> int:
+    def _scope(self, workspace: CandidateWorkspace) -> UserScope:
+        defaults = self._ctx.defaults
+        return user_scope(workspace, defaults.country_code, self._ctx.clock.now(), self._ctx.config.reapply_cooldown_days)
+
+    def _tracks(self, workspace: CandidateWorkspace) -> list[Track]:
+        return ordered_tracks(workspace.preferences.tracks, self._ctx.defaults.lead_kinds)
+
+    def _fits(self, item: Listing, track: Track, scope: UserScope) -> bool:
+        return (
+            item.country_code not in scope.excluded_countries
+            and role_key(item.organization, item.title) not in scope.recent_roles
+            and is_eligible(item, track, self._ctx.config, scope.home_country)
+        )
+
+    def _refresh_track(self, workspace: CandidateWorkspace, track: Track, listings: list[Listing], scope: UserScope) -> int:
         current = workspace.track_opportunities.get(track.id, [])
-        excluded = set(workspace.preferences.excluded_countries)
         candidates = [
-            item
-            for item in listings
-            if item.id not in current
-            and item.id not in workspace.matches
-            and item.country_code not in excluded
-            and is_eligible(item, track, self._ctx.config)
+            item for item in listings if item.id not in current and item.id not in workspace.matches and self._fits(item, track, scope)
         ]
         assessed = [(item, self._ctx.matcher.assess(workspace.profile, track, item)) for item in candidates]
         for item, match in assessed:
@@ -90,9 +110,13 @@ class RecommendationService:
     def rematch(self, user_id: str) -> int:
         workspace = self._ctx.workspaces.get(user_id)
         listings = self._ctx.listings(user_id)
-        state = RematchState(listings=listings, listed={item.id for item in listings}, acted_on=acted_on_opportunities(workspace))
-        tracks = sorted(workspace.preferences.tracks, key=lambda t: t.position)
-        added = sum(self._rebuild_track(workspace, track, state) for track in tracks)
+        state = RematchState(
+            listings=listings,
+            listed={item.id for item in listings},
+            acted_on=acted_on_opportunities(workspace),
+            scope=self._scope(workspace),
+        )
+        added = sum(self._rebuild_track(workspace, track, state) for track in self._tracks(workspace))
         self._ctx.workspaces.save(user_id, workspace)
         self._sync_routes(workspace, listings)
         self._apply_automatic(user_id, workspace)
@@ -103,12 +127,7 @@ class RecommendationService:
         acted_on, placed = state.acted_on, state.placed
         kept = [oid for oid in previous if (oid in acted_on or oid not in state.listed) and oid not in placed]
         taken = acted_on | placed
-        excluded = set(workspace.preferences.excluded_countries)
-        candidates = [
-            item
-            for item in state.listings
-            if item.id not in taken and item.country_code not in excluded and is_eligible(item, track, self._ctx.config)
-        ]
+        candidates = [item for item in state.listings if item.id not in taken and self._fits(item, track, state.scope)]
         assessed = [(item, self._ctx.matcher.assess(workspace.profile, track, item)) for item in candidates]
         for item, match in assessed:
             workspace.matches[item.id] = match
@@ -128,8 +147,9 @@ class RecommendationService:
         workspace = self._ctx.workspaces.get(user_id)
         listed = {oid for ids in workspace.track_opportunities.values() for oid in ids}
         if listing.id not in listed:
-            tracks = sorted(workspace.preferences.tracks, key=lambda t: t.position)
-            eligible = [track for track in tracks if is_eligible(listing, track, self._ctx.config)] or tracks[:1]
+            tracks = self._tracks(workspace)
+            home = self._scope(workspace).home_country
+            eligible = [track for track in tracks if is_eligible(listing, track, self._ctx.config, home)] or tracks[:1]
             assessed = [(track, self._ctx.matcher.assess(workspace.profile, track, listing)) for track in eligible]
             if not assessed:
                 return listing.id

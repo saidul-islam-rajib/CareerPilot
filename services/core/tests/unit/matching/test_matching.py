@@ -97,9 +97,13 @@ def test_rules_mark_unavailable_sponsorship_as_hard_failure(config: MatchingConf
 def test_tracks_only_take_eligible_listings(config: MatchingConfig) -> None:
     assert is_eligible(listing(), track("remote"), config)
     assert not is_eligible(listing(work_arrangement="onsite"), track("remote"), config)
-    assert is_eligible(listing(country_code="BD", work_arrangement="hybrid"), track("bangladesh_onsite"), config)
-    assert not is_eligible(listing(country_code="BD"), track("international_sponsored"), config)
+    assert is_eligible(listing(country_code="BD", work_arrangement="hybrid"), track("bangladesh_onsite"), config, "BD")
+    assert not is_eligible(listing(country_code="BD"), track("international_sponsored"), config, "BD")
     assert not is_eligible(listing(), track("bangladesh_government"), config)
+    singapore_onsite = listing(country_code="SG", work_arrangement="onsite")
+    assert is_eligible(singapore_onsite, track("bangladesh_onsite"), config, "SG")
+    assert not is_eligible(singapore_onsite, track("bangladesh_onsite"), config, "BD")
+    assert not is_eligible(singapore_onsite, track("international_sponsored"), config, "SG")
     flagged = listing(status=OpportunityStatus.FLAGGED, warnings=[WarningSign.UPFRONT_FEE])
     assert not is_eligible(flagged, track("remote"), config)
     assert is_eligible(flagged, track("remote"), config.model_copy(update={"include_flagged": True}))
@@ -178,7 +182,8 @@ def test_discovered_listings_become_personal_recommendations(container: Containe
     discovered = {item.id: item for item in container.discovery.listings()}
     shown = [o for digest in container.dashboard.get(DEMO_USER).tracks for o in digest.opportunities if o.id in discovered]
     titles = {discovered[o.id].title for o in shown}
-    assert "Senior Frontend Engineer" in titles
+    assert "Senior Backend Engineer (Python)" in titles
+    assert "Senior Frontend Engineer" not in titles
     assert "Data Entry Operator (work from home)" not in titles
     for summary in shown:
         detail = container.opportunities.detail(DEMO_USER, summary.id)
