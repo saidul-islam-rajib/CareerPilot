@@ -7,6 +7,8 @@ SAFE_SCHEME = "https"
 DEFAULT_HTTPS_PORT = 443
 USERINFO_MARK = "@"
 ADDRESS_INDEX = 4
+UNSAFE_ADDRESS = "unsafe_address"
+UNREACHABLE = "unreachable"
 
 Resolver = Callable[[str, int], list[str]]
 
@@ -15,24 +17,23 @@ def resolve_addresses(host: str, port: int) -> list[str]:
     return [str(info[ADDRESS_INDEX][0]) for info in socket.getaddrinfo(host, port, proto=socket.IPPROTO_TCP)]
 
 
-def public_https_url(url: str, resolve: Resolver = resolve_addresses) -> str | None:
+def address_problem(url: str, resolve: Resolver = resolve_addresses) -> str | None:
     parts = urlsplit(url.strip())
     if parts.scheme != SAFE_SCHEME or not parts.hostname or USERINFO_MARK in parts.netloc:
-        return None
+        return UNSAFE_ADDRESS
     try:
         addresses = resolve(parts.hostname, parts.port or DEFAULT_HTTPS_PORT)
     except (OSError, ValueError):
+        return UNREACHABLE
+    if not addresses:
+        return UNREACHABLE
+    if not all(ipaddress.ip_address(address.split("%")[0]).is_global for address in addresses):
+        return UNSAFE_ADDRESS
+    return None
+
+
+def public_https_url(url: str, resolve: Resolver = resolve_addresses) -> str | None:
+    if address_problem(url, resolve) is not None:
         return None
-    if not addresses or not all(ipaddress.ip_address(address.split("%")[0]).is_global for address in addresses):
-        return None
+    parts = urlsplit(url.strip())
     return urlunsplit((parts.scheme, parts.netloc, parts.path, parts.query, ""))
-
-
-def host_resolves(url: str, resolve: Resolver = resolve_addresses) -> bool:
-    host = urlsplit(url.strip()).hostname
-    if not host:
-        return False
-    try:
-        return bool(resolve(host, DEFAULT_HTTPS_PORT))
-    except (OSError, ValueError):
-        return False

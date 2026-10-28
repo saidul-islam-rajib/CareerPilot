@@ -45,8 +45,19 @@ class RecommendationService:
         added = sum(self._refresh_track(workspace, track, listings) for track in workspace.preferences.tracks)
         if added or len(workspace.matches) != assessed_before:
             self._ctx.workspaces.save(user_id, workspace)
+        self._sync_routes(workspace, listings)
         self._apply_automatic(user_id, workspace)
         return added
+
+    def _sync_routes(self, workspace: CandidateWorkspace, listings: list[Listing]) -> None:
+        listed = {oid for ids in workspace.track_opportunities.values() for oid in ids}
+        for listing in listings:
+            current = self._ctx.opportunities.get(listing.id) if listing.id in listed else None
+            if current is None:
+                continue
+            route, email = application_route(listing, self._ctx.config)
+            if (current.route, current.application_email) != (route, email):
+                self._ctx.opportunities.save(current.model_copy(update={"route": route, "application_email": email}))
 
     def _apply_automatic(self, user_id: str, workspace: CandidateWorkspace) -> None:
         for opportunity_id in automatic_candidates(workspace):
@@ -79,6 +90,7 @@ class RecommendationService:
         tracks = sorted(workspace.preferences.tracks, key=lambda t: t.position)
         added = sum(self._rebuild_track(workspace, track, state) for track in tracks)
         self._ctx.workspaces.save(user_id, workspace)
+        self._sync_routes(workspace, listings)
         self._apply_automatic(user_id, workspace)
         return added
 
@@ -142,12 +154,17 @@ def automatic_candidates(workspace: CandidateWorkspace) -> list[str]:
     return chosen
 
 
+def application_route(listing: Listing, config: MatchingConfig) -> tuple[str, str | None]:
+    email = application_email(listing.description, config.application_email)
+    return (ApplicationRoute.EMAIL.value if email else config.default_route), email
+
+
 def opportunity_from_listing(
     listing: Listing, match: OpportunityMatch, source_name: Callable[[str], str], config: MatchingConfig
 ) -> OpportunityDetail:
     source = listing.sources[0]
     original = listing.versions[0]
-    email = application_email(listing.description, config.application_email)
+    route, email = application_route(listing, config)
     return OpportunityDetail(
         id=listing.id,
         type=listing.type,
@@ -165,6 +182,6 @@ def opportunity_from_listing(
         requirements=match.requirements,
         source=SourceRef(name=source_name(source.source_id), url=source.url, checked_at=listing.last_checked_at),
         circular=ArchivedCircular(archived_at=original.observed_at, original_url=source.url, text=original.text),
-        route=ApplicationRoute.EMAIL.value if email else config.default_route,
+        route=route,
         application_email=email,
     )

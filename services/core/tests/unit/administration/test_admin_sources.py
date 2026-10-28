@@ -9,7 +9,7 @@ from careerpilot.api.admin_app import create_admin_app
 from careerpilot.bootstrap import Container
 from careerpilot.discovery.fetchers import HttpFetcher
 from careerpilot.discovery.ports import FetchError
-from careerpilot.discovery.safety import host_resolves, public_https_url
+from careerpilot.discovery.safety import address_problem, public_https_url
 from careerpilot.platform.config import ListingDefaults, SourceDefinition
 from careerpilot.platform.enums import SourceStatus
 from careerpilot.platform.errors import ErrorCode
@@ -105,7 +105,7 @@ def test_only_public_https_addresses_pass() -> None:
 
 
 def test_live_fetches_stop_at_unsafe_addresses_before_connecting() -> None:
-    fetcher = HttpFetcher(sample_settings().discovery, lambda _url: None, lambda _url: True)
+    fetcher = HttpFetcher(sample_settings().discovery, lambda _url: "unsafe_address")
     with pytest.raises(FetchError, match="unsafe_address"):
         fetcher.fetch(
             SourceDefinition(
@@ -146,9 +146,17 @@ def test_failed_checks_show_why_until_a_check_succeeds(app: Container) -> None:
     assert row.last_checked_at is not None
 
 
-def test_addresses_that_cannot_be_looked_up_are_reported_as_unreachable() -> None:
-    fetcher = HttpFetcher(sample_settings().discovery, lambda _url: None, lambda _url: False)
+def test_addresses_that_cannot_be_looked_up_are_reported_as_unreachable_after_a_retry() -> None:
+    problems: list[str] = []
+
+    def unresolved(url: str) -> str:
+        problems.append(url)
+        return "unreachable"
+
+    fetcher = HttpFetcher(sample_settings().discovery, unresolved)
     with pytest.raises(FetchError, match="unreachable"):
         fetcher.fetch_url(FEED_URL)
-    assert not host_resolves("https://jobs.example.org/", resolving_to())
-    assert host_resolves("https://jobs.example.org/", resolving_to("93.184.215.14"))
+    assert len(problems) == sample_settings().discovery.fetch_attempts
+    assert address_problem("https://jobs.example.org/", resolving_to()) == "unreachable"
+    assert address_problem("https://jobs.example.org/", resolving_to("10.0.0.7")) == "unsafe_address"
+    assert address_problem("https://jobs.example.org/", resolving_to("93.184.215.14")) is None

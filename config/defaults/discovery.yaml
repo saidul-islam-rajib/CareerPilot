@@ -2,6 +2,7 @@ discovery:
   fetch_mode: live
   user_agent: "CareerPilotBot/1.0 (+https://team-sober.com/)"
   timeout_seconds: 10
+  fetch_attempts: 2
   max_listings_per_check: 200
   failing_after_failures: 3
   max_resolve_pages: 10

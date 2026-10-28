@@ -17,6 +17,7 @@ from careerpilot.platform.email_delivery import (
 )
 from careerpilot.platform.enums import (
     ApplicationFilter,
+    ApplicationRoute,
     DeliveryMode,
     EmergencyStopScope,
     PauseDuration,
@@ -122,6 +123,16 @@ def test_portal_routes_need_the_user(service: Container, sender: InMemoryEmailSe
     application_id = approve(service, PORTAL_OPPORTUNITY)
     assert service.submissions.submit(DEMO_USER, application_id).status is SubmissionStatus.MANUAL_ACTION_REQUIRED
     assert "only you can complete portal sign-in" in record(service, application_id).timeline[-1].text
+    assert sender.sent == []
+
+
+def test_a_job_whose_route_became_a_portal_is_never_emailed(service: Container, sender: InMemoryEmailSender) -> None:
+    application_id = approve(service, EMAIL_OPPORTUNITY)
+    opportunities = service.recommendations._ctx.opportunities  # pyright: ignore[reportPrivateUsage]
+    current = opportunities.get(EMAIL_OPPORTUNITY)
+    assert current is not None
+    opportunities.save(current.model_copy(update={"route": ApplicationRoute.ATS_PORTAL.value, "application_email": None}))
+    assert service.submissions.submit(DEMO_USER, application_id).status is SubmissionStatus.MANUAL_ACTION_REQUIRED
     assert sender.sent == []
 
 

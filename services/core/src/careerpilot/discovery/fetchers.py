@@ -4,17 +4,14 @@ from pathlib import Path
 import httpx
 
 from careerpilot.discovery.ports import Fetcher, FetchError
-from careerpilot.discovery.safety import host_resolves, public_https_url
+from careerpilot.discovery.safety import UNREACHABLE, address_problem
 from careerpilot.platform.config import DiscoveryConfig, FetchMode, SourceDefinition, repository_root
 
 USER_AGENT_HEADER = "User-Agent"
-UNSAFE_ADDRESS = "unsafe_address"
 HTTP_STATUS = "http_status"
-UNREACHABLE = "unreachable"
 PAGES_UNAVAILABLE = "pages_unavailable"
 
-AddressCheck = Callable[[str], str | None]
-HostCheck = Callable[[str], bool]
+AddressProblem = Callable[[str], str | None]
 PageFetcher = Callable[[str], tuple[str, str]]
 
 
@@ -34,12 +31,9 @@ class FixtureFetcher:
 
 
 class HttpFetcher:
-    def __init__(
-        self, config: DiscoveryConfig, check_address: AddressCheck = public_https_url, resolves: HostCheck = host_resolves
-    ) -> None:
+    def __init__(self, config: DiscoveryConfig, problem: AddressProblem = address_problem) -> None:
         self._config = config
-        self._check_address = check_address
-        self._resolves = resolves
+        self._problem = problem
 
     def fetch(self, definition: SourceDefinition) -> str:
         return self.fetch_url(definition.url)[1]
@@ -48,6 +42,15 @@ class HttpFetcher:
         return self.fetch_url(url)[1]
 
     def fetch_url(self, url: str) -> tuple[str, str]:
+        for _attempt in range(self._config.fetch_attempts - 1):
+            try:
+                return self._fetch_once(url)
+            except FetchError as error:
+                if str(error) != UNREACHABLE:
+                    raise
+        return self._fetch_once(url)
+
+    def _fetch_once(self, url: str) -> tuple[str, str]:
         try:
             with httpx.Client(
                 headers={USER_AGENT_HEADER: self._config.user_agent},
@@ -66,9 +69,9 @@ class HttpFetcher:
         return str(response.url), response.text
 
     def _guard(self, request: httpx.Request) -> None:
-        url = str(request.url)
-        if self._check_address(url) is None:
-            raise UnsafeAddressError(UNSAFE_ADDRESS if self._resolves(url) else UNREACHABLE)
+        problem = self._problem(str(request.url))
+        if problem is not None:
+            raise UnsafeAddressError(problem)
 
 
 def fetcher_for(config: DiscoveryConfig) -> Fetcher:

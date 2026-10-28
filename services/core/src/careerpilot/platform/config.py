@@ -239,6 +239,7 @@ class DiscoveryConfig(Strict):
     fixture_root: str = ""
     user_agent: str
     timeout_seconds: float = Field(gt=0)
+    fetch_attempts: int = Field(gt=0)
     max_listings_per_check: int = Field(gt=0)
     failing_after_failures: int = Field(gt=0)
     max_resolve_pages: int = Field(gt=0)

@@ -85,12 +85,18 @@ class SubmissionService:
         hold = self._hold(user_id, workspace, application)
         if hold is not None:
             return SubmissionResult(application.submission_status, hold)
+        self._follow_current_route(application)
         if application.route not in self._config.automatable_routes:
             self._move(application, SubmissionStatus.MANUAL_ACTION_REQUIRED, translate("timeline.portalManual"))
         else:
             self._submit_email(user_id, workspace, application)
         self._candidate.workspaces.save(user_id, workspace)
         return SubmissionResult(application.submission_status)
+
+    def _follow_current_route(self, application: ApplicationRecord) -> None:
+        opportunity = self._candidate.opportunities.get(application.opportunity.id)
+        if opportunity is not None and opportunity.route != application.route:
+            application.route = opportunity.route
 
     def confirm_sent(self) -> int:
         now = self._candidate.clock.now()
