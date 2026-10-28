@@ -4,4 +4,4 @@
 - [x] Backend: review state and owners on sources, per-user visibility in matching, user source service, review queue and decisions, endpoints, audit
 - [x] Client: types, ports, HTTP and in-memory adapters, shared hooks, catalog text, enum `source_review`, `jobSources` and `note` limits
 - [x] Web page, mobile screens, admin review card
-- [ ] Docker rebuild keeping local data; check web, admin, and the phone
+- [x] Docker rebuild keeping local data; web, admin, and the phone bundle serve the new screens; Metro restarted with --clear
