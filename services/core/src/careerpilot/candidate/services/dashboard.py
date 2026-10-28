@@ -20,6 +20,7 @@ class DashboardService:
         recent_since = self._ctx.clock.now() - timedelta(days=self._ctx.settings.account.recent_window_days)
         settings = self._ctx.settings
         applied = {application.opportunity.id for application in workspace.applications}
+        current = [application for application in workspace.applications if application.archived_at is None]
         favorites = {normalized(company) for company in workspace.preferences.favorite_companies}
         digests: list[TrackDigest] = []
         for track in ordered_tracks(workspace.preferences.tracks, settings.tracks.lead_kinds):
@@ -34,8 +35,8 @@ class DashboardService:
             counts=DashboardCounts(
                 new_matches=sum(len(d.opportunities) for d in digests),
                 awaiting_approval=sum(1 for a in workspace.approvals if a.state is ApprovalState.PENDING),
-                applied_this_week=sum(1 for a in workspace.applications if a.applied_at and parse_iso(a.applied_at) >= recent_since),
-                interviews=sum(1 for a in workspace.applications if a.outcome_status is OutcomeStatus.INTERVIEW),
+                applied_this_week=sum(1 for a in current if a.applied_at and parse_iso(a.applied_at) >= recent_since),
+                interviews=sum(1 for a in current if a.outcome_status is OutcomeStatus.INTERVIEW),
             ),
             pause=workspace.preferences.pause,
             last_checked_at=workspace.last_checked_at,

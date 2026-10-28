@@ -74,7 +74,7 @@ class SubmissionService:
             QueuedApplication(user_id, application.id)
             for user_id in self._candidate.accounts.active_ids()
             for application in self._candidate.workspaces.get(user_id).applications
-            if application.submission_status is SubmissionStatus.APPROVED_QUEUED
+            if application.submission_status is SubmissionStatus.APPROVED_QUEUED and application.archived_at is None
         ]
 
     def submit(self, user_id: str, application_id: str) -> SubmissionResult:

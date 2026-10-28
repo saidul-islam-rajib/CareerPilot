@@ -5,11 +5,20 @@ from fastapi.responses import JSONResponse, Response
 from pydantic import StrictInt
 
 from careerpilot.administration.models import NewSource, SourceDecision
+from careerpilot.administration.user_records import AdminApplicationChange, AdminProfileChange
 from careerpilot.api.common import client_info, configure, no_content, ok
 from careerpilot.api.dependencies import CurrentAdmin, Paging, Services
 from careerpilot.api.instrumentation import instrument
 from careerpilot.bootstrap import Container
-from careerpilot.platform.enums import AdminRole, EmergencyStopScope, OpportunityStatus, ThemeKey, UserAccountStatus
+from careerpilot.platform.enums import (
+    AdminRole,
+    ApplicationMode,
+    EmergencyStopScope,
+    OpportunityDecision,
+    OpportunityStatus,
+    ThemeKey,
+    UserAccountStatus,
+)
 from careerpilot.platform.messages import translate
 from careerpilot.platform.model import CamelModel
 
@@ -59,6 +68,19 @@ class EmergencyStopBody(CamelModel):
     reason: str
 
 
+class ArchiveBody(CamelModel):
+    archived: bool
+
+
+class JobDecisionBody(CamelModel):
+    decision: OpportunityDecision | None = None
+
+
+class TrackChangeBody(CamelModel):
+    result_count: int | None = None
+    mode: ApplicationMode | None = None
+
+
 class AdminUpdateBody(CamelModel):
     role: AdminRole | None = None
     suspended: bool | None = None
@@ -103,6 +125,48 @@ def users(admin: CurrentAdmin, paging: Paging, services: Services) -> JSONRespon
 @router.get("/users/{user_id}")
 def user(user_id: str, admin: CurrentAdmin, services: Services) -> JSONResponse:
     return ok(services.admin_users.get(admin, user_id))
+
+
+@router.get("/users/{user_id}/record")
+def user_record(user_id: str, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.user_records.record(admin, user_id))
+
+
+@router.patch("/users/{user_id}/applications/{application_id}")
+def change_user_application(
+    user_id: str, application_id: str, body: AdminApplicationChange, admin: CurrentAdmin, services: Services
+) -> JSONResponse:
+    return ok(services.user_records.change_application(admin, user_id, application_id, body))
+
+
+@router.post("/users/{user_id}/applications/{application_id}/archive")
+def archive_user_application(user_id: str, application_id: str, body: ArchiveBody, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.user_records.archive_application(admin, user_id, application_id, body.archived))
+
+
+@router.put("/users/{user_id}/jobs/{opportunity_id}/decision")
+def user_job_decision(user_id: str, opportunity_id: str, body: JobDecisionBody, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.user_records.set_job_decision(admin, user_id, opportunity_id, body.decision))
+
+
+@router.patch("/users/{user_id}/tracks/{track_id}")
+def user_track(user_id: str, track_id: str, body: TrackChangeBody, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.user_records.update_track(admin, user_id, track_id, body.result_count, body.mode))
+
+
+@router.post("/users/{user_id}/resume-automation")
+def resume_automation(user_id: str, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.user_records.resume(admin, user_id))
+
+
+@router.patch("/users/{user_id}/profile")
+def user_profile(user_id: str, body: AdminProfileChange, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.user_records.update_profile(admin, user_id, body))
+
+
+@router.post("/users/{user_id}/approvals/{approval_id}/reject")
+def reject_user_approval(user_id: str, approval_id: str, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.user_records.reject_approval(admin, user_id, approval_id))
 
 
 @router.post("/users/{user_id}/suspend")

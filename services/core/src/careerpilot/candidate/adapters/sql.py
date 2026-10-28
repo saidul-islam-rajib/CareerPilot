@@ -112,6 +112,10 @@ class SqlAccountRepository:
             query = active(UserAccountRow).where(UserAccountRow.status == UserAccountStatus.ACTIVE.value)
             return [row.id for row in session.scalars(query)]
 
+    def all_ids(self) -> list[str]:
+        with self._db.unit_of_work() as session:
+            return [row.id for row in session.scalars(active(UserAccountRow))]
+
     @staticmethod
     def _values(account: Account) -> dict[str, Any]:
         return {

@@ -97,13 +97,15 @@ class ApplicationService:
 
     def list(self, user_id: str, application_filter: ApplicationFilter) -> list[ApplicationSummary]:
         applications = [
-            a for a in self._ctx.workspaces.get(user_id).applications if matches_filter(a.submission_status, application_filter)
+            a
+            for a in self._ctx.workspaces.get(user_id).applications
+            if a.archived_at is None and matches_filter(a.submission_status, application_filter)
         ]
         return [a.summary() for a in sorted(applications, key=lambda a: a.updated_at, reverse=True)]
 
     def get(self, user_id: str, application_id: str) -> ApplicationRecord:
         record = next((a for a in self._ctx.workspaces.get(user_id).applications if a.id == application_id), None)
-        if record is None:
+        if record is None or record.archived_at is not None:
             raise not_found("application")
         return record
 

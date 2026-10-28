@@ -23,6 +23,7 @@ from careerpilot.administration.services import (
     effective_link_ttl_minutes,
 )
 from careerpilot.administration.sources import SourcePolicy, directory_definitions, is_link_source, listing_visibility
+from careerpilot.administration.user_records import AdminUserRecords, UserRecordsContext
 from careerpilot.administration.user_sources import UserSourceContext, UserSourceService
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import Preferences, Profile, SubmissionWindow, Track
@@ -120,6 +121,7 @@ class Container:
     answers: AnswerService
     user_sources: UserSourceService
     job_links: JobLinkService
+    user_records: AdminUserRecords
     source_checks: SourceCheckRunner
     invite_owner: Callable[[], bool]
 
@@ -390,6 +392,18 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     public_config = PublicConfigService(cfg, enum_value_documents(cfg.enum_values), live, metadata)
     public_config.invalidate()
     admin_settings = PlatformSettingsService(admin, public_config.invalidate)
+    preferences = PreferencesService(candidate, recommendations.rematch)
+    profile = ProfileService(candidate, storage, file_links, recommendations.rematch)
+    user_sources = UserSourceService(
+        UserSourceContext(admin=admin, checks=source_checks, policy=source_policy, refresh=recommendations.rematch)
+    )
+    user_records = AdminUserRecords(
+        UserRecordsContext(
+            admin=admin, preferences=preferences, profile=profile, user_sources=user_sources, opportunities=repos.opportunities
+        )
+    )
+    admin_catalog = AdminCatalogService(admin, source_checks, source_policy, recommendations.refresh_all)
+    admin_catalog.track_real_applications(user_records)
     return Container(
         settings=cfg,
         database=database,
@@ -398,13 +412,14 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         opportunities=opportunity_service,
         approvals=approvals,
         applications=ApplicationService(candidate),
-        profile=ProfileService(candidate, storage, file_links, recommendations.rematch),
-        preferences=PreferencesService(candidate, recommendations.rematch),
+        profile=profile,
+        preferences=preferences,
         dashboard=DashboardService(candidate, opportunity_service),
         admin_auth=AdminAuthService(admin, guard, admin_links),
         admin_dashboard=AdminDashboardService(admin),
-        admin_users=AdminUserService(admin),
-        admin_catalog=AdminCatalogService(admin, source_checks, source_policy, recommendations.refresh_all),
+        admin_users=AdminUserService(admin, user_records),
+        user_records=user_records,
+        admin_catalog=admin_catalog,
         admin_settings=admin_settings,
         admin_audit=AdminAuditService(admin),
         admin_accounts=AdminAccountService(admin),
@@ -426,8 +441,6 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
                 opportunities=opportunity_service,
             )
         ),
-        user_sources=UserSourceService(
-            UserSourceContext(admin=admin, checks=source_checks, policy=source_policy, refresh=recommendations.rematch)
-        ),
+        user_sources=user_sources,
         invite_owner=lambda: invite_owner(admin, admin_links),
     )

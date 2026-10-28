@@ -29,6 +29,9 @@ class InMemoryAccountRepository:
     def active_ids(self) -> list[str]:
         return [user_id for user_id, account in self._by_id.items() if account.status is UserAccountStatus.ACTIVE]
 
+    def all_ids(self) -> list[str]:
+        return list(self._by_id)
+
 
 class InMemoryOpportunityRepository:
     def __init__(self, opportunities: list[OpportunityDetail]) -> None:

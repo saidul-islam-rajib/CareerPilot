@@ -1072,7 +1072,11 @@
     "taskAdded": "Added {kind}: {title}",
     "taskCompleted": "Completed {kind}: {title}",
     "taskDismissed": "Dismissed {kind}: {title}",
-    "taskReopened": "Reopened {kind}: {title}"
+    "taskReopened": "Reopened {kind}: {title}",
+    "adminChanged": "An administrator changed this application: {changes}.",
+    "adminNote": "note added",
+    "adminArchived": "An administrator archived this application.",
+    "adminRestored": "An administrator restored this application."
   },
   "submission": {
     "failures": {

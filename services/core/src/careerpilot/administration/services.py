@@ -39,6 +39,7 @@ from careerpilot.administration.sources import (
     no_follow_up,
     source_at,
 )
+from careerpilot.administration.user_records import AdminApplicationChange, AdminUserRecords
 from careerpilot.discovery.pages import host_name
 from careerpilot.discovery.resolver import normalized_link
 from careerpilot.platform.clock import iso, parse_iso
@@ -235,13 +236,17 @@ class AdminDashboardService:
 
 
 class AdminUserService:
-    def __init__(self, context: AdminContext) -> None:
+    def __init__(self, context: AdminContext, records: AdminUserRecords | None = None) -> None:
         self._ctx = context
+        self._records = records
+
+    def _rows(self) -> list[AdminUserRow]:
+        return self._records.rows() if self._records else self._ctx.directory.users()
 
     def list(self, actor: AdminActor, request: PageRequest) -> Page[AdminUserRow]:
         actor.require(AdminArea.USERS, PermissionAction.READ)
         return paginate(
-            self._ctx.directory.users(),
+            self._rows(),
             request,
             self._ctx.settings.admin.page_size,
             lambda u: f"{u.full_name} {u.email} {u.country}",
@@ -266,7 +271,7 @@ class AdminUserService:
         return self._detail(row)
 
     def _row(self, user_id: str) -> AdminUserRow:
-        row = next((u for u in self._ctx.directory.users() if u.id == user_id), None)
+        row = next((u for u in self._rows() if u.id == user_id), None)
         if row is None:
             raise not_found("user")
         return row
@@ -294,6 +299,13 @@ class AdminCatalogService:
         self._checks = checks
         self._sources = sources
         self._on_shared = on_shared
+        self._records: AdminUserRecords | None = None
+
+    def track_real_applications(self, records: AdminUserRecords) -> None:
+        self._records = records
+
+    def _application_rows(self) -> list[AdminApplicationRow]:
+        return self._records.application_rows() if self._records else self._ctx.directory.applications()
 
     def opportunities(self, actor: AdminActor, request: PageRequest) -> Page[AdminOpportunityRow]:
         actor.require(AdminArea.OPPORTUNITIES, PermissionAction.READ)
@@ -338,7 +350,7 @@ class AdminCatalogService:
 
     def applications(self, actor: AdminActor, request: PageRequest) -> Page[AdminApplicationRow]:
         actor.require(AdminArea.APPLICATIONS, PermissionAction.READ)
-        rows = sorted(self._ctx.directory.applications(), key=lambda a: a.updated_at, reverse=True)
+        rows = sorted(self._application_rows(), key=lambda a: a.updated_at, reverse=True)
         return paginate(
             rows,
             request,
@@ -349,11 +361,16 @@ class AdminCatalogService:
 
     def cancel_application(self, actor: AdminActor, application_id: str) -> AdminApplicationRow:
         actor.require(AdminArea.APPLICATIONS, PermissionAction.UPDATE)
-        row = next((a for a in self._ctx.directory.applications() if a.id == application_id), None)
+        row = next((a for a in self._application_rows() if a.id == application_id), None)
         if row is None:
             raise not_found("application")
         if row.submission_status not in CANCELLABLE:
             raise conflict("application_not_cancellable")
+        owner = self._records.owner_of(application_id) if self._records else None
+        if self._records and owner:
+            change = AdminApplicationChange(submission_status=SubmissionStatus.CANCELLED)
+            self._records.change_application(actor, owner, application_id, change)
+            return next(a for a in self._records.application_rows() if a.id == application_id)
         updated = row.model_copy(update={"submission_status": SubmissionStatus.CANCELLED, "updated_at": iso(self._ctx.clock.now())})
         self._ctx.directory.save_application(updated)
         actor.record("application.cancelled", f"{updated.opportunity_title} · {updated.user_name}")

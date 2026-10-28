@@ -236,6 +236,7 @@ class ApplicationRecord(ApplicationSummary):
     materials: ApprovalMaterials | None = None
     attempts: int = 0
     tasks: list[FollowUpTask] = Field(default_factory=list[FollowUpTask])
+    archived_at: str | None = None
 
     def summary(self) -> ApplicationSummary:
         return ApplicationSummary.model_validate(self.model_dump(include=set(ApplicationSummary.model_fields)))
