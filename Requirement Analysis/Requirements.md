@@ -183,6 +183,13 @@ The system should support, as permitted and technically available:
 - Bangladesh government recruitment notices and official agency pages.
 - Other sources explicitly enabled by the user or product.
 
+#### 7.1.1 Sources added by a link
+
+- An admin or a user can add a source by giving only a website link (a company site, its careers page, or a job board link). The system must find where the jobs are listed (a known job board, a job feed, structured job postings, job links on careers pages, or the site's own job data), check it once at once, and include it in scheduled checks. A link with no job listings must be refused with a clear message and nothing saved.
+- A source added by a user brings jobs only to that user (and to other users who added the same site) until an admin approves it. Approved sources bring jobs to every user. An admin's decision (approve, or keep private) must include a justification, is recorded in the audit log, and is shown to the users who added the source.
+- The same site must never be added twice: a link that matches an existing source (ignoring scheme, `www.`, and a trailing slash, or resolving to the same job board) joins the existing source instead of creating a new one; a site already shared with everyone is not added again; an admin adding a site a user already requested is sent to that request.
+- Each user can add up to a configured number of sources and remove their own; a source nobody uses any more stops being checked. Jobs from user sources are matched, prepared, and applied for exactly like jobs from any other source, under the same rules (Sections 20, 27, 47, 49).
+
 Source coverage must be described honestly. The product must identify sources it can search, sources that are temporarily unavailable, and sources that require the user to visit or search manually. It must not claim worldwide completeness.
 
 ### 7.2 Search schedule and freshness
@@ -1640,7 +1647,7 @@ The admin application must provide full read, create, update, and delete for:
 - **Users**: every user's complete data, including profile, sensitive identity details, documents, videos, photos, signatures, tracks, rules, compensation rules, submission windows, pauses, saved answers, notification settings, connected-account details, portal-account records, sessions and devices, contacts, notes, recommendations, applications, submission records, archived circulars, change history, and audit history. Admins must be able to create users, suspend and reactivate them, reset MFA, sign them out of all devices, pause or resume their automation, export their data, and process account deletion.
 - **View as user**: Admins must be able to see any user's screens exactly as the user sees them, in read-only mode.
 - **Opportunities and circulars**: view, correct extracted details, merge or split duplicates, mark expired or fraudulent, and manage archived copies.
-- **Sources**: add, edit, enable, disable, and remove sources; record terms and limitations; set check frequency; run a manual check.
+- **Sources**: add, edit, enable, disable, and remove sources; record terms and limitations; set check frequency; run a manual check; review sources users added and approve or keep them private with a justification (Section 7.1.1).
 - **Applications**: view every application and its full record, cancel queued applications, verify uncertain outcomes, and record corrections.
 - **Platform rules and defaults**: default tracks, thresholds, result counts, global and maximum caps, deadline buffer, pause limits, recently-deleted and grace periods, retention periods, scoring-model versions and weights, fraud warning signs, supported application routes, feature switches, and the active theme of the user web and mobile apps (Section 14).
 - **Templates and content**: email, cover-letter, and notification templates (including messaging-platform templates), help articles, announcements, and incident messages.

@@ -11,6 +11,7 @@ import {
   SourceStatus,
   SubmissionStatus,
   UserAccountStatus,
+  WorkArrangement,
   enumValues,
 } from '@careerpilot/domain-ui-logic';
 import { ThemeKey } from '@careerpilot/ui-tokens';
@@ -105,6 +106,7 @@ export function buildAdminDemoSeed(now: Date, userState: DemoState, accountLinkT
     { id: 'src_intl_board', name: 'International job board', status: SourceStatus.Healthy, enabled: true, lastSuccessAt: at(0), failuresLast24h: 0, opportunitiesFound: 640, review: SourceReview.Approved, ownerIds: [] },
     { id: 'src_university', name: 'University admissions pages', status: SourceStatus.Failing, enabled: true, lastSuccessAt: at(-3), failuresLast24h: 12, opportunitiesFound: 58, review: SourceReview.Approved, ownerIds: [] },
     { id: 'src_company_pages', name: 'Company career pages', status: SourceStatus.Healthy, enabled: true, lastSuccessAt: at(0), failuresLast24h: 2, opportunitiesFound: 305, review: SourceReview.Approved, ownerIds: [] },
+    { id: 'src_user_request', name: 'Acme careers', status: SourceStatus.Healthy, enabled: true, lastSuccessAt: at(0), failuresLast24h: 0, opportunitiesFound: 4, review: SourceReview.Pending, ownerIds: ['usr_demo'], requestedAt: at(-1), requestNote: 'Local employer hiring engineers', setup: { connector: 'html', url: 'https://careers.acme.example.org', siteUrl: 'https://careers.acme.example.org', defaults: { type: OpportunityType.Job, workArrangement: WorkArrangement.NotStated } } },
     { id: 'src_legacy_feed', name: 'Legacy RSS feed', status: SourceStatus.Disabled, enabled: false, failuresLast24h: 0, opportunitiesFound: 0, review: SourceReview.Approved, ownerIds: [] },
   ];
 

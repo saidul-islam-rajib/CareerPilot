@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { AlertCircle, Plus } from 'lucide-react';
 import { ApiErrorDetail, isApiError, type AdminApplicationRow, type AdminOpportunityRow, type AdminSourceRow, type AuditEntry } from '@careerpilot/api-client';
 import { useFormat, useT } from '@careerpilot/client-core';
-import { AdminArea, ActorType, EnumKey, OpportunityStatus, PermissionAction, SourceStatus, StatusTone, SubmissionStatus, enumValues } from '@careerpilot/domain-ui-logic';
+import { AdminArea, ActorType, EnumKey, OpportunityStatus, PermissionAction, SourceReview, SourceStatus, StatusTone, SubmissionStatus, enumValues } from '@careerpilot/domain-ui-logic';
 import { Banner, Button, ConfirmDialog, EnumBadge } from '@careerpilot/ui-web';
 import { useAdminMutation } from '@/core/admin-queries';
 import { useAdminApi } from '@/core/admin-services';
 import { useCan } from '@/core/admin-session';
 import { ListPage } from '@/features/common/list-page';
 import { AddSourceDialog, SuggestedSources, sourceProblemKey } from './source-forms';
+import { SourceRequests } from './source-requests';
 
 const CANCELLABLE: readonly SubmissionStatus[] = [SubmissionStatus.ApprovedQueued, SubmissionStatus.AwaitingApproval];
 
@@ -79,6 +80,7 @@ export function SourcesPage() {
   return (
     <div className="flex flex-col gap-4">
       {check.error ? <Banner tone={StatusTone.Danger} icon={AlertCircle} title={t(sourceCheckErrorKey(check.error))} /> : null}
+      <SourceRequests canReview={canUpdate} />
       {canCreate ? <SuggestedSources /> : null}
       {canCreate ? <AddSourceDialog open={adding} onOpenChange={setAdding} /> : null}
       <ListPage<AdminSourceRow>
@@ -101,6 +103,12 @@ export function SourcesPage() {
             cell: (s) => (
               <span className="flex min-w-0 flex-col">
                 <span className="font-semibold">{s.name}</span>
+                {s.review !== SourceReview.Approved ? (
+                  <span className="mt-1 flex flex-wrap gap-1">
+                    <EnumBadge enumKey={EnumKey.SourceReview} value={s.review} />
+                    <span className="text-xs text-muted">{t('admin.sources.personal')}</span>
+                  </span>
+                ) : null}
                 {s.setup ? <span className="max-w-64 truncate text-xs text-muted">{s.setup.siteUrl || s.setup.url}</span> : null}
               </span>
             ),

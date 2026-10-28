@@ -16,6 +16,7 @@ const SOURCE_ERROR_KEYS: Readonly<Record<string, string>> = {
   source_exists: 'admin.sources.errors.exists',
   country_code: 'admin.sources.errors.countryCode',
   jobs_not_found: 'admin.sources.errors.jobsNotFound',
+  source_pending: 'admin.sources.errors.pending',
 };
 const SOURCE_PROBLEMS: readonly string[] = [
   'invalid_feed',

@@ -43,6 +43,7 @@
 | Preferences | `GET/PATCH /tracks`, `GET/PATCH /tracks/{id}`, `POST /tracks/{id}/reset`, `GET/PUT /excluded-countries`, `GET/POST/PATCH/DELETE /compensation-rules`, `GET/POST/PATCH/DELETE /submission-windows`, `GET/POST/PATCH/DELETE /pauses`, `GET/PATCH /notification-settings` | 5.2, 5.3, 6, 47–49, 51 |
 | Rules | `GET/POST /auto-rules`, `GET/PATCH /auto-rules/{id}`, `POST /auto-rules/{id}/dry-run`, `POST /auto-rules/{id}/{activate,pause,revoke,renew}` | 10.1, 27.2 |
 | Reusable answers | `GET/POST/PATCH/DELETE /reusable-answers`, `GET /question-bank` | 28.3, 37.2 |
+| Job sources | `GET /sources` (mine), `POST /sources` (`{url, name?, note?}`, found by link, pending review), `DELETE /sources/{id}` (stop using) | 7.1.1 |
 | Opportunities | `GET /recommendations` (by track/day), `GET /opportunities/{id}`, `GET /opportunities/{id}/versions`, `GET /opportunities/{id}/versions/{v}/archive`, `POST /opportunities/manual` (link/file/email), `GET /opportunities/search`, `GET /opportunities/why-not?url=`, `POST /opportunities/{id}/decision` (save/dismiss/not eligible), `POST /opportunities/{id}/reports` | 7, 11.1, 27.5, 50 |
 | Applications | `POST /applications`, `GET /applications`, `GET /applications/{id}`, `GET /applications/{id}/timeline`, `GET /applications/{id}/qa`, `GET /applications/{id}/files`, `GET /applications/{id}/emails`, `GET /applications/{id}/evidence`, `POST /applications/{id}/{cancel,withdraw,notes,corrections}` | 20, 28 |
 | Approvals | `GET /approval-packages?state=ready`, `GET /approval-packages/{id}`, `POST /approval-packages/{id}/{approve,reject,defer}`, `POST /approval-packages/bulk-approve`, `POST /applications/{id}/answers` (blocked questions) | 37 |
@@ -66,7 +67,7 @@ Inbound webhooks (separate path, signature-verified): `/webhooks/whatsapp`, `/we
 | Dashboard | `GET /dashboard/summary`, `GET /dashboard/{users,recommendations,applications,queue,sources,opportunities,notifications,payments,integrity,support,costs,health}` |
 | Users | `GET/POST /users`, `GET/PATCH/DELETE /users/{id}`, `POST /users/{id}/{suspend,reactivate,reset-mfa,sign-out-all,pause,resume,export,delete}`, `GET /users/{id}/view-as/...` (read-only mirror of user endpoints), all user sub-resources |
 | Opportunities | `GET/PATCH /opportunities`, `POST /opportunities/{id}/{merge,split,mark-fraud,mark-legit,close}` |
-| Sources and plugins | `GET/POST/PATCH/DELETE /sources`, `POST /sources/{id}/run`, `GET /plugins`, `PATCH /plugins/{key}` |
+| Sources and plugins | `GET/POST/PATCH/DELETE /sources`, `POST /sources/{id}/run`, `GET /sources/requests`, `POST /sources/{id}/review` (`{review, note}`), `GET /plugins`, `PATCH /plugins/{key}` |
 | Applications | `GET /applications`, `GET /applications/{id}`, `POST /applications/{id}/{cancel,verify,correction}` |
 | Platform | `GET/PATCH /settings`, `GET/POST/PATCH /feature-flags`, `GET/POST/PATCH /opportunity-types`, `GET/POST/PATCH /scoring-models`, `GET/POST/PATCH /templates`, `GET/PATCH /question-groups`, `POST /emergency-stop` (scoped) |
 | Admins | `GET/POST/PATCH/DELETE /admins`, `GET/POST/PATCH/DELETE /roles`, `GET/PUT /roles/{id}/policies` |
