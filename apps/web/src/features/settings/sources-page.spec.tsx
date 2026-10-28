@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { renderWithProviders } from '@/test/render';
 import { SettingsPage } from './settings-page';
+import { CountriesPage } from './countries-page';
 import { SourcesPage } from './sources-page';
 
 const SUBMIT = 'Find jobs and add';
@@ -32,5 +33,18 @@ describe('SourcesPage', () => {
   it('is linked from settings', () => {
     renderWithProviders(<SettingsPage />);
     expect(screen.getByRole('link', { name: /Job sources/ })).toHaveAttribute('href', '/settings/sources');
+  });
+});
+
+describe('CountriesPage', () => {
+  it('adds and removes excluded countries', async () => {
+    const { services } = renderWithProviders(<CountriesPage />);
+    expect(await screen.findByText(/No countries excluded/)).toBeInTheDocument();
+    const input = screen.getByLabelText('Country codes');
+    fireEvent.change(input, { target: { value: 'in' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    await waitFor(async () => expect((await services.api.settings.getSettings()).excludedCountries).toEqual(['IN']));
+    fireEvent.click(await screen.findByRole('button', { name: 'Remove IN' }));
+    await waitFor(async () => expect((await services.api.settings.getSettings()).excludedCountries).toEqual([]));
   });
 });

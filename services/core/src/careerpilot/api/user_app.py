@@ -62,6 +62,10 @@ class CompleteLinkBody(CamelModel):
     password: str
 
 
+class ExcludedCountriesBody(CamelModel):
+    countries: list[str]
+
+
 class JobLinkBody(CamelModel):
     url: str
 
@@ -320,6 +324,11 @@ def update_notifications(body: NotificationsBody, user: CurrentUser, services: S
 @router.put("/settings/submission-window")
 def submission_window(body: SubmissionWindow, user: CurrentUser, services: Services) -> JSONResponse:
     return ok(services.preferences.update_submission_window(user.id, body))
+
+
+@router.put("/settings/excluded-countries")
+def excluded_countries(body: ExcludedCountriesBody, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.preferences.update_excluded_countries(user.id, body.countries))
 
 
 @router.get("/account/sign-in-activity")

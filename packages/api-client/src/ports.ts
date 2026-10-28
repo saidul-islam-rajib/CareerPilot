@@ -128,6 +128,7 @@ export interface SettingsApi {
   pause(option: PauseOption): Promise<Settings>;
   resume(): Promise<Settings>;
   updateSubmissionWindow(window: SubmissionWindow): Promise<Settings>;
+  updateExcludedCountries(countries: string[]): Promise<Settings>;
   listSignInActivity(): Promise<SignInEvent[]>;
   requestAccountDeletion(): Promise<DeletionRequest>;
   changePassword(change: PasswordChange): Promise<void>;

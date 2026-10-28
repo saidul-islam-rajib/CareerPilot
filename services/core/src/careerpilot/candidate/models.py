@@ -434,6 +434,7 @@ class Preferences(CamelModel):
     pause: PauseState | None = None
     time_zone: str
     notifications: NotificationPreferences = Field(default_factory=NotificationPreferences)
+    excluded_countries: list[str] = Field(default_factory=list[str])
 
 
 class SignInEvent(CamelModel):

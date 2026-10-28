@@ -8,6 +8,7 @@ from careerpilot.discovery.models import Listing
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator, iso
 from careerpilot.platform.email_delivery import InMemoryEmailSender
 from careerpilot.platform.enums import ApplicationMode, OpportunityDecision
+from careerpilot.platform.errors import DomainError
 from careerpilot.platform.files import InMemoryFileStorage
 from careerpilot.testing import load_sample_data, sample_repositories, sample_settings
 from tests.unit.conftest import DEMO_USER, TEST_SECRET, FakeHasher
@@ -17,6 +18,7 @@ HIT_SCORE = 30
 REMOTE_TRACK = "trk_remote"
 PYTHON_LISTING = "opp_1"
 ACTED_ON_REMOTE = ["opp_remote_frontend", "opp_remote_fullstack"]
+EXCLUDED_COUNTRY = "NO"
 
 
 class SkillMatcher:
@@ -109,3 +111,23 @@ def test_automatic_mode_skips_jobs_the_user_dismissed(app: Container) -> None:
     app.opportunities.decide(DEMO_USER, PYTHON_LISTING, OpportunityDecision.DISMISSED)
     app.preferences.update_track(DEMO_USER, REMOTE_TRACK, None, ApplicationMode.AUTOMATIC)
     assert PYTHON_LISTING not in handled_ids(app)
+
+
+def test_jobs_in_excluded_countries_leave_the_lists(app: Container) -> None:
+    catalog = app.discovery._catalog  # pyright: ignore[reportPrivateUsage]
+    listing = next(item for item in app.discovery.listings() if item.id == PYTHON_LISTING)
+    catalog.save(listing.model_copy(update={"country_code": EXCLUDED_COUNTRY}))
+    add_skill(app, "Python")
+    assert PYTHON_LISTING in placements(app)[REMOTE_TRACK]
+    saved = app.preferences.update_excluded_countries(DEMO_USER, [EXCLUDED_COUNTRY.lower(), f" {EXCLUDED_COUNTRY} "])
+    assert saved.excluded_countries == [EXCLUDED_COUNTRY]
+    assert PYTHON_LISTING not in placements(app)[REMOTE_TRACK]
+    assert set(ACTED_ON_REMOTE) <= set(placements(app)[REMOTE_TRACK])
+    app.preferences.update_excluded_countries(DEMO_USER, [])
+    assert PYTHON_LISTING in placements(app)[REMOTE_TRACK]
+
+
+def test_excluded_countries_must_be_two_letter_codes(app: Container) -> None:
+    with pytest.raises(DomainError) as raised:
+        app.preferences.update_excluded_countries(DEMO_USER, ["Bangladesh"])
+    assert raised.value.detail == "country_code"

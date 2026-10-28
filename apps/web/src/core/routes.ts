@@ -19,6 +19,7 @@ export const Routes = {
   notifications: '/settings/notifications',
   answers: '/settings/answers',
   sources: '/settings/sources',
+  countries: '/settings/countries',
   changePassword: '/settings/password',
   activity: '/settings/activity',
   about: '/settings/about',

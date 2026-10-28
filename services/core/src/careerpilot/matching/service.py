@@ -65,10 +65,14 @@ class RecommendationService:
 
     def _refresh_track(self, workspace: CandidateWorkspace, track: Track, listings: list[Listing]) -> int:
         current = workspace.track_opportunities.get(track.id, [])
+        excluded = set(workspace.preferences.excluded_countries)
         candidates = [
             item
             for item in listings
-            if item.id not in current and item.id not in workspace.matches and is_eligible(item, track, self._ctx.config)
+            if item.id not in current
+            and item.id not in workspace.matches
+            and item.country_code not in excluded
+            and is_eligible(item, track, self._ctx.config)
         ]
         assessed = [(item, self._ctx.matcher.assess(workspace.profile, track, item)) for item in candidates]
         for item, match in assessed:
@@ -99,7 +103,12 @@ class RecommendationService:
         acted_on, placed = state.acted_on, state.placed
         kept = [oid for oid in previous if (oid in acted_on or oid not in state.listed) and oid not in placed]
         taken = acted_on | placed
-        candidates = [item for item in state.listings if item.id not in taken and is_eligible(item, track, self._ctx.config)]
+        excluded = set(workspace.preferences.excluded_countries)
+        candidates = [
+            item
+            for item in state.listings
+            if item.id not in taken and item.country_code not in excluded and is_eligible(item, track, self._ctx.config)
+        ]
         assessed = [(item, self._ctx.matcher.assess(workspace.profile, track, item)) for item in candidates]
         for item, match in assessed:
             workspace.matches[item.id] = match

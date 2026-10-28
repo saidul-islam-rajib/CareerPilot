@@ -507,6 +507,7 @@ export interface Settings {
   pause?: PauseState;
   timeZone: string;
   notifications: NotificationPreferences;
+  excludedCountries: string[];
 }
 
 export interface TrackUpdate {

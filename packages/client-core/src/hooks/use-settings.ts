@@ -187,3 +187,18 @@ export function useSubmissionWindowForm() {
     save,
   };
 }
+
+export function useExcludedCountries() {
+  const api = useApi();
+  const settings = useSettings();
+  const save = useSettingsMutation((countries: string[]) => api.settings.updateExcludedCountries(countries));
+  const countries = settings.data?.excludedCountries ?? [];
+  return {
+    settings,
+    countries,
+    add: (codes: string[]) => save.mutate([...countries, ...codes]),
+    remove: (code: string) => save.mutate(countries.filter((c) => c !== code)),
+    saving: save.isPending,
+    failed: save.isError,
+  };
+}

@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 
 from careerpilot.candidate.context import CandidateContext, ChangeListener, ignore_change
@@ -16,6 +17,7 @@ from careerpilot.platform.errors import not_found, validation_error
 from careerpilot.platform.validation import require_result_count, require_time
 
 MONTHS_PER_YEAR = 12
+COUNTRY_CODE = re.compile(r"[A-Z]{2}")
 FIRST_MONTH = 1
 
 
@@ -98,6 +100,16 @@ class PreferencesService:
         workspace.preferences.submission_window = window
         self._ctx.workspaces.save(user_id, workspace)
         return self._view(workspace.preferences)
+
+    def update_excluded_countries(self, user_id: str, countries: list[str]) -> Preferences:
+        codes = sorted({code.strip().upper() for code in countries if code.strip()})
+        if any(COUNTRY_CODE.fullmatch(code) is None for code in codes):
+            raise validation_error("country_code")
+        workspace = self._ctx.workspaces.get(user_id)
+        workspace.preferences.excluded_countries = codes
+        self._ctx.workspaces.save(user_id, workspace)
+        self._on_change(user_id)
+        return self._view(self._ctx.workspaces.get(user_id).preferences)
 
     def sign_in_activity(self, user_id: str) -> list[SignInEvent]:
         return sorted(self._ctx.workspaces.get(user_id).sign_in_events, key=lambda e: e.at, reverse=True)

@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { SourceReview } from '@careerpilot/domain-ui-logic';
 import { createTestServices, mockRouter, renderWithProviders } from '@/test/render';
+import { CountriesScreen } from './countries-screen';
 import { AddSourceScreen, SourcesScreen } from './sources-screens';
 
 describe('AddSourceScreen', () => {
@@ -36,5 +37,16 @@ describe('SourcesScreen', () => {
     await fireEvent.press(screen.getByTestId(`source-remove-${added.id}`));
     await fireEvent.press(screen.getByTestId(`source-remove-confirm-${added.id}`));
     await waitFor(async () => expect(await services.api.sources.listSources()).toEqual([]));
+  });
+});
+
+describe('CountriesScreen', () => {
+  it('adds an excluded country', async () => {
+    const services = createTestServices();
+    await renderWithProviders(<CountriesScreen />, { services });
+    expect(await screen.findByText(/No countries excluded/)).toBeTruthy();
+    await fireEvent.changeText(screen.getByLabelText('Country codes'), 'ae');
+    await fireEvent.press(screen.getByRole('button', { name: 'Add' }));
+    await waitFor(async () => expect((await services.api.settings.getSettings()).excludedCountries).toEqual(['AE']));
   });
 });

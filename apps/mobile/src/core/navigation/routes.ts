@@ -31,6 +31,7 @@ export const Routes = {
   notifications: '/settings/notifications',
   answers: '/settings/answers',
   sources: '/settings/sources',
+  countries: '/settings/countries',
   addSource: '/settings/source',
   answer: (params: { id?: string; topic?: string; question?: string; answer?: string }) => ({ pathname: '/settings/answer', params }) as const,
   changePassword: '/settings/password',

@@ -50,6 +50,7 @@ export { default as LogOut } from 'lucide-react-native/icons/log-out';
 export { default as Mail } from 'lucide-react-native/icons/mail';
 export { default as MailCheck } from 'lucide-react-native/icons/mail-check';
 export { default as MapPin } from 'lucide-react-native/icons/map-pin';
+export { default as MapPinOff } from 'lucide-react-native/icons/map-pin-off';
 export { default as Menu } from 'lucide-react-native/icons/menu';
 export { default as MessageSquare } from 'lucide-react-native/icons/message-square';
 export { default as MessageSquareText } from 'lucide-react-native/icons/message-square-text';

@@ -76,6 +76,8 @@ function toSummary(detail: OpportunityDetail): OpportunitySummary {
   return summary;
 }
 
+const COUNTRY_CODE = /^[A-Z]{2}$/;
+
 export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
   const state = clone(options.state);
   const { clock, ids, config } = options;
@@ -331,6 +333,14 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
       },
       async updateSubmissionWindow(window) {
         state.settings.submissionWindow = window;
+        return respond(state.settings);
+      },
+      async updateExcludedCountries(countries) {
+        const codes = [...new Set(countries.map((code) => code.trim().toUpperCase()).filter(Boolean))].sort();
+        if (codes.some((code) => !COUNTRY_CODE.test(code))) {
+          return failWith(ApiErrorCode.Validation, ApiErrorDetail.CountryCode);
+        }
+        state.settings.excludedCountries = codes;
         return respond(state.settings);
       },
       listSignInActivity: async () => respond([...state.signInEvents].sort((a, b) => b.at.localeCompare(a.at))),

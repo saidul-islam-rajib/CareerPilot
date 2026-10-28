@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { usePublicConfig, useSession, useT } from '@careerpilot/client-core';
-import { Bell, Clock, Globe, Info, KeyRound, ListOrdered, LogOut, MessageSquareText, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2 } from '@/ui/icons';
+import { Bell, Clock, Globe, Info, MapPinOff, KeyRound, ListOrdered, LogOut, MessageSquareText, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2 } from '@/ui/icons';
 import { Routes } from '@/core/navigation/routes';
 import { Card, Divider, ListRow, Screen, TeamSoberCredit, Text, TextTone, TextVariant } from '@/ui';
 
@@ -26,6 +26,8 @@ export function MoreScreen() {
         <ListRow icon={MessageSquareText} title={t('answers.title')} subtitle={t('answers.menuBody')} onPress={() => router.push(Routes.answers)} />
         <Divider />
         <ListRow icon={Globe} title={t('sources.title')} subtitle={t('sources.menuBody')} onPress={() => router.push(Routes.sources)} />
+        <Divider />
+        <ListRow icon={MapPinOff} title={t('settings.countries')} subtitle={t('settings.countriesMenuBody')} onPress={() => router.push(Routes.countries)} />
       </Card>
       <Card>
         <ListRow icon={Bell} title={t('settings.notifications')} subtitle={t('settings.digestBody')} onPress={() => router.push(Routes.notifications)} />
