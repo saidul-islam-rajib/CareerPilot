@@ -28,6 +28,7 @@ export interface InMemoryAdminApiOptions {
   chartDays: number;
   completeProfilePercent: number;
   linkTtlBounds: { min: number; max: number };
+  sourceLimitBounds: { min: number; max: number };
   linkToken: string;
   suggestedSources?: NewSource[];
 }
@@ -336,6 +337,10 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
         const ttl = update.accountLinkTtlMinutes;
         if (ttl !== undefined && !(Number.isInteger(ttl) && ttl >= options.linkTtlBounds.min && ttl <= options.linkTtlBounds.max)) {
           return fail(ApiErrorCode.Validation);
+        }
+        const limit = update.maxSourcesPerUser;
+        if (limit !== undefined && !(Number.isInteger(limit) && limit >= options.sourceLimitBounds.min && limit <= options.sourceLimitBounds.max)) {
+          return fail(ApiErrorCode.Validation, ApiErrorDetail.MaxSourcesPerUser);
         }
         const changed = Object.keys(update).filter((k) => update[k as keyof typeof update] !== undefined);
         Object.assign(state.settings, Object.fromEntries(Object.entries(update).filter(([, v]) => v !== undefined)));

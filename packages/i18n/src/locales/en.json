@@ -960,6 +960,8 @@
       "deletionGrace": "Account deletion grace period (days)",
       "linkTtl": "Sign-up and reset links last (minutes)",
       "linkTtlHint": "From {min} to {max} minutes. A new link can be sent only after the previous one expires.",
+      "sourceLimit": "Job sources each user can add",
+      "sourceLimitHint": "From {min} to {max}. Users can remove a source to add another.",
       "emergency": "Emergency stop",
       "emergencyBody": "Stops all automatic external actions for everyone. In-progress actions finish safely and users are notified.",
       "emergencyReason": "Reason",

@@ -223,6 +223,7 @@ export interface PlatformSettings {
   approvalValidityDays: number;
   deletionGraceDays: number;
   accountLinkTtlMinutes: number;
+  maxSourcesPerUser: number;
 }
 
 export interface PlatformSettingsUpdate {
@@ -231,6 +232,7 @@ export interface PlatformSettingsUpdate {
   approvalValidityDays?: number;
   deletionGraceDays?: number;
   accountLinkTtlMinutes?: number;
+  maxSourcesPerUser?: number;
 }
 
 export interface EmergencyStopRequest {

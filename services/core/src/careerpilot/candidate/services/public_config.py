@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any, cast
 
 from pydantic.alias_generators import to_camel
@@ -23,20 +24,21 @@ def enum_value_documents(values: list[EnumValueConfig]) -> list[dict[str, Any]]:
     return [camel_keys(v.model_dump()) for v in values]
 
 
+@dataclass(frozen=True)
+class LivePlatformValues:
+    active_theme: Callable[[], ThemeKey]
+    link_ttl_minutes: Callable[[], int]
+    source_limit: Callable[[], int]
+
+
 class PublicConfigService:
-    def __init__(
-        self,
-        settings: Settings,
-        enum_values: list[dict[str, Any]],
-        active_theme: Callable[[], ThemeKey],
-        cache: MetadataCache,
-        link_ttl_minutes: Callable[[], int],
-    ) -> None:
+    def __init__(self, settings: Settings, enum_values: list[dict[str, Any]], live: LivePlatformValues, cache: MetadataCache) -> None:
         self._settings = settings
         self._enum_values = enum_values
-        self._active_theme = active_theme
         self._cache = cache
-        self._link_ttl_minutes = link_ttl_minutes
+        self._active_theme = live.active_theme
+        self._link_ttl_minutes = live.link_ttl_minutes
+        self._source_limit = live.source_limit
 
     def get(self) -> dict[str, Any]:
         return self._cache.get_or_load(PUBLIC_CONFIG_CACHE, self._build)
@@ -88,7 +90,7 @@ class PublicConfigService:
             },
             "openSourceComponents": [{"name": c.name, "licence": c.licence, "url": str(c.url)} for c in s.open_source_components],
             "tracking": camel_keys(s.tracking.model_dump(mode="json")),
-            "jobSources": {"maxPerUser": s.job_sources.max_per_user},
+            "jobSources": {"maxPerUser": self._source_limit(), "minLimit": s.job_sources.min_limit, "maxLimit": s.job_sources.max_limit},
             "answers": {
                 "questionMaxLength": s.answers.question_max_length,
                 "maxSavedAnswers": s.answers.max_saved_answers,

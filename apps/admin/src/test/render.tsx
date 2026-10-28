@@ -30,7 +30,7 @@ export function testApis(config: AdminConfig, clock: Clock): AdminApis {
   return {
     user: createTestApi(config, clock),
     admin: createInMemoryAdminApi({
-      state: buildAdminDemoSeed(clock.now(), userState, config.accountLinks.ttlMinutes),
+      state: buildAdminDemoSeed(clock.now(), userState, config.accountLinks.ttlMinutes, config.jobSources.maxPerUser),
       userState,
       clock,
       ids: sequentialIds(),
@@ -39,6 +39,7 @@ export function testApis(config: AdminConfig, clock: Clock): AdminApis {
       chartDays: config.admin.chartDays,
       completeProfilePercent: config.admin.completeProfilePercent,
       linkTtlBounds: { min: config.accountLinks.minTtlMinutes, max: config.accountLinks.maxTtlMinutes },
+      sourceLimitBounds: { min: config.jobSources.minLimit, max: config.jobSources.maxLimit },
       linkToken: TEST_LINK_TOKEN,
       suggestedSources,
     }),

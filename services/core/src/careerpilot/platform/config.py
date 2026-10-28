@@ -227,6 +227,11 @@ class JsonJobFields(Strict):
 
 class JobSourcesConfig(Strict):
     max_per_user: int = Field(gt=0)
+    min_limit: int = Field(gt=0)
+    max_limit: int = Field(gt=0)
+
+    def allows(self, limit: int) -> bool:
+        return self.min_limit <= limit <= self.max_limit
 
 
 class DiscoveryConfig(Strict):

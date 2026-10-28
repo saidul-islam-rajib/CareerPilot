@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from careerpilot.administration.context import AdminContext
 from careerpilot.administration.discovery_sync import SourceCheckRunner
+from careerpilot.administration.limits import effective_source_limit
 from careerpilot.administration.models import AdminSourceRow, AuditEntry, NewUserSource, SourceDefaults, SourceSetup, UserSource
 from careerpilot.administration.sources import SOURCE_ID_PREFIX, SourcePolicy, is_shared, source_at
 from careerpilot.discovery.pages import host_name
@@ -45,7 +46,6 @@ class UserSourceService:
         self._checks = context.checks
         self._policy = context.policy
         self._refresh = context.refresh
-        self._limit = context.admin.settings.job_sources.max_per_user
 
     def mine(self, user_id: str) -> list[UserSource]:
         rows = sorted(self._owned(user_id), key=lambda row: row.requested_at or "", reverse=True)
@@ -124,7 +124,8 @@ class UserSourceService:
         return [row for row in self._ctx.directory.sources() if user_id in row.owner_ids]
 
     def _require_room(self, user_id: str) -> None:
-        if len(self._owned(user_id)) >= self._limit:
+        limit = effective_source_limit(self._ctx.platform.get(), self._ctx.settings.job_sources)
+        if len(self._owned(user_id)) >= limit:
             raise validation_error("source_limit")
 
     def _note(self, note: str) -> str:

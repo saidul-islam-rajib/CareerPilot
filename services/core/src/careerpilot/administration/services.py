@@ -6,6 +6,7 @@ from datetime import timedelta
 from careerpilot.administration.account_links import AdminLinkDetails, AdminLinkService
 from careerpilot.administration.context import ADMIN_AUDIENCE, AdminActor, AdminContext, PageRequest, paginate
 from careerpilot.administration.discovery_sync import SourceCheckRunner
+from careerpilot.administration.limits import effective_source_limit
 from careerpilot.administration.models import (
     AdminAccount,
     AdminApplicationRow,
@@ -62,6 +63,10 @@ from careerpilot.platform.validation import require_email, require_name, require
 ISO_DATE_LENGTH = 10
 RECENT_APPLICATIONS_LIMIT = 5
 LINK_TTL_FIELD = "account_link_ttl_minutes"
+SOURCE_LIMIT_FIELD = "max_sources_per_user"
+EDITABLE_SETTINGS = frozenset(
+    {"active_theme", "daily_application_cap", "approval_validity_days", "deletion_grace_days", LINK_TTL_FIELD, SOURCE_LIMIT_FIELD}
+)
 COUNTRY_CODE = re.compile(r"[A-Z]{2}")
 CANCELLABLE = frozenset({SubmissionStatus.APPROVED_QUEUED, SubmissionStatus.AWAITING_APPROVAL})
 
@@ -464,13 +469,14 @@ class PlatformSettingsService:
     def update(self, actor: AdminActor, changes: dict[str, object]) -> PlatformSettings:
         actor.require(AdminArea.SETTINGS, PermissionAction.UPDATE)
         current = self._ctx.platform.get()
-        allowed = {"active_theme", "daily_application_cap", "approval_validity_days", "deletion_grace_days", LINK_TTL_FIELD}
-        applied = {k: v for k, v in changes.items() if k in allowed and v is not None}
+        applied = {k: v for k, v in changes.items() if k in EDITABLE_SETTINGS and v is not None}
         if any(isinstance(v, int) and v <= 0 for v in applied.values()):
             raise validation_error("settings")
-        ttl = applied.get(LINK_TTL_FIELD)
-        if ttl is not None and not (isinstance(ttl, int) and not isinstance(ttl, bool) and self._ctx.settings.account_links.allows(ttl)):
-            raise validation_error(LINK_TTL_FIELD)
+        bounded = {LINK_TTL_FIELD: self._ctx.settings.account_links.allows, SOURCE_LIMIT_FIELD: self._ctx.settings.job_sources.allows}
+        for field, allows in bounded.items():
+            value = applied.get(field)
+            if value is not None and not (isinstance(value, int) and not isinstance(value, bool) and allows(value)):
+                raise validation_error(field)
         updated = PlatformSettings.model_validate({**current.model_dump(), **applied})
         self._save(updated)
         actor.record("settings.updated", ", ".join(sorted(applied)))
@@ -478,7 +484,8 @@ class PlatformSettingsService:
 
     def _effective(self, settings: PlatformSettings) -> PlatformSettings:
         ttl = effective_link_ttl_minutes(settings, self._ctx.settings.account_links)
-        return settings.model_copy(update={LINK_TTL_FIELD: ttl})
+        limit = effective_source_limit(settings, self._ctx.settings.job_sources)
+        return settings.model_copy(update={LINK_TTL_FIELD: ttl, SOURCE_LIMIT_FIELD: limit})
 
     def start_emergency_stop(self, actor: AdminActor, scope: EmergencyStopScope, reason: str, target: str | None) -> PlatformSettings:
         actor.require(AdminArea.SETTINGS, PermissionAction.UPDATE)

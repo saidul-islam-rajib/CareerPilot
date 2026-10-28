@@ -124,6 +124,19 @@ describe('SettingsPage', () => {
     await waitFor(async () => expect((await services.api.settings.getSettings()).accountLinkTtlMinutes).toBe(10));
   });
 
+  it('sets how many job sources each user can add, within the allowed range', async () => {
+    const { services } = await renderAdmin(<SettingsPage />);
+    const limit = await screen.findByLabelText('Job sources each user can add');
+    expect(limit).toHaveValue(10);
+    expect(screen.getByText(/From 1 to 100. Users can remove a source/)).toBeInTheDocument();
+    fireEvent.change(limit, { target: { value: '101' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(await screen.findByText('Enter a number from 1 to 100.')).toBeInTheDocument();
+    fireEvent.change(limit, { target: { value: '30' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(async () => expect((await services.api.settings.getSettings()).maxSourcesPerUser).toBe(30));
+  });
+
   it('requires a reason and confirmation for the emergency stop', async () => {
     const { services } = await renderAdmin(<SettingsPage />);
     const stop = await screen.findByRole('button', { name: 'Stop all automation' });

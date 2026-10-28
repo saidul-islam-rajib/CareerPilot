@@ -171,3 +171,23 @@ def test_source_endpoints(app: Container, site: FakeSite) -> None:
     assert [s["review"] for s in users.get("/v1/sources", headers=headers).json()] == ["approved"]
     assert users.delete(f"/v1/sources/{source_id}", headers=headers).status_code == 204
     assert users.get("/v1/sources", headers=headers).json() == []
+
+
+def test_admins_choose_how_many_sources_each_user_can_add(app: Container, site: FakeSite) -> None:
+    admin = actor(app)
+    default = app.settings.job_sources.max_per_user
+    assert app.admin_settings.get(admin).max_sources_per_user == default
+    too_many = app.settings.job_sources.max_limit + 1
+    assert failure(lambda: app.admin_settings.update(admin, {"max_sources_per_user": too_many})) == (
+        ErrorCode.VALIDATION,
+        "max_sources_per_user",
+    )
+    assert app.admin_settings.update(admin, {"max_sources_per_user": 1}).max_sources_per_user == 1
+    assert app.public_config.get()["jobSources"]["maxPerUser"] == 1
+    acme_site(site)
+    app.user_sources.add(DEMO_USER, ACME)
+    site.pages["https://api.lever.co/v0/postings/other?mode=json"] = LEVER_BODY
+    other = NewUserSource(url="https://jobs.lever.co/other")
+    assert failure(lambda: app.user_sources.add(DEMO_USER, other)) == (ErrorCode.VALIDATION, "source_limit")
+    app.admin_settings.update(admin, {"max_sources_per_user": 30})
+    assert app.user_sources.add(DEMO_USER, other).review is SourceReview.PENDING

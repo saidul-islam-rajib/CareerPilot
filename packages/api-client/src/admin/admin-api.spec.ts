@@ -19,7 +19,7 @@ const NEW_PASSWORD = 'Str0ng!Password';
 function createAdminApi(extra: Partial<InMemoryAdminApiOptions> = {}) {
   const userState = buildDemoSeed(fixedNow);
   return createInMemoryAdminApi({
-    state: buildAdminDemoSeed(fixedNow, userState, 5),
+    state: buildAdminDemoSeed(fixedNow, userState, 5, 10),
     userState,
     clock: fixedClock,
     ids: sequentialIds(),
@@ -28,6 +28,7 @@ function createAdminApi(extra: Partial<InMemoryAdminApiOptions> = {}) {
     chartDays: 14,
     completeProfilePercent: 80,
     linkTtlBounds: { min: 1, max: 60 },
+    sourceLimitBounds: { min: 1, max: 100 },
     linkToken: LINK_TOKEN,
     ...extra,
   });

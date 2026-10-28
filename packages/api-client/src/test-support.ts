@@ -63,7 +63,7 @@ export const testConfig: PublicConfig = {
     followUpAfterDays: 14,
     defaultTaskTime: '09:00',
   },
-  jobSources: { maxPerUser: 10 },
+  jobSources: { maxPerUser: 10, minLimit: 1, maxLimit: 100 },
   answers: {
     questionMaxLength: 300,
     maxSavedAnswers: 100,

@@ -133,7 +133,7 @@ export const appConfigSchema = z.object({
     followUpAfterDays: z.number().int().positive(),
     defaultTaskTime: z.string(),
   }),
-  jobSources: z.object({ maxPerUser: z.number().int().positive() }),
+  jobSources: z.object({ maxPerUser: z.number().int().positive(), minLimit: z.number().int().positive(), maxLimit: z.number().int().positive() }),
   answers: z.object({
     questionMaxLength: z.number().int().positive(),
     maxSavedAnswers: z.number().int().positive(),

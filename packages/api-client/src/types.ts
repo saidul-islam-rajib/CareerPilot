@@ -116,6 +116,8 @@ export interface PublicConfig {
 
 export interface JobSourceSettings {
   maxPerUser: number;
+  minLimit: number;
+  maxLimit: number;
 }
 
 export interface VerificationSettings {

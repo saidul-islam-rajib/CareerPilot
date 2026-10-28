@@ -1,2 +1,4 @@
 job_sources:
   max_per_user: 10
+  min_limit: 1
+  max_limit: 100

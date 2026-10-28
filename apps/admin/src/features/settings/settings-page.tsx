@@ -35,15 +35,21 @@ function ThemePreview({ themeKey }: { themeKey: ThemeKey }) {
   );
 }
 
+function withinBounds(value: number, bounds: { min: number; max: number }): boolean {
+  return Number.isInteger(value) && value >= bounds.min && value <= bounds.max;
+}
+
 function LimitsForm({ settings }: { settings: PlatformSettings }) {
   const t = useT();
   const api = useAdminApi();
   const { config } = usePublicConfig();
   const canUpdate = useCan(AdminArea.Settings, PermissionAction.Update);
   const save = useAdminMutation((update: PlatformSettingsUpdate) => api.settings.updateSettings(update));
-  const [values, setValues] = useState({ dailyApplicationCap: '', approvalValidityDays: '', deletionGraceDays: '', accountLinkTtlMinutes: '' });
+  const [values, setValues] = useState({ dailyApplicationCap: '', approvalValidityDays: '', deletionGraceDays: '', accountLinkTtlMinutes: '', maxSourcesPerUser: '' });
   const [linkTtlError, setLinkTtlError] = useState<string>();
+  const [sourceLimitError, setSourceLimitError] = useState<string>();
   const linkBounds = { min: config.accountLinks.minTtlMinutes, max: config.accountLinks.maxTtlMinutes };
+  const sourceBounds = { min: config.jobSources.minLimit, max: config.jobSources.maxLimit };
 
   useEffect(() => {
     setValues({
@@ -51,13 +57,17 @@ function LimitsForm({ settings }: { settings: PlatformSettings }) {
       approvalValidityDays: String(settings.approvalValidityDays),
       deletionGraceDays: String(settings.deletionGraceDays),
       accountLinkTtlMinutes: String(settings.accountLinkTtlMinutes),
+      maxSourcesPerUser: String(settings.maxSourcesPerUser),
     });
-  }, [settings.accountLinkTtlMinutes, settings.approvalValidityDays, settings.dailyApplicationCap, settings.deletionGraceDays]);
+  }, [settings.accountLinkTtlMinutes, settings.approvalValidityDays, settings.dailyApplicationCap, settings.deletionGraceDays, settings.maxSourcesPerUser]);
 
   const setValue = (key: keyof typeof values, value: string) => {
     setValues((v) => ({ ...v, [key]: value }));
     if (key === 'accountLinkTtlMinutes') {
       setLinkTtlError(undefined);
+    }
+    if (key === 'maxSourcesPerUser') {
+      setSourceLimitError(undefined);
     }
   };
 
@@ -67,8 +77,12 @@ function LimitsForm({ settings }: { settings: PlatformSettings }) {
 
   const submit = () => {
     const linkTtl = Number(values.accountLinkTtlMinutes);
-    if (!Number.isInteger(linkTtl) || linkTtl < linkBounds.min || linkTtl > linkBounds.max) {
-      setLinkTtlError(ValidationMessage.Range);
+    const sourceLimit = Number(values.maxSourcesPerUser);
+    const linkInvalid = !withinBounds(linkTtl, linkBounds);
+    const sourceInvalid = !withinBounds(sourceLimit, sourceBounds);
+    setLinkTtlError(linkInvalid ? ValidationMessage.Range : undefined);
+    setSourceLimitError(sourceInvalid ? ValidationMessage.Range : undefined);
+    if (linkInvalid || sourceInvalid) {
       return;
     }
     save.mutate({
@@ -76,6 +90,7 @@ function LimitsForm({ settings }: { settings: PlatformSettings }) {
       approvalValidityDays: Number(values.approvalValidityDays),
       deletionGraceDays: Number(values.deletionGraceDays),
       accountLinkTtlMinutes: linkTtl,
+      maxSourcesPerUser: sourceLimit,
     });
   };
 
@@ -99,6 +114,20 @@ function LimitsForm({ settings }: { settings: PlatformSettings }) {
           hint={t('admin.settings.linkTtlHint', linkBounds)}
           error={linkTtlError}
           errorParams={linkBounds}
+        />
+        <TextField
+          label={t('admin.settings.sourceLimit')}
+          type="number"
+          min={sourceBounds.min}
+          max={sourceBounds.max}
+          step={1}
+          inputMode="numeric"
+          value={values.maxSourcesPerUser}
+          disabled={!canUpdate}
+          onChange={(e) => setValue('maxSourcesPerUser', e.target.value)}
+          hint={t('admin.settings.sourceLimitHint', sourceBounds)}
+          error={sourceLimitError}
+          errorParams={sourceBounds}
         />
       </div>
       {canUpdate ? (

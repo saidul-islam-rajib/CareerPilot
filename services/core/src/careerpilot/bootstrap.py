@@ -10,6 +10,7 @@ import anthropic
 from careerpilot.administration.account_links import AdminLinkContext, AdminLinkService, invite_owner
 from careerpilot.administration.context import AdminContext
 from careerpilot.administration.discovery_sync import SourceCheckRunner, discover_when_empty
+from careerpilot.administration.limits import effective_source_limit
 from careerpilot.administration.models import EmergencyStop, PlatformSettings
 from careerpilot.administration.services import (
     AdminAccountService,
@@ -36,7 +37,7 @@ from careerpilot.candidate.services.digest import DigestContext, DigestService
 from careerpilot.candidate.services.opportunities import OpportunityService
 from careerpilot.candidate.services.preferences import PreferencesService
 from careerpilot.candidate.services.profile import ProfileService
-from careerpilot.candidate.services.public_config import PublicConfigService, enum_value_documents
+from careerpilot.candidate.services.public_config import LivePlatformValues, PublicConfigService, enum_value_documents
 from careerpilot.candidate.services.submission import SubmissionContext, SubmissionService
 from careerpilot.candidate.services.verification import ContactVerificationService, VerificationContext
 from careerpilot.discovery.connectors.json_jobs import JsonJobsConnector
@@ -369,9 +370,12 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     admin_links = AdminLinkService(AdminLinkContext(admin=admin, codes=link_codes, courier=courier, ttl_minutes=link_ttl_minutes))
     release = release_fingerprint(cfg.model_dump_json(), version(PACKAGE))
     metadata = MetadataCache(cache_store, keys, cfg.coordination, release=release)
-    public_config = PublicConfigService(
-        cfg, enum_value_documents(cfg.enum_values), lambda: repos.platform.get().active_theme, metadata, link_ttl_minutes
+    live = LivePlatformValues(
+        active_theme=lambda: repos.platform.get().active_theme,
+        link_ttl_minutes=link_ttl_minutes,
+        source_limit=lambda: effective_source_limit(repos.platform.get(), cfg.job_sources),
     )
+    public_config = PublicConfigService(cfg, enum_value_documents(cfg.enum_values), live, metadata)
     public_config.invalidate()
     admin_settings = PlatformSettingsService(admin, public_config.invalidate)
     return Container(

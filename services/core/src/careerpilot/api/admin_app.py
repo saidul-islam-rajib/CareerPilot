@@ -50,6 +50,7 @@ class SettingsUpdateBody(CamelModel):
     approval_validity_days: int | None = None
     deletion_grace_days: int | None = None
     account_link_ttl_minutes: StrictInt | None = None
+    max_sources_per_user: StrictInt | None = None
 
 
 class EmergencyStopBody(CamelModel):
