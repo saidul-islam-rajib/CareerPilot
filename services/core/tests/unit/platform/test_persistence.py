@@ -2,6 +2,8 @@ from datetime import timedelta
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from careerpilot.administration.adapters.sql import PLATFORM_SETTINGS_ID, PlatformSettingsRow
 from careerpilot.administration.context import PageRequest
@@ -15,7 +17,16 @@ from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
 from careerpilot.platform.config import PersistenceMode
 from careerpilot.platform.enums import ActorType, ApplicationFilter, ThemeKey, UserAccountStatus
 from careerpilot.platform.files import InMemoryFileStorage
-from careerpilot.platform.persistence import SQLITE_MEMORY_URL, Actor, Base, PhysicalDeleteError, acting_as, active, create_database
+from careerpilot.platform.persistence import (
+    SQLITE_MEMORY_URL,
+    WRITE_ATTEMPTS,
+    Actor,
+    Base,
+    PhysicalDeleteError,
+    acting_as,
+    active,
+    create_database,
+)
 from careerpilot.testing import load_sample_data, sample_database_repositories, sample_settings
 from tests.unit.conftest import CLIENT, DEMO_USER, TEST_SECRET, FakeHasher
 
@@ -124,3 +135,22 @@ def test_requests_stamp_rows_with_the_user_or_admin_who_made_the_change(database
         assert workspace is not None and platform is not None
         assert (workspace.updated_by, workspace.updated_by_type) == (DEMO_USER, "user")
         assert (platform.updated_by, platform.updated_by_type) == (admin_id, "admin")
+
+
+def test_a_write_that_loses_an_insert_race_is_retried_once(clock: FixedClock) -> None:
+    database = create_database(SQLITE_MEMORY_URL, clock)
+    attempts: list[int] = []
+
+    def racing(_session: Session) -> None:
+        attempts.append(len(attempts))
+        if len(attempts) == 1:
+            raise IntegrityError("INSERT", {}, ValueError("duplicate key"))
+
+    database.write(racing)
+    assert len(attempts) == WRITE_ATTEMPTS
+
+    def always_conflicting(_session: Session) -> None:
+        raise IntegrityError("INSERT", {}, ValueError("duplicate key"))
+
+    with pytest.raises(IntegrityError):
+        database.write(always_conflicting)

@@ -1,5 +1,5 @@
 from sqlalchemy import ForeignKey, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from careerpilot.discovery.models import Listing
 from careerpilot.platform.persistence import ID_LENGTH, SHORT_TEXT, Audited, Base, Database, active
@@ -40,7 +40,8 @@ class SqlListingCatalog:
 
     def save(self, listing: Listing) -> None:
         document = listing.to_json()
-        with self._db.unit_of_work() as session:
+
+        def change(session: Session) -> None:
             row = session.get(DiscoveredListingRow, listing.id)
             if row is None:
                 session.add(
@@ -51,6 +52,8 @@ class SqlListingCatalog:
                 row.document = document
             known = {u.url for u in session.scalars(active(ListingSourceUrlRow).where(ListingSourceUrlRow.listing_id == listing.id))}
             session.add_all(ListingSourceUrlRow(url=s.url, listing_id=listing.id) for s in listing.sources if s.url not in known)
+
+        self._db.write(change)
 
     def list_all(self) -> list[Listing]:
         with self._db.unit_of_work() as session:

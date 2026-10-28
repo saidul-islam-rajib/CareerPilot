@@ -4,7 +4,7 @@ from typing import Any, TypeVar
 
 from pydantic import BaseModel
 from sqlalchemy import Boolean, DateTime, Integer, String, func, select
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from careerpilot.administration.adapters.documents import empty_operations, operations_from_document
 from careerpilot.administration.models import (
@@ -141,12 +141,14 @@ class SqlPlatformSettingsRepository:
             return PlatformSettings.model_validate(row.document)
 
     def save(self, settings: PlatformSettings) -> None:
-        with self._db.unit_of_work() as session:
+        def change(session: Session) -> None:
             row = session.get(PlatformSettingsRow, PLATFORM_SETTINGS_ID)
             if row is None:
                 session.add(PlatformSettingsRow(id=PLATFORM_SETTINGS_ID, document=settings.to_json()))
             else:
                 row.document = settings.to_json()
+
+        self._db.write(change)
 
 
 class SqlAuditLog:
@@ -225,7 +227,8 @@ class SqlDirectory:
 
     def _save(self, kind: ProjectionKind, row_id: str, model: BaseModel) -> None:
         document: dict[str, object] = model.model_dump(mode="json", by_alias=True, exclude_none=True)
-        with self._db.unit_of_work() as session:
+
+        def change(session: Session) -> None:
             row = session.get(AdminProjectionRow, (kind.value, row_id))
             if row is None:
                 count = (
@@ -234,3 +237,5 @@ class SqlDirectory:
                 session.add(AdminProjectionRow(kind=kind.value, id=row_id, sequence=count + 1, document=document))
             else:
                 row.document = document
+
+        self._db.write(change)

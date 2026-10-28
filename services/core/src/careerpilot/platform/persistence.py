@@ -1,4 +1,4 @@
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
@@ -7,6 +7,7 @@ from typing import Any, ClassVar, TypeVar
 
 from sqlalchemy import JSON, DateTime, Integer, Select, String, event, select
 from sqlalchemy.engine import Engine, create_engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -19,6 +20,7 @@ TEXT = 320
 DEFAULT_TENANT = "default"
 SYSTEM_ACTOR = "system"
 FIRST_VERSION = 1
+WRITE_ATTEMPTS = 2
 SQLITE_MEMORY_URL = "sqlite+pysqlite:///:memory:"
 
 
@@ -110,6 +112,17 @@ class Database:
     def unit_of_work(self) -> Generator[Session]:
         with self.sessions() as session, session.begin():
             yield session
+
+    def write(self, change: Callable[[Session], None]) -> None:
+        for attempt in range(WRITE_ATTEMPTS):
+            try:
+                with self.unit_of_work() as session:
+                    change(session)
+            except IntegrityError:
+                if attempt == WRITE_ATTEMPTS - 1:
+                    raise
+            else:
+                return
 
 
 def create_database(url: str, clock: Clock) -> Database:

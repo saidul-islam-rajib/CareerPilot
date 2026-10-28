@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy import DateTime, Index, String, func, select, text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from careerpilot.candidate.models import (
     ApplicationRecord,
@@ -97,13 +97,15 @@ class SqlAccountRepository:
             session.add(UserAccountRow(id=account.user.id, **self._values(account)))
 
     def save(self, account: Account) -> None:
-        with self._db.unit_of_work() as session:
+        def change(session: Session) -> None:
             row = session.get(UserAccountRow, account.user.id)
             if row is None:
                 session.add(UserAccountRow(id=account.user.id, **self._values(account)))
                 return
             for key, value in self._values(account).items():
                 setattr(row, key, value)
+
+        self._db.write(change)
 
     def active_ids(self) -> list[str]:
         with self._db.unit_of_work() as session:
@@ -144,12 +146,14 @@ class SqlOpportunityRepository:
         self.save(opportunity)
 
     def save(self, opportunity: OpportunityDetail) -> None:
-        with self._db.unit_of_work() as session:
+        def change(session: Session) -> None:
             row = session.get(OpportunityRow, opportunity.id)
             if row is None:
                 session.add(OpportunityRow(id=opportunity.id, document=opportunity.to_json()))
             else:
                 row.document = opportunity.to_json()
+
+        self._db.write(change)
 
 
 def workspace_to_document(workspace: CandidateWorkspace) -> dict[str, object]:
@@ -202,9 +206,12 @@ class SqlWorkspaceRepository:
 
     def save(self, user_id: str, workspace: CandidateWorkspace) -> None:
         document = workspace_to_document(workspace)
-        with self._db.unit_of_work() as session:
+
+        def change(session: Session) -> None:
             row = session.get(CandidateWorkspaceRow, user_id)
             if row is None:
                 session.add(CandidateWorkspaceRow(user_id=user_id, document=document))
             else:
                 row.document = document
+
+        self._db.write(change)
