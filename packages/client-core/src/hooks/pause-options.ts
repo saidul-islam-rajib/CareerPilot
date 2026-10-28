@@ -1,4 +1,4 @@
-import type { PauseDuration } from '@careerpilot/domain-ui-logic';
+import { PauseDuration } from '@careerpilot/domain-ui-logic';
 import type { PauseOption } from '@careerpilot/api-client';
 import type { Translate } from '@careerpilot/i18n';
 
@@ -15,4 +15,22 @@ export function pauseOptionLabel(option: PauseOption, t: Translate): string {
     until: t('settings.pauseIndefinite'),
   };
   return labels[option.duration];
+}
+
+export function pauseUntil(option: PauseOption, now: Date): Date | undefined {
+  const date = new Date(now.getTime());
+  const amount = option.amount ?? 0;
+  switch (option.duration) {
+    case PauseDuration.Days:
+      date.setDate(date.getDate() + amount);
+      return date;
+    case PauseDuration.Months:
+      date.setMonth(date.getMonth() + amount);
+      return date;
+    case PauseDuration.Years:
+      date.setFullYear(date.getFullYear() + amount);
+      return date;
+    default:
+      return undefined;
+  }
 }

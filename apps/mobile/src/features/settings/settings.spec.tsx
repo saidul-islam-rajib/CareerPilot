@@ -46,7 +46,9 @@ describe('TracksScreen', () => {
 describe('PauseScreen', () => {
   it('pauses for seven days and resumes', async () => {
     await renderWithProviders(<PauseScreen />);
-    await fireEvent.press(await screen.findByTestId('pause-confirm'));
+    expect(await screen.findByText('Applications are running')).toBeTruthy();
+    expect(screen.getByText('Pause until Oct 27, 2026')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('pause-confirm'));
     expect(await screen.findByText('Paused until Oct 27, 2026')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('resume'));
     await waitFor(() => expect(screen.queryByText('Automatic applications are paused')).toBeNull());
@@ -54,13 +56,21 @@ describe('PauseScreen', () => {
 
   it('pauses until resumed', async () => {
     await renderWithProviders(<PauseScreen />);
-    await fireEvent.press(await screen.findByRole('tab', { name: 'Until I resume' }));
+    await fireEvent.press(await screen.findByRole('radio', { name: 'Until I resume' }));
     await fireEvent.press(screen.getByTestId('pause-confirm'));
     expect(await screen.findByText('Paused until you resume')).toBeTruthy();
   });
 });
 
 describe('WindowScreen', () => {
+  it('fills hours from a quick choice and explains when applications go out', async () => {
+    const { services } = await renderWithProviders(<WindowScreen />);
+    await fireEvent.press(await screen.findByTestId('window-preset-evening'));
+    expect(screen.getByText(/Applications go out every day between 18:00 and 22:00/)).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('window-save'));
+    await waitFor(async () => expect((await services.api.settings.getSettings()).submissionWindow).toEqual({ kind: SubmissionWindowKind.DailyWindow, start: '18:00', end: '22:00' }));
+  });
+
   it('validates and saves a daily midnight window', async () => {
     const { services } = await renderWithProviders(<WindowScreen />);
     await fireEvent.changeText(await screen.findByTestId('window-start'), '25:00');

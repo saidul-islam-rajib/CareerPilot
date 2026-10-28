@@ -1,5 +1,5 @@
 import { Pressable, View } from 'react-native';
-import { Check } from '@/ui/icons';
+import { Check, type LucideIcon } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 import { Icon, IconSize } from './icon';
 import { Text, TextTone, TextVariant } from './text';
@@ -7,6 +7,8 @@ import { Text, TextTone, TextVariant } from './text';
 export interface Choice<T extends string> {
   value: T;
   label: string;
+  description?: string;
+  icon?: LucideIcon;
 }
 
 export interface ChoiceListProps<T extends string> {
@@ -44,9 +46,17 @@ export function ChoiceList<T extends string>({ label, choices, value, onChange, 
                 backgroundColor: selected ? theme.colors.primarySubtle : theme.colors.background,
               }}
             >
-              <Text variant={TextVariant.Label} tone={selected ? TextTone.Primary : TextTone.Default} style={compact ? undefined : { flex: 1 }}>
-                {choice.label}
-              </Text>
+              {choice.icon ? <Icon icon={choice.icon} color={selected ? theme.colors.primary : theme.colors.textMuted} /> : null}
+              <View style={compact ? undefined : { flex: 1, gap: theme.space.xxs, paddingVertical: choice.description ? theme.space.sm : 0 }}>
+                <Text variant={TextVariant.Label} tone={selected ? TextTone.Primary : TextTone.Default}>
+                  {choice.label}
+                </Text>
+                {choice.description ? (
+                  <Text variant={TextVariant.Caption} tone={TextTone.Muted}>
+                    {choice.description}
+                  </Text>
+                ) : null}
+              </View>
               {selected && !compact ? <Icon icon={Check} size={IconSize.Small} color={theme.colors.primary} /> : null}
             </Pressable>
           );

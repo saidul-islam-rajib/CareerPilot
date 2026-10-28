@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { NotificationPreferences, PasswordChange, PauseOption, Settings, SubmissionWindow, Track, TrackUpdate } from '@careerpilot/api-client';
-import type { ApplicationMode } from '@careerpilot/domain-ui-logic';
+import { SubmissionWindowKind, type ApplicationMode } from '@careerpilot/domain-ui-logic';
+import { validate, type FieldErrors } from '@careerpilot/validation';
 import { usePublicConfig } from '../config/public-config';
+import { useSchemas } from './use-auth-forms';
 import { queryKeys } from '../query/query-keys';
 import { useApi, useServices } from '../services/app-services';
 
@@ -106,4 +108,82 @@ export function useTrackEditor(track: Track) {
   };
 
   return { count, mode, min: bounds.minResultCount, max: bounds.maxResultCount, changeCount, changeMode, saving: update.isPending, failed: update.isError };
+}
+
+export interface TimeRangePreset {
+  key: string;
+  start: string;
+  end: string;
+}
+
+export function useSubmissionWindowForm() {
+  const settings = useSettings();
+  const update = useUpdateWindow();
+  const schemas = useSchemas();
+  const services = useServices();
+  const saved = settings.data?.submissionWindow;
+  const [kind, setKind] = useState<SubmissionWindowKind>(SubmissionWindowKind.AsSoonAsReady);
+  const [start, setStart] = useState('');
+  const [end, setEnd] = useState('');
+  const [errors, setErrors] = useState<FieldErrors>({});
+
+  useEffect(() => {
+    if (saved) {
+      setKind(saved.kind);
+      setStart(saved.start ?? '');
+      setEnd(saved.end ?? '');
+    }
+  }, [saved]);
+
+  const presets: TimeRangePreset[] = services.config.ui.submissionWindowPresets;
+  const activePreset = presets.find((preset) => preset.start === start && preset.end === end)?.key;
+  const dirty = saved !== undefined && (saved.kind !== kind || (kind === SubmissionWindowKind.DailyWindow && ((saved.start ?? '') !== start || (saved.end ?? '') !== end)));
+
+  const save = () => {
+    if (kind === SubmissionWindowKind.AsSoonAsReady) {
+      update.mutate({ kind });
+      return;
+    }
+    const result = validate(schemas.submissionWindow, { start, end });
+    if (!result.ok) {
+      setErrors(result.errors);
+      return;
+    }
+    setErrors({});
+    update.mutate({ kind, ...result.value });
+  };
+
+  return {
+    settings,
+    kind,
+    start,
+    end,
+    errors,
+    presets,
+    activePreset,
+    dirty,
+    saving: update.isPending,
+    saved: update.isSuccess && !dirty,
+    chooseKind: (next: SubmissionWindowKind) => {
+      setKind(next);
+      if (next === SubmissionWindowKind.DailyWindow && !start && !end && presets[0]) {
+        setStart(presets[0].start);
+        setEnd(presets[0].end);
+      }
+    },
+    applyPreset: (preset: TimeRangePreset) => {
+      setStart(preset.start);
+      setEnd(preset.end);
+      setErrors({});
+    },
+    setStart: (value: string) => {
+      setStart(value);
+      setErrors((current) => ({ ...current, start: undefined }));
+    },
+    setEnd: (value: string) => {
+      setEnd(value);
+      setErrors((current) => ({ ...current, end: undefined }));
+    },
+    save,
+  };
 }

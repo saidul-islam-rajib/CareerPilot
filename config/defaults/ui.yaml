@@ -6,3 +6,8 @@ ui:
   admin_theme: sober
   # Wait this long after the last change before saving a setting the user is adjusting (+/−, typing).
   save_delay_ms: 700
+  # Quick choices on the Submission time page (24-hour HH:MM, user's time zone).
+  submission_window_presets:
+    - { key: working_hours, start: "09:00", end: "17:00" }
+    - { key: morning, start: "08:00", end: "12:00" }
+    - { key: evening, start: "18:00", end: "22:00" }

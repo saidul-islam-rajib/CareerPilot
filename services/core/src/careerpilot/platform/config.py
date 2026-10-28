@@ -71,10 +71,17 @@ class DisplayConfig(Strict):
     urgent_deadline_days: int = Field(ge=0)
 
 
+class TimeRangePreset(Strict):
+    key: str
+    start: str
+    end: str
+
+
 class UiConfig(Strict):
     active_theme: ThemeKey
     admin_theme: ThemeKey
     save_delay_ms: int = Field(gt=0)
+    submission_window_presets: list[TimeRangePreset]
 
 
 class PasswordPolicy(Strict):

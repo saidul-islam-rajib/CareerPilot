@@ -1,28 +1,15 @@
-import { useEffect, useState } from 'react';
-import { useSchemas, useSettings, useT, useUpdateWindow } from '@careerpilot/client-core';
-import { CheckCircle2 } from '@/ui/icons';
+import { Pressable, View } from 'react-native';
+import { useSubmissionWindowForm, useT } from '@careerpilot/client-core';
 import { StatusTone, SubmissionWindowKind } from '@careerpilot/domain-ui-logic';
-import { validate, type FieldErrors } from '@careerpilot/validation';
-import { Banner, Button, Card, ErrorState, LoadingState, Row, Screen, Segmented, Text, TextField, TextTone } from '@/ui';
+import { CheckCircle2, Clock, Zap } from '@/ui/icons';
+import { useTheme } from '@/core/theme/theme';
+import { Banner, Button, Card, ChoiceList, ErrorState, Icon, IconSize, LoadingState, Row, Screen, Text, TextField, TextTone, TextVariant } from '@/ui';
 
 export function WindowScreen() {
   const t = useT();
-  const schemas = useSchemas();
-  const settings = useSettings();
-  const update = useUpdateWindow();
-  const [kind, setKind] = useState<SubmissionWindowKind>(SubmissionWindowKind.AsSoonAsReady);
-  const [start, setStart] = useState('');
-  const [end, setEnd] = useState('');
-  const [errors, setErrors] = useState<FieldErrors>({});
-
-  useEffect(() => {
-    const window = settings.data?.submissionWindow;
-    if (window) {
-      setKind(window.kind);
-      setStart(window.start ?? '');
-      setEnd(window.end ?? '');
-    }
-  }, [settings.data?.submissionWindow]);
+  const theme = useTheme();
+  const form = useSubmissionWindowForm();
+  const { settings } = form;
 
   if (settings.isPending) {
     return <LoadingState />;
@@ -30,43 +17,85 @@ export function WindowScreen() {
   if (settings.isError) {
     return <ErrorState onRetry={() => void settings.refetch()} />;
   }
-
-  const save = () => {
-    if (kind === SubmissionWindowKind.AsSoonAsReady) {
-      update.mutate({ kind });
-      return;
-    }
-    const result = validate(schemas.submissionWindow, { start, end });
-    if (!result.ok) {
-      setErrors(result.errors);
-      return;
-    }
-    setErrors({});
-    update.mutate({ kind, ...result.value });
-  };
+  const daily = form.kind === SubmissionWindowKind.DailyWindow;
+  const summary =
+    daily && form.start && form.end ? t('settings.windowSummaryDaily', { start: form.start, end: form.end, zone: settings.data.timeZone }) : t('settings.windowSummaryNow');
 
   return (
-    <Screen testID="window-screen">
-      {update.isSuccess ? <Banner tone={StatusTone.Success} icon={CheckCircle2} title={t('common.saved')} /> : null}
+    <Screen
+      testID="window-screen"
+      footer={<Button label={t('common.save')} onPress={form.save} loading={form.saving} disabled={!form.dirty} fullWidth testID="window-save" />}
+    >
+      {form.saved ? <Banner tone={StatusTone.Success} icon={CheckCircle2} title={t('common.saved')} /> : null}
+      <Text tone={TextTone.Muted}>{t('settings.submissionWindowBody')}</Text>
       <Card>
-        <Text tone={TextTone.Muted}>{t('settings.submissionWindowBody')}</Text>
-        <Segmented
-          options={[
-            { value: SubmissionWindowKind.AsSoonAsReady, label: t('settings.asSoonAsReady') },
-            { value: SubmissionWindowKind.DailyWindow, label: t('settings.dailyWindow') },
+        <ChoiceList
+          label={t('settings.submissionWindow')}
+          value={form.kind}
+          onChange={form.chooseKind}
+          choices={[
+            { value: SubmissionWindowKind.AsSoonAsReady, label: t('settings.asSoonAsReady'), description: t('settings.asSoonAsReadyBody'), icon: Zap },
+            { value: SubmissionWindowKind.DailyWindow, label: t('settings.dailyWindow'), description: t('settings.dailyWindowBody'), icon: Clock },
           ]}
-          value={kind}
-          onChange={setKind}
-          accessibilityLabel={t('settings.submissionWindow')}
         />
-        {kind === SubmissionWindowKind.DailyWindow ? (
-          <Row align="flex-start">
-            <TextField label={t('settings.windowStart')} value={start} onChangeText={setStart} error={errors.start} placeholder={t('settings.timePlaceholder')} keyboardType="numbers-and-punctuation" testID="window-start" />
-            <TextField label={t('settings.windowEnd')} value={end} onChangeText={setEnd} error={errors.end} placeholder={t('settings.timePlaceholder')} keyboardType="numbers-and-punctuation" testID="window-end" />
-          </Row>
-        ) : null}
-        <Button label={t('common.save')} onPress={save} loading={update.isPending} fullWidth testID="window-save" />
       </Card>
+      {daily ? (
+        <Card>
+          <Text variant={TextVariant.Subheading}>{t('settings.windowHours')}</Text>
+          <Text variant={TextVariant.Caption} tone={TextTone.Muted}>
+            {t('settings.windowPresetsLabel')}
+          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.xs }}>
+            {form.presets.map((preset) => {
+              const active = form.activePreset === preset.key;
+              return (
+                <Pressable
+                  key={preset.key}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={t(`settings.windowPresets.${preset.key}`)}
+                  onPress={() => form.applyPreset(preset)}
+                  testID={`window-preset-${preset.key}`}
+                  style={{
+                    minHeight: theme.touchTarget,
+                    justifyContent: 'center',
+                    paddingHorizontal: theme.space.md,
+                    borderRadius: theme.radius.pill,
+                    borderWidth: theme.borderWidth.hairline,
+                    borderColor: active ? theme.colors.primary : theme.colors.input,
+                    backgroundColor: active ? theme.colors.primary : theme.colors.background,
+                  }}
+                >
+                  <Text variant={TextVariant.Label} tone={active ? TextTone.Inverse : TextTone.Default}>
+                    {t(`settings.windowPresets.${preset.key}`)} · {preset.start}–{preset.end}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <Row align="flex-start">
+            <TextField label={t('settings.windowStart')} value={form.start} onChangeText={form.setStart} error={form.errors.start} placeholder={t('settings.timePlaceholder')} keyboardType="numbers-and-punctuation" testID="window-start" />
+            <TextField label={t('settings.windowEnd')} value={form.end} onChangeText={form.setEnd} error={form.errors.end} placeholder={t('settings.timePlaceholder')} keyboardType="numbers-and-punctuation" testID="window-end" />
+          </Row>
+        </Card>
+      ) : null}
+      <View
+        style={{
+          flexDirection: 'row',
+          gap: theme.space.sm,
+          padding: theme.space.md,
+          borderRadius: theme.radius.control,
+          backgroundColor: theme.colors.primarySubtle,
+        }}
+      >
+        <Icon icon={Clock} size={IconSize.Small} color={theme.colors.primary} />
+        <Text style={{ flex: 1 }}>{summary}</Text>
+      </View>
+      {form.dirty ? (
+        <Text variant={TextVariant.Caption} tone={TextTone.Muted}>
+          {t('settings.unsavedChanges')}
+        </Text>
+      ) : null}
     </Screen>
   );
 }

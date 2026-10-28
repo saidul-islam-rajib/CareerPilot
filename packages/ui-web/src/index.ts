@@ -26,3 +26,4 @@ export * from './progress-ring';
 export * from './select-field';
 export * from './tag-input';
 export * from './toast';
+export * from './choice-cards';
