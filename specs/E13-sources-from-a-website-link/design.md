@@ -11,6 +11,7 @@
 | `workable` | `apply.workable.com/api/v1/widget/accounts/{token}?details=true` | account name |
 | `smartrecruiters` | `api.smartrecruiters.com/v1/companies/{token}/postings` | company name |
 | `easyjobs` | `{token}.easy.jobs/api/career/home` (+ job detail API for descriptions) | company name |
+| `json` | a site's own job API (found in its career page scripts): the largest list of records with a title and a link, fields named in `discovery.json_fields`, dates in `discovery.date_formats` | site name |
 | `html` | any page: schema.org `JobPosting` JSON-LD first, else links that look like job pages; the first `discovery.max_detail_pages` links are opened for their JSON-LD details | site name |
 
 Board link patterns and API addresses live in `discovery.job_boards` (config), so a new board is a config change plus a reader.
@@ -22,7 +23,8 @@ Board link patterns and API addresses live in `discovery.job_boards` (config), s
 1. Normalize to `https`. If the link itself matches a job board pattern, read that board.
 2. Otherwise crawl breadth-first within `discovery.max_resolve_pages`: career-looking links on the same site first (`max_career_links` per page, job pages excluded), then `discovery.job_page_paths` once per host.
 3. On each page: a feed body → `rss`; any job board link in the page → that board; a `<link rel=alternate>` job feed → `rss`; JSON-LD job postings → `html`; at least `min_job_links` job links → an `html` candidate (stop when one reaches `enough_job_links`).
-4. A candidate counts only if its reader parses at least one listing.
+4. A career page (career words in its title or path) that shows nothing else: up to `discovery.max_script_scans` of its own scripts (career-named first) are read for quoted same-site `/api/` or `.json` addresses with job words, and each is tried with the `json` reader (US-Bangla Airlines loads its jobs this way).
+5. A candidate counts only if its reader parses at least one listing.
 
 `HttpFetcher.fetch_url(url) -> (final_url, body)` is the guarded page fetcher (SSRF hook on every request and redirect). Fetch errors are reduced to `http_status`, `unreachable`, `unsafe_address`.
 

@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from careerpilot.discovery.connectors.json_jobs import JsonJobsConnector
 from careerpilot.discovery.connectors.registry import first_party_connectors
 from careerpilot.discovery.ports import FetchError
 from careerpilot.discovery.resolver import ResolvedSource, SourceResolver, normalized_link
@@ -44,7 +45,8 @@ def config() -> DiscoveryConfig:
 
 
 def resolve(config: DiscoveryConfig, pages: FakePages, link: str) -> ResolvedSource | None:
-    return SourceResolver(pages, first_party_connectors(), config).resolve(link)
+    json_jobs = JsonJobsConnector(config.json_fields, config.date_formats)
+    return SourceResolver(pages, first_party_connectors(extra=[json_jobs]), config).resolve(link)
 
 
 def test_links_without_a_secure_scheme_become_https() -> None:
@@ -81,3 +83,12 @@ def test_sites_without_jobs_resolve_to_nothing_within_the_page_budget(config: Di
     assert resolve(config, pages, SITE) is None
     assert len(pages.fetched) <= config.max_resolve_pages
     assert len(set(pages.fetched)) == len(pages.fetched)
+
+
+def test_career_pages_that_load_jobs_with_scripts_use_the_job_api(config: DiscoveryConfig) -> None:
+    career = '<html><head><title>Career | Acme Air</title><script src="/static/career-1.js"></script></head><body>Loading</body></html>'
+    script = 'fetch("/api/get-jobs-info").then(r => r.json()); const icons = "/api/icons";'
+    api = json.dumps({"data": [{"job_category": "Cabin Crew", "apply_link": "https://acme.example.org/jobs/6/apply"}]})
+    pages = FakePages({f"{SITE}career": career, f"{SITE}static/career-1.js": script, f"{SITE}api/get-jobs-info": api})
+    assert resolve(config, pages, f"{SITE}career") == ResolvedSource("json", f"{SITE}api/get-jobs-info", "Acme Air", 1)
+    assert f"{SITE}api/icons" not in pages.fetched

@@ -9,6 +9,14 @@ discovery:
   min_job_links: 2
   enough_job_links: 10
   max_detail_pages: 15
+  max_script_scans: 4
+  json_fields:
+    title: [title, job_title, jobTitle, position, position_name, designation, job_category, name]
+    link: [url, absolute_url, hostedUrl, jobUrl, job_url, apply_link, applyLink, apply_url, applyUrl, application_url, link]
+    deadline: [deadline, expire_at, expires_at, closing_date, closingDate, last_date, lastDate, validThrough, application_deadline]
+    description: [description, job_description, details, summary, requirements, responsibilities]
+    location: [location, job_location, city]
+  date_formats: ["%d %B, %Y", "%d %B %Y", "%B %d, %Y", "%d %b, %Y", "%d %b %Y", "%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y"]
   job_page_paths:
     - /careers
     - /career

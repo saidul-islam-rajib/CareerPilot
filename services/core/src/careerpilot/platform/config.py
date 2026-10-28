@@ -216,6 +216,14 @@ class JobBoardPattern(Strict):
     reserved: list[str] = Field(default_factory=list[str])
 
 
+class JsonJobFields(Strict):
+    title: list[str]
+    link: list[str]
+    deadline: list[str]
+    description: list[str]
+    location: list[str]
+
+
 class DiscoveryConfig(Strict):
     fetch_mode: FetchMode
     fixture_root: str = ""
@@ -228,6 +236,9 @@ class DiscoveryConfig(Strict):
     min_job_links: int = Field(gt=0)
     enough_job_links: int = Field(gt=0)
     max_detail_pages: int = Field(ge=0)
+    max_script_scans: int = Field(ge=0)
+    json_fields: JsonJobFields
+    date_formats: list[str]
     job_page_paths: list[str]
     job_boards: list[JobBoardPattern]
     sources: dict[str, SourceDefinition]

@@ -1,6 +1,7 @@
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from itertools import chain
 from urllib.parse import urljoin, urlsplit
 
 from careerpilot.discovery.connectors.html import job_links
@@ -12,13 +13,16 @@ from careerpilot.platform.config import DiscoveryConfig, JobBoardPattern, Listin
 from careerpilot.platform.enums import OpportunityType, WorkArrangement
 
 CAREER_WORDS = re.compile(r"career|\bjobs?\b|join[- ]?us|vacanc|opening|work[- ]with[- ]us|hiring|open[- ]positions", re.IGNORECASE)
-JOB_FEED_WORDS = re.compile(r"job|career|vacanc|position", re.IGNORECASE)
+JOB_FEED_WORDS = re.compile(r"job|career|vacanc|position|opening|recruit", re.IGNORECASE)
+QUOTED_PATH = re.compile(r"[\"'`]((?:https://[^\"'`\s/]+)?/[^\"'`\s]{2,})[\"'`]")
+API_MARKERS = ("/api/", ".json")
 TOKEN_SEPARATORS = re.compile(r"[-_.%]+")
 SECURE_SCHEME = "https://"
 INSECURE_SCHEME = "http://"
 SCHEME_MARK = "://"
 RSS = "rss"
 HTML = "html"
+JSON = "json"
 SITE_PREFIX = "www."
 DOMAIN_PARTS = 2
 
@@ -124,23 +128,55 @@ class SourceResolver:
             return self._accept(RSS, url, body, crawl.organization, 1)
         page = scan_page(url, body)
         crawl.organization = crawl.organization or page.organization()
-        for board in known_boards(self._config.job_boards, body):
-            found = self._board(board, crawl.organization)
-            if found:
-                return found
-        for feed in page.feeds:
-            found = self._probe(RSS, feed, crawl.organization) if JOB_FEED_WORDS.search(feed) else None
-            if found:
-                return found
-        if page.job_postings():
-            return self._accept(HTML, url, body, crawl.organization, 1)
         listed = job_links(page)
-        if len(listed) >= self._config.min_job_links:
+        found = self._published(crawl, url, body, page) or self._listed(crawl, url, body, len(listed))
+        if found is None and crawl.best is None and CAREER_WORDS.search(f"{page.title} {urlsplit(url).path}"):
+            found = self._from_scripts(crawl, url, page)
+        if found is None:
+            self._queue_next(crawl, url, page, {canonical_url(a.url) for a in listed})
+        return found
+
+    def _published(self, crawl: Crawl, url: str, body: str, page: PageScan) -> ResolvedSource | None:
+        boards = (self._board(board, crawl.organization) for board in known_boards(self._config.job_boards, body))
+        feeds = (self._probe(RSS, feed, crawl.organization) for feed in page.feeds if JOB_FEED_WORDS.search(feed))
+        found = next((candidate for candidate in chain(boards, feeds) if candidate is not None), None)
+        if found is None and page.job_postings():
+            return self._accept(HTML, url, body, crawl.organization, 1)
+        return found
+
+    def _listed(self, crawl: Crawl, url: str, body: str, count: int) -> ResolvedSource | None:
+        if count >= self._config.min_job_links:
             crawl.offer(self._accept(HTML, url, body, crawl.organization, self._config.min_job_links))
-        if crawl.best is not None and crawl.best.found >= self._config.enough_job_links:
-            return crawl.best
-        self._queue_next(crawl, url, page, {canonical_url(a.url) for a in listed})
+        best = crawl.best
+        return best if best is not None and best.found >= self._config.enough_job_links else None
+
+    def _from_scripts(self, crawl: Crawl, url: str, page: PageScan) -> ResolvedSource | None:
+        own = [script for script in page.scripts if same_site(url, script)]
+        ranked = sorted(own, key=lambda script: CAREER_WORDS.search(script) is None)[: self._config.max_script_scans]
+        for script in ranked:
+            if crawl.budget <= 0:
+                return None
+            crawl.budget -= 1
+            try:
+                _final, code = self._fetch_page(script)
+            except FetchError:
+                continue
+            for api in self._job_apis(crawl, url, code):
+                found = self._probe(JSON, api, crawl.organization)
+                if found:
+                    return found
         return None
+
+    def _job_apis(self, crawl: Crawl, url: str, code: str) -> list[str]:
+        apis: list[str] = []
+        for path in QUOTED_PATH.findall(code):
+            api = urljoin(url, path)
+            key = canonical_url(api)
+            looks_like_api = any(marker in path for marker in API_MARKERS)
+            if looks_like_api and JOB_FEED_WORDS.search(path) and same_site(url, api) and key not in crawl.seen:
+                crawl.seen.add(key)
+                apis.append(api)
+        return apis[: self._config.max_career_links]
 
     def _queue_next(self, crawl: Crawl, url: str, page: PageScan, jobs: set[str]) -> None:
         links = [

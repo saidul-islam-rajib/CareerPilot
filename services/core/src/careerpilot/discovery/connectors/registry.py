@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
 from careerpilot.discovery.connectors.ashby import AshbyConnector
 from careerpilot.discovery.connectors.easyjobs import EasyJobsConnector
@@ -25,9 +25,12 @@ class ConnectorRegistry:
         return sorted(self._connectors)
 
 
-def first_party_connectors(fetch_page: Callable[[str], str] | None = None, max_details: int = 0) -> ConnectorRegistry:
+def first_party_connectors(
+    fetch_page: Callable[[str], str] | None = None, max_details: int = 0, extra: Sequence[SourceConnector] = ()
+) -> ConnectorRegistry:
     return ConnectorRegistry(
         [
+            *extra,
             RssConnector(),
             GreenhouseConnector(),
             LeverConnector(),

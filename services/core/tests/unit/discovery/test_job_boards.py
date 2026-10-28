@@ -5,11 +5,13 @@ import pytest
 from careerpilot.discovery.connectors.ashby import AshbyConnector
 from careerpilot.discovery.connectors.easyjobs import EasyJobsConnector
 from careerpilot.discovery.connectors.html import HtmlConnector
+from careerpilot.discovery.connectors.json_jobs import JsonJobsConnector
 from careerpilot.discovery.connectors.lever import LeverConnector
 from careerpilot.discovery.connectors.smartrecruiters import SmartRecruitersConnector
 from careerpilot.discovery.connectors.workable import WorkableConnector
 from careerpilot.discovery.ports import FetchError
 from careerpilot.platform.config import ListingDefaults, SourceDefinition
+from careerpilot.testing import sample_settings
 
 ACME = ListingDefaults(type="job", work_arrangement="not_stated", country_code="", organization="Acme")
 LISTED_PAGE = """
@@ -206,3 +208,35 @@ def test_job_pages_without_structured_data_give_their_description_text() -> None
     }
     feed = HtmlConnector(lambda url: pages[url], max_details=2).parse(LISTED_PAGE, definition("html", "https://acme.example.org/careers"))
     assert [j.description for j in feed.listings] == ["Lead solutions", "Role Send your CV to jobs@acme.example.org"]
+
+
+def test_json_job_apis_are_read_from_their_job_list() -> None:
+    settings = sample_settings().discovery
+    body = json.dumps(
+        {
+            "meta": {"total": 2},
+            "data": [
+                {
+                    "job_category": "Cabin Crew",
+                    "deadline": "30 October, 2026",
+                    "location": {"name": "Dhaka"},
+                    "job_details_page": {"details": ["Fluent English"], "apply_link": "https://portal.example.org/jobs/6/apply"},
+                },
+                {"job_category": "Pilot", "deadline": "soon", "job_details_page": {"apply_link": "/jobs/7/apply"}},
+                {"job_category": "No link"},
+            ],
+        }
+    )
+    feed = JsonJobsConnector(settings.json_fields, settings.date_formats).parse(
+        body, definition("json", "https://air.example.org/api/jobs")
+    )
+    first, second = feed.listings
+    assert feed.skipped == 1
+    assert (first.title, first.url, first.location, first.description) == (
+        "Cabin Crew",
+        "https://portal.example.org/jobs/6/apply",
+        "Dhaka",
+        "Fluent English",
+    )
+    assert first.deadline is not None and first.deadline.startswith("2026-10-30T23:59:59")
+    assert (second.url, second.deadline) == ("https://air.example.org/jobs/7/apply", None)

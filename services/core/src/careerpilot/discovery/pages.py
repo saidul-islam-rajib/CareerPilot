@@ -40,6 +40,7 @@ class PageScan:
     site_name: str = ""
     anchors: list[Anchor] = field(default_factory=list[Anchor])
     feeds: list[str] = field(default_factory=list[str])
+    scripts: list[str] = field(default_factory=list[str])
     structured: list[Any] = field(default_factory=list[Any])
     description: str = ""
     main_text: str = ""
@@ -106,6 +107,8 @@ class _Scanner(HTMLParser):
             self._anchor_text = []
         elif tag == "title":
             self._in_title = True
+        elif tag == "script" and values.get("src"):
+            self._page.scripts.append(urljoin(self._page.url, values["src"].strip()))
         elif tag == "script" and values.get("type", "").lower() == JSON_LD_TYPE:
             self._in_json_ld = True
             self._json_text = []

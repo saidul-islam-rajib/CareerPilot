@@ -5,4 +5,6 @@
 - [x] Resolver with page budget, guarded page fetcher, normalized fetch errors
 - [x] Admin: add by link (reader optional), name from what was found, `jobs_not_found`, last check time and problem, self-healing checks
 - [x] Admin app: link-first add form, "More options", last problem in the list
+- [x] Job descriptions from career pages without structured data (microdata description, main or article text)
+- [x] Sites that load jobs with scripts: JSON job API reader and script scanning
 - [ ] Docker rebuild keeping local data; the two failing sources (Brain Station 23, Optimizely) heal on "Run check"

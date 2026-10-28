@@ -38,6 +38,7 @@ from careerpilot.candidate.services.profile import ProfileService
 from careerpilot.candidate.services.public_config import PublicConfigService, enum_value_documents
 from careerpilot.candidate.services.submission import SubmissionContext, SubmissionService
 from careerpilot.candidate.services.verification import ContactVerificationService, VerificationContext
+from careerpilot.discovery.connectors.json_jobs import JsonJobsConnector
 from careerpilot.discovery.connectors.registry import ConnectorRegistry, first_party_connectors
 from careerpilot.discovery.fetchers import PageFetcher, fetcher_for, page_fetcher_for
 from careerpilot.discovery.ports import Fetcher
@@ -302,7 +303,8 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     keys = KeySpace(cfg.coordination)
     guard = SignInGuard(coord_store, keys, cfg.coordination)
     fetch_page = options.page_fetcher or page_fetcher_for(cfg.discovery)
-    registry = options.connectors or first_party_connectors(lambda url: fetch_page(url)[1], cfg.discovery.max_detail_pages)
+    json_jobs = [JsonJobsConnector(cfg.discovery.json_fields, cfg.discovery.date_formats)]
+    registry = options.connectors or first_party_connectors(lambda url: fetch_page(url)[1], cfg.discovery.max_detail_pages, json_jobs)
     discovery = DiscoveryService(
         DiscoveryContext(
             config=cfg.discovery,
@@ -318,7 +320,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         connectors=frozenset(registry.keys()),
         check_address=options.address_check or public_https_url,
         suggestions=cfg.discovery.suggested_sources,
-        resolve=SourceResolver(fetch_page, options.connectors or first_party_connectors(), cfg.discovery).resolve,
+        resolve=SourceResolver(fetch_page, options.connectors or first_party_connectors(extra=json_jobs), cfg.discovery).resolve,
     )
     opportunity_service = OpportunityService(candidate)
     approvals = ApprovalService(candidate, opportunity_service)
