@@ -402,7 +402,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         verification=verification,
         answers=AnswerService(candidate),
         user_sources=UserSourceService(
-            UserSourceContext(admin=admin, checks=source_checks, policy=source_policy, refresh=recommendations.refresh)
+            UserSourceContext(admin=admin, checks=source_checks, policy=source_policy, refresh=recommendations.rematch)
         ),
         invite_owner=lambda: invite_owner(admin, admin_links),
     )
