@@ -4,7 +4,7 @@ from pathlib import Path
 import httpx
 
 from careerpilot.discovery.ports import Fetcher, FetchError
-from careerpilot.discovery.safety import public_https_url
+from careerpilot.discovery.safety import host_resolves, public_https_url
 from careerpilot.platform.config import DiscoveryConfig, FetchMode, SourceDefinition, repository_root
 
 USER_AGENT_HEADER = "User-Agent"
@@ -14,6 +14,7 @@ UNREACHABLE = "unreachable"
 PAGES_UNAVAILABLE = "pages_unavailable"
 
 AddressCheck = Callable[[str], str | None]
+HostCheck = Callable[[str], bool]
 PageFetcher = Callable[[str], tuple[str, str]]
 
 
@@ -33,9 +34,12 @@ class FixtureFetcher:
 
 
 class HttpFetcher:
-    def __init__(self, config: DiscoveryConfig, check_address: AddressCheck = public_https_url) -> None:
+    def __init__(
+        self, config: DiscoveryConfig, check_address: AddressCheck = public_https_url, resolves: HostCheck = host_resolves
+    ) -> None:
         self._config = config
         self._check_address = check_address
+        self._resolves = resolves
 
     def fetch(self, definition: SourceDefinition) -> str:
         return self.fetch_url(definition.url)[1]
@@ -54,7 +58,7 @@ class HttpFetcher:
                 response = client.get(url)
                 response.raise_for_status()
         except UnsafeAddressError as error:
-            raise FetchError(UNSAFE_ADDRESS) from error
+            raise FetchError(str(error)) from error
         except httpx.HTTPStatusError as error:
             raise FetchError(HTTP_STATUS) from error
         except httpx.HTTPError as error:
@@ -62,8 +66,9 @@ class HttpFetcher:
         return str(response.url), response.text
 
     def _guard(self, request: httpx.Request) -> None:
-        if self._check_address(str(request.url)) is None:
-            raise UnsafeAddressError(UNSAFE_ADDRESS)
+        url = str(request.url)
+        if self._check_address(url) is None:
+            raise UnsafeAddressError(UNSAFE_ADDRESS if self._resolves(url) else UNREACHABLE)
 
 
 def fetcher_for(config: DiscoveryConfig) -> Fetcher:

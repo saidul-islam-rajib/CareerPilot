@@ -10,7 +10,7 @@ from careerpilot.api.admin_app import create_admin_app
 from careerpilot.bootstrap import Container, ContainerOverrides, build_container
 from careerpilot.discovery.fetchers import HttpFetcher
 from careerpilot.discovery.ports import FetchError
-from careerpilot.discovery.safety import public_https_url
+from careerpilot.discovery.safety import host_resolves, public_https_url
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
 from careerpilot.platform.config import ListingDefaults, SourceDefinition, repository_root
 from careerpilot.platform.email_delivery import InMemoryEmailSender
@@ -178,7 +178,7 @@ def test_only_public_https_addresses_pass() -> None:
 
 
 def test_live_fetches_stop_at_unsafe_addresses_before_connecting() -> None:
-    fetcher = HttpFetcher(sample_settings().discovery, lambda _url: None)
+    fetcher = HttpFetcher(sample_settings().discovery, lambda _url: None, lambda _url: True)
     with pytest.raises(FetchError, match="unsafe_address"):
         fetcher.fetch(
             SourceDefinition(
@@ -217,3 +217,11 @@ def test_failed_checks_show_why_until_a_check_succeeds(app: Container) -> None:
     row = app.admin_catalog.add_source(admin, NewSource(url=FEED_URL, name="Broken board", connector="lever"))
     assert (row.status, row.last_error) == (SourceStatus.DEGRADED, "invalid_board")
     assert row.last_checked_at is not None
+
+
+def test_addresses_that_cannot_be_looked_up_are_reported_as_unreachable() -> None:
+    fetcher = HttpFetcher(sample_settings().discovery, lambda _url: None, lambda _url: False)
+    with pytest.raises(FetchError, match="unreachable"):
+        fetcher.fetch_url(FEED_URL)
+    assert not host_resolves("https://jobs.example.org/", resolving_to())
+    assert host_resolves("https://jobs.example.org/", resolving_to("93.184.215.14"))
