@@ -1402,5 +1402,110 @@
     "justNow": "Just now",
     "minutesAgo": "{count} min ago",
     "hoursAgo": "{count} h ago"
+  },
+  "welcome": {
+    "eyebrow": "For job seekers and students, at home and abroad",
+    "titleLead": "Your career,",
+    "titleAccent": "on autopilot.",
+    "body": "CareerPilot finds jobs and master's or PhD places that fit you, explains every match, shows the skills you're missing, and applies only the way you allow.",
+    "primaryCta": "Create your account",
+    "secondaryCta": "I already have an account",
+    "trust": {
+      "approve": "You approve every application",
+      "facts": "Never invents facts about you",
+      "proof": "Proof kept for every application"
+    },
+    "preview": {
+      "label": "A preview of the Today screen with matched jobs",
+      "heading": "Today",
+      "track": "On-site in your country",
+      "jobs": {
+        "first": {
+          "title": "Senior Software Engineer",
+          "company": "Northwind Labs",
+          "place": "Dhaka · On-site",
+          "score": "92% match"
+        },
+        "second": {
+          "title": "QA Automation Engineer",
+          "company": "Blue Harbor",
+          "place": "Remote",
+          "score": "84% match"
+        },
+        "third": {
+          "title": "Data Analyst",
+          "company": "Acme Health",
+          "place": "Chattogram · Hybrid",
+          "score": "76% match"
+        }
+      },
+      "skillsLabel": "Skills to add",
+      "skills": {
+        "first": "GraphQL",
+        "second": "Docker",
+        "third": "AWS"
+      },
+      "sentTitle": "Application sent",
+      "sentBody": "Northwind Labs · proof saved",
+      "approvalTitle": "Waiting for your approval",
+      "approvalBody": "Cover letter and answers ready"
+    },
+    "highlightsTitle": "What makes CareerPilot different",
+    "highlights": {
+      "reasons": {
+        "title": "Every match explained",
+        "body": "See why a job fits, what's required, and which requirements you meet before you spend a minute on it."
+      },
+      "skills": {
+        "title": "Skills to add, before you apply",
+        "body": "Each job shows up to three skills it asks for that your profile doesn't list, so you can add them or learn them first."
+      },
+      "companies": {
+        "title": "Follow any company",
+        "body": "Type a company's name, website, or work email. CareerPilot finds its jobs and sorts them into on-site, hybrid, and remote."
+      },
+      "focus": {
+        "title": "Focused, never flooded",
+        "body": "Your country's on-site jobs come first, at most three per company, and nothing you applied to in the last 15 days comes back."
+      },
+      "control": {
+        "title": "Applies your way",
+        "body": "Approve each application, or let rules apply for you within your submission time. Pause everything with one tap."
+      },
+      "proof": {
+        "title": "A record you can trust",
+        "body": "Every circular is archived and every application keeps its timeline, emails, and proof, even if the posting disappears."
+      }
+    },
+    "stepsTitle": "How it works",
+    "steps": {
+      "profile": {
+        "title": "Build your profile once",
+        "body": "Experience, skills, documents, and answers you can reuse."
+      },
+      "tracks": {
+        "title": "Choose your tracks",
+        "body": "Home on-site, remote, international with sponsorship, or study abroad."
+      },
+      "review": {
+        "title": "Review your matches",
+        "body": "Reasons, requirements, and skills to add for every job."
+      },
+      "apply": {
+        "title": "Approve and relax",
+        "body": "CareerPilot completes the application and keeps the proof."
+      }
+    },
+    "stepLabel": "Step {number}",
+    "promiseTitle": "What CareerPilot will never do",
+    "promiseBody": "Applying for jobs is personal. These rules hold for every user and every application.",
+    "promises": {
+      "facts": "Invent or exaggerate anything about you",
+      "captcha": "Solve CAPTCHAs or get around a site's bot checks",
+      "duplicate": "Apply again when it isn't sure the first one went through",
+      "secrets": "Show or share your passwords and secrets"
+    },
+    "closingTitle": "Start with your profile. It takes a few minutes.",
+    "closingBody": "Nothing is sent to an employer without your say."
   }
 }

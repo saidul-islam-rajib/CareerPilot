@@ -28,7 +28,14 @@ function choosePassword(password: string, confirmation: string) {
 describe('WelcomePage', () => {
   it('offers sign up, sign in, and the Team Sober credit', () => {
     renderWithProviders(<WelcomePage />, { signedIn: false });
-    expect(screen.getByRole('link', { name: 'Create account' })).toHaveAttribute('href', '/register');
+    const signUps = screen.getAllByRole('link', { name: /Create (your )?account/ });
+    expect(signUps.length).toBeGreaterThan(1);
+    signUps.forEach((link) => expect(link).toHaveAttribute('href', '/register'));
+    expect(screen.getAllByRole('link', { name: /Sign in|I already have an account/ })[0]).toHaveAttribute('href', '/sign-in');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Your career, on autopilot.');
+    expect(screen.getByRole('heading', { name: 'How it works' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'What CareerPilot will never do' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /preview of the Today screen/ })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Developed by Team Sober/ })).toHaveAttribute('href', 'https://team-sober.com/');
   });
 });
