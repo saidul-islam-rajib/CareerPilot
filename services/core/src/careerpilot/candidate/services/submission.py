@@ -43,6 +43,7 @@ class SubmissionContext:
     platform: Callable[[], PlatformSettings]
     sender: EmailSender
     storage: FileStorage
+    on_status: Callable[[str, ApplicationRecord], None] = lambda _user_id, _application: None
 
 
 def _parse_time(value: str | None) -> time | None:
@@ -85,12 +86,15 @@ class SubmissionService:
         hold = self._hold(user_id, workspace, application)
         if hold is not None:
             return SubmissionResult(application.submission_status, hold)
+        before = application.submission_status
         self._follow_current_route(application)
         if application.route not in self._config.automatable_routes:
             self._move(application, SubmissionStatus.MANUAL_ACTION_REQUIRED, translate("timeline.portalManual"))
         else:
             self._submit_email(user_id, workspace, application)
         self._candidate.workspaces.save(user_id, workspace)
+        if application.submission_status is not before:
+            self._ctx.on_status(user_id, application)
         return SubmissionResult(application.submission_status)
 
     def _follow_current_route(self, application: ApplicationRecord) -> None:
@@ -106,12 +110,14 @@ class SubmissionService:
         for user_id in self._candidate.accounts.active_ids():
             workspace = self._candidate.workspaces.get(user_id)
             updates = 0
+            confirmed: list[ApplicationRecord] = []
             for application in workspace.applications:
                 age = now - parse_iso(application.updated_at)
                 if application.submission_status is SubmissionStatus.SUBMITTED_AWAITING_CONFIRMATION and age >= bounce_window:
                     hours = {"hours": self._config.bounce_window_hours}
                     application.evidence.append(Evidence(text=translate("submission.evidenceConfirmed", hours), at=iso(now)))
                     self._move(application, SubmissionStatus.CONFIRMED, translate("timeline.emailConfirmed", hours))
+                    confirmed.append(application)
                     updates += 1
                 elif application.submission_status is SubmissionStatus.SUBMITTING and age >= stuck_after:
                     self._move(application, SubmissionStatus.OUTCOME_UNKNOWN, translate("timeline.outcomeUnknown"))
@@ -119,6 +125,8 @@ class SubmissionService:
             if updates:
                 self._candidate.workspaces.save(user_id, workspace)
                 changed += updates
+            for application in confirmed:
+                self._ctx.on_status(user_id, application)
         return changed
 
     def _hold(self, user_id: str, workspace: CandidateWorkspace, application: ApplicationRecord) -> SubmissionHold | None:

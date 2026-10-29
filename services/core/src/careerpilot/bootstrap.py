@@ -11,6 +11,7 @@ from careerpilot.administration.account_links import AdminLinkContext, AdminLink
 from careerpilot.administration.context import AdminContext
 from careerpilot.administration.discovery_sync import SourceCheckRunner, discover_when_empty
 from careerpilot.administration.limits import effective_source_limit
+from careerpilot.administration.messages import AdminMessages
 from careerpilot.administration.models import AdminSourceRow, EmergencyStop, PlatformSettings
 from careerpilot.administration.presence import PresenceContext, PresenceService
 from careerpilot.administration.services import (
@@ -57,6 +58,8 @@ from careerpilot.matching.claude import ClaudeMatcher
 from careerpilot.matching.ports import Matcher
 from careerpilot.matching.rules import RuleBasedMatcher
 from careerpilot.matching.service import RecommendationContext, RecommendationService, UserDefaults
+from careerpilot.messaging.notifications import NotificationContext, NotificationService
+from careerpilot.messaging.service import MessagingContext, MessagingService
 from careerpilot.platform.clock import Clock, IdGenerator, SystemClock, UuidIdGenerator, iso
 from careerpilot.platform.config import (
     CoordinationMode,
@@ -100,6 +103,9 @@ class Container:
     database: Database | None
     auth: AuthService
     presence: PresenceService
+    notifications: NotificationService
+    messaging: MessagingService
+    admin_messages: AdminMessages
     public_config: PublicConfigService
     opportunities: OpportunityService
     approvals: ApprovalService
@@ -314,6 +320,40 @@ def _source_policy(
     )
 
 
+def _messaging(
+    candidate: CandidateContext, repos: Repositories, storage: FileStorage, sender: EmailSender
+) -> tuple[NotificationService, MessagingService, SubmissionService]:
+    notifications = NotificationService(
+        NotificationContext(
+            notifications=repos.notifications,
+            conversations=repos.conversations,
+            messages=repos.messages,
+            clock=candidate.clock,
+            ids=candidate.ids,
+            config=candidate.settings.messaging,
+        )
+    )
+    messaging = MessagingService(
+        MessagingContext(
+            candidate=candidate,
+            conversations=repos.conversations,
+            messages=repos.messages,
+            notifications=notifications,
+            storage=storage,
+        )
+    )
+    submissions = SubmissionService(
+        SubmissionContext(
+            candidate=candidate,
+            platform=repos.platform.get,
+            sender=sender,
+            storage=storage,
+            on_status=notifications.application_changed,
+        )
+    )
+    return notifications, messaging, submissions
+
+
 def build_container(overrides: ContainerOverrides | None = None) -> Container:
     options = overrides or ContainerOverrides()
     cfg = options.settings or with_web_address(load_settings())
@@ -385,7 +425,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     )
     sender = options.email_sender or email_sender_for(cfg)
     digests = DigestService(DigestContext(candidate=candidate, sender=sender))
-    submissions = SubmissionService(SubmissionContext(candidate=candidate, platform=repos.platform.get, sender=sender, storage=storage))
+    notifications, messaging, submissions = _messaging(candidate, repos, storage, sender)
     courier = DirectCourier(options.email_sender) if options.email_sender else background_courier(cfg, account_sender_for(cfg, sender))
     codes = OneTimeCodes(coord_store, keys, cfg.verification, secret)
     verification = ContactVerificationService(VerificationContext(candidate=candidate, codes=codes, courier=courier))
@@ -440,7 +480,10 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         public_config=public_config,
         opportunities=opportunity_service,
         approvals=approvals,
-        applications=ApplicationService(candidate),
+        applications=ApplicationService(candidate, notifications.application_changed),
+        notifications=notifications,
+        messaging=messaging,
+        admin_messages=AdminMessages(messaging, repos.accounts, repos.workspaces),
         profile=profile,
         preferences=preferences,
         dashboard=DashboardService(candidate, opportunity_service),

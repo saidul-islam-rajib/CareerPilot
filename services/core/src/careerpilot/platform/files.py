@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
@@ -16,7 +17,24 @@ PDF = "application/pdf"
 PNG = "image/png"
 JPEG = "image/jpeg"
 WEBP = "image/webp"
-EXTENSIONS = {PDF: "pdf", PNG: "png", JPEG: "jpg", WEBP: "webp"}
+MP4_AUDIO = "audio/mp4"
+WEBM_AUDIO = "audio/webm"
+OGG_AUDIO = "audio/ogg"
+MPEG_AUDIO = "audio/mpeg"
+AAC_AUDIO = "audio/aac"
+WAV_AUDIO = "audio/wav"
+EXTENSIONS = {
+    PDF: "pdf",
+    PNG: "png",
+    JPEG: "jpg",
+    WEBP: "webp",
+    MP4_AUDIO: "m4a",
+    WEBM_AUDIO: "webm",
+    OGG_AUDIO: "ogg",
+    MPEG_AUDIO: "mp3",
+    AAC_AUDIO: "aac",
+    WAV_AUDIO: "wav",
+}
 SIGNATURE_SEPARATOR = "\n"
 FILES_PATH = "v1/files"
 WEBP_HEADER = (b"RIFF", b"WEBP")
@@ -25,6 +43,15 @@ PNG_HEADER = b"\x89PNG\r\n\x1a\n"
 JPEG_HEADER = b"\xff\xd8\xff"
 WEBP_TAG_OFFSET = slice(8, 12)
 WEBP_RIFF_OFFSET = slice(0, 4)
+WAV_TAG = b"WAVE"
+MP4_BOX = b"ftyp"
+MP4_BOX_OFFSET = slice(4, 8)
+WEBM_HEADER = bytes([0x1A, 0x45, 0xDF, 0xA3])
+OGG_HEADER = b"OggS"
+ID3_HEADER = b"ID3"
+FRAME_SYNC = 0xFF
+AAC_SECOND_BYTES = frozenset({0xF1, 0xF9})
+MPEG_SYNC_MASK = 0xE0
 
 
 class StorageKeyError(ValueError):
@@ -52,7 +79,26 @@ def detect_content_type(data: bytes) -> str | None:
         return JPEG
     if (data[WEBP_RIFF_OFFSET], data[WEBP_TAG_OFFSET]) == WEBP_HEADER:
         return WEBP
-    return None
+    return detect_audio_type(data)
+
+
+def _frame_sync(data: bytes) -> bool:
+    return len(data) > 1 and data[0] == FRAME_SYNC
+
+
+AUDIO_SIGNATURES: tuple[tuple[Callable[[bytes], bool], str], ...] = (
+    (lambda data: data[MP4_BOX_OFFSET] == MP4_BOX, MP4_AUDIO),
+    (lambda data: data.startswith(WEBM_HEADER), WEBM_AUDIO),
+    (lambda data: data.startswith(OGG_HEADER), OGG_AUDIO),
+    (lambda data: (data[WEBP_RIFF_OFFSET], data[WEBP_TAG_OFFSET]) == (WEBP_HEADER[0], WAV_TAG), WAV_AUDIO),
+    (lambda data: data.startswith(ID3_HEADER), MPEG_AUDIO),
+    (lambda data: _frame_sync(data) and data[1] in AAC_SECOND_BYTES, AAC_AUDIO),
+    (lambda data: _frame_sync(data) and data[1] & MPEG_SYNC_MASK == MPEG_SYNC_MASK, MPEG_AUDIO),
+)
+
+
+def detect_audio_type(data: bytes) -> str | None:
+    return next((kind for matches, kind in AUDIO_SIGNATURES if matches(data)), None)
 
 
 class LocalFileStorage:

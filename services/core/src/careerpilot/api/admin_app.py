@@ -6,6 +6,7 @@ from pydantic import StrictInt
 
 from careerpilot.administration.models import NewSource, SourceDecision
 from careerpilot.administration.user_records import AdminApplicationChange, AdminProfileChange
+from careerpilot.api import admin_messaging_routes
 from careerpilot.api.common import client_info, configure, no_content, ok
 from careerpilot.api.dependencies import CurrentAdmin, Paging, Services
 from careerpilot.api.instrumentation import instrument
@@ -284,5 +285,7 @@ def create_admin_app(container: Container) -> FastAPI:
     app.state.container = container
     configure(app, container.settings)
     app.include_router(router)
+    app.include_router(admin_messaging_routes.router)
+    app.include_router(admin_messaging_routes.files)
     instrument(app, container, container.settings.observability.admin_api_service)
     return app

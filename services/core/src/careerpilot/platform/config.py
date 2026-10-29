@@ -586,6 +586,24 @@ class AnswersConfig(Strict):
         return {entry.topic: entry.keywords for entry in self.topic_keywords}
 
 
+class AttachmentRule(Strict):
+    types: list[str]
+    max_bytes: int = Field(gt=0)
+    max_seconds: int = Field(default=0, ge=0)
+
+
+class MessagingConfig(Strict):
+    poll_seconds: int = Field(gt=0)
+    open_conversation_poll_seconds: int = Field(gt=0)
+    page_size: int = Field(gt=0)
+    max_text_length: int = Field(gt=0)
+    directory_min_query: int = Field(gt=0)
+    directory_limit: int = Field(gt=0)
+    notifications_page_size: int = Field(gt=0)
+    preview_length: int = Field(gt=0)
+    attachments: dict[str, AttachmentRule]
+
+
 class PresenceConfig(Strict):
     touch_interval_seconds: int = Field(gt=0)
     idle_minutes: int = Field(gt=0)
@@ -625,6 +643,7 @@ class Settings(Strict):
     tracks: TracksConfig
     platform: PlatformDefaultsConfig
     presence: PresenceConfig
+    messaging: MessagingConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

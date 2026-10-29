@@ -1,0 +1,25 @@
+# Member chat, team messages, and in-app notifications (Requirements 36.1, specs/E18-messaging-and-notifications).
+messaging:
+  # Apps ask for new messages and notifications this often while open, and faster inside an open chat.
+  poll_seconds: 8
+  open_conversation_poll_seconds: 2
+  page_size: 40
+  max_text_length: 4000
+  # Name searches need at least this many characters; email and phone numbers must match exactly.
+  directory_min_query: 2
+  directory_limit: 20
+  notifications_page_size: 50
+  # Characters of a message shown in chat lists and notifications.
+  preview_length: 80
+  # Keys are MessageKind values. Types are checked from the file's bytes, not its name.
+  attachments:
+    image:
+      types: [image/jpeg, image/png, image/webp]
+      max_bytes: 10485760
+    voice:
+      types: [audio/mp4, audio/webm, audio/ogg, audio/mpeg, audio/aac, audio/wav]
+      max_bytes: 10485760
+      max_seconds: 300
+    file:
+      types: [application/pdf]
+      max_bytes: 20971520

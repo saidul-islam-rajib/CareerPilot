@@ -1163,7 +1163,8 @@
     "adminChanged": "An administrator changed this application: {changes}.",
     "adminNote": "note added",
     "adminArchived": "An administrator archived this application.",
-    "adminRestored": "An administrator restored this application."
+    "adminRestored": "An administrator restored this application.",
+    "userSubmitted": "You submitted this application on the employer's site"
   },
   "submission": {
     "failures": {
@@ -1520,6 +1521,24 @@
     "errors": {
       "invalid": "Enter an address like 192.168.0.106 or http://192.168.0.106:8000.",
       "unreachable": "CareerPilot didn't answer at this address. Check the phone and computer are on the same Wi-Fi and the server is running."
+    }
+  },
+  "notifications": {
+    "application_submitted": {
+      "title": "Application submitted",
+      "body": "{title} at {organization}. Tap to see what was sent."
+    },
+    "application_confirmed": {
+      "title": "Application confirmed",
+      "body": "{title} at {organization} was received."
+    }
+  },
+  "messaging": {
+    "teamName": "{product} team",
+    "previews": {
+      "image": "Photo",
+      "voice": "Voice message",
+      "file": "{name}"
     }
   }
 }

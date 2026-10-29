@@ -439,6 +439,8 @@ class Preferences(CamelModel):
     notifications: NotificationPreferences = Field(default_factory=NotificationPreferences)
     excluded_countries: list[str] = Field(default_factory=list[str])
     favorite_companies: list[str] = Field(default_factory=list[str])
+    blocked_users: list[str] = Field(default_factory=list[str])
+    discoverable: bool = True
     home_country: str = ""
 
 

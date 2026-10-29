@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from careerpilot.administration.adapters.in_memory import (
     InMemoryAdminAccountRepository,
@@ -21,6 +21,13 @@ from careerpilot.candidate.ports import AccountRepository, CandidateWorkspace, O
 from careerpilot.discovery.adapters.in_memory import InMemoryListingCatalog
 from careerpilot.discovery.adapters.sql import SqlListingCatalog
 from careerpilot.discovery.ports import ListingCatalog
+from careerpilot.messaging.adapters.in_memory import (
+    InMemoryConversationRepository,
+    InMemoryMessageRepository,
+    InMemoryNotificationRepository,
+)
+from careerpilot.messaging.adapters.sql import SqlConversationRepository, SqlMessageRepository, SqlNotificationRepository
+from careerpilot.messaging.ports import ConversationRepository, MessageRepository, NotificationRepository
 from careerpilot.platform.persistence import Database
 from careerpilot.platform.security import PasswordHasher
 
@@ -37,6 +44,9 @@ class Repositories:
     audit: AuditLog
     directory: Directory
     listings: ListingCatalog
+    notifications: NotificationRepository = field(default_factory=InMemoryNotificationRepository)
+    conversations: ConversationRepository = field(default_factory=InMemoryConversationRepository)
+    messages: MessageRepository = field(default_factory=InMemoryMessageRepository)
 
 
 RepositoryFactory = Callable[[PasswordHasher, WorkspaceFactory, PlatformSettings], Repositories]
@@ -65,4 +75,7 @@ def sql_repositories(database: Database, empty: WorkspaceFactory, platform_defau
         audit=SqlAuditLog(database),
         directory=SqlDirectory(database),
         listings=SqlListingCatalog(database),
+        notifications=SqlNotificationRepository(database),
+        conversations=SqlConversationRepository(database),
+        messages=SqlMessageRepository(database),
     )

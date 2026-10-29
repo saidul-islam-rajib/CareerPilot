@@ -6,6 +6,7 @@ from sqlalchemy import create_engine, pool
 import careerpilot.administration.adapters.sql
 import careerpilot.candidate.adapters.sql
 import careerpilot.discovery.adapters.sql
+import careerpilot.messaging.adapters.sql
 from careerpilot.platform.persistence import Base
 
 MIGRATION_URL_ENV = "CAREERPILOT_MIGRATION_DATABASE_URL"

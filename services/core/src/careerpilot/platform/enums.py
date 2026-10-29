@@ -327,3 +327,38 @@ class ThemeKey(StrEnum):
     SOBER = "sober"
     HORIZON = "horizon"
     ORCHID = "orchid"
+
+
+class NotificationKind(StrEnum):
+    MESSAGE = "message"
+    TEAM_MESSAGE = "team_message"
+    APPLICATION_SUBMITTED = "application_submitted"
+    APPLICATION_CONFIRMED = "application_confirmed"
+
+
+class NotificationTarget(StrEnum):
+    CONVERSATION = "conversation"
+    APPLICATION = "application"
+
+
+class ConversationKind(StrEnum):
+    DIRECT = "direct"
+    TEAM = "team"
+
+
+class MemberType(StrEnum):
+    USER = "user"
+    TEAM = "team"
+
+
+class MessageKind(StrEnum):
+    TEXT = "text"
+    IMAGE = "image"
+    VOICE = "voice"
+    FILE = "file"
+
+
+class MessageState(StrEnum):
+    SENT = "sent"
+    DELIVERED = "delivered"
+    READ = "read"

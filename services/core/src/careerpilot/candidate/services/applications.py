@@ -90,10 +90,18 @@ def upcoming_tasks(applications: list[ApplicationRecord], now: datetime, limits:
     return due[: limits.upcoming_limit]
 
 
+ApplicationListener = Callable[[str, ApplicationRecord], None]
+
+
+def ignore_application(_user_id: str, _application: ApplicationRecord) -> None:
+    return None
+
+
 class ApplicationService:
-    def __init__(self, context: CandidateContext) -> None:
+    def __init__(self, context: CandidateContext, on_status: ApplicationListener = ignore_application) -> None:
         self._ctx = context
         self._limits = context.settings.tracking
+        self._on_status = on_status
 
     def list(self, user_id: str, application_filter: ApplicationFilter) -> list[ApplicationSummary]:
         applications = [
@@ -107,6 +115,25 @@ class ApplicationService:
         record = next((a for a in self._ctx.workspaces.get(user_id).applications if a.id == application_id), None)
         if record is None or record.archived_at is not None:
             raise not_found("application")
+        return record
+
+    def record_submitted(self, user_id: str, application_id: str) -> ApplicationRecord:
+        def change(record: ApplicationRecord, now: str) -> None:
+            if record.submission_status is not SubmissionStatus.MANUAL_ACTION_REQUIRED:
+                raise validation_error("application_not_manual")
+            record.submission_status = SubmissionStatus.SUBMITTED_AWAITING_CONFIRMATION
+            record.applied_at = record.applied_at or now
+            record.timeline.append(
+                TimelineEntry(
+                    at=now,
+                    actor=TimelineActor.USER,
+                    text=translate("timeline.userSubmitted"),
+                    status=SubmissionStatus.SUBMITTED_AWAITING_CONFIRMATION,
+                )
+            )
+
+        record = self._change(user_id, application_id, change)
+        self._on_status(user_id, record)
         return record
 
     def update_outcome(self, user_id: str, application_id: str, outcome: OutcomeStatus, note: str | None) -> ApplicationRecord:
