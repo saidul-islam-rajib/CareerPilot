@@ -565,6 +565,27 @@ export interface UserSource {
   lastCheckedAt?: IsoDateTime;
   lastError?: string;
   reviewNote?: string;
+  arrangements: Partial<Record<WorkArrangement, number>>;
+}
+
+export interface SourceJob {
+  id: string;
+  title: string;
+  location: string;
+  countryCode: string;
+  workArrangement: WorkArrangement;
+  deadline?: IsoDateTime;
+  url: string;
+  listed: boolean;
+}
+
+export interface SourceJobs {
+  source: UserSource;
+  jobs: SourceJob[];
+}
+
+export interface SavedSourceJob {
+  opportunityId: string;
 }
 
 export interface NewUserSource {

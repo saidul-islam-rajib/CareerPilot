@@ -33,6 +33,7 @@ export const Routes = {
   sources: '/settings/sources',
   countries: '/settings/countries',
   addSource: '/settings/source',
+  sourceJobs: (id: string) => ({ pathname: '/settings/source-jobs', params: { id } }) as const,
   answer: (params: { id?: string; topic?: string; question?: string; answer?: string }) => ({ pathname: '/settings/answer', params }) as const,
   changePassword: '/settings/password',
   activity: '/settings/activity',

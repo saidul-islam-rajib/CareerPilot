@@ -11,7 +11,7 @@ describe('AddSourceScreen', () => {
     expect(await screen.findByText('This field is required.')).toBeTruthy();
     await fireEvent.changeText(screen.getByTestId('source-url'), 'ftp://jobs.example.org');
     await fireEvent.press(screen.getByTestId('source-submit'));
-    expect(await screen.findByText('Use a website on the public internet.')).toBeTruthy();
+    expect(await screen.findByText("Enter a company's name, its website, or a work email at the company.")).toBeTruthy();
     await fireEvent.changeText(screen.getByTestId('source-url'), 'careers.example.org');
     await fireEvent.changeText(screen.getByTestId('source-note'), 'Hires in Dhaka');
     await fireEvent.press(screen.getByTestId('source-submit'));

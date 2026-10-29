@@ -1,11 +1,38 @@
 'use client';
 
 import { useState } from 'react';
-import { ExternalLink, Globe, Plus, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { BriefcaseBusiness, ExternalLink, Globe, Plus, Trash2 } from 'lucide-react';
 import type { UserSource } from '@careerpilot/api-client';
-import { sourceProblemKey, sourceReviewKey, useAddJobSourceForm, useFormat, useJobSources, useRemoveJobSource, useT } from '@careerpilot/client-core';
+import {
+  arrangementCounts,
+  arrangementKey,
+  sourceProblemKey,
+  sourceReviewKey,
+  useAddJobSourceForm,
+  useFormat,
+  useJobSources,
+  useRemoveJobSource,
+  useT,
+} from '@careerpilot/client-core';
 import { EnumKey, StatusTone } from '@careerpilot/domain-ui-logic';
-import { Badge, Button, Card, ConfirmDialog, EmptyState, EnumBadge, ErrorState, FormDialog, LoadingState, PageHeader, TextAreaField, TextField, useToast } from '@careerpilot/ui-web';
+import {
+  Badge,
+  Button,
+  Card,
+  ConfirmDialog,
+  EmptyState,
+  EnumBadge,
+  ErrorState,
+  FormDialog,
+  LoadingState,
+  PageHeader,
+  TextAreaField,
+  TextField,
+  buttonVariants,
+  useToast,
+} from '@careerpilot/ui-web';
+import { Routes } from '@/core/routes';
 
 function AddSourceDialog({ onClose }: { onClose: () => void }) {
   const t = useT();
@@ -27,8 +54,9 @@ function AddSourceDialog({ onClose }: { onClose: () => void }) {
     >
       <TextField
         label={t('sources.url')}
-        inputMode="url"
-        autoComplete="url"
+        autoComplete="organization"
+        autoCapitalize="none"
+        spellCheck={false}
         value={form.values.url}
         onChange={(e) => form.setField('url', e.target.value)}
         error={form.errors.url}
@@ -66,17 +94,30 @@ function SourceRow({ source }: { source: UserSource }) {
           <EnumBadge enumKey={EnumKey.SourceReview} value={source.review} />
           <EnumBadge enumKey={EnumKey.SourceStatus} value={source.status} />
         </div>
-        <a href={source.siteUrl} target="_blank" rel="noreferrer noopener" className="inline-flex min-w-0 items-center gap-1 text-sm text-primary underline-offset-2 hover:underline">
-          <span className="truncate">{source.siteUrl}</span>
-          <ExternalLink className="size-3.5 shrink-0" aria-hidden />
-          <span className="sr-only">{t('sources.visit')}</span>
-        </a>
+        {source.siteUrl ? (
+          <a href={source.siteUrl} target="_blank" rel="noreferrer noopener" className="inline-flex min-w-0 items-center gap-1 text-sm text-primary underline-offset-2 hover:underline">
+            <span className="truncate">{source.siteUrl}</span>
+            <ExternalLink className="size-3.5 shrink-0" aria-hidden />
+            <span className="sr-only">{t('sources.visit')}</span>
+          </a>
+        ) : null}
         <p className="text-sm text-muted">
           {t('sources.jobsFound', { count: source.jobsFound })} · {source.lastCheckedAt ? t('sources.lastChecked', { time: format.dateTime(source.lastCheckedAt) }) : t('sources.notChecked')}
         </p>
         <p className="text-sm text-muted">{t(sourceReviewKey(source))}</p>
         {source.reviewNote ? <p className="break-words text-sm text-foreground">{t('sources.reviewNote', { note: source.reviewNote })}</p> : null}
         {source.lastError ? <p className="text-sm text-warning">{t(sourceProblemKey(source.lastError))}</p> : null}
+        {source.jobsFound > 0 ? (
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            {arrangementCounts(source.arrangements).map(({ arrangement, count }) => (
+              <Badge key={arrangement} label={t('sources.arrangementCount', { label: t(arrangementKey(arrangement)), count })} />
+            ))}
+            <Link href={Routes.sourceJobs(source.id)} className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
+              <BriefcaseBusiness className="size-4" aria-hidden />
+              {t('sources.viewJobs')}
+            </Link>
+          </div>
+        ) : null}
       </div>
       <ConfirmDialog
         title={t('sources.removeTitle', { name: source.name })}

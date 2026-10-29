@@ -5,6 +5,7 @@ import { CountriesPage } from './countries-page';
 import { SourcesPage } from './sources-page';
 
 const SUBMIT = 'Find jobs and add';
+const FIELD = 'Company name, website, or email';
 
 describe('SourcesPage', () => {
   it('adds a source from a website link, shows it waiting for review, and removes it', async () => {
@@ -14,10 +15,13 @@ describe('SourcesPage', () => {
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: SUBMIT }));
     expect(await within(dialog).findByText('This field is required.')).toBeInTheDocument();
-    fireEvent.change(within(dialog).getByLabelText('Website link'), { target: { value: 'ftp://jobs.example.org' } });
+    fireEvent.change(within(dialog).getByLabelText(FIELD), { target: { value: 'ftp://jobs.example.org' } });
     fireEvent.click(within(dialog).getByRole('button', { name: SUBMIT }));
-    expect(await within(dialog).findByText('Use a website on the public internet.')).toBeInTheDocument();
-    fireEvent.change(within(dialog).getByLabelText('Website link'), { target: { value: 'careers.example.org' } });
+    expect(await within(dialog).findByText("Enter a company's name, its website, or a work email at the company.")).toBeInTheDocument();
+    fireEvent.change(within(dialog).getByLabelText(FIELD), { target: { value: 'me@gmail.com' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: SUBMIT }));
+    expect(await within(dialog).findByText("That's a personal email address. Use an email at the company, its website, or its name.")).toBeInTheDocument();
+    fireEvent.change(within(dialog).getByLabelText(FIELD), { target: { value: 'careers.example.org' } });
     fireEvent.change(within(dialog).getByLabelText('Why this site? (optional)'), { target: { value: 'Hires in Dhaka' } });
     fireEvent.click(within(dialog).getByRole('button', { name: SUBMIT }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());

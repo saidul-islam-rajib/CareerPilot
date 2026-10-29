@@ -917,7 +917,11 @@
       "action": "Action",
       "target": "Target",
       "role": "Role",
-      "mfa": "MFA"
+      "mfa": "MFA",
+      "presence": "Online",
+      "lastSeen": "Last seen",
+      "timeInApp": "Time in app",
+      "location": "Location"
     },
     "users": {
       "title": "Users",
@@ -1074,7 +1078,7 @@
         "approvals": "Approvals ({count})",
         "profile": "Profile and settings",
         "sources": "Job sources ({count})",
-        "activity": "Sign-in activity"
+        "activity": "Activity and sessions"
       },
       "noJobs": "No jobs in this list.",
       "noApplications": "No applications yet.",
@@ -1117,6 +1121,25 @@
       "paused": "Applications paused until {until}",
       "favorites": "Favorite companies",
       "off": "Off"
+    },
+    "presence": {
+      "online": "Online now",
+      "offline": "Offline",
+      "never": "Never signed in",
+      "lastSeen": "Last seen {time}",
+      "summaryTitle": "Presence",
+      "timeInApp": "Time in app",
+      "sessions": "Sessions",
+      "location": "Approximate location",
+      "device": "Device",
+      "sessionsTitle": "Sessions",
+      "sessionsEmpty": "No sessions recorded yet. Sessions start the next time this person signs in.",
+      "sessionActive": "Active",
+      "sessionEnded": "Signed out",
+      "sessionIdle": "Idle",
+      "sessionDetail": "Started {started} · last seen {seen} · active {active}",
+      "signInsTitle": "Sign-in attempts",
+      "locationNote": "Locations are approximate: from the device's time zone, or the network when known."
     }
   },
   "timeline": {
@@ -1371,5 +1394,13 @@
       "experience": "How many years of relevant experience do you have?",
       "eligibility": "Do you meet the eligibility requirements?"
     }
+  },
+  "format": {
+    "hoursMinutes": "{hours} h {minutes} min",
+    "minutes": "{count} min",
+    "underMinute": "Under a minute",
+    "justNow": "Just now",
+    "minutesAgo": "{count} min ago",
+    "hoursAgo": "{count} h ago"
   }
 }

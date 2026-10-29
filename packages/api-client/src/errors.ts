@@ -23,6 +23,8 @@ export const ApiErrorDetail = {
   SourceExists: 'source_exists',
   CountryCode: 'country_code',
   JobsNotFound: 'jobs_not_found',
+  PersonalEmail: 'personal_email',
+  CompanyNotFound: 'company_not_found',
   SourceShared: 'source_shared',
   SourcePending: 'source_pending',
   SourceLimit: 'source_limit',

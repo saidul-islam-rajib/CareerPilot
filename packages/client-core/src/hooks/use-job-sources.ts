@@ -1,7 +1,15 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ApiErrorDetail, isApiError, type NewUserSource, type OpportunityDetail, type UserSource } from '@careerpilot/api-client';
-import { SourceReview } from '@careerpilot/domain-ui-logic';
+import {
+  ApiErrorCode,
+  ApiErrorDetail,
+  isApiError,
+  type NewUserSource,
+  type OpportunityDetail,
+  type SourceJob,
+  type UserSource,
+} from '@careerpilot/api-client';
+import { SourceReview, WorkArrangement } from '@careerpilot/domain-ui-logic';
 import { ValidationMessage, type FieldErrors } from '@careerpilot/validation';
 import { usePublicConfig } from '../config/public-config';
 import { queryKeys } from '../query/query-keys';
@@ -14,14 +22,54 @@ const SOURCE_ERROR_KEYS: Readonly<Record<string, string>> = {
   [ApiErrorDetail.SourceShared]: 'sources.errors.shared',
   [ApiErrorDetail.SourceLimit]: 'sources.errors.limit',
   [ApiErrorDetail.SourceDisabled]: 'sources.errors.disabled',
+  [ApiErrorDetail.PersonalEmail]: 'sources.errors.personalEmail',
+  [ApiErrorDetail.CompanyNotFound]: 'sources.errors.companyNotFound',
 };
+const SLOW_ERROR_KEY = 'sources.errors.slow';
+export const ARRANGEMENT_ORDER: readonly WorkArrangement[] = [WorkArrangement.Onsite, WorkArrangement.Hybrid, WorkArrangement.Remote, WorkArrangement.NotStated];
 const SOURCE_PROBLEMS: readonly string[] = ['invalid_feed', 'invalid_board', 'http_status', 'unreachable', 'unsafe_address', 'no_jobs_found'];
 const FALLBACK_ERROR_KEY = 'sources.errors.generic';
 const OTHER_PROBLEM = 'other';
 const EMPTY_SOURCE: NewUserSource = { url: '', name: '', note: '' };
 
 export function sourceErrorKey(error: unknown): string {
+  if (isApiError(error) && error.code === ApiErrorCode.Timeout) {
+    return SLOW_ERROR_KEY;
+  }
   return (isApiError(error) && SOURCE_ERROR_KEYS[error.detail ?? '']) || FALLBACK_ERROR_KEY;
+}
+
+export function arrangementKey(arrangement: string): string {
+  return `sources.arrangements.${arrangement}`;
+}
+
+export interface ArrangementCount {
+  arrangement: WorkArrangement;
+  count: number;
+}
+
+export function arrangementCounts(counts: Partial<Record<string, number>>): ArrangementCount[] {
+  return ARRANGEMENT_ORDER.map((arrangement) => ({ arrangement, count: counts[arrangement] ?? 0 })).filter((entry) => entry.count > 0);
+}
+
+export function jobsIn(jobs: SourceJob[], arrangement: WorkArrangement | undefined): SourceJob[] {
+  return arrangement ? jobs.filter((job) => job.workArrangement === arrangement) : jobs;
+}
+
+export function useSourceJobs(id: string) {
+  const api = useApi();
+  return useQuery({ queryKey: queryKeys.sourceJobs(id), queryFn: () => api.sources.listJobs(id) });
+}
+
+export function useSaveSourceJob(id: string) {
+  const api = useApi();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (jobId: string) => api.sources.saveJob(id, jobId),
+    onSuccess: async () => {
+      await Promise.all([client.invalidateQueries({ queryKey: queryKeys.sourceJobs(id) }), client.invalidateQueries({ queryKey: queryKeys.dashboard })]);
+    },
+  });
 }
 
 export function sourceProblemKey(problem: string): string {

@@ -2,13 +2,23 @@ import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { View } from 'react-native';
-import { AlertTriangle, ExternalLink, Plus, Trash2 } from '@/ui/icons';
+import { AlertTriangle, Briefcase, ExternalLink, Plus, Trash2 } from '@/ui/icons';
 import type { UserSource } from '@careerpilot/api-client';
-import { sourceProblemKey, sourceReviewKey, useAddJobSourceForm, useFormat, useJobSources, useRemoveJobSource, useT } from '@careerpilot/client-core';
+import {
+  arrangementCounts,
+  arrangementKey,
+  sourceProblemKey,
+  sourceReviewKey,
+  useAddJobSourceForm,
+  useFormat,
+  useJobSources,
+  useRemoveJobSource,
+  useT,
+} from '@careerpilot/client-core';
 import { EnumKey, StatusTone } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
-import { Banner, Button, ButtonVariant, Card, Divider, EmptyState, EnumBadge, ErrorState, LoadingState, Row, Screen, Section, Text, TextField, TextTone, TextVariant, useSnackbar } from '@/ui';
+import { Badge, Banner, Button, ButtonVariant, Card, Divider, EmptyState, EnumBadge, ErrorState, LoadingState, Row, Screen, Section, Text, TextField, TextTone, TextVariant, useSnackbar } from '@/ui';
 
 function SourceRow({ source }: { source: UserSource }) {
   const t = useT();
@@ -16,6 +26,7 @@ function SourceRow({ source }: { source: UserSource }) {
   const format = useFormat();
   const snackbar = useSnackbar();
   const remove = useRemoveJobSource();
+  const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const removeNow = () => void remove.mutateAsync(source.id).then(() => snackbar.show({ message: t('sources.removed', { name: source.name }) }));
   return (
@@ -33,7 +44,17 @@ function SourceRow({ source }: { source: UserSource }) {
       </Text>
       {source.reviewNote ? <Text variant={TextVariant.Caption}>{t('sources.reviewNote', { note: source.reviewNote })}</Text> : null}
       {source.lastError ? <Banner tone={StatusTone.Warning} icon={AlertTriangle} title={t(sourceProblemKey(source.lastError))} /> : null}
+      {source.jobsFound > 0 ? (
+        <Row gap={theme.space.xs} wrap>
+          {arrangementCounts(source.arrangements).map(({ arrangement, count }) => (
+            <Badge key={arrangement} label={t('sources.arrangementCount', { label: t(arrangementKey(arrangement)), count })} />
+          ))}
+        </Row>
+      ) : null}
       <Row gap={theme.space.xs} wrap>
+        {source.jobsFound > 0 ? (
+          <Button label={t('sources.viewJobs')} icon={Briefcase} variant={ButtonVariant.Secondary} onPress={() => router.push(Routes.sourceJobs(source.id))} testID={`source-jobs-${source.id}`} />
+        ) : null}
         <Button label={t('sources.visit')} icon={ExternalLink} variant={ButtonVariant.Ghost} onPress={() => void WebBrowser.openBrowserAsync(source.siteUrl)} testID={`source-visit-${source.id}`} />
         {confirming ? (
           <>
@@ -109,7 +130,6 @@ export function AddSourceScreen() {
           onChangeText={(value) => form.setField('url', value)}
           error={form.errors.url}
           hint={t('sources.urlHint')}
-          keyboardType="url"
           autoCapitalize="none"
           autoCorrect={false}
           testID="source-url"

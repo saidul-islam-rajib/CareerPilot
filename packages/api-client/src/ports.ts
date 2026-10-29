@@ -16,6 +16,8 @@ import type {
   DocumentChanges,
   DocumentInput,
   NewUserSource,
+  SavedSourceJob,
+  SourceJobs,
   NotificationPreferences,
   OpportunityDetail,
   OutcomeUpdate,
@@ -92,6 +94,8 @@ export interface SourcesApi {
   listSources(): Promise<UserSource[]>;
   addSource(input: NewUserSource): Promise<UserSource>;
   removeSource(id: string): Promise<void>;
+  listJobs(id: string): Promise<SourceJobs>;
+  saveJob(id: string, jobId: string): Promise<SavedSourceJob>;
 }
 
 export interface ProfileApi {

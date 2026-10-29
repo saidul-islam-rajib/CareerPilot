@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ApiErrorCode, isApiError } from '../errors';
 import { ApplicationFilter } from '../types';
 import { createHttpApi, nativeFilePart } from './http-api';
-import { createHttpClient } from './http-client';
+import { TIME_ZONE_HEADER, createHttpClient, deviceTimeZone } from './http-client';
 
 function jsonResponse(status: number, body?: unknown): Response {
   return new Response(body === undefined ? null : JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -29,6 +29,7 @@ describe('http api', () => {
     const [url, init] = fetchFn.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe('https://api.example.com/v1/applications?filter=attention');
     expect((init.headers as Record<string, string>).Authorization).toBe('Bearer tok');
+    expect((init.headers as Record<string, string>)[TIME_ZONE_HEADER]).toBe(deviceTimeZone());
   });
 
   it('encodes path parameters and sends bodies', async () => {

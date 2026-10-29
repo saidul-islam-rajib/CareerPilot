@@ -9,6 +9,12 @@ export const HttpMethod = {
 } as const;
 export type HttpMethod = (typeof HttpMethod)[keyof typeof HttpMethod];
 
+export const RequestPace = {
+  Normal: 'normal',
+  Long: 'long',
+} as const;
+export type RequestPace = (typeof RequestPace)[keyof typeof RequestPace];
+
 export interface HttpClientOptions {
   baseUrl: string;
   timeoutMs: number;
@@ -19,10 +25,19 @@ export interface HttpClientOptions {
 }
 
 export interface HttpClient {
-  request<T>(method: HttpMethod, path: string, body?: unknown): Promise<T>;
+  request<T>(method: HttpMethod, path: string, body?: unknown, pace?: RequestPace): Promise<T>;
 }
 
 const NO_CONTENT = 204;
+export const TIME_ZONE_HEADER = 'X-Client-Time-Zone';
+
+export function deviceTimeZone(): string | undefined {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 interface ProblemDetails {
   code?: string;
@@ -45,12 +60,17 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
   const baseUrl = options.baseUrl.replace(/\/+$/, '');
   const fetchFn = options.fetchFn;
   return {
-    async request<T>(method: HttpMethod, path: string, body?: unknown): Promise<T> {
+    async request<T>(method: HttpMethod, path: string, body?: unknown, pace: RequestPace = RequestPace.Normal): Promise<T> {
       const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), isForm ? (options.uploadTimeoutMs ?? options.timeoutMs) : options.timeoutMs);
+      const long = isForm || pace === RequestPace.Long;
+      const timer = setTimeout(() => controller.abort(), long ? (options.uploadTimeoutMs ?? options.timeoutMs) : options.timeoutMs);
       const token = options.getAccessToken();
       const headers: Record<string, string> = { Accept: 'application/json' };
+      const zone = deviceTimeZone();
+      if (zone) {
+        headers[TIME_ZONE_HEADER] = zone;
+      }
       if (body !== undefined && !isForm) {
         headers['Content-Type'] = 'application/json';
       }

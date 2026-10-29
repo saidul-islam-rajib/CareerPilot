@@ -14,5 +14,6 @@ export const queryKeys = {
   signInActivity: ['sign-in-activity'] as const,
   questionBank: ['question-bank'] as const,
   jobSources: ['job-sources'] as const,
+  sourceJobs: (id: string) => ['job-sources', id, 'jobs'] as const,
   accountLink: (token: string) => ['account-link', token] as const,
 };

@@ -1,5 +1,5 @@
 import type { HttpClient } from '../http/http-client';
-import { HttpMethod } from '../http/http-client';
+import { HttpMethod, RequestPace } from '../http/http-client';
 import type { CareerPilotAdminApi } from './admin-ports';
 import type { PageQuery } from './admin-types';
 
@@ -19,6 +19,7 @@ function queryString(query: PageQuery): string {
 export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
   const get = <T>(path: string) => http.request<T>(HttpMethod.Get, path);
   const post = <T>(path: string, body?: unknown) => http.request<T>(HttpMethod.Post, path, body ?? {});
+  const postLong = <T>(path: string, body: unknown) => http.request<T>(HttpMethod.Post, path, body, RequestPace.Long);
   const patch = <T>(path: string, body: unknown) => http.request<T>(HttpMethod.Patch, path, body);
   const put = <T>(path: string, body: unknown) => http.request<T>(HttpMethod.Put, path, body);
 
@@ -54,7 +55,7 @@ export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
     sources: {
       listSources: (query) => get(`/admin/v1/sources?${queryString(query)}`),
       suggestedSources: () => get('/admin/v1/sources/suggestions'),
-      addSource: (source) => post('/admin/v1/sources', source),
+      addSource: (source) => postLong('/admin/v1/sources', source),
       setSourceEnabled: (id, enabled) => patch(`/admin/v1/sources/${enc(id)}`, { enabled }),
       runSourceCheck: (id) => post(`/admin/v1/sources/${enc(id)}/check`),
       sourceRequests: () => get('/admin/v1/sources/requests'),

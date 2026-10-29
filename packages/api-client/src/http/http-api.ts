@@ -1,6 +1,6 @@
 import type { CareerPilotApi } from '../ports';
 import type { UploadSource } from '../types';
-import { HttpMethod, type HttpClient } from './http-client';
+import { HttpMethod, RequestPace, type HttpClient } from './http-client';
 
 const enc = encodeURIComponent;
 const FILE_FIELD = 'file';
@@ -30,6 +30,7 @@ export function uploadForm(file: UploadSource, fields: Record<string, string | u
 export function createHttpApi(http: HttpClient): CareerPilotApi {
   const get = <T>(path: string) => http.request<T>(HttpMethod.Get, path);
   const post = <T>(path: string, body?: unknown) => http.request<T>(HttpMethod.Post, path, body ?? {});
+  const postLong = <T>(path: string, body: unknown) => http.request<T>(HttpMethod.Post, path, body, RequestPace.Long);
   const put = <T>(path: string, body: unknown) => http.request<T>(HttpMethod.Put, path, body);
   const patch = <T>(path: string, body: unknown) => http.request<T>(HttpMethod.Patch, path, body);
   const del = <T>(path: string) => http.request<T>(HttpMethod.Delete, path);
@@ -54,7 +55,7 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       getOpportunity: (id) => get(`/v1/opportunities/${enc(id)}`),
       decide: (id, decision) => put(`/v1/opportunities/${enc(id)}/decision`, { decision }),
       prepareApplication: (id) => post(`/v1/opportunities/${enc(id)}/applications`),
-      addByLink: (url) => post('/v1/opportunities/by-link', { url }),
+      addByLink: (url) => postLong('/v1/opportunities/by-link', { url }),
     },
     approvals: {
       listApprovals: () => get('/v1/approvals'),
@@ -81,8 +82,10 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
     },
     sources: {
       listSources: () => get('/v1/sources'),
-      addSource: (input) => post('/v1/sources', input),
+      addSource: (input) => postLong('/v1/sources', input),
       removeSource: (id) => del(`/v1/sources/${enc(id)}`),
+      listJobs: (id) => get(`/v1/sources/${enc(id)}/jobs`),
+      saveJob: (id, jobId) => post(`/v1/sources/${enc(id)}/jobs/${enc(jobId)}`),
     },
     profile: {
       getProfile: () => get('/v1/profile'),
