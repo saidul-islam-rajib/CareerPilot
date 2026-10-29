@@ -40,6 +40,7 @@ export function RootNavigator() {
         <Stack.Protected guard={signedIn} redirectTo={Routes.welcome}>
           <Stack.Screen name="(app)" options={{ headerShown: false }} />
         </Stack.Protected>
+        <Stack.Screen name="server" options={{ title: t('server.title') }} />
       </Stack>
     </>
   );

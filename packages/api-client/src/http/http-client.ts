@@ -16,7 +16,7 @@ export const RequestPace = {
 export type RequestPace = (typeof RequestPace)[keyof typeof RequestPace];
 
 export interface HttpClientOptions {
-  baseUrl: string;
+  baseUrl: string | (() => string);
   timeoutMs: number;
   uploadTimeoutMs?: number;
   fetchFn: typeof fetch;
@@ -57,7 +57,7 @@ async function readProblem(response: Response): Promise<ProblemDetails> {
 }
 
 export function createHttpClient(options: HttpClientOptions): HttpClient {
-  const baseUrl = options.baseUrl.replace(/\/+$/, '');
+  const baseUrl = () => (typeof options.baseUrl === 'function' ? options.baseUrl() : options.baseUrl).replace(/\/+$/, '');
   const fetchFn = options.fetchFn;
   return {
     async request<T>(method: HttpMethod, path: string, body?: unknown, pace: RequestPace = RequestPace.Normal): Promise<T> {
@@ -78,7 +78,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
         headers.Authorization = `Bearer ${token}`;
       }
       try {
-        const response = await fetchFn(`${baseUrl}${path}`, {
+        const response = await fetchFn(`${baseUrl()}${path}`, {
           method,
           headers,
           body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),

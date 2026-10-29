@@ -31,6 +31,7 @@ export const Routes = {
   notifications: '/settings/notifications',
   answers: '/settings/answers',
   sources: '/settings/sources',
+  server: '/server',
   countries: '/settings/countries',
   addSource: '/settings/source',
   sourceJobs: (id: string) => ({ pathname: '/settings/source-jobs', params: { id } }) as const,

@@ -12,6 +12,8 @@ api:
   base_url: http://127.0.0.1:8000
   timeout_ms: 15000
   upload_timeout_ms: 120000
+  # Test builds that talk to a laptop let people point the app at a new address (config/env/http.yaml).
+  allow_server_change: false
 query:
   stale_time_ms: 30000
   retry_count: 6

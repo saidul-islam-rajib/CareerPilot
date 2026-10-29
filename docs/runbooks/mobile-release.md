@@ -18,8 +18,12 @@ An installed app talks to the CareerPilot API it was built for:
 with `http://`, so store builds that point at `https://` stay locked down.
 
 For test builds the phone must be on the same Wi-Fi as the laptop, Docker must be running, and the API must listen on the
-network: run `pnpm phone` once after starting Docker (it opens the API to the Wi-Fi). If the laptop's Wi-Fi address
-changes, update it and build again:
+network: run `pnpm phone` once after starting Docker (it opens the API to the Wi-Fi and prints the laptop's address).
+
+If the laptop's Wi-Fi address changes, test builds need no rebuild: on the phone, open **Sign in** (or **More** when signed
+in) → **Server: … · Change**, type the new address (for example `192.168.0.106`), and tap **Check and save**. The app
+checks that CareerPilot answers there before it switches (config `api.allow_server_change`, on only in `config/env/http.yaml`,
+so store builds never show it). To change the address new test builds start with:
 
 ```sh
 npx -y eas-cli@latest env:update --variable-environment preview --variable-name CAREERPILOT_API_URL --value http://NEW-ADDRESS:8000 --non-interactive

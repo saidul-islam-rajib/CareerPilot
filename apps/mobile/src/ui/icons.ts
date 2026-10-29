@@ -69,6 +69,7 @@ export { default as Scale } from 'lucide-react-native/icons/scale';
 export { default as ScrollText } from 'lucide-react-native/icons/scroll-text';
 export { default as Search } from 'lucide-react-native/icons/search';
 export { default as Send } from 'lucide-react-native/icons/send';
+export { default as Server } from 'lucide-react-native/icons/server';
 export { default as ShieldAlert } from 'lucide-react-native/icons/shield-alert';
 export { default as ShieldCheck } from 'lucide-react-native/icons/shield-check';
 export { default as Sparkles } from 'lucide-react-native/icons/sparkles';

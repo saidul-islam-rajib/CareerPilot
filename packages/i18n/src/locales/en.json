@@ -1507,5 +1507,19 @@
     },
     "closingTitle": "Start with your profile. It takes a few minutes.",
     "closingBody": "Nothing is sent to an employer without your say."
+  },
+  "server": {
+    "title": "Server",
+    "current": "Server: {address}",
+    "change": "Change",
+    "body": "This test version of CareerPilot talks to a computer on your Wi-Fi. If that computer's address changed, enter the new one. You can type just the address, for example 192.168.0.106.",
+    "field": "Server address",
+    "hint": "Shown when the computer starts the phone server (pnpm phone).",
+    "save": "Check and save",
+    "saved": "Connected to {address}",
+    "errors": {
+      "invalid": "Enter an address like 192.168.0.106 or http://192.168.0.106:8000.",
+      "unreachable": "CareerPilot didn't answer at this address. Check the phone and computer are on the same Wi-Fi and the server is running."
+    }
   }
 }

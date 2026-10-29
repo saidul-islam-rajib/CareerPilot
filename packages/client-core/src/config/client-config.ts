@@ -92,6 +92,7 @@ export const appConfigSchema = z.object({
     baseUrl: z.string().url(),
     timeoutMs: z.number().int().positive(),
     uploadTimeoutMs: z.number().int().positive(),
+    allowServerChange: z.boolean(),
   }),
   query: z.object({
     staleTimeMs: z.number().int().nonnegative(),

@@ -10,4 +10,5 @@
 - [x] Settings: tracks, pause, submission window, activity, about, licences, delete account
 - [x] Unit tests for every screen
 - [x] Visual validation of every screen at phone width (scripts/validate/mobile-screens.mjs, 19 screens, 0 console errors)
-- [!] Native build on Android/iOS device: needs Android SDK or EAS account (docs/runbooks/machine-setup.md)
+- [x] Native build on Android/iOS device: EAS Build (`apps/mobile/eas.json`, docs/runbooks/mobile-release.md); Android APK built and installable; iOS builds wait for an Apple Developer account
+- [x] Test builds can change the server address on the phone (`useServerAddress`, Sign in / More → Server)

@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useQueryClient } from '@tanstack/react-query';
 import type { Session, UserSummary } from '@careerpilot/api-client';
 import { useServices } from '../services/app-services';
+import { SERVER_ADDRESS_KEY } from '../services/server-address';
 
 export const SessionStatus = {
   Restoring: 'restoring',
@@ -22,7 +23,7 @@ interface SessionValue {
 const SessionContext = createContext<SessionValue | undefined>(undefined);
 
 export function SessionProvider({ children }: PropsWithChildren) {
-  const { store, tokens, api } = useServices();
+  const { store, tokens, api, server, config } = useServices();
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<SessionStatus>(SessionStatus.Restoring);
   const [user, setUser] = useState<UserSummary>();
@@ -38,11 +39,14 @@ export function SessionProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     tokens.onUnauthorized = () => void clear();
     let active = true;
-    store
-      .get(SESSION_KEY)
-      .then((raw) => {
+    const savedServer = config.api.allowServerChange ? store.get(SERVER_ADDRESS_KEY) : Promise.resolve(undefined);
+    Promise.all([store.get(SESSION_KEY), savedServer.catch(() => undefined)])
+      .then(([raw, address]) => {
         if (!active) {
           return;
+        }
+        if (address) {
+          server.set(address);
         }
         const saved = raw ? (JSON.parse(raw) as Session) : undefined;
         tokens.token = saved?.accessToken;
@@ -53,7 +57,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
     return () => {
       active = false;
     };
-  }, [clear, store, tokens]);
+  }, [clear, config.api.allowServerChange, server, store, tokens]);
 
   const start = useCallback(
     async (session: Session) => {

@@ -3,6 +3,7 @@ import type { AppConfig } from '../config/client-config';
 
 export interface ApiDependencies {
   config: AppConfig;
+  baseUrl?: () => string;
   getAccessToken: () => string | undefined;
   onUnauthorized: () => void;
   fetchFn?: typeof fetch;
@@ -11,7 +12,7 @@ export interface ApiDependencies {
 export function createApi(deps: ApiDependencies): CareerPilotApi {
   return createHttpApi(
     createHttpClient({
-      baseUrl: deps.config.api.baseUrl,
+      baseUrl: deps.baseUrl ?? deps.config.api.baseUrl,
       timeoutMs: deps.config.api.timeoutMs,
       uploadTimeoutMs: deps.config.api.uploadTimeoutMs,
       fetchFn: deps.fetchFn ?? fetch,

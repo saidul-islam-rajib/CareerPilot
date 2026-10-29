@@ -4,6 +4,7 @@ import { AlertCircle } from '@/ui/icons';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { Banner, Button, ButtonVariant, Card, Screen, TextField } from '@/ui';
+import { ServerLink } from '@/features/settings/server-screen';
 
 export function SignInScreen() {
   const t = useT();
@@ -39,6 +40,7 @@ export function SignInScreen() {
         <Button label={t('auth.forgotPassword')} variant={ButtonVariant.Ghost} onPress={() => router.push(Routes.forgotPassword)} />
       </Card>
       <Button label={`${t('auth.noAccount')} ${t('auth.createAccount')}`} variant={ButtonVariant.Ghost} onPress={() => router.replace(Routes.register)} />
+      <ServerLink />
     </Screen>
   );
 }

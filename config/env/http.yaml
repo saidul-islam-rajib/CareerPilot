@@ -5,5 +5,7 @@ http:
     - http://localhost:8081
     - http://localhost:4320
     - http://localhost:4330
+api:
+  allow_server_change: true
 persistence:
   mode: database
