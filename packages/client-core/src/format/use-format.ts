@@ -7,6 +7,10 @@ import { useServices } from '../services/app-services';
 
 const BYTES_PER_KILOBYTE = 1024;
 const BYTES_PER_MEGABYTE = BYTES_PER_KILOBYTE * BYTES_PER_KILOBYTE;
+const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
+const HOURS_PER_DAY = 24;
+const MS_PER_SECOND = 1000;
 
 export function useFormat() {
   const { config } = usePublicConfig();
@@ -42,6 +46,25 @@ export function useFormat() {
           : bytes < BYTES_PER_MEGABYTE
           ? t('common.kilobytes', { value: formatDecimal(Math.max(1, Math.round(bytes / BYTES_PER_KILOBYTE)), ctx) })
           : t('common.megabytes', { value: formatDecimal(bytes / BYTES_PER_MEGABYTE, ctx) }),
+      duration: (seconds: number) => {
+        const minutes = Math.floor(seconds / SECONDS_PER_MINUTE);
+        const hours = Math.floor(minutes / MINUTES_PER_HOUR);
+        if (hours > 0) {
+          return t('format.hoursMinutes', { hours, minutes: minutes % MINUTES_PER_HOUR });
+        }
+        return minutes > 0 ? t('format.minutes', { count: minutes }) : t('format.underMinute');
+      },
+      ago: (iso: string) => {
+        const minutes = Math.floor((clock.now().getTime() - new Date(iso).getTime()) / (MS_PER_SECOND * SECONDS_PER_MINUTE));
+        if (minutes < 1) {
+          return t('format.justNow');
+        }
+        if (minutes < MINUTES_PER_HOUR) {
+          return t('format.minutesAgo', { count: minutes });
+        }
+        const hours = Math.floor(minutes / MINUTES_PER_HOUR);
+        return hours < HOURS_PER_DAY ? t('format.hoursAgo', { count: hours }) : formatDateTime(iso, ctx);
+      },
     };
   }, [clock, config.defaultTimeZone, config.locale, t]);
 }

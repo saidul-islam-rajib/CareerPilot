@@ -397,7 +397,61 @@ function SourcesPanel({ record }: { record: AdminUserRecord }) {
   );
 }
 
-function ActivityPanel({ record }: { record: AdminUserRecord }) {
+function PresenceSummary({ record }: { record: AdminUserRecord }) {
+  const t = useT();
+  const format = useFormat();
+  const presence = record.user.presence;
+  const status = presence.online ? t('admin.presence.online') : presence.lastSeenAt ? t('admin.presence.lastSeen', { time: format.ago(presence.lastSeenAt) }) : t('admin.presence.never');
+  const facts = [
+    { label: t('admin.presence.timeInApp'), value: format.duration(presence.activeSeconds) },
+    { label: t('admin.presence.sessions'), value: String(presence.sessionsCount) },
+    { label: t('admin.presence.location'), value: presence.location || t('activity.unknownLocation') },
+    { label: t('admin.presence.device'), value: presence.device || t('activity.unknownDevice') },
+  ];
+  return (
+    <Card className="gap-4">
+      <div className="flex items-center gap-3">
+        <span aria-hidden className={cn('size-3 rounded-full', presence.online ? 'bg-success' : 'bg-border')} />
+        <h3 className="text-lg font-semibold text-foreground">{status}</h3>
+      </div>
+      <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {facts.map((fact) => (
+          <div key={fact.label} className="flex flex-col gap-1">
+            <dt className="text-xs font-medium uppercase tracking-wide text-muted">{fact.label}</dt>
+            <dd className="break-words font-semibold text-foreground">{fact.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="text-xs text-muted">{t('admin.presence.locationNote')}</p>
+    </Card>
+  );
+}
+
+function SessionsList({ record }: { record: AdminUserRecord }) {
+  const t = useT();
+  const format = useFormat();
+  if (record.sessions.length === 0) {
+    return <EmptyState body={t('admin.presence.sessionsEmpty')} />;
+  }
+  return (
+    <Card>
+      {record.sessions.map((session) => {
+        const state = session.signedOutAt ? t('admin.presence.sessionEnded') : record.user.presence.online && session.lastSeenAt === record.user.presence.lastSeenAt ? t('admin.presence.sessionActive') : t('admin.presence.sessionIdle');
+        return (
+          <ListRow
+            key={session.id}
+            icon={MonitorSmartphone}
+            title={`${session.device} · ${session.approximateLocation}`}
+            subtitle={`${t('admin.presence.sessionDetail', { started: format.dateTime(session.startedAt), seen: format.ago(session.lastSeenAt), active: format.duration(session.activeSeconds) })} · ${session.ip}`}
+            trailing={<Badge label={state} />}
+          />
+        );
+      })}
+    </Card>
+  );
+}
+
+function SignInList({ record }: { record: AdminUserRecord }) {
   const t = useT();
   const format = useFormat();
   if (record.signIns.length === 0) {
@@ -415,6 +469,23 @@ function ActivityPanel({ record }: { record: AdminUserRecord }) {
         />
       ))}
     </Card>
+  );
+}
+
+function ActivityPanel({ record }: { record: AdminUserRecord }) {
+  const t = useT();
+  return (
+    <div className="flex flex-col gap-6">
+      <PresenceSummary record={record} />
+      <section className="flex flex-col gap-3">
+        <h3 className="text-base font-semibold text-foreground">{t('admin.presence.sessionsTitle')}</h3>
+        <SessionsList record={record} />
+      </section>
+      <section className="flex flex-col gap-3">
+        <h3 className="text-base font-semibold text-foreground">{t('admin.presence.signInsTitle')}</h3>
+        <SignInList record={record} />
+      </section>
+    </div>
   );
 }
 

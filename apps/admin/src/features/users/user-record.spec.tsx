@@ -25,7 +25,9 @@ describe('everything about a user', () => {
     expect(await screen.findAllByRole('button', { name: 'Remove from list' })).not.toHaveLength(0);
     fireEvent.mouseDown(screen.getByRole('tab', { name: 'Profile and settings' }));
     expect(await screen.findByRole('heading', { name: 'Profile' })).toBeInTheDocument();
-    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Sign-in activity' }));
-    expect(await screen.findAllByText(/Success|Failed/)).not.toHaveLength(0);
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Activity and sessions' }));
+    expect(await screen.findByRole('heading', { name: 'Never signed in' })).toBeInTheDocument();
+    expect(screen.getByText(/No sessions recorded yet/)).toBeInTheDocument();
+    expect(await screen.findAllByText(/Signed in|Failed attempt/)).not.toHaveLength(0);
   });
 });

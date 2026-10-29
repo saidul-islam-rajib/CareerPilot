@@ -100,6 +100,27 @@ export interface AdminDashboard {
   emergencyStop: EmergencyStop;
 }
 
+export interface UserPresence {
+  online: boolean;
+  lastSeenAt?: IsoDateTime;
+  activeSeconds: number;
+  sessionsCount: number;
+  location: string;
+  device: string;
+}
+
+export interface UserSession {
+  id: string;
+  userId: string;
+  startedAt: IsoDateTime;
+  lastSeenAt: IsoDateTime;
+  ip: string;
+  device: string;
+  approximateLocation: string;
+  activeSeconds: number;
+  signedOutAt?: IsoDateTime;
+}
+
 export interface AdminUserRow {
   id: string;
   fullName: string;
@@ -111,6 +132,7 @@ export interface AdminUserRow {
   applicationsCount: number;
   automaticEnabled: boolean;
   profileCompleteness: number;
+  presence: UserPresence;
 }
 
 export interface SecretMetadata {
@@ -288,6 +310,7 @@ export interface AdminUserRecord {
   applications: ApplicationRecord[];
   sources: UserSource[];
   signIns: SignInEvent[];
+  sessions: UserSession[];
 }
 
 export interface AdminApplicationChange {

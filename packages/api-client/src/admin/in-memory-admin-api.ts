@@ -145,6 +145,7 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
       applications: own ? userState.applications : [],
       sources: [],
       signIns: own ? userState.signInEvents : [],
+      sessions: [],
     });
   };
 

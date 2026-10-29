@@ -81,6 +81,7 @@ export function buildAdminDemoSeed(now: Date, userState: DemoState, accountLinkT
       applicationsCount: pick(APPLICATIONS),
       automaticEnabled: i % 3 === 0,
       profileCompleteness: pick(COMPLETENESS),
+      presence: { online: false, activeSeconds: 0, sessionsCount: 0, location: '', device: '' },
     };
   });
 
