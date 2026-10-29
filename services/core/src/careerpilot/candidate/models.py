@@ -69,6 +69,7 @@ class OpportunitySummary(CamelModel):
     sponsorship: str | None = None
     has_hard_failure: bool
     decision: OpportunityDecision | None = None
+    missing_skills: list[str] = Field(default_factory=list[str])
 
 
 class MatchFactor(CamelModel):

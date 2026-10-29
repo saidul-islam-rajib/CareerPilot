@@ -1,6 +1,7 @@
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import OpportunityDetail, OpportunitySummary
 from careerpilot.candidate.ports import CandidateWorkspace
+from careerpilot.matching.skills import SkillCatalog
 from careerpilot.platform.enums import OpportunityDecision
 from careerpilot.platform.errors import not_found
 
@@ -8,6 +9,7 @@ from careerpilot.platform.errors import not_found
 class OpportunityService:
     def __init__(self, context: CandidateContext) -> None:
         self._ctx = context
+        self._skills = SkillCatalog(context.settings.matching.skill_gap)
 
     def detail(self, user_id: str, opportunity_id: str) -> OpportunityDetail:
         return self._personalized(self._ctx.workspaces.get(user_id), opportunity_id)
@@ -19,7 +21,10 @@ class OpportunityService:
         opportunity = self._ctx.opportunities.get(opportunity_id)
         if opportunity is None:
             raise not_found("opportunity")
-        update: dict[str, object] = {"decision": workspace.decisions.get(opportunity_id)}
+        update: dict[str, object] = {
+            "decision": workspace.decisions.get(opportunity_id),
+            "missing_skills": self._skills.missing(workspace.profile.skills, opportunity.title, opportunity.description),
+        }
         match = workspace.matches.get(opportunity_id)
         if match is not None:
             update |= {

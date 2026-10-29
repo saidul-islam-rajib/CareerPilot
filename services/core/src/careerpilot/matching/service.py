@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 
 from careerpilot.candidate.models import ArchivedCircular, OpportunityDetail, OpportunityMatch, SourceRef, Track
 from careerpilot.candidate.ports import AccountRepository, CandidateWorkspace, OpportunityRepository, WorkspaceRepository
-from careerpilot.candidate.tracks import UserScope, ordered_tracks, role_key, user_scope
+from careerpilot.candidate.tracks import CompanyQuota, UserScope, ordered_tracks, role_key, user_scope
 from careerpilot.discovery.models import Listing
 from careerpilot.matching.ports import Matcher
 from careerpilot.matching.rules import is_eligible, sponsorship_evidence
@@ -19,7 +19,11 @@ class RematchState:
     listed: set[str]
     acted_on: set[str]
     scope: UserScope
+    quota: CompanyQuota
     placed: set[str] = field(default_factory=set[str])
+
+
+Assessed = tuple[Listing, OpportunityMatch]
 
 
 @dataclass(frozen=True)
@@ -53,9 +57,10 @@ class RecommendationService:
         workspace = self._ctx.workspaces.get(user_id)
         listings = self._ctx.listings(user_id)
         assessed_before = len(workspace.matches)
-        scope = self._scope(workspace)
-        added = sum(self._refresh_track(workspace, track, listings, scope) for track in self._tracks(workspace))
-        if added or len(workspace.matches) != assessed_before:
+        state = self._state(workspace, listings)
+        trimmed = self._trim(workspace, state)
+        added = sum(self._refresh_track(workspace, track, state) for track in self._tracks(workspace))
+        if added or trimmed or len(workspace.matches) != assessed_before:
             self._ctx.workspaces.save(user_id, workspace)
         self._sync_routes(workspace, listings)
         self._apply_automatic(user_id, workspace)
@@ -89,19 +94,53 @@ class RecommendationService:
             and is_eligible(item, track, self._ctx.config, scope.home_country)
         )
 
-    def _refresh_track(self, workspace: CandidateWorkspace, track: Track, listings: list[Listing], scope: UserScope) -> int:
-        current = workspace.track_opportunities.get(track.id, [])
-        candidates = [
-            item for item in listings if item.id not in current and item.id not in workspace.matches and self._fits(item, track, scope)
-        ]
+    def _state(self, workspace: CandidateWorkspace, listings: list[Listing]) -> RematchState:
+        return RematchState(
+            listings=listings,
+            listed={item.id for item in listings},
+            acted_on=acted_on_opportunities(workspace),
+            scope=self._scope(workspace),
+            quota=CompanyQuota(limit=self._ctx.config.max_jobs_per_company),
+        )
+
+    def _trim(self, workspace: CandidateWorkspace, state: RematchState) -> int:
+        organization = {item.id: item.organization for item in state.listings}
+        shown = [oid for ids in workspace.track_opportunities.values() for oid in ids if oid in organization and oid not in state.acted_on]
+        shown.sort(key=lambda oid: -score_of(workspace, oid))
+        over = {oid for oid in shown if not state.quota.admit(organization[oid])}
+        if over:
+            for track_id, ids in workspace.track_opportunities.items():
+                workspace.track_opportunities[track_id] = [oid for oid in ids if oid not in over]
+        return len(over)
+
+    def _assess(self, workspace: CandidateWorkspace, track: Track, candidates: list[Listing]) -> list[Assessed]:
         assessed = [(item, self._ctx.matcher.assess(workspace.profile, track, item)) for item in candidates]
         for item, match in assessed:
             workspace.matches[item.id] = match
-        qualified = sorted(
+        return sorted(
             ((item, match) for item, match in assessed if match.score >= self._ctx.config.min_score),
             key=lambda pair: pair[1].score,
             reverse=True,
-        )[: max(0, track.result_count - len(current))]
+        )
+
+    @staticmethod
+    def _pick(ranked: list[Assessed], room: int, quota: CompanyQuota) -> list[Assessed]:
+        chosen: list[Assessed] = []
+        for listing, match in ranked:
+            if len(chosen) >= room:
+                break
+            if quota.admit(listing.organization):
+                chosen.append((listing, match))
+        return chosen
+
+    def _refresh_track(self, workspace: CandidateWorkspace, track: Track, state: RematchState) -> int:
+        current = workspace.track_opportunities.get(track.id, [])
+        candidates = [
+            item
+            for item in state.listings
+            if item.id not in current and item.id not in workspace.matches and self._fits(item, track, state.scope)
+        ]
+        qualified = self._pick(self._assess(workspace, track, candidates), track.result_count - len(current), state.quota)
         for listing, match in qualified:
             self._publish(listing, match)
         workspace.track_opportunities[track.id] = [*current, *(listing.id for listing, _ in qualified)]
@@ -110,12 +149,7 @@ class RecommendationService:
     def rematch(self, user_id: str) -> int:
         workspace = self._ctx.workspaces.get(user_id)
         listings = self._ctx.listings(user_id)
-        state = RematchState(
-            listings=listings,
-            listed={item.id for item in listings},
-            acted_on=acted_on_opportunities(workspace),
-            scope=self._scope(workspace),
-        )
+        state = self._state(workspace, listings)
         added = sum(self._rebuild_track(workspace, track, state) for track in self._tracks(workspace))
         self._ctx.workspaces.save(user_id, workspace)
         self._sync_routes(workspace, listings)
@@ -127,15 +161,12 @@ class RecommendationService:
         acted_on, placed = state.acted_on, state.placed
         kept = [oid for oid in previous if (oid in acted_on or oid not in state.listed) and oid not in placed]
         taken = acted_on | placed
+        organization = {item.id: item.organization for item in state.listings}
+        for oid in kept:
+            if oid in organization and oid not in acted_on:
+                state.quota.admit(organization[oid])
         candidates = [item for item in state.listings if item.id not in taken and self._fits(item, track, state.scope)]
-        assessed = [(item, self._ctx.matcher.assess(workspace.profile, track, item)) for item in candidates]
-        for item, match in assessed:
-            workspace.matches[item.id] = match
-        best = sorted(
-            ((item, match) for item, match in assessed if match.score >= self._ctx.config.min_score),
-            key=lambda pair: pair[1].score,
-            reverse=True,
-        )[: max(0, track.result_count - len(kept))]
+        best = self._pick(self._assess(workspace, track, candidates), track.result_count - len(kept), state.quota)
         for listing, match in best:
             self._publish(listing, match)
         chosen = [*kept, *(listing.id for listing, _ in best)]
@@ -165,6 +196,11 @@ class RecommendationService:
         if self._ctx.opportunities.get(listing.id) is not None:
             return
         self._ctx.opportunities.save(opportunity_from_listing(listing, match, self._ctx.source_name, self._ctx.config))
+
+
+def score_of(workspace: CandidateWorkspace, opportunity_id: str) -> int:
+    match = workspace.matches.get(opportunity_id)
+    return match.score if match is not None else 0
 
 
 def acted_on_opportunities(workspace: CandidateWorkspace) -> set[str]:

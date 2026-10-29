@@ -8,6 +8,8 @@ ui:
   save_delay_ms: 700
   # How many company and role suggestions the Today search shows.
   search_suggestion_limit: 8
+  # Where "Learn" sends people for a skill a job asks for; {skill} is replaced with the skill name.
+  learn_skill_url: https://www.google.com/search?q=learn+{skill}
   # Quick choices on the Submission time page (24-hour HH:MM, user's time zone).
   submission_window_presets:
     - { key: working_hours, start: "09:00", end: "17:00" }

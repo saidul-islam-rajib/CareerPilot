@@ -46,6 +46,8 @@ matching:
     arrangement: 10
   # Do not suggest the same company and role again within this many days of applying.
   reapply_cooldown_days: 15
+  # Show at most this many jobs from one company, keeping the best matches.
+  max_jobs_per_company: 3
   track_rules:
     remote:
       work_arrangements: [remote]

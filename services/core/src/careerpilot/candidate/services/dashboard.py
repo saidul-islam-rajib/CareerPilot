@@ -4,7 +4,7 @@ from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import DashboardCounts, DashboardSummary, OpportunitySummary, TrackDigest
 from careerpilot.candidate.services.applications import upcoming_tasks
 from careerpilot.candidate.services.opportunities import OpportunityService
-from careerpilot.candidate.tracks import home_country, ordered_tracks
+from careerpilot.candidate.tracks import CompanyQuota, home_country, ordered_tracks
 from careerpilot.discovery.text import normalized
 from careerpilot.platform.clock import parse_iso
 from careerpilot.platform.enums import ApprovalState, OpportunityDecision, OutcomeStatus
@@ -22,6 +22,7 @@ class DashboardService:
         applied = {application.opportunity.id for application in workspace.applications}
         current = [application for application in workspace.applications if application.archived_at is None]
         favorites = {normalized(company) for company in workspace.preferences.favorite_companies}
+        quota = CompanyQuota(limit=settings.matching.max_jobs_per_company)
         digests: list[TrackDigest] = []
         for track in ordered_tracks(workspace.preferences.tracks, settings.tracks.lead_kinds):
             visible: list[OpportunitySummary] = [
@@ -30,7 +31,8 @@ class DashboardService:
                 if workspace.decisions.get(oid) is not OpportunityDecision.DISMISSED and oid not in applied
             ]
             visible.sort(key=lambda o: (normalized(o.organization) not in favorites, -o.match_score))
-            digests.append(TrackDigest(track=track, opportunities=visible[: track.result_count]))
+            shown = [o for o in visible if o.decision is OpportunityDecision.SAVED or quota.admit(o.organization)]
+            digests.append(TrackDigest(track=track, opportunities=shown[: track.result_count]))
         return DashboardSummary(
             counts=DashboardCounts(
                 new_matches=sum(len(d.opportunities) for d in digests),

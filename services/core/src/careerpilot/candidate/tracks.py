@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from collections import Counter
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
 from careerpilot.candidate.models import ApplicationRecord, Track
@@ -27,6 +28,23 @@ def ordered_tracks(tracks: list[Track], lead_kinds: list[str]) -> list[Track]:
 
 def role_key(organization: str, title: str) -> str:
     return f"{normalized(organization)}{ROLE_SEPARATOR}{normalized(title)}"
+
+
+def company_key(organization: str) -> str:
+    return normalized(organization)
+
+
+@dataclass
+class CompanyQuota:
+    limit: int
+    shown: Counter[str] = field(default_factory=Counter[str])
+
+    def admit(self, organization: str) -> bool:
+        key = company_key(organization)
+        if self.shown[key] >= self.limit:
+            return False
+        self.shown[key] += 1
+        return True
 
 
 def applied_at(application: ApplicationRecord) -> str:

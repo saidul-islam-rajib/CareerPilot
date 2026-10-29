@@ -84,6 +84,7 @@ class UiConfig(Strict):
     admin_theme: ThemeKey
     save_delay_ms: int = Field(gt=0)
     search_suggestion_limit: int = Field(gt=0)
+    learn_skill_url: str
     submission_window_presets: list[TimeRangePreset]
 
 
@@ -338,6 +339,12 @@ class ApplicationEmailConfig(Strict):
     excluded_words: list[str]
 
 
+class SkillGapConfig(Strict):
+    limit: int = Field(ge=0)
+    title_weight: int = Field(ge=1)
+    vocabulary: dict[str, list[str]]
+
+
 class MatchingConfig(Strict):
     mode: MatchingMode
     model: str
@@ -351,6 +358,8 @@ class MatchingConfig(Strict):
     default_route: str
     application_email: ApplicationEmailConfig
     reapply_cooldown_days: int = Field(ge=0)
+    max_jobs_per_company: int = Field(ge=1)
+    skill_gap: SkillGapConfig
     weights: MatchWeights
     track_rules: dict[str, TrackRule]
     sponsorship: SponsorshipPhrases
