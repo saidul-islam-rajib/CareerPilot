@@ -1,10 +1,32 @@
 'use client';
 
-import { Bell, Clock, Globe, Globe2, Info, KeyRound, ListOrdered, LogOut, MessageSquareText, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2 } from 'lucide-react';
-import { usePublicConfig, useSession, useT } from '@careerpilot/client-core';
-import { Card, ListRow, PageHeader, Separator, TeamSoberCredit } from '@careerpilot/ui-web';
+import { Bell, Clock, MessageCircle, Globe, Globe2, Info, KeyRound, ListOrdered, LogOut, MessageSquareText, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2 } from 'lucide-react';
+import { useDiscoverable, usePublicConfig, useSession, useSettings, useT } from '@careerpilot/client-core';
+import { Card, ListRow, PageHeader, Separator, SwitchField, TeamSoberCredit } from '@careerpilot/ui-web';
 import { teamSoberLogoSrc } from '@/core/brand-assets';
 import { Routes } from '@/core/routes';
+
+function PrivacyCard() {
+  const t = useT();
+  const settings = useSettings();
+  const discoverable = useDiscoverable();
+  if (!settings.data) {
+    return null;
+  }
+  return (
+    <Card>
+      <ListRow icon={MessageCircle} title={t('messaging.title')} subtitle={t('messaging.menuBody')} href={Routes.messages} />
+      <Separator />
+      <SwitchField
+        className="px-2 py-3"
+        label={t('messaging.privacy')}
+        description={t('messaging.privacyBody')}
+        checked={settings.data.discoverable}
+        onChange={(value) => discoverable.mutate(value)}
+      />
+    </Card>
+  );
+}
 
 export function SettingsPage() {
   const t = useT();
@@ -32,6 +54,7 @@ export function SettingsPage() {
           <Separator />
           <ListRow icon={KeyRound} title={t('settings.changePassword')} href={Routes.changePassword} />
         </Card>
+        <PrivacyCard />
         <Card>
           <ListRow icon={Palette} title={t('settings.appearance')} subtitle={t('settings.activeTheme', { theme: t(`themes.${config.theme}`) })} />
           <p className="text-xs text-muted">{t('settings.themeManaged')}</p>

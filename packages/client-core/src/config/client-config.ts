@@ -139,6 +139,13 @@ export const appConfigSchema = z.object({
     defaultTaskTime: z.string(),
   }),
   jobSources: z.object({ maxPerUser: z.number().int().positive(), minLimit: z.number().int().positive(), maxLimit: z.number().int().positive() }),
+  messaging: z.object({
+    pollSeconds: z.number().int().positive(),
+    openConversationPollSeconds: z.number().int().positive(),
+    maxTextLength: z.number().int().positive(),
+    directoryMinQuery: z.number().int().positive(),
+    attachments: z.record(z.string(), z.object({ types: z.array(z.string()), maxBytes: z.number().int().positive(), maxSeconds: z.number().int().nonnegative().optional() })),
+  }),
   answers: z.object({
     questionMaxLength: z.number().int().positive(),
     maxSavedAnswers: z.number().int().positive(),

@@ -1,6 +1,9 @@
 import {
   ActorType,
   ApprovalState,
+  ConversationKind,
+  MessageKind,
+  MessageState,
   OpportunityStatus,
   OpportunityType,
   OutcomeStatus,
@@ -14,6 +17,7 @@ import {
 import { isHttpsAddress, sameAddress, secureAddress, siteName } from '../addresses';
 import { ApiError, ApiErrorCode, ApiErrorDetail } from '../errors';
 import type { Clock, IdGenerator } from '../ports';
+import type { ConversationSummary, MessageView, NewAttachment } from '../types';
 import type { DemoState } from '../in-memory/demo.seed';
 import type { CareerPilotAdminApi } from './admin-ports';
 import type { AdminDemoAccount, AdminDemoState } from './admin-demo.seed';
@@ -36,6 +40,8 @@ export interface InMemoryAdminApiOptions {
 }
 
 const DAY_MS = 86_400_000;
+const MEMORY_FILE = 'memory://file';
+const TEAM_SENDER = 'CareerPilot team';
 const SOURCE_CONNECTORS: readonly string[] = Object.values(SourceConnector);
 const ISO_DATE_LENGTH = 10;
 const DEMO_USER_ID = 'usr_demo';
@@ -95,6 +101,41 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
   const sourceAt = (address: string) => state.sources.find((s) => !!s.setup && (sameAddress(s.setup.url, address) || sameAddress(s.setup.siteUrl ?? '', address)));
   const sourceAdded = (address: string) => sourceAt(address) !== undefined;
   const findUser = (id: string) => state.users.find((u) => u.id === id);
+  const teamThreads = new Map<string, MessageView[]>();
+  const teamThread = (userId: string) => teamThreads.get(userId) ?? [];
+  const teamSummary = (userId: string): ConversationSummary => {
+    const thread = teamThread(userId);
+    const last = thread[thread.length - 1];
+    return {
+      id: `cnv_team_${userId}`,
+      kind: ConversationKind.Team,
+      title: findUser(userId)?.fullName ?? '',
+      lastMessageAt: last?.createdAt,
+      lastMessagePreview: last?.text ?? '',
+      lastMessageKind: last?.kind,
+      lastFromMe: last !== undefined,
+      unreadCount: 0,
+      muted: false,
+      blocked: false,
+    };
+  };
+  const teamMessage = (userId: string, text: string, attachment?: NewAttachment): MessageView => {
+    const message: MessageView = {
+      id: ids.next('msg'),
+      conversationId: teamSummary(userId).id,
+      kind: attachment?.kind ?? MessageKind.Text,
+      text,
+      attachment: attachment
+        ? { url: attachment.file.uri ?? MEMORY_FILE, fileName: attachment.file.name, contentType: attachment.file.type, sizeBytes: attachment.file.size ?? 0 }
+        : undefined,
+      fromMe: true,
+      senderName: TEAM_SENDER,
+      createdAt: clock.now().toISOString(),
+      state: MessageState.Sent,
+    };
+    teamThreads.set(userId, [...teamThread(userId), message]);
+    return message;
+  };
   const userDetail = (id: string): AdminUserDetail | undefined => {
     const user = findUser(id);
     if (!user) {
@@ -311,6 +352,58 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
         }
         approval.state = ApprovalState.Rejected;
         return recordOf(id, 'approval.rejected_by_admin', approval.opportunity.title);
+      },
+      async teamMessages(id) {
+        const user = findUser(id);
+        if (!user) {
+          return fail(ApiErrorCode.NotFound);
+        }
+        return respond({ conversation: teamSummary(id), messages: teamThread(id), hasMore: false });
+      },
+      async sendTeamMessage(id, text) {
+        if (!findUser(id)) {
+          return fail(ApiErrorCode.NotFound);
+        }
+        const message = teamMessage(id, text);
+        record('chat.team_message', findUser(id)?.fullName ?? id);
+        return respond(message);
+      },
+      async sendTeamAttachment(id, attachment) {
+        if (!findUser(id)) {
+          return fail(ApiErrorCode.NotFound);
+        }
+        return respond(teamMessage(id, attachment.text ?? '', attachment));
+      },
+      async connections(id) {
+        return findUser(id) ? respond([]) : fail(ApiErrorCode.NotFound);
+      },
+      async conversation(conversationId) {
+        record('chat.viewed', conversationId);
+        return fail(ApiErrorCode.NotFound);
+      },
+      async files(id) {
+        const user = findUser(id);
+        if (!user) {
+          return fail(ApiErrorCode.NotFound);
+        }
+        record('user.files_viewed', user.fullName);
+        const own = id === DEMO_USER_ID;
+        return respond({
+          contacts: own ? userState.profile.contacts.map((c) => ({ kind: c.kind, label: c.label, value: c.value, verified: c.verified, primary: c.isPrimary })) : [],
+          documents: own
+            ? userState.profile.documents.map((d) => ({
+                id: d.id,
+                name: d.name,
+                kind: d.kind,
+                fileName: d.file.fileName,
+                contentType: d.file.contentType,
+                sizeBytes: d.file.sizeBytes,
+                version: d.version,
+                updatedAt: d.updatedAt,
+                url: d.file.url,
+              }))
+            : [],
+        });
       },
       async getUser(id) {
         const detail = userDetail(id);

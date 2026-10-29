@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Archive, ExternalLink, FileText, Mail, Pencil, ShieldCheck } from 'lucide-react';
-import { useApplication, useFormat, useT } from '@careerpilot/client-core';
+import { Archive, CircleCheckBig, ExternalLink, FileText, Mail, Pencil, ShieldCheck } from 'lucide-react';
+import { useApplication, useFormat, useRecordSubmitted, useT } from '@careerpilot/client-core';
 import { EnumKey, StatusTone, SubmissionStatus, TimelineActor } from '@careerpilot/domain-ui-logic';
-import { Banner, Button, Card, EnumBadge, ErrorState, ListRow, LoadingState, PageHeader, Section, cn } from '@careerpilot/ui-web';
+import { Banner, Button, Card, ConfirmDialog, EnumBadge, ErrorState, ListRow, LoadingState, PageHeader, Section, cn, useToast } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
 import { FollowUpsSection, OutcomeDialog } from './follow-ups';
 
@@ -23,6 +23,8 @@ export function ApplicationPage() {
   const format = useFormat();
   const application = useApplication(id);
   const [editingOutcome, setEditingOutcome] = useState(0);
+  const recordSubmitted = useRecordSubmitted(id);
+  const toast = useToast();
 
   if (application.isPending) {
     return <LoadingState />;
@@ -43,9 +45,22 @@ export function ApplicationPage() {
             title={t('applications.finishOnSite')}
             body={t('applications.finishOnSiteBody')}
             action={
-              <a href={a.circular.originalUrl} target="_blank" rel="noreferrer noopener" className="text-sm font-semibold text-primary underline-offset-2 hover:underline">
-                {t('applications.openApplicationPage')}
-              </a>
+              <div className="flex flex-wrap items-center gap-3">
+                <a href={a.circular.originalUrl} target="_blank" rel="noreferrer noopener" className="text-sm font-semibold text-primary underline-offset-2 hover:underline">
+                  {t('applications.openApplicationPage')}
+                </a>
+                <ConfirmDialog
+                  title={t('applications.submittedItTitle')}
+                  body={t('applications.submittedItBody')}
+                  confirmLabel={t('applications.submittedItConfirm')}
+                  onConfirm={() => void recordSubmitted.mutateAsync().then(() => toast.show({ message: t('applications.submittedRecorded') }))}
+                  trigger={
+                    <Button size="sm" icon={CircleCheckBig} loading={recordSubmitted.isPending}>
+                      {t('applications.submittedIt')}
+                    </Button>
+                  }
+                />
+              </div>
             }
           />
         ) : null}

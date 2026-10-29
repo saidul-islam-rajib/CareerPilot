@@ -346,6 +346,41 @@ export function enumValues<T extends Record<string, string>>(enumObject: T): Arr
   return Object.values(enumObject) as Array<T[keyof T]>;
 }
 
+export const MessageKind = {
+  Text: 'text',
+  Image: 'image',
+  Voice: 'voice',
+  File: 'file',
+} as const;
+export type MessageKind = (typeof MessageKind)[keyof typeof MessageKind];
+
+export const MessageState = {
+  Sent: 'sent',
+  Delivered: 'delivered',
+  Read: 'read',
+} as const;
+export type MessageState = (typeof MessageState)[keyof typeof MessageState];
+
+export const ConversationKind = {
+  Direct: 'direct',
+  Team: 'team',
+} as const;
+export type ConversationKind = (typeof ConversationKind)[keyof typeof ConversationKind];
+
+export const NotificationKind = {
+  Message: 'message',
+  TeamMessage: 'team_message',
+  ApplicationSubmitted: 'application_submitted',
+  ApplicationConfirmed: 'application_confirmed',
+} as const;
+export type NotificationKind = (typeof NotificationKind)[keyof typeof NotificationKind];
+
+export const NotificationTarget = {
+  Conversation: 'conversation',
+  Application: 'application',
+} as const;
+export type NotificationTarget = (typeof NotificationTarget)[keyof typeof NotificationTarget];
+
 export function isEnumValue<T extends Record<string, string>>(enumObject: T, value: unknown): value is T[keyof T] {
   return typeof value === 'string' && (Object.values(enumObject) as string[]).includes(value);
 }

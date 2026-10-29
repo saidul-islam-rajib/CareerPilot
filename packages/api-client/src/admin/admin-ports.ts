@@ -1,5 +1,5 @@
 import type { AdminRole, OpportunityDecision } from '@careerpilot/domain-ui-logic';
-import type { CompleteAccountLinkRequest, SignInRequest } from '../types';
+import type { CompleteAccountLinkRequest, MessagePage, MessageView, NewAttachment, SignInRequest } from '../types';
 import type {
   AdminAccount,
   AdminApplicationRow,
@@ -9,6 +9,8 @@ import type {
   AdminSession,
   AdminSourceRow,
   AdminApplicationChange,
+  AdminUserFiles,
+  Connection,
   AdminProfileChange,
   AdminTrackChange,
   AdminUserRecord,
@@ -51,6 +53,12 @@ export interface AdminUsersApi {
   resumeAutomation(id: string): Promise<AdminUserRecord>;
   updateProfile(id: string, change: AdminProfileChange): Promise<AdminUserRecord>;
   rejectApproval(id: string, approvalId: string): Promise<AdminUserRecord>;
+  teamMessages(id: string): Promise<MessagePage>;
+  sendTeamMessage(id: string, text: string): Promise<MessageView>;
+  sendTeamAttachment(id: string, attachment: NewAttachment): Promise<MessageView>;
+  connections(id: string): Promise<Connection[]>;
+  conversation(conversationId: string): Promise<MessagePage>;
+  files(id: string): Promise<AdminUserFiles>;
 }
 
 export interface AdminOpportunitiesApi {

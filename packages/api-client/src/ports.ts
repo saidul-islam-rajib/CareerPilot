@@ -39,6 +39,13 @@ import type {
   UploadSource,
   UserSource,
   VerificationChallenge,
+  AppNotification,
+  ConversationSummary,
+  Inbox,
+  MemberCard,
+  MessagePage,
+  MessageView,
+  NewAttachment,
 } from './types';
 
 export interface AuthApi {
@@ -80,6 +87,25 @@ export interface ApplicationApi {
   addTask(id: string, input: TaskInput): Promise<ApplicationRecord>;
   editTask(id: string, taskId: string, input: TaskInput): Promise<ApplicationRecord>;
   setTaskStatus(id: string, taskId: string, status: TaskStatus): Promise<ApplicationRecord>;
+  recordSubmitted(id: string): Promise<ApplicationRecord>;
+}
+
+export interface MessagingApi {
+  inbox(): Promise<Inbox>;
+  notifications(): Promise<AppNotification[]>;
+  readNotifications(ids?: string[]): Promise<void>;
+  searchMembers(query: string): Promise<MemberCard[]>;
+  getMember(id: string): Promise<MemberCard>;
+  conversations(): Promise<ConversationSummary[]>;
+  start(memberId: string): Promise<ConversationSummary>;
+  team(): Promise<ConversationSummary>;
+  messages(conversationId: string, before?: string): Promise<MessagePage>;
+  sendText(conversationId: string, text: string): Promise<MessageView>;
+  sendAttachment(conversationId: string, attachment: NewAttachment): Promise<MessageView>;
+  read(conversationId: string): Promise<void>;
+  mute(conversationId: string, muted: boolean): Promise<void>;
+  block(memberId: string, blocked: boolean): Promise<void>;
+  setDiscoverable(discoverable: boolean): Promise<void>;
 }
 
 export interface AnswersApi {
@@ -151,6 +177,7 @@ export interface CareerPilotApi {
   sources: SourcesApi;
   profile: ProfileApi;
   settings: SettingsApi;
+  messaging: MessagingApi;
 }
 
 export interface Clock {

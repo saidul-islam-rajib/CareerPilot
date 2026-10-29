@@ -26,6 +26,11 @@ import type {
   TimelineActor,
   TrackKind,
   WorkArrangement,
+  ConversationKind,
+  MessageKind,
+  MessageState,
+  NotificationKind,
+  NotificationTarget,
 } from '@careerpilot/domain-ui-logic';
 import type { EntryValue, FormLimits, SectionDefinition } from '@careerpilot/dynamic-forms';
 import type { ThemeKey } from '@careerpilot/ui-tokens';
@@ -516,6 +521,8 @@ export interface Settings {
   excludedCountries: string[];
   favoriteCompanies: string[];
   homeCountry: string;
+  discoverable: boolean;
+  blockedUsers: string[];
 }
 
 export interface TrackUpdate {
@@ -619,4 +626,77 @@ export interface AnswerSettings {
   questionMaxLength: number;
   maxSavedAnswers: number;
   topicKeywords: TopicKeywords[];
+}
+
+export interface MemberCard {
+  id: string;
+  name: string;
+  headline: string;
+  photoUrl?: string;
+}
+
+export interface AttachmentView {
+  url: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  durationSeconds?: number;
+}
+
+export interface MessageView {
+  id: string;
+  conversationId: string;
+  kind: MessageKind;
+  text: string;
+  attachment?: AttachmentView;
+  fromMe: boolean;
+  senderName: string;
+  createdAt: IsoDateTime;
+  state?: MessageState;
+}
+
+export interface ConversationSummary {
+  id: string;
+  kind: ConversationKind;
+  title: string;
+  photoUrl?: string;
+  otherMemberId?: string;
+  lastMessageAt?: IsoDateTime;
+  lastMessagePreview: string;
+  lastMessageKind?: MessageKind;
+  lastFromMe: boolean;
+  lastState?: MessageState;
+  unreadCount: number;
+  muted: boolean;
+  blocked: boolean;
+}
+
+export interface MessagePage {
+  conversation: ConversationSummary;
+  messages: MessageView[];
+  hasMore: boolean;
+}
+
+export interface AppNotification {
+  id: string;
+  kind: NotificationKind;
+  title: string;
+  body: string;
+  target: NotificationTarget;
+  targetId: string;
+  createdAt: IsoDateTime;
+  read: boolean;
+}
+
+export interface Inbox {
+  unreadMessages: number;
+  unreadNotifications: number;
+  latest: AppNotification[];
+}
+
+export interface NewAttachment {
+  kind: MessageKind;
+  file: UploadSource;
+  text?: string;
+  durationSeconds?: number;
 }

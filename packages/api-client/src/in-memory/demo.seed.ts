@@ -277,6 +277,8 @@ export function buildDemoSeed(now: Date): DemoState {
     excludedCountries: [],
     favoriteCompanies: [],
     homeCountry: 'BD',
+    discoverable: true,
+    blockedUsers: [],
     submissionWindow: { kind: SubmissionWindowKind.DailyWindow, start: '00:00', end: '01:00' },
     notifications: { digestEnabled: true, digestTime: '08:00' },
     tracks: [

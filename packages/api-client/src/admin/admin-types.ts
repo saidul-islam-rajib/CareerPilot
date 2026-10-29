@@ -1,5 +1,6 @@
 import type {
   ActorType,
+  ContactKind,
   AdminArea,
   AdminRole,
   ApplicationMode,
@@ -18,7 +19,7 @@ import type {
   WorkArrangement,
 } from '@careerpilot/domain-ui-logic';
 import type { ThemeKey } from '@careerpilot/ui-tokens';
-import type { ApplicationRecord, ApprovalDetail, IsoDateTime, Profile, Settings, SignInEvent, Track, UserSource } from '../types';
+import type { ApplicationRecord, ApprovalDetail, IsoDateTime, MemberCard, Profile, Settings, SignInEvent, Track, UserSource } from '../types';
 
 export interface AdminSummary {
   id: string;
@@ -330,4 +331,38 @@ export interface AdminProfileChange {
 export interface AdminTrackChange {
   resultCount?: number;
   mode?: ApplicationMode;
+}
+
+export interface Connection {
+  member: MemberCard;
+  conversationId: string;
+  connectedAt: IsoDateTime;
+  messages: number;
+  lastMessageAt?: IsoDateTime;
+}
+
+export interface AdminFileLink {
+  id: string;
+  name: string;
+  kind: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  version: number;
+  updatedAt: IsoDateTime;
+  url: string;
+}
+
+export interface AdminContactView {
+  kind: ContactKind;
+  label: string;
+  value: string;
+  verified: boolean;
+  primary: boolean;
+}
+
+export interface AdminUserFiles {
+  contacts: AdminContactView[];
+  documents: AdminFileLink[];
+  photoUrl?: string;
 }

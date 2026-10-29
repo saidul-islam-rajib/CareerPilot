@@ -2,6 +2,7 @@ export const ApiErrorCode = {
   InvalidCredentials: 'invalid_credentials',
   EmailTaken: 'email_taken',
   Unauthorized: 'unauthorized',
+  Forbidden: 'forbidden',
   NotFound: 'not_found',
   Conflict: 'conflict',
   Validation: 'validation',
@@ -33,6 +34,10 @@ export const ApiErrorDetail = {
   MaxSourcesPerUser: 'max_sources_per_user',
   JobUrl: 'job_url',
   JobNotFound: 'job_not_found',
+  MemberBlocked: 'member_blocked',
+  MessageText: 'message_text',
+  VoiceTooLong: 'voice_too_long',
+  ApplicationNotManual: 'application_not_manual',
 } as const;
 export type ApiErrorDetail = (typeof ApiErrorDetail)[keyof typeof ApiErrorDetail];
 
@@ -53,6 +58,7 @@ export function isApiError(error: unknown, code?: ApiErrorCode): error is ApiErr
 
 const STATUS_CODES: ReadonlyArray<[number, ApiErrorCode]> = [
   [401, ApiErrorCode.Unauthorized],
+  [403, ApiErrorCode.Forbidden],
   [404, ApiErrorCode.NotFound],
   [409, ApiErrorCode.Conflict],
   [422, ApiErrorCode.Validation],

@@ -16,6 +16,7 @@ export * from './hooks/use-account-links';
 export * from './hooks/use-dashboard';
 export * from './hooks/use-follow-ups';
 export * from './hooks/use-opportunity';
+export * from './hooks/use-messaging';
 export * from './hooks/use-profile';
 export * from './hooks/use-settings';
 export * from './i18n/i18n';

@@ -72,6 +72,7 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       addTask: (id, input) => post(`/v1/applications/${enc(id)}/tasks`, input),
       editTask: (id, taskId, input) => put(`/v1/applications/${enc(id)}/tasks/${enc(taskId)}`, input),
       setTaskStatus: (id, taskId, status) => put(`/v1/applications/${enc(id)}/tasks/${enc(taskId)}/status`, { status }),
+      recordSubmitted: (id) => post(`/v1/applications/${enc(id)}/submitted`),
     },
     answers: {
       getQuestionBank: () => get('/v1/answers'),
@@ -126,6 +127,31 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       requestAccountDeletion: () => post('/v1/account/deletion'),
       changePassword: (change) => post('/v1/account/password', change),
       updateNotifications: (changes) => patch('/v1/settings/notifications', changes),
+    },
+    messaging: {
+      inbox: () => get('/v1/inbox'),
+      notifications: () => get('/v1/notifications'),
+      readNotifications: (ids) => post('/v1/notifications/read', ids ? { ids } : {}),
+      searchMembers: (query) => get(`/v1/members?query=${enc(query)}`),
+      getMember: (id) => get(`/v1/members/${enc(id)}`),
+      conversations: () => get('/v1/conversations'),
+      start: (memberId) => post('/v1/conversations', { memberId }),
+      team: () => post('/v1/conversations/team'),
+      messages: (conversationId, before) => get(`/v1/conversations/${enc(conversationId)}/messages${before ? `?before=${enc(before)}` : ''}`),
+      sendText: (conversationId, text) => post(`/v1/conversations/${enc(conversationId)}/messages`, { text }),
+      sendAttachment: (conversationId, attachment) =>
+        postLong(
+          `/v1/conversations/${enc(conversationId)}/attachments`,
+          uploadForm(attachment.file, {
+            kind: attachment.kind,
+            text: attachment.text,
+            durationSeconds: attachment.durationSeconds === undefined ? undefined : String(Math.round(attachment.durationSeconds)),
+          }),
+        ),
+      read: (conversationId) => post(`/v1/conversations/${enc(conversationId)}/read`),
+      mute: (conversationId, muted) => put(`/v1/conversations/${enc(conversationId)}/mute`, { value: muted }),
+      block: (memberId, blocked) => put(`/v1/members/${enc(memberId)}/block`, { value: blocked }),
+      setDiscoverable: (discoverable) => put('/v1/settings/discoverable', { value: discoverable }),
     },
   };
 }

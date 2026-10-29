@@ -9,7 +9,10 @@ import {
   SubmissionWindowKind,
   TimelineActor,
   TrackKind,
+  NotificationKind,
+  NotificationTarget,
 } from '@careerpilot/domain-ui-logic';
+import { Locale, catalogs, createTranslator } from '@careerpilot/i18n';
 import { isHttpsAddress, sameAddress, secureAddress } from '../addresses';
 import { ApiError, ApiErrorCode, ApiErrorDetail } from '../errors';
 import type { CareerPilotApi, Clock, IdGenerator } from '../ports';
@@ -29,6 +32,7 @@ import { createAccountLinks } from './account-links';
 import { createAnswers, hasBlankAnswers } from './answers';
 import { createFollowUps } from './follow-ups';
 import { createJobSources } from './job-sources';
+import { createInMemoryMessaging, messagingSeed } from './messaging';
 import { createProfileStore } from './profile-store';
 
 export interface InMemoryApiOptions {
@@ -44,6 +48,8 @@ export interface InMemoryApiOptions {
 }
 
 const DAY_MS = 86_400_000;
+const DEMO_ID = 'usr_demo';
+const translate = createTranslator(catalogs[Locale.English]);
 const TIME_OF_DAY = /^([01]\d|2[0-3]):[0-5]\d$/;
 const MONTHS_PER_YEAR = 12;
 
@@ -98,6 +104,17 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
   const fail = (code: ApiErrorCode): Promise<never> => failWith(code);
   let signedInId: string | undefined;
   const nowIso = () => clock.now().toISOString();
+  const daysFromNow = (days: number) => new Date(clock.now().getTime() + days * DAY_MS).toISOString();
+  const chatSeed = messagingSeed(daysFromNow);
+  const messaging = createInMemoryMessaging({
+    me: { id: state.accounts[0]?.user.id ?? DEMO_ID, name: state.profile.fullName },
+    seed: chatSeed,
+    settings: state.settings,
+    clock,
+    ids,
+    respond,
+    reject: failWith,
+  });
   const addDays = (days: number) => new Date(clock.now().getTime() + days * DAY_MS).toISOString();
 
   const findOpportunity = (id: string) => state.opportunities.find((o) => o.id === id) ?? notFound();
@@ -318,9 +335,32 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
       addTask: followUps.addTask,
       editTask: followUps.editTask,
       setTaskStatus: followUps.setTaskStatus,
+      async recordSubmitted(id) {
+        const record = state.applications.find((a) => a.id === id) ?? notFound();
+        if (record.submissionStatus !== SubmissionStatus.ManualActionRequired) {
+          return failWith(ApiErrorCode.Validation, ApiErrorDetail.ApplicationNotManual);
+        }
+        const now = nowIso();
+        record.submissionStatus = SubmissionStatus.SubmittedAwaitingConfirmation;
+        record.appliedAt = record.appliedAt ?? now;
+        record.updatedAt = now;
+        record.timeline.push({ at: now, actor: TimelineActor.User, text: translate('timeline.userSubmitted'), status: record.submissionStatus });
+        chatSeed.notifications.unshift({
+          id: ids.next('ntf'),
+          kind: NotificationKind.ApplicationSubmitted,
+          title: translate('notifications.application_submitted.title'),
+          body: translate('notifications.application_submitted.body', { title: record.opportunity.title, organization: record.opportunity.organization }),
+          target: NotificationTarget.Application,
+          targetId: record.id,
+          createdAt: now,
+          read: false,
+        });
+        return respond(record);
+      },
     },
     answers: answers.api,
     sources: jobSources,
+    messaging,
     profile: createProfileStore({ profile: state.profile, config, clock, ids, respond, reject: failWith, verificationCode: options.demoVerificationCode }),
     settings: {
       getSettings: async () => respond({ ...state.settings, tracks: orderTracks(state.settings.tracks), homeCountry: state.profile.countryCode || HOME_COUNTRY }),

@@ -35,7 +35,7 @@ function readYaml(file) {
   return isObject(parsed) ? parsed : {};
 }
 
-const CLIENT_SECTIONS = ['account', 'admin', 'answers', 'api', 'branding', 'display', 'jobSources', 'legal', 'mobile', 'openSourceComponents', 'query', 'tracking', 'ui', 'validation'];
+const CLIENT_SECTIONS = ['account', 'admin', 'answers', 'api', 'branding', 'display', 'jobSources', 'legal', 'messaging', 'mobile', 'openSourceComponents', 'query', 'tracking', 'ui', 'validation'];
 const CLIENT_FIELDS = {
   accountLinks: ['ttlMinutes', 'minTtlMinutes', 'maxTtlMinutes'],
   notifications: ['defaultDigestTime', 'digestTimePresets'],

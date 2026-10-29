@@ -286,7 +286,13 @@
     "suggestedFollowUp": "No response for {days} days. A short, polite follow-up email can help.",
     "followUpTitle": "Follow up on my application",
     "comingUp": "Coming up",
-    "openTask": "{kind}: {title}"
+    "openTask": "{kind}: {title}",
+    "submittedIt": "I submitted it",
+    "submittedItTitle": "Did you finish this application on the employer's site?",
+    "submittedItBody": "CareerPilot marks it as submitted, keeps tracking it, and shows what was sent. Confirm only if you completed every step on the site.",
+    "submittedItConfirm": "Yes, I submitted it",
+    "submittedRecorded": "Marked as submitted",
+    "whatWasSent": "What was sent"
   },
   "profile": {
     "title": "Profile",
@@ -1531,7 +1537,13 @@
     "application_confirmed": {
       "title": "Application confirmed",
       "body": "{title} at {organization} was received."
-    }
+    },
+    "title": "Notifications",
+    "empty": "You're all caught up.",
+    "markAllRead": "Mark all as read",
+    "bell": "Notifications",
+    "bellUnread": "Notifications, {count} unread",
+    "open": "Open"
   },
   "messaging": {
     "teamName": "{product} team",
@@ -1539,6 +1551,61 @@
       "image": "Photo",
       "voice": "Voice message",
       "file": "{name}"
+    },
+    "title": "Chats",
+    "menuBody": "Message other members and the CareerPilot team",
+    "empty": "No chats yet. Find a member or message the CareerPilot team.",
+    "newChat": "New chat",
+    "searchLabel": "Find members",
+    "searchPlaceholder": "Name, email, or phone number",
+    "searchHint": "Email addresses and phone numbers must match exactly. Members see only your name, photo, and headline, never your phone number or email.",
+    "searchEmpty": "No members found. Check the spelling or try their exact email.",
+    "message": "Message",
+    "messageLabel": "Message {name}",
+    "typeMessage": "Type a message",
+    "send": "Send",
+    "attach": "Attach",
+    "photo": "Photo",
+    "document": "PDF document",
+    "voice": "Voice message",
+    "record": "Record a voice message",
+    "stopRecording": "Stop and send",
+    "cancelRecording": "Cancel",
+    "recording": "Recording {time}",
+    "microphoneDenied": "Allow microphone access to send voice messages.",
+    "play": "Play voice message",
+    "pause": "Pause voice message",
+    "openFile": "Open {name}",
+    "you": "You",
+    "states": {
+      "sent": "Sent",
+      "delivered": "Delivered",
+      "read": "Read"
+    },
+    "unread": "{count} unread",
+    "block": "Block",
+    "unblock": "Unblock",
+    "blockTitle": "Block {name}?",
+    "blockBody": "You won't get messages from each other, and neither of you will find the other in search.",
+    "blockedNote": "You blocked this member. Unblock to send messages.",
+    "blocked": "{name} blocked",
+    "unblocked": "{name} unblocked",
+    "mute": "Mute notifications",
+    "unmute": "Unmute notifications",
+    "muted": "Muted",
+    "teamContact": "Message the CareerPilot team",
+    "teamBody": "Questions about your applications or the app? The team usually replies within a day.",
+    "back": "All chats",
+    "loadOlder": "Show older messages",
+    "privacy": "Let members find me",
+    "privacyBody": "When this is off, other members can't find you in search. People you already chat with can still message you.",
+    "errors": {
+      "member_blocked": "You can't message this member.",
+      "message_text": "Write a message first.",
+      "file_type": "This kind of file can't be sent. Send a photo, a voice message, or a PDF.",
+      "file_too_large": "This file is too large to send.",
+      "voice_too_long": "This voice message is too long.",
+      "generic": "Couldn't send. Check your connection and try again."
     }
   }
 }

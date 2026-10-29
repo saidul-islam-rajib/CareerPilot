@@ -2,6 +2,7 @@ import type { HttpClient } from '../http/http-client';
 import { HttpMethod, RequestPace } from '../http/http-client';
 import type { CareerPilotAdminApi } from './admin-ports';
 import type { PageQuery } from './admin-types';
+import { uploadForm } from '../http/http-api';
 
 const enc = encodeURIComponent;
 
@@ -46,6 +47,13 @@ export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
       resumeAutomation: (id) => post(`/admin/v1/users/${enc(id)}/resume-automation`),
       updateProfile: (id, change) => patch(`/admin/v1/users/${enc(id)}/profile`, change),
       rejectApproval: (id, approvalId) => post(`/admin/v1/users/${enc(id)}/approvals/${enc(approvalId)}/reject`),
+      teamMessages: (id) => get(`/admin/v1/users/${enc(id)}/messages`),
+      sendTeamMessage: (id, text) => post(`/admin/v1/users/${enc(id)}/messages`, { text }),
+      sendTeamAttachment: (id, attachment) =>
+        postLong(`/admin/v1/users/${enc(id)}/attachments`, uploadForm(attachment.file, { kind: attachment.kind, text: attachment.text })),
+      connections: (id) => get(`/admin/v1/users/${enc(id)}/connections`),
+      conversation: (conversationId) => get(`/admin/v1/conversations/${enc(conversationId)}/messages`),
+      files: (id) => get(`/admin/v1/users/${enc(id)}/files`),
     },
     opportunities: {
       listOpportunities: (query) => get(`/admin/v1/opportunities?${queryString(query)}`),
