@@ -735,7 +735,7 @@ This section is the single status model for the whole product. All other section
 
 Form-level steps (form opened, partially filled, ready for review) and email-level steps (draft, prepared, sent, bounced) are details within these statuses and must be shown in the timeline (Section 28.2), not as separate status systems. A bounce after "Confirmed" must move an email application to "Failed".
 
-Not every status applies to every source or opportunity type. The system must distinguish system-observed events from statuses entered by the user or reported by an external organization. It must not infer rejection, acceptance, interview selection, or another employer decision solely from silence or elapsed time.
+When the user finishes an application on the employer's own site (Manual action required) they can record it in the app; it then becomes Submitted – awaiting confirmation with the user as the actor, and moves to Confirmed only on confirmation evidence. Not every status applies to every source or opportunity type. The system must distinguish system-observed events from statuses entered by the user or reported by an external organization. It must not infer rejection, acceptance, interview selection, or another employer decision solely from silence or elapsed time.
 
 ### 20.3 Follow-ups and reminders
 
@@ -1255,6 +1255,12 @@ The system should support Bangladesh job portals and employer career pages as pe
 - The user should be able to approve an application, answer a blocking question, or complete a simple action directly from a notification, with secure authentication and a link to the full details.
 - Approvals given through a notification must be recorded the same way as approvals in the main interface.
 
+### 36.1 In-app notifications and member messaging
+
+- The app must have an in-app notification centre (a bell with an unread count, a list, and a banner while the app is open). Message notifications and "application submitted" or "confirmed" notifications appear there and are never sent by email. Each notification opens its subject: the conversation, or the application page that shows what was submitted (route and destination, files, cover letter, answers, sent email, timeline). Push notifications to a closed app use the mobile push channel above once its credentials exist.
+- Registered members can find each other by name, or by an exact email address or phone number, and chat one to one: text, photos, voice notes, and PDF files within configured limits, with sent, delivered, and read ticks. Members see only each other's name, photo, and headline, never phone numbers or email addresses. A member can turn off being found and can block another member, which stops messages both ways.
+- Administrators can message any member in a support conversation shown as the CareerPilot team, and the member can reply in it.
+
 ## 37. Approve-each mode: approval and automatic completion
 
 In approve-each mode, the user approves each application once. After approval, the system must complete every remaining step automatically, without asking again, except for the steps that must stay with the user (Section 27.3) or a situation listed in Section 37.4.
@@ -1647,6 +1653,7 @@ The admin application must provide full read, create, update, and delete for:
 
 - **Users**: every user's complete data, including profile, sensitive identity details, documents, videos, photos, signatures, tracks, rules, compensation rules, submission windows, pauses, saved answers, notification settings, connected-account details, portal-account records, sessions and devices, contacts, notes, recommendations, applications, submission records, archived circulars, change history, and audit history. Admins must be able to create users, suspend and reactivate them, reset MFA, sign them out of all devices, pause or resume their automation, export their data, and process account deletion.
 - **Presence and sessions**: for every registered user, admins see whether they are online now, when they were last seen, when each session started and ended, how long they were active in each session and in total (gaps longer than a configured idle time do not count), the device, the IP address, and an approximate location. The location comes from a trusted proxy's country header when configured, otherwise from the time zone the app reports; the product never sends users' addresses to a third-party location service.
+- **Messages and connections**: admins can message any member (Section 36.1), see each member's connections (the members they chat with, when they connected, message counts, last activity) and open a member-to-member conversation read-only; opening one is recorded as an admin view of sensitive data (Section 53.5). The member record shows every contact and every uploaded document with a way to open it.
 - **View as user**: Admins must be able to see any user's screens exactly as the user sees them, in read-only mode.
 - **Opportunities and circulars**: view, correct extracted details, merge or split duplicates, mark expired or fraudulent, and manage archived copies.
 - **Sources**: add, edit, enable, disable, and remove sources; record terms and limitations; set check frequency; run a manual check; review sources users added and approve or keep them private with a justification (Section 7.1.1).
