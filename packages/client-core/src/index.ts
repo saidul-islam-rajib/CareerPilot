@@ -23,6 +23,7 @@ export * from './query/query-client';
 export * from './query/query-keys';
 export * from './services/app-services';
 export * from './services/server-address';
+export * from './hooks/use-server-address';
 export * from './session/session';
 export * from './storage/key-value-store';
 export * from './storage/memory-store';
