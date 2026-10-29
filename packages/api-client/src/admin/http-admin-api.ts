@@ -20,6 +20,7 @@ export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
   const get = <T>(path: string) => http.request<T>(HttpMethod.Get, path);
   const post = <T>(path: string, body?: unknown) => http.request<T>(HttpMethod.Post, path, body ?? {});
   const patch = <T>(path: string, body: unknown) => http.request<T>(HttpMethod.Patch, path, body);
+  const put = <T>(path: string, body: unknown) => http.request<T>(HttpMethod.Put, path, body);
 
   return {
     auth: {
@@ -36,6 +37,14 @@ export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
       suspendUser: (id, reason) => post(`/admin/v1/users/${enc(id)}/suspend`, { reason }),
       reactivateUser: (id) => post(`/admin/v1/users/${enc(id)}/reactivate`),
       pauseAutomation: (id) => post(`/admin/v1/users/${enc(id)}/pause-automation`),
+      getRecord: (id) => get(`/admin/v1/users/${enc(id)}/record`),
+      changeApplication: (id, applicationId, change) => patch(`/admin/v1/users/${enc(id)}/applications/${enc(applicationId)}`, change),
+      archiveApplication: (id, applicationId, archived) => post(`/admin/v1/users/${enc(id)}/applications/${enc(applicationId)}/archive`, { archived }),
+      setJobDecision: (id, opportunityId, decision) => put(`/admin/v1/users/${enc(id)}/jobs/${enc(opportunityId)}/decision`, { decision }),
+      updateTrack: (id, trackId, change) => patch(`/admin/v1/users/${enc(id)}/tracks/${enc(trackId)}`, change),
+      resumeAutomation: (id) => post(`/admin/v1/users/${enc(id)}/resume-automation`),
+      updateProfile: (id, change) => patch(`/admin/v1/users/${enc(id)}/profile`, change),
+      rejectApproval: (id, approvalId) => post(`/admin/v1/users/${enc(id)}/approvals/${enc(approvalId)}/reject`),
     },
     opportunities: {
       listOpportunities: (query) => get(`/admin/v1/opportunities?${queryString(query)}`),

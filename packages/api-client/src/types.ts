@@ -298,6 +298,7 @@ export interface ApplicationRecord extends ApplicationSummary {
   evidence: Evidence[];
   circular: ArchivedCircular;
   tasks: FollowUpTask[];
+  archivedAt?: IsoDateTime;
 }
 
 export interface FollowUpTask {

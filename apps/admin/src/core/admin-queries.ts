@@ -10,6 +10,7 @@ export const adminKeys = {
   list: (resource: string, query: PageQuery) => ['admin', resource, query] as const,
   resource: (resource: string) => ['admin', resource] as const,
   user: (id: string) => ['admin', 'user', id] as const,
+  userRecord: (id: string) => ['admin', 'user', id, 'record'] as const,
   settings: ['admin', 'settings'] as const,
   admins: ['admin', 'admins'] as const,
   link: (token: string) => ['admin', 'link', token] as const,

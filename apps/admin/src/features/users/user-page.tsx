@@ -2,13 +2,14 @@
 
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { KeyRound, Mail, MonitorSmartphone, Phone } from 'lucide-react';
-import { trackTitle, useFormat, useT } from '@careerpilot/client-core';
+import { KeyRound, Mail, Phone } from 'lucide-react';
+import { useFormat, useT } from '@careerpilot/client-core';
 import { AdminArea, EnumKey, PermissionAction, UserAccountStatus } from '@careerpilot/domain-ui-logic';
 import { Button, Card, ConfirmDialog, EnumBadge, ErrorState, ListRow, LoadingState, PageHeader, Section } from '@careerpilot/ui-web';
 import { adminKeys, useAdminMutation } from '@/core/admin-queries';
 import { useAdminApi } from '@/core/admin-services';
 import { useCan } from '@/core/admin-session';
+import { UserRecordTabs } from './user-record';
 
 export function UserPage() {
   const { id } = useParams<{ id: string }>();
@@ -85,37 +86,8 @@ export function UserPage() {
             ))}
           </Card>
         </Section>
-        <Section title={t('admin.users.tracks')}>
-          <Card>
-            {u.tracks.length === 0 ? <p className="text-sm text-muted">{t('common.emptyTitle')}</p> : null}
-            {u.tracks.map((track) => (
-              <ListRow key={track.id} title={trackTitle(track, t)} subtitle={`${t('settings.resultCount')}: ${track.resultCount}`} trailing={<EnumBadge enumKey={EnumKey.ApplicationMode} value={track.mode} />} />
-            ))}
-          </Card>
-        </Section>
-        <Section title={t('admin.users.recentApplications')}>
-          <Card>
-            {u.recentApplications.length === 0 ? <p className="text-sm text-muted">{t('common.emptyTitle')}</p> : null}
-            {u.recentApplications.map((app) => (
-              <ListRow key={app.id} title={app.opportunityTitle} subtitle={app.organization} trailing={<EnumBadge enumKey={EnumKey.SubmissionStatus} value={app.submissionStatus} />} />
-            ))}
-          </Card>
-        </Section>
-        <Section title={t('admin.users.signIns')}>
-          <Card>
-            {u.signIns.length === 0 ? <p className="text-sm text-muted">{t('common.emptyTitle')}</p> : null}
-            {u.signIns.map((event) => (
-              <ListRow
-                key={event.id}
-                icon={MonitorSmartphone}
-                title={event.device}
-                subtitle={`${event.approximateLocation} · ${event.ip} · ${format.dateTime(event.at)}`}
-                trailing={<span className={event.success ? 'text-sm text-success' : 'text-sm text-danger'}>{event.success ? t('activity.success') : t('activity.failed')}</span>}
-              />
-            ))}
-          </Card>
-        </Section>
       </div>
+      <UserRecordTabs userId={id} />
     </>
   );
 }

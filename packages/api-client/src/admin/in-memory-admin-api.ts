@@ -1,11 +1,13 @@
 import {
   ActorType,
+  ApprovalState,
   OpportunityStatus,
   OpportunityType,
   OutcomeStatus,
   SourceReview,
   SourceStatus,
   SubmissionStatus,
+  TimelineActor,
   UserAccountStatus,
   WorkArrangement,
 } from '@careerpilot/domain-ui-logic';
@@ -15,7 +17,7 @@ import type { Clock, IdGenerator } from '../ports';
 import type { DemoState } from '../in-memory/demo.seed';
 import type { CareerPilotAdminApi } from './admin-ports';
 import type { AdminDemoAccount, AdminDemoState } from './admin-demo.seed';
-import { SourceConnector, type AdminSourceRow, type AdminSummary, type AdminUserDetail, type CountByKey, type NewSource, type Page, type PageQuery } from './admin-types';
+import { SourceConnector, type AdminSourceRow, type AdminSummary, type AdminUserDetail, type AdminUserRecord, type CountByKey, type NewSource, type Page, type PageQuery } from './admin-types';
 import { permissionsForRole } from './permissions';
 
 export interface InMemoryAdminApiOptions {
@@ -36,6 +38,7 @@ export interface InMemoryAdminApiOptions {
 const DAY_MS = 86_400_000;
 const SOURCE_CONNECTORS: readonly string[] = Object.values(SourceConnector);
 const ISO_DATE_LENGTH = 10;
+const DEMO_USER_ID = 'usr_demo';
 
 function clone<T>(value: T): T {
   return value === undefined ? value : (JSON.parse(JSON.stringify(value)) as T);
@@ -106,6 +109,55 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
       secrets: state.secrets[id] ?? [],
     };
   };
+
+  const userRecord = (id: string): AdminUserRecord | undefined => {
+    const user = findUser(id);
+    if (!user) {
+      return undefined;
+    }
+    const own = id === DEMO_USER_ID;
+    const applied = new Set(userState.applications.map((a) => a.opportunity.id));
+    return clone({
+      user,
+      profile: userState.profile,
+      preferences: userState.settings,
+      lists: own
+        ? userState.settings.tracks.map((track) => ({
+            track,
+            jobs: (userState.trackOpportunities[track.id] ?? [])
+              .map((oid) => userState.opportunities.find((o) => o.id === oid))
+              .filter((o): o is NonNullable<typeof o> => o !== undefined)
+              .map((o) => ({
+                id: o.id,
+                title: o.title,
+                organization: o.organization,
+                location: o.location,
+                countryCode: o.countryCode,
+                matchScore: o.matchScore,
+                decision: o.decision,
+                applied: applied.has(o.id),
+                sourceName: o.source.name,
+                url: o.source.url,
+              })),
+          }))
+        : [],
+      approvals: own ? userState.approvals : [],
+      applications: own ? userState.applications : [],
+      sources: [],
+      signIns: own ? userState.signInEvents : [],
+    });
+  };
+
+  const recordOf = (id: string, action: string, target: string): Promise<AdminUserRecord> => {
+    const result = userRecord(id);
+    if (!result) {
+      return fail(ApiErrorCode.NotFound);
+    }
+    record(action, target);
+    return respond(result);
+  };
+
+  const userApplication = (applicationId: string) => userState.applications.find((a) => a.id === applicationId);
 
   const updateUser = (id: string, status: UserAccountStatus, action: string): Promise<AdminUserDetail> => {
     const user = findUser(id);
@@ -204,6 +256,61 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
     },
     users: {
       listUsers: async (query) => respond(paginate(state.users, query, (u) => `${u.fullName} ${u.email} ${u.country}`, (u) => u.status)),
+      getRecord: (id) => recordOf(id, 'user.record_viewed', findUser(id)?.fullName ?? id),
+      async changeApplication(id, applicationId, change) {
+        const application = userApplication(applicationId);
+        if (!application) {
+          return fail(ApiErrorCode.NotFound);
+        }
+        application.submissionStatus = change.submissionStatus ?? application.submissionStatus;
+        application.outcomeStatus = change.outcomeStatus ?? application.outcomeStatus;
+        application.updatedAt = nowIso();
+        application.timeline.push({ at: nowIso(), actor: TimelineActor.Admin, text: change.note ?? '', status: change.submissionStatus });
+        return recordOf(id, 'application.changed', application.opportunity.title);
+      },
+      async archiveApplication(id, applicationId, archived) {
+        const application = userApplication(applicationId);
+        if (!application) {
+          return fail(ApiErrorCode.NotFound);
+        }
+        application.archivedAt = archived ? nowIso() : undefined;
+        return recordOf(id, archived ? 'application.archived' : 'application.restored', application.opportunity.title);
+      },
+      async setJobDecision(id, opportunityId, decision) {
+        const opportunity = userState.opportunities.find((o) => o.id === opportunityId);
+        if (!opportunity) {
+          return fail(ApiErrorCode.NotFound);
+        }
+        opportunity.decision = decision ?? undefined;
+        return recordOf(id, 'user.job_decision', opportunity.title);
+      },
+      async updateTrack(id, trackId, change) {
+        const track = userState.settings.tracks.find((t) => t.id === trackId);
+        if (!track) {
+          return fail(ApiErrorCode.NotFound);
+        }
+        Object.assign(track, Object.fromEntries(Object.entries(change).filter(([, v]) => v !== undefined)));
+        return recordOf(id, 'user.track_updated', trackId);
+      },
+      async resumeAutomation(id) {
+        userState.settings.pause = undefined;
+        return recordOf(id, 'user.resumed', findUser(id)?.fullName ?? id);
+      },
+      async updateProfile(id, change) {
+        Object.assign(userState.profile, Object.fromEntries(Object.entries(change).filter(([, v]) => v !== undefined)));
+        return recordOf(id, 'user.profile_updated', userState.profile.fullName);
+      },
+      async rejectApproval(id, approvalId) {
+        const approval = userState.approvals.find((a) => a.id === approvalId);
+        if (!approval) {
+          return fail(ApiErrorCode.NotFound);
+        }
+        if (approval.state !== ApprovalState.Pending) {
+          return fail(ApiErrorCode.Conflict);
+        }
+        approval.state = ApprovalState.Rejected;
+        return recordOf(id, 'approval.rejected_by_admin', approval.opportunity.title);
+      },
       async getUser(id) {
         const detail = userDetail(id);
         if (!detail) {

@@ -5,6 +5,7 @@ import type {
   ApplicationMode,
   ApplicationRoute,
   EmergencyStopScope,
+  OpportunityDecision,
   OpportunityStatus,
   OpportunityType,
   OutcomeStatus,
@@ -17,7 +18,7 @@ import type {
   WorkArrangement,
 } from '@careerpilot/domain-ui-logic';
 import type { ThemeKey } from '@careerpilot/ui-tokens';
-import type { IsoDateTime, SignInEvent, Track } from '../types';
+import type { ApplicationRecord, ApprovalDetail, IsoDateTime, Profile, Settings, SignInEvent, Track, UserSource } from '../types';
 
 export interface AdminSummary {
   id: string;
@@ -258,4 +259,52 @@ export interface AdminAccount {
   suspended: boolean;
   mfaEnabled: boolean;
   lastSignInAt?: IsoDateTime;
+}
+
+export interface AdminListedJob {
+  id: string;
+  title: string;
+  organization: string;
+  location: string;
+  countryCode: string;
+  matchScore: number;
+  decision?: OpportunityDecision;
+  applied: boolean;
+  sourceName: string;
+  url: string;
+}
+
+export interface AdminTrackList {
+  track: Track;
+  jobs: AdminListedJob[];
+}
+
+export interface AdminUserRecord {
+  user: AdminUserRow;
+  profile: Profile;
+  preferences: Settings;
+  lists: AdminTrackList[];
+  approvals: ApprovalDetail[];
+  applications: ApplicationRecord[];
+  sources: UserSource[];
+  signIns: SignInEvent[];
+}
+
+export interface AdminApplicationChange {
+  submissionStatus?: SubmissionStatus;
+  outcomeStatus?: OutcomeStatus;
+  note?: string;
+}
+
+export interface AdminProfileChange {
+  fullName?: string;
+  headline?: string;
+  location?: string;
+  countryCode?: string;
+  summary?: string;
+}
+
+export interface AdminTrackChange {
+  resultCount?: number;
+  mode?: ApplicationMode;
 }

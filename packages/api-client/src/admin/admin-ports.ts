@@ -1,4 +1,4 @@
-import type { AdminRole } from '@careerpilot/domain-ui-logic';
+import type { AdminRole, OpportunityDecision } from '@careerpilot/domain-ui-logic';
 import type { CompleteAccountLinkRequest, SignInRequest } from '../types';
 import type {
   AdminAccount,
@@ -8,6 +8,10 @@ import type {
   AdminOpportunityRow,
   AdminSession,
   AdminSourceRow,
+  AdminApplicationChange,
+  AdminProfileChange,
+  AdminTrackChange,
+  AdminUserRecord,
   NewSource,
   SourceDecision,
   AdminUserDetail,
@@ -39,6 +43,14 @@ export interface AdminUsersApi {
   suspendUser(id: string, reason: string): Promise<AdminUserDetail>;
   reactivateUser(id: string): Promise<AdminUserDetail>;
   pauseAutomation(id: string): Promise<AdminUserDetail>;
+  getRecord(id: string): Promise<AdminUserRecord>;
+  changeApplication(id: string, applicationId: string, change: AdminApplicationChange): Promise<AdminUserRecord>;
+  archiveApplication(id: string, applicationId: string, archived: boolean): Promise<AdminUserRecord>;
+  setJobDecision(id: string, opportunityId: string, decision: OpportunityDecision | null): Promise<AdminUserRecord>;
+  updateTrack(id: string, trackId: string, change: AdminTrackChange): Promise<AdminUserRecord>;
+  resumeAutomation(id: string): Promise<AdminUserRecord>;
+  updateProfile(id: string, change: AdminProfileChange): Promise<AdminUserRecord>;
+  rejectApproval(id: string, approvalId: string): Promise<AdminUserRecord>;
 }
 
 export interface AdminOpportunitiesApi {
