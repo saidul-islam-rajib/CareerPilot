@@ -34,3 +34,12 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .data/
+
+# App signing secrets (EAS keeps the release keys; never commit local copies)
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+credentials.json
+google-service-account*.json

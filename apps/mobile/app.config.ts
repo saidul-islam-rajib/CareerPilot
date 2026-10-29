@@ -8,6 +8,7 @@ const catalog = require('../../packages/i18n/src/locales/en.json') as { profile:
 
 const APP_ENV = process.env.APP_ENV ?? 'local';
 const API_URL = process.env.CAREERPILOT_API_URL;
+const INSECURE_SCHEME = 'http://';
 
 function withApiUrl(settings: Record<string, unknown>, url: string | undefined): Record<string, unknown> {
   return url ? { ...settings, api: { ...(settings.api as Record<string, unknown>), baseUrl: url } } : settings;
@@ -20,13 +21,22 @@ interface MobileSection {
   androidPackage: string;
   iosBundleIdentifier: string;
   version: string;
+  expoOwner: string;
+  easProjectId: string;
+}
+
+function usesPlainHttp(settings: Record<string, unknown>): boolean {
+  const api = settings.api as { baseUrl?: string } | undefined;
+  return String(api?.baseUrl ?? '').startsWith(INSECURE_SCHEME);
 }
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   const settings = withApiUrl(loadConfig(APP_ENV), API_URL);
   const mobile = settings.mobile as unknown as MobileSection;
+  const plainHttp = usesPlainHttp(settings);
   return {
     ...config,
+    owner: mobile.expoOwner,
     name: mobile.appName,
     slug: mobile.slug,
     scheme: mobile.scheme,
@@ -37,6 +47,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ios: {
       bundleIdentifier: mobile.iosBundleIdentifier,
       supportsTablet: true,
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+        ...(plainHttp ? { NSAppTransportSecurity: { NSAllowsArbitraryLoads: true } } : {}),
+      },
     },
     android: {
       package: mobile.androidPackage,
@@ -57,6 +71,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       'expo-secure-store',
       ['expo-image-picker', { photosPermission: catalog.profile.photoPermission, cameraPermission: false, microphonePermission: false }],
       'expo-document-picker',
+      ['expo-build-properties', { android: { usesCleartextTraffic: plainHttp } }],
       [
         'expo-splash-screen',
         {
@@ -73,6 +88,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     extra: {
       appEnv: APP_ENV,
       careerpilot: clientConfig(settings),
+      eas: { projectId: mobile.easProjectId },
     },
   };
 };

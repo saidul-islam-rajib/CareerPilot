@@ -5,6 +5,9 @@ mobile:
   android_package: com.teamsober.careerpilot
   ios_bundle_identifier: com.teamsober.careerpilot
   version: 1.0.0
+  # Expo account and EAS project that build the installable apps (docs/runbooks/mobile-release.md).
+  expo_owner: career-pilot
+  eas_project_id: 9f3dea90-744e-4daa-a990-5093ac105fc5
 api:
   base_url: http://127.0.0.1:8000
   timeout_ms: 15000
