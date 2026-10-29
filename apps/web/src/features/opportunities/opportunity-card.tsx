@@ -7,6 +7,7 @@ import { useFormat, usePublicConfig, useT } from '@careerpilot/client-core';
 import { EnumKey, RequirementCheck, StatusTone } from '@careerpilot/domain-ui-logic';
 import { Badge, EnumBadge, cn } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
+import { SkillChips } from './missing-skills';
 
 export function matchTone(score: number, display: DisplaySettings): StatusTone {
   if (score >= display.strongMatchScore) {
@@ -56,6 +57,7 @@ export function OpportunityCard({ opportunity, href, favorite }: { opportunity: 
         {opportunity.sponsorship ? <EnumBadge enumKey={EnumKey.SponsorshipEvidence} value={opportunity.sponsorship} /> : null}
         {opportunity.hasHardFailure ? <EnumBadge enumKey={EnumKey.RequirementCheck} value={RequirementCheck.NotMet} /> : null}
       </div>
+      <SkillChips skills={opportunity.missingSkills} />
       <div className="flex items-center justify-between gap-2 text-sm">
         <span className={cn('flex items-center gap-1', urgent ? 'text-warning' : 'text-muted')}>
           <CalendarClock className="size-4" aria-hidden />

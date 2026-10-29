@@ -6,6 +6,7 @@ import { EnumKey, OpportunityDecision, RequirementCheck, StatusTone } from '@car
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { Badge, Banner, Button, ButtonVariant, Card, EnumBadge, ErrorState, Icon, IconSize, ListRow, LoadingState, Row, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
+import { MissingSkills } from './missing-skills';
 import { matchTone } from './opportunity-card';
 
 const CHECK_ICONS: Record<RequirementCheck, LucideIcon> = {
@@ -104,6 +105,8 @@ export function OpportunityScreen() {
             ))}
           </Card>
         </Section>
+
+        <MissingSkills opportunityId={o.id} skills={o.missingSkills} />
 
         <Section title={t('opportunity.requirements')}>
           <Card>

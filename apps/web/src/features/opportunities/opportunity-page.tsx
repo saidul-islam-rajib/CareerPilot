@@ -7,6 +7,7 @@ import { useDecide, useFormat, useOpportunity, usePrepareApplication, usePublicC
 import { EnumKey, OpportunityDecision, RequirementCheck, StatusTone } from '@careerpilot/domain-ui-logic';
 import { Badge, Banner, Button, Card, EnumBadge, ErrorState, ListRow, LoadingState, Section, buttonVariants } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
+import { MissingSkills } from './missing-skills';
 import { matchTone } from './opportunity-card';
 
 const CHECK_ICONS: Record<RequirementCheck, LucideIcon> = { met: Check, not_met: X, unknown: CircleHelp };
@@ -62,6 +63,8 @@ export function OpportunityPage() {
             </ul>
           </Card>
         </Section>
+
+        <MissingSkills opportunityId={o.id} skills={o.missingSkills} />
 
         <Section title={t('opportunity.requirements')}>
           <Card>

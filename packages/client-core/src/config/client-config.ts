@@ -109,6 +109,7 @@ export const appConfigSchema = z.object({
     adminTheme: themeKey,
     saveDelayMs: z.number().int().positive(),
     searchSuggestionLimit: z.number().int().positive(),
+    learnSkillUrl: z.string().url(),
     submissionWindowPresets: z.array(z.object({ key: z.string(), start: z.string(), end: z.string() })),
   }),
   validation: z.object({

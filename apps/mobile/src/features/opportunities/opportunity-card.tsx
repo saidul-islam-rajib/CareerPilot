@@ -5,6 +5,7 @@ import { EnumKey, StatusTone } from '@careerpilot/domain-ui-logic';
 import type { DisplaySettings, OpportunitySummary } from '@careerpilot/api-client';
 import { useTheme } from '@/core/theme/theme';
 import { Badge, Card, EnumBadge, Icon, IconSize, Row, Text, TextTone, TextVariant } from '@/ui';
+import { SkillChips } from './missing-skills';
 
 export function matchTone(score: number, display: DisplaySettings): StatusTone {
   if (score >= display.strongMatchScore) {
@@ -51,6 +52,7 @@ export function OpportunityCard({ opportunity, onPress, favorite }: { opportunit
         {opportunity.sponsorship ? <EnumBadge enumKey={EnumKey.SponsorshipEvidence} value={opportunity.sponsorship} /> : null}
         {opportunity.hasHardFailure ? <EnumBadge enumKey={EnumKey.RequirementCheck} value="not_met" /> : null}
       </Row>
+      <SkillChips skills={opportunity.missingSkills} />
       <Row>
         <Row gap={theme.space.xs}>
           <Icon icon={CalendarClock} size={IconSize.Small} color={urgent ? theme.colors.warning : theme.colors.textMuted} />

@@ -9,6 +9,7 @@ export { default as ArrowUp } from 'lucide-react-native/icons/arrow-up';
 export { default as Award } from 'lucide-react-native/icons/award';
 export { default as BadgeCheck } from 'lucide-react-native/icons/badge-check';
 export { default as Bell } from 'lucide-react-native/icons/bell';
+export { default as BookOpen } from 'lucide-react-native/icons/book-open';
 export { default as Bookmark } from 'lucide-react-native/icons/bookmark';
 export { default as Briefcase } from 'lucide-react-native/icons/briefcase';
 export { default as Building2 } from 'lucide-react-native/icons/building-complex';

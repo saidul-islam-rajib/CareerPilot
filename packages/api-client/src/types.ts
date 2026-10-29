@@ -171,6 +171,7 @@ export interface OpportunitySummary {
   sponsorship?: SponsorshipEvidence;
   hasHardFailure: boolean;
   decision?: OpportunityDecision;
+  missingSkills: string[];
 }
 
 export interface MatchFactor {

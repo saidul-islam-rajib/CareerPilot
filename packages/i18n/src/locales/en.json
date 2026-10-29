@@ -194,7 +194,17 @@
     "prepareApplication": "Prepare application",
     "preparing": "We're preparing your application. You'll review it before anything is sent.",
     "hardFailure": "A hard requirement is not met. Automatic rules won't apply to this opportunity.",
-    "route": "How we'll apply"
+    "route": "How we'll apply",
+    "skillsToAdd": "Skills to add",
+    "missingSkills": {
+      "title": "Skills this job asks for",
+      "body": "These appear in the circular but not on your profile. Add the ones you already have. If you don't have them yet, learn them first, then apply.",
+      "add": "I have it",
+      "addLabel": "Add {skill} to my skills",
+      "added": "{skill} added to your skills",
+      "learn": "Learn",
+      "learnLabel": "Learn {skill} (opens a new tab)"
+    }
   },
   "approvals": {
     "title": "Approvals",

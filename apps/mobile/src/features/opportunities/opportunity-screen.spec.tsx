@@ -14,6 +14,15 @@ describe('OpportunityScreen', () => {
     expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/circular/[opportunityId]', params: { opportunityId: 'opp_remote_frontend' } });
   });
 
+  it('lists skills the job asks for and adds one the user has', async () => {
+    mockParams.current = { id: 'opp_remote_frontend' };
+    const { services } = await renderWithProviders(<OpportunityScreen />);
+    expect(await screen.findByText('Skills this job asks for')).toBeTruthy();
+    expect(screen.getByLabelText('Learn Storybook (opens a new tab)')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('add-skill-GraphQL'));
+    await waitFor(async () => expect((await services.api.profile.getProfile()).skills).toContain('GraphQL'));
+  });
+
   it('warns about a hard requirement failure', async () => {
     mockParams.current = { id: 'opp_gov_programmer' };
     await renderWithProviders(<OpportunityScreen />);

@@ -83,6 +83,7 @@ export function buildDemoSeed(now: Date): DemoState {
       deadline: at(9),
       compensation: { min: { amountMinor: 7_000_000, currency: 'USD' }, max: { amountMinor: 9_000_000, currency: 'USD' }, period: 'year' },
       hasHardFailure: false,
+      missingSkills: ['GraphQL', 'Storybook'],
       description: 'Build the customer dashboard used by 40,000 teams. React, TypeScript, design systems, accessibility.',
       matchFactors: [
         { text: 'React and TypeScript match your 5 years of experience', positive: true },
@@ -117,6 +118,7 @@ export function buildDemoSeed(now: Date): DemoState {
       deadline: at(4),
       compensation: { min: { amountMinor: 4_500_000, currency: 'USD' }, max: { amountMinor: 6_000_000, currency: 'USD' }, period: 'year' },
       hasHardFailure: false,
+      missingSkills: [],
       description: 'Ship checkout and payments features for a fast-growing e-commerce platform in Asia.',
       matchFactors: [
         { text: 'Your time zone (UTC+6) is inside the required range', positive: true },
@@ -143,6 +145,7 @@ export function buildDemoSeed(now: Date): DemoState {
       compensation: { min: { amountMinor: 75_000_000, currency: 'NOK' }, max: { amountMinor: 90_000_000, currency: 'NOK' }, period: 'year' },
       sponsorship: SponsorshipEvidence.Stated,
       hasHardFailure: false,
+      missingSkills: [],
       description: 'Energy-grid software team. Relocation package and work-permit sponsorship included.',
       matchFactors: [
         { text: 'Visa sponsorship stated in the circular', positive: true },
@@ -168,6 +171,7 @@ export function buildDemoSeed(now: Date): DemoState {
       deadline: at(2),
       sponsorship: SponsorshipEvidence.Unverified,
       hasHardFailure: false,
+      missingSkills: [],
       description: 'Hybrid role in a logistics start-up. The posting mentions an international team but not sponsorship.',
       matchFactors: [
         { text: 'React matches', positive: true },
@@ -191,6 +195,7 @@ export function buildDemoSeed(now: Date): DemoState {
       deadline: at(6),
       compensation: { min: { amountMinor: 12_000_000, currency: 'BDT' }, max: { amountMinor: 16_000_000, currency: 'BDT' }, period: 'month' },
       hasHardFailure: false,
+      missingSkills: [],
       description: 'Product engineering for fintech clients. Five days on-site in Gulshan.',
       matchFactors: [
         { text: 'Location within your preferred cities', positive: true },
@@ -213,6 +218,7 @@ export function buildDemoSeed(now: Date): DemoState {
       matchScore: 69,
       deadline: at(11),
       hasHardFailure: false,
+      missingSkills: [],
       description: 'Lead a QA team of four for a logistics platform.',
       matchFactors: [{ text: 'Testing experience partially matches', positive: true }],
       requirements: [{ text: '2+ years leading a QA team', check: RequirementCheck.NotMet, hard: false }],
@@ -231,6 +237,7 @@ export function buildDemoSeed(now: Date): DemoState {
       matchScore: 80,
       deadline: at(18),
       hasHardFailure: true,
+      missingSkills: [],
       description: 'Government post. Online application through the official recruitment portal with fee payment.',
       matchFactors: [{ text: 'CSE degree matches the required subject', positive: true }],
       requirements: [
@@ -252,6 +259,7 @@ export function buildDemoSeed(now: Date): DemoState {
       matchScore: 77,
       deadline: at(30),
       hasHardFailure: false,
+      missingSkills: [],
       description: 'Two-year master’s programme taught in English with a tuition-free track and research assistantships.',
       matchFactors: [{ text: 'CGPA 3.6/4.0 meets the 3.0 minimum', positive: true }],
       requirements: [
