@@ -81,6 +81,8 @@ If port 8081 is busy, it uses the next free port. To choose the address yourself
 
 Android emulator only: `$env:APP_ENV = "http"; $env:CAREERPILOT_API_URL = "http://10.0.2.2:8000"; pnpm --filter @careerpilot/mobile start`. Browser on the PC: `APP_ENV=http pnpm --filter @careerpilot/mobile web`.
 
+Install it as an app instead (Android `.apk` file, iPhone home-screen app, TestFlight, Play Store): [docs/runbooks/mobile-release.md](docs/runbooks/mobile-release.md).
+
 ## C. Without Docker (fastest for front-end work)
 
 ```bash
