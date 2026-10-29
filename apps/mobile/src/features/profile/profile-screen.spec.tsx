@@ -147,8 +147,10 @@ describe('ViewerScreen', () => {
     expect(await screen.findByLabelText('Zoom in')).toBeTruthy();
     await fireEvent.press(screen.getByLabelText('Zoom in'));
     await fireEvent.press(screen.getByLabelText('Reset zoom'));
-    await fireEvent.press(screen.getByLabelText('Close'));
-    expect(mockRouter.back).toHaveBeenCalled();
+    await fireEvent.press(screen.getByTestId('viewer-close'));
+    expect(mockRouter.back).toHaveBeenCalledTimes(1);
+    await fireEvent.press(screen.getByTestId('viewer-close-bottom'));
+    expect(mockRouter.back).toHaveBeenCalledTimes(2);
   });
 });
 
