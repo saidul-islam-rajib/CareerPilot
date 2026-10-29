@@ -6,8 +6,8 @@ from fastapi.responses import JSONResponse, Response
 
 from careerpilot.administration.models import NewUserSource
 from careerpilot.api import profile_routes
-from careerpilot.api.common import client_info, configure, no_content, ok
-from careerpilot.api.dependencies import CurrentUser, Services
+from careerpilot.api.common import bearer_token, client_info, configure, no_content, ok
+from careerpilot.api.dependencies import Credentials, CurrentUser, Services
 from careerpilot.api.instrumentation import instrument
 from careerpilot.bootstrap import Container
 from careerpilot.candidate.models import SubmissionWindow
@@ -167,7 +167,8 @@ def complete_account_link(body: CompleteLinkBody, request: Request, services: Se
 
 
 @router.post("/auth/sign-out")
-def sign_out(_: CurrentUser) -> Response:
+def sign_out(_: CurrentUser, services: Services, credentials: Credentials) -> Response:
+    services.auth.sign_out(bearer_token(credentials))
     return no_content()
 
 

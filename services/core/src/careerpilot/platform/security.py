@@ -41,6 +41,7 @@ class TokenClaims:
     subject: str
     audience: str
     issued_at: int
+    session_id: str = ""
 
 
 class TokenService:
@@ -49,15 +50,17 @@ class TokenService:
         self._clock = clock
         self._secret = secret
 
-    def issue(self, subject: str, audience: str, ttl_minutes: int) -> str:
+    def issue(self, subject: str, audience: str, ttl_minutes: int, session_id: str = "") -> str:
         issued = self._clock.now()
-        payload = {
+        payload: dict[str, object] = {
             "sub": subject,
             "aud": audience,
             "iss": self._config.token_issuer,
             "iat": issued,
             "exp": issued + timedelta(minutes=ttl_minutes),
         }
+        if session_id:
+            payload["sid"] = session_id
         return jwt.encode(payload, self._secret, algorithm=self._config.token_algorithm)  # pyright: ignore[reportUnknownMemberType]
 
     def verify(self, token: str, audience: str) -> TokenClaims:
@@ -74,7 +77,9 @@ class TokenService:
             raise DomainError(ErrorCode.UNAUTHORIZED) from error
         if int(payload["exp"]) <= int(self._clock.now().timestamp()):
             raise DomainError(ErrorCode.UNAUTHORIZED)
-        return TokenClaims(subject=str(payload["sub"]), audience=audience, issued_at=int(payload["iat"]))
+        return TokenClaims(
+            subject=str(payload["sub"]), audience=audience, issued_at=int(payload["iat"]), session_id=str(payload.get("sid") or "")
+        )
 
 
 def token_secret_from_environment() -> str:

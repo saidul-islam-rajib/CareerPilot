@@ -628,7 +628,9 @@
     "failed": "Failed attempt",
     "unknownLocation": "Location unknown",
     "unknownDevice": "Unknown device",
-    "deviceOn": "{browser} on {system}"
+    "deviceOn": "{browser} on {system}",
+    "nearTimeZone": "Near {city} ({zone} time zone)",
+    "localNetwork": "Local network"
   },
   "credits": {
     "developedBy": "Developed by Team Sober",
@@ -1249,13 +1251,13 @@
   },
   "sources": {
     "title": "Job sources",
-    "menuBody": "Add company websites so their jobs reach your matches",
-    "body": "Paste a company's website, careers page, or job board link. CareerPilot finds the jobs there, matches them to your profile, and prepares applications like any other job. An administrator reviews each new site before sharing it with everyone.",
+    "menuBody": "Add companies by name, website, or email so their jobs reach your matches",
+    "body": "Type a company's name, its website or careers page, a job board link, or a work email at the company. CareerPilot finds the company's jobs, sorts them into on-site, hybrid, and remote, matches them to your profile, and prepares applications like any other job. An administrator reviews each new company before sharing it with everyone.",
     "add": "Add a source",
     "addTitle": "Add a job source",
-    "addBody": "We look for the jobs on the site now. This can take up to a minute.",
-    "url": "Website link",
-    "urlHint": "For example brainstation-23.com or https://careers.example.com",
+    "addBody": "We search for the company and its jobs now. This can take up to a minute.",
+    "url": "Company name, website, or email",
+    "urlHint": "For example Brain Station 23, dsinnovators.com, or careers@company.com",
     "name": "Name (optional)",
     "nameHint": "Leave empty to use the name found on the site.",
     "note": "Why this site? (optional)",
@@ -1290,14 +1292,37 @@
       "other": "The last check failed. We'll try again."
     },
     "errors": {
-      "url": "Use a website on the public internet.",
+      "url": "Enter a company's name, its website, or a work email at the company.",
       "jobsNotFound": "We couldn't find job listings on this site. Try its careers page or job board link.",
       "exists": "You've already added this site.",
       "shared": "This site is already a source for everyone, so its jobs already reach your matches.",
       "limit": "You've reached the limit for sources. Remove one to add another.",
       "disabled": "An administrator turned this site off.",
-      "generic": "We couldn't add this source. Try again."
-    }
+      "generic": "We couldn't add this source. Try again.",
+      "personalEmail": "That's a personal email address. Use an email at the company, its website, or its name.",
+      "companyNotFound": "We couldn't find that company's jobs. Check the spelling, or paste its website or careers page link.",
+      "slow": "Finding this company's jobs took too long. Try its website or careers page link."
+    },
+    "arrangements": {
+      "onsite": "On-site",
+      "hybrid": "Hybrid",
+      "remote": "Remote",
+      "not_stated": "Other"
+    },
+    "arrangementCount": "{label}: {count}",
+    "viewJobs": "View jobs",
+    "jobsTitle": "Jobs at {name}",
+    "jobsBody": "Every open job we found at this company, sorted by where you work. Add any of them to your lists.",
+    "jobsEmpty": "No open jobs right now. We check this company again on the next run.",
+    "jobsFilter": "Show jobs",
+    "allJobs": "All ({count})",
+    "filterCount": "{label} ({count})",
+    "addJob": "Add to my jobs",
+    "addJobLabel": "Add {title} to my jobs",
+    "openJob": "Open job",
+    "listedJob": "In your lists",
+    "jobAdded": "{title} added to your lists",
+    "back": "All sources"
   },
   "jobLink": {
     "add": "Add a job by link",

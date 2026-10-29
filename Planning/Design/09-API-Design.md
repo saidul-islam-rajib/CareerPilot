@@ -65,7 +65,7 @@ Inbound webhooks (separate path, signature-verified): `/webhooks/whatsapp`, `/we
 | Area | Endpoints (main) |
 |---|---|
 | Dashboard | `GET /dashboard/summary`, `GET /dashboard/{users,recommendations,applications,queue,sources,opportunities,notifications,payments,integrity,support,costs,health}` |
-| Users | `GET/POST /users`, `GET/PATCH/DELETE /users/{id}`, `POST /users/{id}/{suspend,reactivate,reset-mfa,sign-out-all,pause,resume,export,delete}`, `GET /users/{id}/view-as/...` (read-only mirror of user endpoints), all user sub-resources |
+| Users | `GET/POST /users`, `GET/PATCH/DELETE /users/{id}`, `POST /users/{id}/{suspend,reactivate,reset-mfa,sign-out-all,pause,resume,export,delete}`, `GET /users/{id}/view-as/...` (read-only mirror of user endpoints), all user sub-resources; user rows carry `presence` (online, last seen, active time, sessions, location, device) and `GET /users/{id}/record` lists `sessions` |
 | Opportunities | `GET/PATCH /opportunities`, `POST /opportunities/{id}/{merge,split,mark-fraud,mark-legit,close}` |
 | Sources and plugins | `GET/POST/PATCH/DELETE /sources`, `POST /sources/{id}/run`, `GET /sources/requests`, `POST /sources/{id}/review` (`{review, note}`), `GET /plugins`, `PATCH /plugins/{key}` |
 | Applications | `GET /applications`, `GET /applications/{id}`, `POST /applications/{id}/{cancel,verify,correction}` |

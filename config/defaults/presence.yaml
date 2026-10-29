@@ -1,0 +1,14 @@
+# Who is online and for how long, shown to admins (Requirements 53).
+presence:
+  # A signed-in person's last-seen time is saved at most this often.
+  touch_interval_seconds: 60
+  # Gaps between requests longer than this do not count as time spent in the app.
+  idle_minutes: 15
+  # Seen within this many minutes counts as online now.
+  online_minutes: 5
+  # Header the apps send with the device's time zone; used as an approximate location.
+  time_zone_header: X-Client-Time-Zone
+  # Header a trusted proxy sets with the visitor's two-letter country code (for example CF-IPCountry); empty to ignore.
+  country_header: ""
+  # Sessions kept per person; older ones are archived.
+  max_sessions_per_user: 50

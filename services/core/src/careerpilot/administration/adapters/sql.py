@@ -15,6 +15,7 @@ from careerpilot.administration.models import (
     AdminUserRow,
     AuditEntry,
     PlatformSettings,
+    UserSession,
 )
 from careerpilot.administration.ports import AdminCredential, OperationsSnapshot
 from careerpilot.platform.clock import iso, parse_iso
@@ -33,6 +34,7 @@ class ProjectionKind(StrEnum):
     OPPORTUNITY = "opportunity"
     SOURCE = "source"
     OPERATIONS = "operations"
+    SESSION = "session"
 
 
 class AdminAccountRow(Audited, Base):
@@ -217,6 +219,17 @@ class SqlDirectory:
     def save_operations(self, document: dict[str, object]) -> None:
         with self._db.unit_of_work() as session:
             session.add(AdminProjectionRow(kind=ProjectionKind.OPERATIONS.value, id=OPERATIONS_ID, sequence=1, document=document))
+
+    def sessions(self) -> list[UserSession]:
+        return self._list(ProjectionKind.SESSION, UserSession)
+
+    def session(self, session_id: str) -> UserSession | None:
+        with self._db.unit_of_work() as session:
+            row = session.get(AdminProjectionRow, (ProjectionKind.SESSION.value, session_id))
+            return UserSession.model_validate(row.document) if row is not None else None
+
+    def save_session(self, row: UserSession) -> None:
+        self._save(ProjectionKind.SESSION, row.id, row)
 
     def _list(self, kind: ProjectionKind, model: type[Model]) -> list[Model]:
         with self._db.unit_of_work() as session:

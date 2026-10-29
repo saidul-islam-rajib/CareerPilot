@@ -1,4 +1,5 @@
 from dataclasses import dataclass, replace
+from typing import Protocol
 
 from careerpilot.candidate.context import USER_AUDIENCE, CandidateContext
 from careerpilot.candidate.models import Session, SignInEvent, UserSummary
@@ -31,28 +32,50 @@ class Registration:
     privacy_version: str
 
 
+class SessionLog(Protocol):
+    def started(self, user_id: str, session_id: str, client: ClientInfo) -> None: ...
+
+    def ended(self, user_id: str, session_id: str) -> None: ...
+
+
+class NoSessionLog:
+    def started(self, user_id: str, session_id: str, client: ClientInfo) -> None:
+        return None
+
+    def ended(self, user_id: str, session_id: str) -> None:
+        return None
+
+
+def session_key(claims: TokenClaims) -> str:
+    return claims.session_id or f"{claims.subject}-{claims.issued_at}"
+
+
 def sessions_revoked(account: Account, claims: TokenClaims) -> bool:
     changed = account.credentials_changed_at
     return changed is not None and claims.issued_at < int(parse_iso(changed).timestamp())
 
 
 class AuthService:
-    def __init__(self, context: CandidateContext, guard: SignInGuard, links: AccountLinkService) -> None:
+    def __init__(
+        self, context: CandidateContext, guard: SignInGuard, links: AccountLinkService, sessions: SessionLog | None = None
+    ) -> None:
         self._ctx = context
         self._guard = guard
         self._links = links
+        self._sessions = sessions or NoSessionLog()
 
     def sign_in(self, email: str, password: str, client: ClientInfo) -> Session:
         self._guard.ensure_allowed(GuardScope.USER, email, client.ip)
         account = self._ctx.accounts.find_by_email(email)
         valid = account is not None and account.status not in BLOCKED_STATUSES and self._ctx.hasher.verify(account.password_hash, password)
+        event = ""
         if account is not None and account.status is not UserAccountStatus.REGISTERED:
-            self._record_sign_in(account.user.id, client, success=valid)
+            event = self._record_sign_in(account.user.id, client, success=valid)
         if account is None or not valid:
             self._guard.record_failure(GuardScope.USER, email)
             raise DomainError(ErrorCode.INVALID_CREDENTIALS)
         self._guard.clear(GuardScope.USER, email)
-        return self._session(account.user)
+        return self._session(account.user, event, client)
 
     def register(self, registration: Registration, client: ClientInfo) -> None:
         self._guard.throttle(GuardScope.USER, client.ip)
@@ -103,8 +126,8 @@ class AuthService:
         if activating:
             self._start_profile(account.user)
         self._guard.clear(GuardScope.USER, account.user.email)
-        self._record_sign_in(account.user.id, client, success=True)
-        return self._session(account.user)
+        event = self._record_sign_in(account.user.id, client, success=True)
+        return self._session(account.user, event, client)
 
     def change_password(self, user_id: str, current_password: str, new_password: str) -> None:
         account = self._ctx.accounts.get(user_id)
@@ -115,11 +138,18 @@ class AuthService:
         self._ctx.accounts.save(account)
 
     def authenticate(self, token: str) -> UserSummary:
+        return self.authenticate_session(token)[0]
+
+    def authenticate_session(self, token: str) -> tuple[UserSummary, str]:
         claims = self._ctx.tokens.verify(token, USER_AUDIENCE)
         account = self._ctx.accounts.get(claims.subject)
         if account is None or account.status in BLOCKED_STATUSES or sessions_revoked(account, claims):
             raise DomainError(ErrorCode.UNAUTHORIZED)
-        return account.user
+        return account.user, session_key(claims)
+
+    def sign_out(self, token: str) -> None:
+        user, session_id = self.authenticate_session(token)
+        self._sessions.ended(user.id, session_id)
 
     def _consent(self, registration: Registration, client: ClientInfo) -> dict[str, str]:
         return {
@@ -135,17 +165,20 @@ class AuthService:
         start_profile(workspace.profile, user, self._ctx.ids.next("c"))
         self._ctx.workspaces.save(user.id, workspace)
 
-    def _session(self, user: UserSummary) -> Session:
-        token = self._ctx.tokens.issue(user.id, USER_AUDIENCE, self._ctx.settings.security.token_ttl_minutes)
+    def _session(self, user: UserSummary, event: str, client: ClientInfo) -> Session:
+        session_id = event or self._ctx.ids.next("si")
+        token = self._ctx.tokens.issue(user.id, USER_AUDIENCE, self._ctx.settings.security.token_ttl_minutes, session_id)
+        self._sessions.started(user.id, session_id, client)
         return Session(access_token=token, user=user)
 
-    def _record_sign_in(self, user_id: str, client: ClientInfo, success: bool) -> None:
+    def _record_sign_in(self, user_id: str, client: ClientInfo, success: bool) -> str:
         workspace = self._ctx.workspaces.get(user_id)
         workspace.sign_in_events = [e.model_copy(update={"current": False}) for e in workspace.sign_in_events]
+        event_id = self._ctx.ids.next("si")
         workspace.sign_in_events.insert(
             0,
             SignInEvent(
-                id=self._ctx.ids.next("si"),
+                id=event_id,
                 at=iso(self._ctx.clock.now()),
                 ip=client.ip,
                 device=client.device,
@@ -155,3 +188,4 @@ class AuthService:
             ),
         )
         self._ctx.workspaces.save(user_id, workspace)
+        return event_id

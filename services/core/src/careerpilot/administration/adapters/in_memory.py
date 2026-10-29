@@ -10,6 +10,7 @@ from careerpilot.administration.models import (
     AdminUserRow,
     AuditEntry,
     PlatformSettings,
+    UserSession,
 )
 from careerpilot.administration.ports import AdminCredential, OperationsSnapshot
 
@@ -71,6 +72,7 @@ class InMemoryDirectory:
         self._opportunities: list[AdminOpportunityRow] = []
         self._sources: list[AdminSourceRow] = []
         self._operations = empty_operations()
+        self._sessions: dict[str, UserSession] = {}
 
     def users(self) -> list[AdminUserRow]:
         return [u.model_copy() for u in self._users]
@@ -101,3 +103,13 @@ class InMemoryDirectory:
 
     def save_operations(self, document: dict[str, object]) -> None:
         self._operations = operations_from_document(dict(document))
+
+    def sessions(self) -> list[UserSession]:
+        return [s.model_copy() for s in self._sessions.values()]
+
+    def session(self, session_id: str) -> UserSession | None:
+        found = self._sessions.get(session_id)
+        return found.model_copy() if found is not None else None
+
+    def save_session(self, row: UserSession) -> None:
+        self._sessions[row.id] = row.model_copy()

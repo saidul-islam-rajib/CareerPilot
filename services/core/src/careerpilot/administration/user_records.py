@@ -1,8 +1,11 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from pydantic import Field
+
 from careerpilot.administration.context import AdminActor, AdminContext
-from careerpilot.administration.models import AdminApplicationRow, AdminUserRow, UserSource
+from careerpilot.administration.models import AdminApplicationRow, AdminUserRow, UserSession, UserSource
+from careerpilot.administration.presence import PresenceService
 from careerpilot.administration.user_sources import UserSourceService
 from careerpilot.candidate.models import (
     ApplicationRecord,
@@ -63,6 +66,7 @@ class AdminUserRecord(CamelModel):
     applications: list[ApplicationRecord]
     sources: list[UserSource]
     sign_ins: list[SignInEvent]
+    sessions: list[UserSession] = Field(default_factory=list[UserSession])
 
 
 class AdminApplicationChange(CamelModel):
@@ -121,20 +125,24 @@ class UserRecordsContext:
     profile: ProfileService
     user_sources: UserSourceService
     opportunities: OpportunityRepository
+    presence: PresenceService
 
 
 class AdminUserRecords:
     def __init__(self, context: UserRecordsContext) -> None:
         self._records = context
         self._ctx = context.admin
+        self.presence = context.presence
 
     def rows(self) -> list[AdminUserRow]:
         default = self._ctx.settings.account.default_country_code
         real: list[AdminUserRow] = []
+        presence = self.presence.everyone()
         for user_id in self._ctx.accounts.all_ids():
             account = self._ctx.accounts.get(user_id)
             if account is not None:
-                real.append(user_row(account, self._ctx.workspaces.get(user_id), default))
+                row = user_row(account, self._ctx.workspaces.get(user_id), default)
+                real.append(row.model_copy(update={"presence": presence.get(user_id, row.presence)}))
         known = {row.id for row in real}
         return real + [row for row in self._ctx.directory.users() if row.id not in known]
 
@@ -284,8 +292,10 @@ class AdminUserRecords:
             )
             for track in self._records.preferences.get(account.user.id).tracks
         ]
+        sessions = self.presence.sessions_of(account.user.id)
+        row = user_row(account, workspace, settings.account.default_country_code)
         return AdminUserRecord(
-            user=user_row(account, workspace, settings.account.default_country_code),
+            user=row.model_copy(update={"presence": self.presence.summarize(sessions)}),
             profile=workspace.profile,
             preferences=self._records.preferences.get(account.user.id),
             lists=lists,
@@ -293,6 +303,7 @@ class AdminUserRecords:
             applications=sorted(workspace.applications, key=lambda a: a.updated_at, reverse=True),
             sources=self._records.user_sources.mine(account.user.id),
             sign_ins=sorted(workspace.sign_in_events, key=lambda e: e.at, reverse=True),
+            sessions=sessions,
         )
 
     def _job(self, workspace: CandidateWorkspace, opportunity_id: str, applied: set[str]) -> AdminListedJob | None:

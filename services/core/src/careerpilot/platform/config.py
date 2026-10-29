@@ -586,6 +586,15 @@ class AnswersConfig(Strict):
         return {entry.topic: entry.keywords for entry in self.topic_keywords}
 
 
+class PresenceConfig(Strict):
+    touch_interval_seconds: int = Field(gt=0)
+    idle_minutes: int = Field(gt=0)
+    online_minutes: int = Field(gt=0)
+    time_zone_header: str
+    country_header: str
+    max_sessions_per_user: int = Field(gt=0)
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -615,6 +624,7 @@ class Settings(Strict):
     enum_values: list[EnumValueConfig]
     tracks: TracksConfig
     platform: PlatformDefaultsConfig
+    presence: PresenceConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

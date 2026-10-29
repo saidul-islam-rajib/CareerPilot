@@ -12,6 +12,7 @@ from careerpilot.administration.context import AdminContext
 from careerpilot.administration.discovery_sync import SourceCheckRunner, discover_when_empty
 from careerpilot.administration.limits import effective_source_limit
 from careerpilot.administration.models import AdminSourceRow, EmergencyStop, PlatformSettings
+from careerpilot.administration.presence import PresenceContext, PresenceService
 from careerpilot.administration.services import (
     AdminAccountService,
     AdminAuditService,
@@ -98,6 +99,7 @@ class Container:
     settings: Settings
     database: Database | None
     auth: AuthService
+    presence: PresenceService
     public_config: PublicConfigService
     opportunities: OpportunityService
     approvals: ApprovalService
@@ -420,7 +422,12 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     )
     user_records = AdminUserRecords(
         UserRecordsContext(
-            admin=admin, preferences=preferences, profile=profile, user_sources=user_sources, opportunities=repos.opportunities
+            admin=admin,
+            preferences=preferences,
+            profile=profile,
+            user_sources=user_sources,
+            opportunities=repos.opportunities,
+            presence=PresenceService(PresenceContext(directory=repos.directory, clock=clk, config=cfg.presence)),
         )
     )
     admin_catalog = AdminCatalogService(admin, source_checks, source_policy, recommendations.refresh_all)
@@ -428,7 +435,8 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     return Container(
         settings=cfg,
         database=database,
-        auth=AuthService(candidate, guard, account_links),
+        auth=AuthService(candidate, guard, account_links, user_records.presence),
+        presence=user_records.presence,
         public_config=public_config,
         opportunities=opportunity_service,
         approvals=approvals,

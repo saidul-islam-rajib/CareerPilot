@@ -12,6 +12,7 @@ from careerpilot.administration.models import (
     PlatformSettings,
     SecretMetadata,
     ServiceStatus,
+    UserSession,
 )
 
 
@@ -72,3 +73,9 @@ class Directory(Protocol):
     def operations(self) -> OperationsSnapshot: ...
 
     def save_operations(self, document: dict[str, object]) -> None: ...
+
+    def sessions(self) -> list[UserSession]: ...
+
+    def session(self, session_id: str) -> UserSession | None: ...
+
+    def save_session(self, row: UserSession) -> None: ...

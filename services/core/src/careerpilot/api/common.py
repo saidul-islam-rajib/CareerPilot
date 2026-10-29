@@ -1,3 +1,5 @@
+import ipaddress
+import re
 from collections.abc import Awaitable, Callable, Sequence
 from http import HTTPStatus
 
@@ -15,6 +17,8 @@ from careerpilot.platform.model import CamelModel
 from careerpilot.platform.user_agent import describe_device
 
 FORWARDED_FOR = "x-forwarded-for"
+COUNTRY_CODE = re.compile(r"[A-Z]{2}")
+TIME_ZONE = re.compile(r"[A-Za-z]+(?:/[A-Za-z0-9_+-]{1,40}){1,2}")
 USER_AGENT = "user-agent"
 PROBLEM_JSON = "application/problem+json"
 
@@ -55,7 +59,7 @@ def configure(app: FastAPI, settings: Settings) -> None:
         CORSMiddleware,
         allow_origins=settings.http.cors_origins,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-        allow_headers=["Authorization", "Content-Type"],
+        allow_headers=["Authorization", "Content-Type", settings.presence.time_zone_header],
     )
 
     @app.middleware("http")
@@ -77,8 +81,25 @@ def client_info(request: Request, settings: Settings) -> ClientInfo:
     forwarded = [part.strip() for part in request.headers.get(FORWARDED_FOR, "").split(",") if part.strip()]
     hops = settings.http.trusted_proxy_hops
     ip = forwarded[-hops] if hops and len(forwarded) >= hops else (request.client.host if request.client else "")
-    return ClientInfo(
-        ip=ip,
-        device=describe_device(request.headers.get(USER_AGENT)),
-        approximate_location=translate("activity.unknownLocation"),
-    )
+    device = describe_device(request.headers.get(USER_AGENT))
+    return ClientInfo(ip=ip, device=device, approximate_location=approximate_location(request, ip, settings))
+
+
+def approximate_location(request: Request, ip: str, settings: Settings) -> str:
+    presence = settings.presence
+    country = request.headers.get(presence.country_header, "").strip().upper() if presence.country_header else ""
+    if COUNTRY_CODE.fullmatch(country):
+        return country
+    zone = request.headers.get(presence.time_zone_header, "").strip()
+    if TIME_ZONE.fullmatch(zone):
+        return translate("activity.nearTimeZone", {"city": zone.rsplit("/", 1)[-1].replace("_", " "), "zone": zone})
+    if is_private_address(ip):
+        return translate("activity.localNetwork")
+    return translate("activity.unknownLocation")
+
+
+def is_private_address(ip: str) -> bool:
+    try:
+        return not ipaddress.ip_address(ip).is_global
+    except ValueError:
+        return False

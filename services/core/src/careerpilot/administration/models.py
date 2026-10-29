@@ -51,6 +51,28 @@ class AdminAccount(CamelModel):
     last_sign_in_at: str | None = None
 
 
+class UserSession(CamelModel):
+    id: str
+    user_id: str
+    started_at: str
+    last_seen_at: str
+    ip: str = ""
+    device: str = ""
+    approximate_location: str = ""
+    active_seconds: int = 0
+    signed_out_at: str | None = None
+    archived_at: str | None = None
+
+
+class UserPresence(CamelModel):
+    online: bool = False
+    last_seen_at: str | None = None
+    active_seconds: int = 0
+    sessions_count: int = 0
+    location: str = ""
+    device: str = ""
+
+
 class AdminUserRow(CamelModel):
     id: str
     full_name: str
@@ -62,6 +84,7 @@ class AdminUserRow(CamelModel):
     applications_count: int
     automatic_enabled: bool
     profile_completeness: int
+    presence: UserPresence = Field(default_factory=UserPresence)
 
 
 class SecretMetadata(CamelModel):
