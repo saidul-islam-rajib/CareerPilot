@@ -1,12 +1,13 @@
+import { useState } from 'react';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useApplication, useFormat, useT } from '@careerpilot/client-core';
+import { useApplication, useFormat, useRecordSubmitted, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { Archive, ExternalLink, FileText, Mail, Pencil, ShieldCheck } from '@/ui/icons';
+import { Archive, CircleCheckBig, ExternalLink, FileText, Mail, Pencil, ShieldCheck } from '@/ui/icons';
 import { EnumKey, StatusTone, SubmissionStatus, TimelineActor } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
-import { Banner, Button, ButtonVariant, Card, Divider, EmptyState, EnumBadge, ErrorState, ListRow, LoadingState, Row, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
+import { Banner, Button, ButtonVariant, Card, Divider, EmptyState, EnumBadge, ErrorState, ListRow, LoadingState, Row, Screen, Section, Text, TextTone, TextVariant, useSnackbar } from '@/ui';
 import { FollowUpsCard } from './follow-up-screens';
 
 const KILOBYTE = 1024;
@@ -18,6 +19,9 @@ export function ApplicationScreen() {
   const router = useRouter();
   const format = useFormat();
   const application = useApplication(id);
+  const recordSubmitted = useRecordSubmitted(id);
+  const snackbar = useSnackbar();
+  const [confirming, setConfirming] = useState(false);
 
   if (application.isPending) {
     return <LoadingState />;
@@ -49,7 +53,30 @@ export function ApplicationScreen() {
             icon={ExternalLink}
             title={t('applications.finishOnSite')}
             body={t('applications.finishOnSiteBody')}
-            action={<Button label={t('applications.openApplicationPage')} icon={ExternalLink} variant={ButtonVariant.Secondary} onPress={() => void WebBrowser.openBrowserAsync(a.circular.originalUrl)} testID="open-application-page" />}
+            action={
+              <View style={{ gap: theme.space.sm }}>
+                <Button label={t('applications.openApplicationPage')} icon={ExternalLink} variant={ButtonVariant.Secondary} onPress={() => void WebBrowser.openBrowserAsync(a.circular.originalUrl)} testID="open-application-page" />
+                {confirming ? (
+                  <View style={{ gap: theme.space.xs }}>
+                    <Text variant={TextVariant.Subheading}>{t('applications.submittedItTitle')}</Text>
+                    <Text tone={TextTone.Muted}>{t('applications.submittedItBody')}</Text>
+                    <Row>
+                      <Button
+                        label={t('applications.submittedItConfirm')}
+                        icon={CircleCheckBig}
+                        loading={recordSubmitted.isPending}
+                        onPress={() => void recordSubmitted.mutateAsync().then(() => snackbar.show({ message: t('applications.submittedRecorded') }))}
+                        style={{ flex: 1 }}
+                        testID="submitted-confirm"
+                      />
+                      <Button label={t('common.cancel')} variant={ButtonVariant.Ghost} onPress={() => setConfirming(false)} />
+                    </Row>
+                  </View>
+                ) : (
+                  <Button label={t('applications.submittedIt')} icon={CircleCheckBig} onPress={() => setConfirming(true)} testID="submitted-it" />
+                )}
+              </View>
+            }
           />
         ) : null}
 

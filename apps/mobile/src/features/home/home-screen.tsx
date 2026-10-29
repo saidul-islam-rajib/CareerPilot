@@ -8,6 +8,7 @@ import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { ComingUpSection } from '@/features/applications/follow-up-screens';
 import { TodayTracks } from './today-tracks';
+import { NotificationBell } from '@/features/messaging/notification-bell';
 import { Banner, BrandMark, Button, ButtonVariant, Card, EmptyState, ErrorState, LoadingState, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
 
 function StatTile({ label, value, onPress }: { label: string; value: number; onPress?: () => void }) {
@@ -43,6 +44,7 @@ export function HomeScreen() {
             <Text variant={TextVariant.Title}>{t('home.greeting', { name: firstName })}</Text>
             <Text tone={TextTone.Muted}>{t('home.summary')}</Text>
           </View>
+          <NotificationBell />
         </View>
         <Button label={t('jobLink.add')} icon={Link2} variant={ButtonVariant.Outline} onPress={() => router.push(Routes.addJobByLink)} testID="add-job-by-link" />
 

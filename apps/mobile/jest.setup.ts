@@ -13,6 +13,20 @@ jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn(() => Promise.r
 
 jest.mock('expo-document-picker', () => ({ getDocumentAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })) }));
 
+jest.mock('expo-audio', () => {
+  const recorder = { prepareToRecordAsync: jest.fn(() => Promise.resolve()), record: jest.fn(), stop: jest.fn(() => Promise.resolve()), uri: 'file:///voice.m4a' };
+  const player = { play: jest.fn(), pause: jest.fn(), seekTo: jest.fn(() => Promise.resolve()) };
+  return {
+    RecordingPresets: { HIGH_QUALITY: {} },
+    requestRecordingPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
+    setAudioModeAsync: jest.fn(() => Promise.resolve()),
+    useAudioRecorder: () => recorder,
+    useAudioRecorderState: () => ({ isRecording: false, durationMillis: 0 }),
+    useAudioPlayer: () => player,
+    useAudioPlayerStatus: () => ({ playing: false, currentTime: 0, duration: 0, didJustFinish: false }),
+  };
+});
+
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })) }));
 
 jest.mock('expo-secure-store', () => {
@@ -29,7 +43,8 @@ const mockParams: { current: Record<string, string> } = { current: {} };
 
 jest.mock('expo-router', () => {
   const React = require('react');
-  const Stack = Object.assign(() => null, { Screen: () => null, Protected: ({ children }: { children: unknown }) => children });
+  const HeaderActions = ({ options }: { options?: { headerRight?: () => unknown } }) => options?.headerRight?.() ?? null;
+  const Stack = Object.assign(() => null, { Screen: HeaderActions, Protected: ({ children }: { children: unknown }) => children });
   return {
     useRouter: () => mockRouter,
     useLocalSearchParams: () => mockParams.current,

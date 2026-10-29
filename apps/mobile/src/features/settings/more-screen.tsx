@@ -1,9 +1,30 @@
 import { useRouter } from 'expo-router';
-import { usePublicConfig, useSession, useT } from '@careerpilot/client-core';
+import { useDiscoverable, usePublicConfig, useSession, useSettings, useT } from '@careerpilot/client-core';
 import { Bell, Clock, Globe, Info, MapPinOff, KeyRound, ListOrdered, LogOut, MessageSquareText, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2 } from '@/ui/icons';
 import { Routes } from '@/core/navigation/routes';
 import { ServerLink } from '@/features/settings/server-screen';
 import { Card, Divider, ListRow, Screen, TeamSoberCredit, Text, TextTone, TextVariant } from '@/ui';
+import { SwitchRow } from '@/ui/switch-row';
+
+function PrivacyCard() {
+  const t = useT();
+  const settings = useSettings();
+  const discoverable = useDiscoverable();
+  if (!settings.data) {
+    return null;
+  }
+  return (
+    <Card>
+      <SwitchRow
+        label={t('messaging.privacy')}
+        description={t('messaging.privacyBody')}
+        value={settings.data.discoverable}
+        onChange={(value) => discoverable.mutate(value)}
+        testID="discoverable-switch"
+      />
+    </Card>
+  );
+}
 
 export function MoreScreen() {
   const t = useT();
@@ -48,6 +69,7 @@ export function MoreScreen() {
         <Divider />
         <ListRow icon={ScrollText} title={t('settings.licences')} onPress={() => router.push(Routes.licences)} />
       </Card>
+      <PrivacyCard />
       <ServerLink />
       <Card>
         <ListRow icon={LogOut} title={t('auth.signOut')} onPress={() => void session.end()} />

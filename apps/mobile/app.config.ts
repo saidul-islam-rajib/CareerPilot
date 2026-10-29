@@ -4,7 +4,7 @@ const { loadConfig, clientConfig } = require('../../scripts/config/load-config')
   clientConfig: (config: Record<string, unknown>) => Record<string, unknown>;
 };
 
-const catalog = require('../../packages/i18n/src/locales/en.json') as { profile: { photoPermission: string } };
+const catalog = require('../../packages/i18n/src/locales/en.json') as { profile: { photoPermission: string }; messaging: { microphonePermission: string } };
 
 const APP_ENV = process.env.APP_ENV ?? 'local';
 const API_URL = process.env.CAREERPILOT_API_URL;
@@ -71,6 +71,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       'expo-secure-store',
       ['expo-image-picker', { photosPermission: catalog.profile.photoPermission, cameraPermission: false, microphonePermission: false }],
       'expo-document-picker',
+      ['expo-audio', { microphonePermission: catalog.messaging.microphonePermission }],
       ['expo-build-properties', { android: { usesCleartextTraffic: plainHttp } }],
       [
         'expo-splash-screen',

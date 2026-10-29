@@ -1606,6 +1606,7 @@
       "file_too_large": "This file is too large to send.",
       "voice_too_long": "This voice message is too long.",
       "generic": "Couldn't send. Check your connection and try again."
-    }
+    },
+    "microphonePermission": "CareerPilot uses the microphone only while you record a voice message."
   }
 }

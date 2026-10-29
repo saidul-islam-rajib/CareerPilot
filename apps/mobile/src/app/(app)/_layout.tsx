@@ -1,10 +1,12 @@
 import { Stack } from 'expo-router';
 import { useT } from '@careerpilot/client-core';
 import { useTheme } from '@/core/theme/theme';
+import { useNotificationBanner } from '@/features/messaging/inbox-screen';
 
 export default function SignedInLayout() {
   const t = useT();
   const theme = useTheme();
+  useNotificationBanner();
   return (
     <Stack
       screenOptions={{
@@ -17,6 +19,8 @@ export default function SignedInLayout() {
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="opportunity/[id]" options={{ title: '' }} />
+      <Stack.Screen name="chat/[id]" options={{ title: '' }} />
+      <Stack.Screen name="inbox" options={{ title: t('notifications.title') }} />
       <Stack.Screen name="opportunity/add" options={{ title: t('jobLink.title') }} />
       <Stack.Screen name="approval/[id]" options={{ title: t('approvals.title') }} />
       <Stack.Screen name="application/[id]" options={{ title: t('applications.record') }} />

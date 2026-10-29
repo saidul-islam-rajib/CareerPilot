@@ -52,7 +52,7 @@ export const fontFamily = {
   bangla: 'Noto Sans Bengali',
 } as const;
 
-export const opacity = { disabled: 0.6, overlay: 0.55 } as const;
+export const opacity = { disabled: 0.6, overlay: 0.55, muted: 0.8 } as const;
 
 export const iconStroke = 2;
 
