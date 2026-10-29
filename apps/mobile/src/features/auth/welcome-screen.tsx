@@ -112,8 +112,11 @@ export function WelcomeScreen() {
               {t('welcome.eyebrow')}
             </Text>
           </View>
-          <Text variant={TextVariant.Display} accessibilityRole="header">
-            {t('welcome.titleLead')} <Text variant={TextVariant.Display} style={{ color: theme.colors.primary }}>{t('welcome.titleAccent')}</Text>
+          <Text variant={TextVariant.Display}>
+            {t('welcome.titleLead')}{' '}
+            <Text variant={TextVariant.Display} tone={TextTone.Primary} accessibilityRole="none">
+              {t('welcome.titleAccent')}
+            </Text>
           </Text>
           <Text tone={TextTone.Muted}>{t('welcome.body')}</Text>
         </View>

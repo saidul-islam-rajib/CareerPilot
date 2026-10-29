@@ -14,3 +14,12 @@ describe('WelcomeScreen', () => {
     expect(mockRouter.push).toHaveBeenCalledWith('/sign-in');
   });
 });
+
+describe('WelcomeScreen heading', () => {
+  it('has one heading for the title, with the accent words inside it', async () => {
+    await renderWithProviders(<WelcomeScreen />, { signedIn: false });
+    const title = await screen.findByRole('header', { name: /Your career, on autopilot\./ });
+    expect(title).toBeTruthy();
+    expect(screen.queryByRole('header', { name: 'on autopilot.' })).toBeNull();
+  });
+});
