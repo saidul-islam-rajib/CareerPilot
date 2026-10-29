@@ -154,6 +154,27 @@ class UserSource(CamelModel):
     last_checked_at: str | None = None
     last_error: str = ""
     review_note: str = ""
+    arrangements: dict[str, int] = Field(default_factory=dict[str, int])
+
+
+class SourceJob(CamelModel):
+    id: str
+    title: str
+    location: str
+    country_code: str
+    work_arrangement: str
+    deadline: str | None = None
+    url: str
+    listed: bool
+
+
+class SourceJobs(CamelModel):
+    source: UserSource
+    jobs: list[SourceJob]
+
+
+class SavedSourceJob(CamelModel):
+    opportunity_id: str
 
 
 class NewUserSource(CamelModel):

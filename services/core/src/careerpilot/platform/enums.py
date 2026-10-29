@@ -146,6 +146,12 @@ class SourceStatus(StrEnum):
     DISABLED = "disabled"
 
 
+class SourceQueryKind(StrEnum):
+    LINK = "link"
+    EMAIL = "email"
+    NAME = "name"
+
+
 class SourceReview(StrEnum):
     APPROVED = "approved"
     PENDING = "pending"

@@ -252,12 +252,34 @@ class JobPlatformMarker(Strict):
     path: str
 
 
+class ClassificationConfig(Strict):
+    scan_chars: int = Field(gt=0)
+    arrangements: dict[str, list[str]]
+    places: dict[str, list[str]]
+
+
+class CompanySearchConfig(Strict):
+    name_similarity: float = Field(gt=0, le=1)
+    known_similarity: float = Field(gt=0, le=1)
+    parallel_requests: int = Field(gt=0)
+    max_seconds: float = Field(gt=0)
+    probe_timeout_seconds: float = Field(gt=0)
+    max_handles: int = Field(gt=0)
+    max_sites: int = Field(gt=0)
+    min_exact_handle: int = Field(gt=0)
+    domains: list[str]
+    legal_words: list[str]
+    generic_words: list[str]
+    handle_suffixes: list[str]
+
+
 class DiscoveryConfig(Strict):
     fetch_mode: FetchMode
     fixture_root: str = ""
     user_agent: str
     timeout_seconds: float = Field(gt=0)
     fetch_attempts: int = Field(gt=0)
+    max_redirects: int = Field(ge=0)
     max_listings_per_check: int = Field(gt=0)
     failing_after_failures: int = Field(gt=0)
     max_resolve_pages: int = Field(gt=0)
@@ -271,6 +293,9 @@ class DiscoveryConfig(Strict):
     job_page_paths: list[str]
     job_boards: list[JobBoardPattern]
     job_platforms: list[JobPlatformMarker]
+    ignored_hosts: list[str]
+    company_search: CompanySearchConfig
+    classification: ClassificationConfig
     sources: dict[str, SourceDefinition]
     suggested_sources: list[SuggestedSource] = Field(default_factory=list[SuggestedSource])
     warning_signs: WarningSignConfig

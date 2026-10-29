@@ -3,6 +3,8 @@ discovery:
   user_agent: "CareerPilotBot/1.0 (+https://team-sober.com/)"
   timeout_seconds: 10
   fetch_attempts: 2
+  # Redirects to http:// are followed over https:// instead; plain http is never fetched.
+  max_redirects: 10
   max_listings_per_check: 200
   failing_after_failures: 3
   max_resolve_pages: 10
@@ -29,7 +31,51 @@ discovery:
     - connector: json
       marker: pinpointhq.com
       path: /postings.json
+  # Never crawled while looking for a company's jobs: social networks, search engines, and job aggregators.
+  ignored_hosts:
+    - linkedin.com
+    - facebook.com
+    - fb.com
+    - twitter.com
+    - x.com
+    - instagram.com
+    - youtube.com
+    - tiktok.com
+    - pinterest.com
+    - medium.com
+    - github.com
+    - google.com
+    - apple.com
+    - wa.me
+    - whatsapp.com
+    - t.me
+    - glassdoor.com
+    - indeed.com
+    - bdjobs.com
+  # Finding a company's jobs from its name (Requirements 7.1.1).
+  company_search:
+    # How closely a site's or job board's company name must match what the user typed (0 to 1).
+    name_similarity: 0.55
+    # How closely a name must match a company CareerPilot already follows to reuse that source.
+    known_similarity: 0.8
+    parallel_requests: 16
+    max_seconds: 30
+    # Guessed addresses and job board handles get one quick try each.
+    probe_timeout_seconds: 6
+    # Handles tried for each name, such as brainstation23, brain-station-23, or bs23.
+    max_handles: 6
+    # Company websites crawled for jobs after their name matched.
+    max_sites: 3
+    # A website whose address is the whole company name, at least this long, counts as a match.
+    min_exact_handle: 6
+    domains: [com, com.bd, io, co, net, org, ai, tech]
+    legal_words: [ltd, limited, llc, inc, incorporated, plc, pvt, private, corp, corporation, company, co, gmbh, ag, sa, bv, pte, pty, llp, the]
+    generic_words: [software, solutions, solution, technologies, technology, tech, digital, systems, system, labs, lab, global, international, group, holdings, services, consulting, it, bangladesh, bd]
+    handle_suffixes: [bd]
   job_boards:
+    - connector: html
+      pattern: 'app\.hrythmic\.com/recruit/openings/company/([A-Za-z0-9_-]+)'
+      api: "https://app.hrythmic.com/recruit/openings/company/{token}/"
     - connector: greenhouse
       pattern: '(?:boards|job-boards)\.(?:eu\.)?greenhouse\.io/(?:embed/job_board(?:/js)?\?for=)?([A-Za-z0-9_-]+)'
       api: "https://boards-api.greenhouse.io/v1/boards/{token}/jobs?content=true"

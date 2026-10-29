@@ -15,3 +15,12 @@
 - WHEN a posting states that visa sponsorship is not available on a sponsorship track THE SYSTEM SHALL mark the sponsorship requirement as not met and the match as a hard failure.
 - THE SYSTEM SHALL never invent facts: missing information is "unknown".
 - WHEN Claude is configured (`matching.mode: claude` and `ANTHROPIC_API_KEY`) THE SYSTEM SHALL use it for assessment and fall back to the rule-based matcher on refusal, rate limit, API error, or network error. Tests never call the real API.
+
+## One company, three jobs; skills to add (added 2026-10-29)
+
+- At most `matching.max_jobs_per_company` (default 3) open jobs from one company appear across a user's lists, keeping the best
+  matches; jobs the user saved or acted on are not counted. Lists already over the limit are trimmed on the next refresh.
+- Each job shows up to `matching.skill_gap.limit` (default 3) skills the circular asks for that the profile does not list,
+  found with a configured skill vocabulary (`config/defaults/skills.yaml`, longest phrase first, spellings mapped to one name) and
+  ranked by mentions (title mentions count more). The user can add a skill they have to their profile or open a learning search;
+  CareerPilot never adds a skill on its own.

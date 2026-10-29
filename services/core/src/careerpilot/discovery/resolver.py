@@ -6,7 +6,7 @@ from urllib.parse import urljoin, urlsplit
 
 from careerpilot.discovery.connectors.html import job_links
 from careerpilot.discovery.connectors.registry import ConnectorRegistry
-from careerpilot.discovery.pages import PageScan, looks_like_feed, scan_page
+from careerpilot.discovery.pages import Anchor, PageScan, looks_like_feed, scan_page
 from careerpilot.discovery.ports import FetchError
 from careerpilot.discovery.text import canonical_url
 from careerpilot.platform.config import DiscoveryConfig, JobBoardPattern, ListingDefaults, SourceDefinition
@@ -24,6 +24,7 @@ RSS = "rss"
 HTML = "html"
 JSON = "json"
 SITE_PREFIX = "www."
+WEB_SCHEMES = frozenset({"http", "https"})
 DOMAIN_PARTS = 2
 
 PageFetcher = Callable[[str], tuple[str, str]]
@@ -93,6 +94,14 @@ def known_boards(patterns: list[JobBoardPattern], text: str) -> list[Board]:
     return boards
 
 
+def host_of(link: str) -> str:
+    return (urlsplit(link).hostname or "").lower().removeprefix(SITE_PREFIX)
+
+
+def on_host(host: str, domains: frozenset[str]) -> bool:
+    return any(host == domain or host.endswith(f".{domain}") for domain in domains)
+
+
 def same_site(origin: str, link: str) -> bool:
     origin_host = (urlsplit(origin).hostname or "").removeprefix(SITE_PREFIX)
     link_host = (urlsplit(link).hostname or "").removeprefix(SITE_PREFIX)
@@ -106,6 +115,10 @@ class SourceResolver:
         self._fetch_page = fetch_page
         self._registry = registry
         self._config = config
+        self._ignored = frozenset(host.lower() for host in config.ignored_hosts)
+
+    def read_board(self, connector: str, url: str) -> ResolvedSource | None:
+        return self._probe(connector, url, "", 1)
 
     def resolve(self, link: str) -> ResolvedSource | None:
         start = normalized_link(link)
@@ -187,16 +200,20 @@ class SourceResolver:
         return apis[: self._config.max_career_links]
 
     def _queue_next(self, crawl: Crawl, url: str, page: PageScan, jobs: set[str]) -> None:
-        links = [
-            a.url
-            for a in page.anchors
-            if CAREER_WORDS.search(f"{a.text} {urlsplit(a.url).path}") and same_site(url, a.url) and canonical_url(a.url) not in jobs
-        ]
+        links = [a.url for a in page.anchors if self._career_link(url, a) and canonical_url(a.url) not in jobs]
         crawl.career.extend(links[: self._config.max_career_links])
         host = urlsplit(url).netloc
         if host not in crawl.hosts:
             crawl.hosts.add(host)
             crawl.guesses.extend(urljoin(url, path) for path in self._config.job_page_paths)
+
+    def _career_link(self, origin: str, anchor: Anchor) -> bool:
+        if not CAREER_WORDS.search(f"{anchor.text} {urlsplit(anchor.url).path}"):
+            return False
+        if same_site(origin, anchor.url):
+            return True
+        host = host_of(anchor.url)
+        return urlsplit(anchor.url).scheme in WEB_SCHEMES and bool(host) and not on_host(host, self._ignored)
 
     def _board(self, board: Board, organization: str) -> ResolvedSource | None:
         return self._probe(board.connector, board.url, organization or board.label, 0)

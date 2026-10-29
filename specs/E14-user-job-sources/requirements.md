@@ -16,3 +16,16 @@
 - Duplicates: a link matching an existing source (scheme, `www.`, trailing slash ignored; or the same job board found) SHALL join it instead of creating another. A user's own duplicate → `source_exists`; a source shared with everyone → `source_shared`; an admin adding a site a user requested → `source_pending`.
 - A user SHALL have at most the platform limit of sources (`source_limit`): a Super Admin sets it in Platform settings (`maxSourcesPerUser`, from `job_sources.min_limit` to `job_sources.max_limit`); until set it is `job_sources.max_per_user` (10). Removing one takes the user off it; when nobody uses a private source it stops being checked; adding it again brings it back.
 - User actions on sources are recorded in the audit log as the user.
+
+## Finding a company from a name or an email (added 2026-10-29)
+
+- The add box accepts a link (base, full, or custom path), a company email address, or a company name.
+- Email: the domain becomes the website; personal email providers (`discovery.warning_signs.free_mail_domains`) are refused with `personal_email`.
+- Name: known sources are matched first with a trigram index (`company_search.known_similarity`); otherwise handles built from the
+  name (full name, hyphenated, initials, initials plus last word, first word, plus configured suffixes) are tried on every job board
+  that takes a handle and on the configured domains, in parallel, within `company_search.max_seconds`. A result counts only when the
+  company name found there matches (`company_search.name_similarity`), or the address is the whole company name. Nothing found:
+  `company_not_found`.
+- Redirects to plain `http://` are followed over `https://`; career links that leave the company site are followed unless the host
+  is in `discovery.ignored_hosts` (social networks, search engines, job aggregators).
+- Each source shows its jobs counted by on-site, hybrid, remote, and other; the user can open the list and add any job to their lists.

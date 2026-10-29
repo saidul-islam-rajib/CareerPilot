@@ -2,6 +2,7 @@ from collections import defaultdict
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from careerpilot.discovery.classification import ListingClassifier, Placement
 from careerpilot.discovery.connectors.registry import ConnectorRegistry
 from careerpilot.discovery.models import (
     CheckOutcome,
@@ -50,6 +51,7 @@ class DiscoveryService:
         self._catalog = context.catalog
         self._extra_sources = context.extra_sources
         self._screen = WarningSignScreen(context.config.warning_signs)
+        self._classifier = ListingClassifier(context.config.classification)
 
     def definitions(self) -> dict[str, SourceDefinition]:
         return {**self._config.sources, **self._extra_sources()}
@@ -99,8 +101,11 @@ class DiscoveryService:
             return ListingChange.NEW, listing
         content_hash = self._content_hash(raw)
         changed = content_hash != existing.content_hash
+        placement = self._placement(existing.title, existing.location, existing.description, existing)
         updated = existing.model_copy(
             update={
+                "work_arrangement": placement.work_arrangement,
+                "country_code": placement.country_code,
                 "sources": self._merge_source(existing.sources, source_id, url, raw.published_at, at),
                 "versions": [*existing.versions, self._version(raw, content_hash, at)] if changed else existing.versions,
                 "description": raw.description if changed else existing.description,
@@ -112,6 +117,7 @@ class DiscoveryService:
 
     def _new_listing(self, source_id: str, raw: RawListing, url: str, fingerprint: str, at: str) -> Listing:
         warnings = self._screen.screen(raw)
+        placement = self._placement(raw.title, raw.location, raw.description, raw)
         return Listing(
             id=self._ids.next(LISTING_ID_PREFIX),
             fingerprint=fingerprint,
@@ -119,8 +125,8 @@ class DiscoveryService:
             title=raw.title,
             organization=raw.organization,
             location=raw.location,
-            country_code=raw.country_code,
-            work_arrangement=raw.work_arrangement,
+            country_code=placement.country_code,
+            work_arrangement=placement.work_arrangement,
             deadline=raw.deadline,
             description=raw.description,
             status=OpportunityStatus.FLAGGED if warnings else OpportunityStatus.ACTIVE,
@@ -130,6 +136,10 @@ class DiscoveryService:
             discovered_at=at,
             last_checked_at=at,
         )
+
+    def _placement(self, title: str, location: str, description: str, known: RawListing | Listing) -> Placement:
+        stated = Placement(work_arrangement=known.work_arrangement, country_code=known.country_code)
+        return self._classifier.classify(title, location, description, stated)
 
     @staticmethod
     def _merge_source(sources: list[ListingSource], source_id: str, url: str, published_at: str | None, at: str) -> list[ListingSource]:

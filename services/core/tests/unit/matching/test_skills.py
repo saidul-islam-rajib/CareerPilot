@@ -1,8 +1,9 @@
 import pytest
 
 from careerpilot.bootstrap import Container
-from careerpilot.matching.skills import SkillCatalog, skill_tokens
+from careerpilot.matching.skills import SkillCatalog
 from careerpilot.platform.config import load_settings
+from careerpilot.platform.phrases import phrase_tokens
 from tests.unit.conftest import DEMO_USER
 
 
@@ -12,7 +13,7 @@ def catalog() -> SkillCatalog:
 
 
 def test_tokens_keep_symbols_that_belong_to_skill_names() -> None:
-    assert skill_tokens("C++, C# and ASP.NET with Node.js.") == ["c++", "c#", "and", "asp.net", "with", "node.js"]
+    assert phrase_tokens("C++, C# and ASP.NET with Node.js.") == ["c++", "c#", "and", "asp.net", "with", "node.js"]
 
 
 def test_the_longest_known_phrase_wins(catalog: SkillCatalog) -> None:

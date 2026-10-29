@@ -116,3 +116,17 @@ def test_unknown_apis_without_jobs_are_never_accepted(config: DiscoveryConfig) -
     career = '<html><head><title>Careers | Acme</title><script src="/static/career.js"></script></head></html>'
     pages = FakePages({f"{SITE}career": career, f"{SITE}static/career.js": 'fetch("/api/jobs-list")', f"{SITE}api/jobs-list": "[]"})
     assert resolve(config, pages, f"{SITE}career") is None
+
+
+def test_career_links_to_another_site_are_followed_but_social_networks_are_not(config: DiscoveryConfig) -> None:
+    home = (
+        "<html><head><meta property='og:site_name' content='Acme'></head><body>"
+        "<a href='https://www.linkedin.com/company/acme/jobs'>Jobs on LinkedIn</a>"
+        "<a href='https://hr.example.net/acme/openings'>Career</a></body></html>"
+    )
+    openings = CAREERS.replace("/careers/jobs/", "https://hr.example.net/acme/openings/")
+    pages = FakePages({SITE: home, "https://hr.example.net/acme/openings": openings})
+    found = resolve(config, pages, SITE)
+    assert found is not None
+    assert (found.connector, found.url, found.found) == ("html", "https://hr.example.net/acme/openings", 3)
+    assert not any("linkedin.com" in url for url in pages.fetched)

@@ -382,12 +382,7 @@ class AdminCatalogService:
 
     def add_source(self, actor: AdminActor, source: NewSource) -> AdminSourceRow:
         actor.require(AdminArea.SOURCES, PermissionAction.CREATE)
-        site_url = self._sources.check_address(normalized_link(source.url))
-        if site_url is None:
-            raise validation_error("source_url")
-        self._refuse_duplicate(site_url)
-        setup, found_name = self._setup(source, site_url)
-        self._refuse_duplicate(setup.url)
+        site_url, setup, found_name = self._setup(source)
         name = require_name(source.name.strip() or found_name or host_name(site_url), self._ctx.settings.validation.name)
         row = AdminSourceRow(
             id=self._ctx.ids.next(SOURCE_ID_PREFIX),
@@ -404,16 +399,22 @@ class AdminCatalogService:
         actor.record("source.checked", f"{updated.name} · {check.outcome.value}")
         return updated
 
-    def _setup(self, source: NewSource, site_url: str) -> tuple[SourceSetup, str]:
+    def _setup(self, source: NewSource) -> tuple[str, SourceSetup, str]:
         defaults = self._clean_defaults(source)
         if source.connector:
             if source.connector not in self._sources.connectors:
                 raise validation_error("source_connector")
-            return SourceSetup(connector=source.connector, url=site_url, site_url=site_url, defaults=defaults), ""
-        resolved = self._sources.resolved_setup(site_url, defaults)
-        if resolved is None:
+            site_url = self._sources.check_address(normalized_link(source.url))
+            if site_url is None:
+                raise validation_error("source_url")
+            self._refuse_duplicate(site_url)
+            return site_url, SourceSetup(connector=source.connector, url=site_url, site_url=site_url, defaults=defaults), ""
+        located = self._sources.locate(source.url, self._ctx.directory.sources(), defaults)
+        if located.existing is not None:
+            raise conflict("source_exists" if is_shared(located.existing) else "source_pending")
+        if located.setup is None:
             raise validation_error("jobs_not_found")
-        return resolved
+        return located.site_url, located.setup, located.name
 
     def _clean_defaults(self, source: NewSource) -> SourceDefaults:
         defaults = source.defaults

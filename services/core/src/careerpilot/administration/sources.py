@@ -4,10 +4,12 @@ from urllib.parse import urlsplit
 
 from careerpilot.administration.models import AdminSourceRow, NewSource, SourceDefaults, SourceSetup
 from careerpilot.administration.ports import Directory
+from careerpilot.discovery.company_search import CompanyMatch, KnownCompany, is_personal_email, source_query
 from careerpilot.discovery.models import Listing
 from careerpilot.discovery.resolver import ResolvedSource
 from careerpilot.platform.config import ListingDefaults, SourceDefinition, SuggestedSource
-from careerpilot.platform.enums import SourceReview
+from careerpilot.platform.enums import SourceQueryKind, SourceReview
+from careerpilot.platform.errors import validation_error
 
 SourceLookup = Callable[[str], ResolvedSource | None]
 SITE_PREFIX = "www."
@@ -19,17 +21,70 @@ def nothing_found(_link: str) -> ResolvedSource | None:
     return None
 
 
+def no_company(_name: str) -> CompanyMatch | None:
+    return None
+
+
+def no_known_company(_name: str, _companies: list[KnownCompany]) -> KnownCompany | None:
+    return None
+
+
+@dataclass(frozen=True)
+class Located:
+    site_url: str
+    existing: AdminSourceRow | None = None
+    setup: SourceSetup | None = None
+    name: str = ""
+
+
 @dataclass(frozen=True)
 class SourcePolicy:
     connectors: frozenset[str]
     check_address: Callable[[str], str | None]
     suggestions: list[SuggestedSource]
     resolve: SourceLookup = nothing_found
+    find_company: Callable[[str], CompanyMatch | None] = no_company
+    known_company: Callable[[str, list[KnownCompany]], KnownCompany | None] = no_known_company
+    free_mail_domains: frozenset[str] = frozenset()
+
+    def locate(self, text: str, sources: list[AdminSourceRow], defaults: SourceDefaults) -> Located:
+        query = source_query(text, self.free_mail_domains)
+        if query is None:
+            raise validation_error("personal_email" if is_personal_email(text, self.free_mail_domains) else "source_url")
+        if query.kind is SourceQueryKind.NAME:
+            return self._locate_name(query.text, sources, defaults)
+        site_url = self.check_address(query.link)
+        if site_url is None:
+            raise validation_error("source_url")
+        existing = source_at(sources, site_url)
+        if existing is not None:
+            return Located(site_url, existing=existing)
+        resolved = self.resolved_setup(site_url, defaults)
+        if resolved is None:
+            raise validation_error("jobs_not_found")
+        setup, name = resolved
+        return Located(site_url, existing=source_at(sources, setup.url), setup=setup, name=name)
+
+    def _locate_name(self, name: str, sources: list[AdminSourceRow], defaults: SourceDefaults) -> Located:
+        companies = [KnownCompany(row.name, row.setup.site_url or row.setup.url) for row in sources if row.setup is not None]
+        known = self.known_company(name, companies)
+        existing = source_at(sources, known.url) if known is not None else None
+        if known is not None and existing is not None:
+            return Located(known.url, existing=existing)
+        match = self.find_company(name)
+        resolved = self.setup_for(match.found, match.site_url, defaults) if match is not None and match.found is not None else None
+        if match is None or resolved is None:
+            raise validation_error("company_not_found")
+        setup, found_name = resolved
+        return Located(match.site_url, existing=source_at(sources, setup.url), setup=setup, name=found_name or name)
 
     def resolved_setup(self, site_url: str, defaults: SourceDefaults) -> tuple[SourceSetup, str] | None:
         found = self.resolve(site_url)
-        url = self.check_address(found.url) if found is not None else None
-        if found is None or url is None:
+        return self.setup_for(found, site_url, defaults) if found is not None else None
+
+    def setup_for(self, found: ResolvedSource, site_url: str, defaults: SourceDefaults) -> tuple[SourceSetup, str] | None:
+        url = self.check_address(found.url)
+        if url is None:
             return None
         organization = defaults.organization or found.name
         setup = SourceSetup(

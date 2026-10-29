@@ -252,6 +252,16 @@ def add_my_source(body: NewUserSource, user: CurrentUser, services: Services) ->
     return ok(services.user_sources.add(user.id, body))
 
 
+@router.get("/sources/{source_id}/jobs")
+def my_source_jobs(source_id: str, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.user_sources.jobs(user.id, source_id))
+
+
+@router.post("/sources/{source_id}/jobs/{listing_id}")
+def save_my_source_job(source_id: str, listing_id: str, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.user_sources.save_job(user.id, source_id, listing_id))
+
+
 @router.delete("/sources/{source_id}")
 def remove_my_source(source_id: str, user: CurrentUser, services: Services) -> Response:
     services.user_sources.remove(user.id, source_id)

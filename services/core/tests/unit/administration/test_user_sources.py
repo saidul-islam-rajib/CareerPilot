@@ -191,3 +191,38 @@ def test_admins_choose_how_many_sources_each_user_can_add(app: Container, site: 
     assert failure(lambda: app.user_sources.add(DEMO_USER, other)) == (ErrorCode.VALIDATION, "source_limit")
     app.admin_settings.update(admin, {"max_sources_per_user": 30})
     assert app.user_sources.add(DEMO_USER, other).review is SourceReview.PENDING
+
+
+NORTHWIND_BOARD = "https://northwindrobotics.easy.jobs/api/career/home"
+NORTHWIND_JOBS = '{"data": {"company": {"name": "Northwind Robotics"}, "jobs": [{"title": "SQA Engineer", "slug": "sqa"}]}}'
+
+
+def test_a_company_email_or_name_finds_the_company_and_personal_email_is_refused(app: Container, site: FakeSite) -> None:
+    acme_site(site)
+    by_email = app.user_sources.add(DEMO_USER, NewUserSource(url="jobs@acme.example.org"))
+    assert (by_email.name, by_email.jobs_found) == ("Acme", 2)
+    personal = failure(lambda: app.user_sources.add(DEMO_USER, NewUserSource(url="me@gmail.com")))
+    assert personal == (ErrorCode.VALIDATION, "personal_email")
+    site.pages[NORTHWIND_BOARD] = NORTHWIND_JOBS
+    by_name = app.user_sources.add(DEMO_USER, NewUserSource(url="Northwind Robotics Ltd"))
+    assert (by_name.name, by_name.jobs_found) == ("Northwind Robotics", 1)
+    again = failure(lambda: app.user_sources.add(DEMO_USER, NewUserSource(url="northwind robotics")))
+    assert again == (ErrorCode.CONFLICT, "source_exists")
+    unknown = failure(lambda: app.user_sources.add(DEMO_USER, NewUserSource(url="Nobody Anywhere Corp")))
+    assert unknown == (ErrorCode.VALIDATION, "company_not_found")
+
+
+def test_people_browse_a_source_jobs_by_arrangement_and_keep_one(app: Container, site: FakeSite) -> None:
+    acme_site(site)
+    added = app.user_sources.add(DEMO_USER, ACME)
+    [listed] = app.user_sources.mine(DEMO_USER)
+    assert sum(listed.arrangements.values()) == added.jobs_found
+    found = app.user_sources.jobs(DEMO_USER, added.id)
+    assert {job.title for job in found.jobs} == {"Backend Engineer", "Data Analyst"}
+    assert found.source.arrangements == listed.arrangements
+    target = found.jobs[0]
+    saved = app.user_sources.save_job(DEMO_USER, added.id, target.id)
+    assert app.opportunities.detail(DEMO_USER, saved.opportunity_id).title == target.title
+    assert next(job for job in app.user_sources.jobs(DEMO_USER, added.id).jobs if job.id == target.id).listed
+    assert failure(lambda: app.user_sources.jobs(OTHER_USER, added.id)) == (ErrorCode.NOT_FOUND, "source")
+    assert failure(lambda: app.user_sources.save_job(DEMO_USER, added.id, "opp_missing")) == (ErrorCode.NOT_FOUND, "opportunity")

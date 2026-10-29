@@ -42,9 +42,10 @@ from careerpilot.candidate.services.profile import ProfileService
 from careerpilot.candidate.services.public_config import LivePlatformValues, PublicConfigService, enum_value_documents
 from careerpilot.candidate.services.submission import SubmissionContext, SubmissionService
 from careerpilot.candidate.services.verification import ContactVerificationService, VerificationContext
+from careerpilot.discovery.company_search import CompanySearch, SearchProbes
 from careerpilot.discovery.connectors.json_jobs import JsonJobsConnector
 from careerpilot.discovery.connectors.registry import ConnectorRegistry, first_party_connectors
-from careerpilot.discovery.fetchers import PageFetcher, fetcher_for, page_fetcher_for
+from careerpilot.discovery.fetchers import PageFetcher, fetcher_for, page_fetcher_for, quick_page_fetcher_for
 from careerpilot.discovery.job_links import JobLinkReader
 from careerpilot.discovery.models import Listing
 from careerpilot.discovery.ports import Fetcher
@@ -293,6 +294,24 @@ def source_display_name(rows: list[AdminSourceRow], source_id: str) -> str:
     return next((row.name for row in rows if row.id == source_id), source_id)
 
 
+def _source_policy(
+    cfg: Settings, options: ContainerOverrides, fetch_page: PageFetcher, connectors: frozenset[str], json_jobs: list[JsonJobsConnector]
+) -> SourcePolicy:
+    readers = options.connectors or first_party_connectors(extra=json_jobs)
+    resolver = SourceResolver(fetch_page, readers, cfg.discovery)
+    quick_fetch = options.page_fetcher or quick_page_fetcher_for(cfg.discovery)
+    search = CompanySearch(SearchProbes(quick_fetch, SourceResolver(quick_fetch, readers, cfg.discovery), resolver), cfg.discovery)
+    return SourcePolicy(
+        connectors=connectors,
+        check_address=options.address_check or public_https_url,
+        suggestions=cfg.discovery.suggested_sources,
+        resolve=resolver.resolve,
+        find_company=search.find,
+        known_company=search.known,
+        free_mail_domains=frozenset(cfg.discovery.warning_signs.free_mail_domains),
+    )
+
+
 def build_container(overrides: ContainerOverrides | None = None) -> Container:
     options = overrides or ContainerOverrides()
     cfg = options.settings or with_web_address(load_settings())
@@ -340,12 +359,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
             extra_sources=lambda: directory_definitions(repos.directory),
         )
     )
-    source_policy = SourcePolicy(
-        connectors=frozenset(registry.keys()),
-        check_address=options.address_check or public_https_url,
-        suggestions=cfg.discovery.suggested_sources,
-        resolve=SourceResolver(fetch_page, options.connectors or first_party_connectors(extra=json_jobs), cfg.discovery).resolve,
-    )
+    source_policy = _source_policy(cfg, options, fetch_page, frozenset(registry.keys()), json_jobs)
     opportunity_service = OpportunityService(candidate)
     approvals = ApprovalService(candidate, opportunity_service)
     recommendations = RecommendationService(
@@ -395,7 +409,14 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     preferences = PreferencesService(candidate, recommendations.rematch)
     profile = ProfileService(candidate, storage, file_links, recommendations.rematch)
     user_sources = UserSourceService(
-        UserSourceContext(admin=admin, checks=source_checks, policy=source_policy, refresh=recommendations.rematch)
+        UserSourceContext(
+            admin=admin,
+            checks=source_checks,
+            policy=source_policy,
+            refresh=recommendations.rematch,
+            listings=repos.listings.list_all,
+            place=recommendations.place,
+        )
     )
     user_records = AdminUserRecords(
         UserRecordsContext(
