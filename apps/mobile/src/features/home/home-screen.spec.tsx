@@ -33,6 +33,16 @@ describe('HomeScreen', () => {
     expect(screen.getByLabelText('Show Remote jobs')).toBeTruthy();
   });
 
+  it('keeps the favorite button outside the job card button, so the web build has no nested buttons', async () => {
+    await renderWithProviders(<HomeScreen />);
+    const [star] = await screen.findAllByLabelText('Add Northwind Labs to favorites');
+    let parent = star!.parent;
+    while (parent) {
+      expect(parent.props.accessibilityRole).not.toBe('button');
+      parent = parent.parent;
+    }
+  });
+
   it('opens an opportunity', async () => {
     await renderWithProviders(<HomeScreen />);
     await fireEvent.press(await screen.findByLabelText(/Senior Frontend Engineer, Northwind Labs/));
