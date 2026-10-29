@@ -43,3 +43,8 @@ __pycache__/
 *.mobileprovision
 credentials.json
 google-service-account*.json
+
+# Build output ignored by each app; listed here too because EAS Build only reads this root file
+.next/
+.expo/
+apps/mobile/dist/
