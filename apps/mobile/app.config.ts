@@ -1,8 +1,9 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ConfigContext, ExpoConfig } from 'expo/config';
-const { loadConfig, clientConfig } = require('../../scripts/config/load-config') as {
+const { loadConfig, clientConfig, usesPlainHttp } = require('../../scripts/config/load-config') as {
   loadConfig: (env: string) => Record<string, unknown>;
+  usesPlainHttp: (settings: Record<string, unknown>) => boolean;
   clientConfig: (config: Record<string, unknown>) => Record<string, unknown>;
 };
 
@@ -10,7 +11,6 @@ const catalog = require('../../packages/i18n/src/locales/en.json') as { profile:
 
 const APP_ENV = process.env.APP_ENV ?? 'local';
 const API_URL = process.env.CAREERPILOT_API_URL;
-const INSECURE_SCHEME = 'http://';
 const BRAND_COLOR = '#0F766E';
 const LOCAL_GOOGLE_SERVICES = './google-services.json';
 const NOTIFICATION_ICON = './assets/images/android-icon-monochrome.png';
@@ -36,11 +36,6 @@ interface MobileSection {
   version: string;
   expoOwner: string;
   easProjectId: string;
-}
-
-function usesPlainHttp(settings: Record<string, unknown>): boolean {
-  const api = settings.api as { baseUrl?: string } | undefined;
-  return String(api?.baseUrl ?? '').startsWith(INSECURE_SCHEME);
 }
 
 export default ({ config }: ConfigContext): ExpoConfig => {

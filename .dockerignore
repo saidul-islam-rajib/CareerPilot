@@ -10,6 +10,7 @@
 .git
 .validation
 .env
-apps/mobile
+apps/mobile/google-services.json
+apps/mobile/google-service-account.json
 .data
 services/*/tests

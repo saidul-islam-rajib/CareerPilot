@@ -81,8 +81,15 @@ function withDeploymentAddresses(config, environ = process.env) {
   };
 }
 
+const INSECURE_SCHEME = 'http://';
+
+function usesPlainHttp(settings) {
+  const api = isObject(settings.api) ? settings.api : {};
+  return String(api.baseUrl ?? '').startsWith(INSECURE_SCHEME);
+}
+
 function loadClientConfig(env, root = CONFIG_ROOT, environ = process.env) {
   return clientConfig(withDeploymentAddresses(loadConfig(env, root), environ));
 }
 
-module.exports = { loadConfig, loadClientConfig, clientConfig, withDeploymentAddresses, deepMerge, camelize };
+module.exports = { loadConfig, loadClientConfig, clientConfig, withDeploymentAddresses, usesPlainHttp, deepMerge, camelize };

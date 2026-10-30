@@ -5,10 +5,11 @@ import { parseAppConfig, publicConfigFromDefaults } from './client-config';
 import { mergePublicConfig } from './public-config';
 
 const require = createRequire(import.meta.url);
-const { loadConfig, loadClientConfig, clientConfig, withDeploymentAddresses } = require('../../../../scripts/config/load-config.js') as {
+const { loadConfig, loadClientConfig, clientConfig, withDeploymentAddresses, usesPlainHttp } = require('../../../../scripts/config/load-config.js') as {
   loadConfig: (env: string) => Record<string, unknown>;
   loadClientConfig: (env: string) => Record<string, unknown>;
   clientConfig: (config: Record<string, unknown>) => Record<string, unknown>;
+  usesPlainHttp: (settings: Record<string, unknown>) => boolean;
   withDeploymentAddresses: (config: Record<string, unknown>, environ: Record<string, string>) => { api: { baseUrl: string }; admin: { baseUrl: string } };
 };
 
@@ -51,6 +52,17 @@ describe('deployment addresses', () => {
     const result = withDeploymentAddresses(loadConfig('production'), { [names.api]: ' https://api.example.net ', [names.admin]: 'https://admin-api.example.net' });
     expect(result.api.baseUrl).toBe('https://api.example.net');
     expect(result.admin.baseUrl).toBe('https://admin-api.example.net');
+  });
+});
+
+describe('cleartext traffic in phone builds', () => {
+  it('stays allowed only for plain http test addresses', () => {
+    expect(usesPlainHttp({ api: { baseUrl: 'http://192.168.0.104:8000' } })).toBe(true);
+  });
+
+  it('is refused when the hosted API uses https', () => {
+    expect(usesPlainHttp({ api: { baseUrl: 'https://api.example.net' } })).toBe(false);
+    expect(usesPlainHttp({})).toBe(false);
   });
 });
 

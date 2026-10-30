@@ -843,6 +843,15 @@ The system must maintain a reliable history of important events, including profi
 
 Audit records should include event time, action type, outcome, and relevant references without unnecessarily recording sensitive content. The user must be able to inspect relevant activity, while credentials, access tokens, and other secrets remain excluded from ordinary logs and audit displays.
 
+### 24.5 Hosting and remote access
+
+- The whole product (user API, admin API, workers, user web app, admin web app, database, Redis, Temporal, observability) must run on one low-cost cloud virtual machine (Oracle Cloud Always Free ARM, or AWS Lightsail/EC2, x86 or Graviton) from the same container files used locally, deployed with a documented, repeatable procedure (`docs/runbooks/deploy-oracle.md`, `docs/runbooks/deploy-aws.md`, specs `E20-deployment-and-remote-access`).
+- Every public address must use HTTPS with automatically issued and renewed certificates, and only ports 80 and 443 may be reachable from the internet; databases, caches, workflow engine, mail sandbox, and observability tools stay on internal networks.
+- The installed Android app, the iPhone home-screen app, and the web apps must work from any network against the hosted API. Release builds that talk to an `https://` address must not allow cleartext traffic, and the in-app "change server" option must be off in hosted builds.
+- Production configuration must come from environment files and secrets on the server; secrets must never be stored in the repository or images. Real application emails and payments stay outside production until the owner approves them (Section 27.3); account emails may use the real mail service.
+- The database and uploaded files must be backed up automatically every night, kept for a configured number of days, and restorable with one documented command.
+- A developer machine must never be exposed to the internet to provide remote access.
+
 ## 25. Testing and release readiness
 
 ### 25.1 Test scope and scenarios
