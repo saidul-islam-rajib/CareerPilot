@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 MESSAGE_ID = "Message-ID"
 MAIN_TYPE_SEPARATOR = "/"
 ADDRESS_SEPARATOR = "@"
+HTML_SUBTYPE = "html"
 
 
 @dataclass(frozen=True)
@@ -34,6 +35,7 @@ class OutgoingEmail:
     subject: str
     body: str
     attachments: list[Attachment] = field(default_factory=list[Attachment])
+    html: str | None = None
 
 
 @dataclass(frozen=True)
@@ -64,6 +66,8 @@ def build_message(email: OutgoingEmail) -> EmailMessage:
     message["Subject"] = email.subject
     message[MESSAGE_ID] = make_msgid(domain=email.sender_address.rsplit(ADDRESS_SEPARATOR, 1)[-1])
     message.set_content(email.body)
+    if email.html:
+        message.add_alternative(email.html, subtype=HTML_SUBTYPE)
     for attachment in email.attachments:
         maintype, subtype = attachment.content_type.split(MAIN_TYPE_SEPARATOR, 1)
         message.add_attachment(attachment.content, maintype=maintype, subtype=subtype, filename=attachment.name)

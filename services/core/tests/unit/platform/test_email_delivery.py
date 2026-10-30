@@ -22,7 +22,9 @@ from careerpilot.platform.email_delivery import (
     SmtpEmailSender,
     SmtpLogin,
     SmtpSettings,
+    build_message,
 )
+from careerpilot.platform.email_html import EmailLink, render_html
 from careerpilot.platform.enums import DeliveryMode, SmtpSecurity
 
 USER = "sender@gmail.com"
@@ -205,3 +207,20 @@ def test_direct_courier_reports_failures_inline() -> None:
     failures: list[DeliveryError] = []
     DirectCourier(FlakySender(DeliveryError("timeout", retryable=True))).deliver(email_to("person@gmail.com"), failures.append)
     assert len(failures) == 1
+
+
+def test_link_emails_carry_a_readable_html_link_and_a_plain_text_fallback() -> None:
+    url = "https://app.example.org/set-password?token=usr_1.secret"
+    html = render_html("en", ["Hello <Rajib> & co,", EmailLink("Account creation link", url), ""])
+    message = build_message(
+        email_to("person@example.org").__class__(**{**email_to("person@example.org").__dict__, "body": f"Open {url}", "html": html})
+    )
+    assert message.get_content_type() == "multipart/alternative"
+    plain = message.get_body(preferencelist=("plain",))
+    rich = message.get_body(preferencelist=("html",))
+    assert plain is not None and url in plain.get_content()
+    assert rich is not None
+    content = rich.get_content()
+    assert f'<a href="{url}">Account creation link</a>' in content
+    assert "Hello &lt;Rajib&gt; &amp; co," in content
+    assert content.count("<p>") == 2

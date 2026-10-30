@@ -47,6 +47,9 @@ def test_registration_stores_a_registered_account_and_emails_a_link(container: C
     assert emailed_link(outbox).startswith("http://localhost:3000/set-password?token=")
     assert f"{container.settings.account_links.ttl_minutes} minutes" in email.body
     assert "Developed by Team Sober" in email.body
+    assert email.html is not None
+    assert f'<a href="{emailed_link(outbox)}">Account creation link</a>' in email.html
+    assert "/set-password?token=" not in email.html.replace(f'href="{emailed_link(outbox)}"', "")
 
 
 def test_an_existing_account_gets_a_sign_in_or_reset_email_and_is_not_changed(container: Container, outbox: InMemoryEmailSender) -> None:
@@ -55,6 +58,9 @@ def test_an_existing_account_gets_a_sign_in_or_reset_email_and_is_not_changed(co
     email = outbox.sent[-1]
     assert (email.to, email.subject) == (DEMO_EMAIL, "You already have a CareerPilot account")
     assert "Sign in here: http://localhost:3000/sign-in" in email.body
+    assert email.html is not None
+    assert '<a href="http://localhost:3000/sign-in">Sign in to CareerPilot</a>' in email.html
+    assert ">Password reset link</a>" in email.html
     assert stored(container, DEMO_EMAIL) == before
     assert container.auth.inspect_link(link_token(outbox), CLIENT).purpose is AccountLinkPurpose.RESET
 

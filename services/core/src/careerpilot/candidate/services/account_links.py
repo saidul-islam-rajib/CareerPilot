@@ -5,6 +5,7 @@ from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.ports import Account
 from careerpilot.platform.config import SECONDS_PER_MINUTE, AccountLinksConfig
 from careerpilot.platform.email_delivery import Courier, OutgoingEmail
+from careerpilot.platform.email_html import EmailBlock, EmailLink, render_html
 from careerpilot.platform.enums import AccountEmail, AccountLinkPurpose, UserAccountStatus
 from careerpilot.platform.errors import DomainError, ErrorCode, validation_error
 from careerpilot.platform.links import LINK_ERRORS, LINK_INVALID, join_token, link_url, split_token, web_url
@@ -114,6 +115,28 @@ class AccountLinkService:
         sign_in = translate("accountLinks.existingEmailSignIn", {"url": self._web_url(self._config.sign_in_path)})
         return [intro, sign_in, translate("accountLinks.existingEmailReset")]
 
+    def _html_blocks(self, kind: AccountEmail, product: str) -> list[EmailBlock]:
+        intro = translate(f"accountLinks.{kind.value}EmailIntro", {"product": product})
+        if kind is not AccountEmail.EXISTING:
+            return [intro]
+        sign_in = EmailLink(translate("accountLinks.signInLinkLabel", {"product": product}), self._web_url(self._config.sign_in_path))
+        return [intro, sign_in, translate("accountLinks.existingEmailReset")]
+
+    def _html(self, account: Account, kind: AccountEmail, token: str) -> str:
+        settings = self._ctx.candidate.settings
+        product = settings.branding.product_name
+        return render_html(
+            settings.account.locale,
+            [
+                translate("accountLinks.emailGreeting", {"name": account.user.full_name}),
+                *self._html_blocks(kind, product),
+                EmailLink(translate(f"accountLinks.{kind.value}LinkLabel"), self._link(token)),
+                translate("accountLinks.emailExpiry", {"minutes": self._ctx.ttl_minutes()}),
+                translate("accountLinks.emailIgnore"),
+                translate("email.credit", {"url": str(settings.branding.developer_url)}),
+            ],
+        )
+
     def _email(self, account: Account, kind: AccountEmail, token: str) -> OutgoingEmail:
         settings = self._ctx.candidate.settings
         product = settings.branding.product_name
@@ -138,4 +161,5 @@ class AccountLinkService:
             to=account.user.email,
             subject=translate(f"accountLinks.{kind.value}EmailSubject", {"product": product}),
             body=body,
+            html=self._html(account, kind, token),
         )

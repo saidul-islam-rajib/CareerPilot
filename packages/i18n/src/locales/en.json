@@ -1487,7 +1487,11 @@
     "linkExpired": "This link has expired or has already been used.",
     "linkMissing": "This link is incomplete. Open it again from your email.",
     "requestNew": "Send me a new link",
-    "deliveryFailed": "We couldn't send the email. Try again in a few minutes."
+    "deliveryFailed": "We couldn't send the email. Try again in a few minutes.",
+    "setupLinkLabel": "Account creation link",
+    "resetLinkLabel": "Password reset link",
+    "existingLinkLabel": "Password reset link",
+    "signInLinkLabel": "Sign in to {product}"
   },
   "adminLinks": {
     "emailSubject": "Choose your {product} admin password",
@@ -1499,7 +1503,8 @@
     "forgotTitle": "Get a password link",
     "forgotBody": "Enter your admin email address. If it belongs to an admin account, we'll email you a link to choose a password.",
     "forgotSubmit": "Email me a link",
-    "sentBody": "If {email} belongs to an admin account, a link is on its way. It expires in {minutes} minutes."
+    "sentBody": "If {email} belongs to an admin account, a link is on its way. It expires in {minutes} minutes.",
+    "linkLabel": "Admin password link"
   },
   "sources": {
     "title": "Job sources",

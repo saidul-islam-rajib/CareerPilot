@@ -7,6 +7,7 @@ from careerpilot.administration.context import AdminContext
 from careerpilot.administration.models import AdminAccount
 from careerpilot.administration.ports import AdminCredential
 from careerpilot.platform.email_delivery import Courier, OutgoingEmail
+from careerpilot.platform.email_html import EmailLink, render_html
 from careerpilot.platform.enums import AdminRole
 from careerpilot.platform.errors import DomainError, ErrorCode, validation_error
 from careerpilot.platform.links import LINK_ERRORS, LINK_INVALID, join_token, link_url, split_token
@@ -96,6 +97,19 @@ class AdminLinkService:
             to=account.email,
             subject=translate("adminLinks.emailSubject", {"product": product}),
             body=body,
+            html=render_html(
+                settings.account.locale,
+                [
+                    translate("accountLinks.emailGreeting", {"name": account.full_name}),
+                    translate("adminLinks.emailIntro", {"product": product}),
+                    EmailLink(
+                        translate("adminLinks.linkLabel"), link_url(self._config.admin_web_base_url, self._config.set_password_path, token)
+                    ),
+                    translate("accountLinks.emailExpiry", {"minutes": self._ctx.ttl_minutes()}),
+                    translate("accountLinks.emailIgnore"),
+                    translate("email.credit", {"url": str(settings.branding.developer_url)}),
+                ],
+            ),
         )
 
 
