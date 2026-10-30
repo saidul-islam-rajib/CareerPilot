@@ -1,12 +1,17 @@
 'use client';
 
-import { Check, CheckCheck, FileText, Users } from 'lucide-react';
-import type { MessageView } from '@careerpilot/api-client';
-import { messageStateKey, useFormat, useT, voiceLength } from '@careerpilot/client-core';
+import { Check, CheckCheck, FileText, Reply, Users } from 'lucide-react';
+import type { MessageView, ReplyPreview } from '@careerpilot/api-client';
+import { messageStateKey, quoteSender, quoteText, useFormat, useT, voiceLength } from '@careerpilot/client-core';
 import { MessageKind, MessageState } from '@careerpilot/domain-ui-logic';
-import { cn } from '@careerpilot/ui-web';
+import { Button, cn } from '@careerpilot/ui-web';
 
 const KILOBYTE = 1024;
+const ANCHOR_PREFIX = 'message-';
+
+export function messageAnchor(id: string): string {
+  return `${ANCHOR_PREFIX}${id}`;
+}
 
 export function MemberAvatar({ name, photoUrl, team = false, className }: { name: string; photoUrl?: string; team?: boolean; className?: string }) {
   const initials = name
@@ -74,18 +79,61 @@ function Attachment({ message }: { message: MessageView }) {
   );
 }
 
-export function MessageBubble({ message, showSender }: { message: MessageView; showSender: boolean }) {
+export function Quote({ reply, mine, onSelect }: { reply: ReplyPreview; mine: boolean; onSelect?: (id: string) => void }) {
+  const t = useT();
+  const sender = quoteSender(reply, t);
+  const text = quoteText(reply, t);
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect?.(reply.id)}
+      aria-label={t('messaging.quoteLabel', { name: sender, text })}
+      title={t('messaging.showOriginal')}
+      className={cn(
+        'flex min-w-0 flex-col rounded-control border-l-4 px-2 py-1 text-left text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+        mine ? 'border-primary-foreground bg-primary-foreground/15' : 'border-primary bg-surface',
+      )}
+    >
+      <span className={cn('text-xs font-semibold', mine ? 'text-primary-foreground' : 'text-primary')}>{sender}</span>
+      <span className={cn('line-clamp-2 break-words', mine ? 'text-primary-foreground/85' : 'text-muted')}>{text}</span>
+    </button>
+  );
+}
+
+export interface MessageBubbleProps {
+  message: MessageView;
+  showSender: boolean;
+  onReply?: (message: MessageView) => void;
+  onQuote?: (id: string) => void;
+  highlighted?: boolean;
+}
+
+export function MessageBubble({ message, showSender, onReply, onQuote, highlighted = false }: MessageBubbleProps) {
+  const t = useT();
   const format = useFormat();
   const mine = message.fromMe;
+  const replyButton = onReply ? (
+    <Button
+      size="icon"
+      variant="ghost"
+      icon={Reply}
+      aria-label={mine ? t('messaging.reply') : t('messaging.replyTo', { name: message.senderName })}
+      onClick={() => onReply(message)}
+      className="shrink-0 self-center opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+    />
+  ) : null;
   return (
-    <li className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
+    <li id={messageAnchor(message.id)} className={cn('group flex items-end gap-1', mine ? 'justify-end' : 'justify-start')}>
+      {mine ? replyButton : null}
       <div
         className={cn(
-          'flex max-w-[85%] flex-col gap-1 rounded-card px-3 py-2 shadow-sm sm:max-w-[70%]',
+          'flex max-w-[85%] flex-col gap-1 rounded-card px-3 py-2 shadow-sm transition-shadow sm:max-w-[70%]',
           mine ? 'rounded-br-sm bg-primary text-primary-foreground' : 'rounded-bl-sm border border-border bg-card text-foreground',
+          highlighted && 'ring-2 ring-focus ring-offset-2 ring-offset-surface',
         )}
       >
         {showSender && !mine ? <span className="text-xs font-semibold text-primary">{message.senderName}</span> : null}
+        {message.replyTo ? <Quote reply={message.replyTo} mine={mine} onSelect={onQuote} /> : null}
         <Attachment message={message} />
         {message.text ? <p className="whitespace-pre-wrap break-words">{message.text}</p> : null}
         <span className={cn('flex items-center justify-end gap-1 text-[11px]', mine ? 'text-primary-foreground/80' : 'text-muted')}>
@@ -93,6 +141,7 @@ export function MessageBubble({ message, showSender }: { message: MessageView; s
           {mine ? <StateTicks state={message.state} /> : null}
         </span>
       </div>
+      {mine ? null : replyButton}
     </li>
   );
 }

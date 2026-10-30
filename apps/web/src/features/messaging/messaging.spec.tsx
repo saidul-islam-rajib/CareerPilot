@@ -29,6 +29,24 @@ describe('ConversationPage', () => {
     expect(screen.getAllByRole('img', { name: 'Sent' }).length).toBeGreaterThan(0);
   });
 
+  it('replies to a chosen message with a quote, and Esc cancels a reply', async () => {
+    const user = userEvent.setup();
+    const { services } = renderWithProviders(<ConversationPage />, { params: { id: 'cnv_karim' } });
+    await user.click(await screen.findByRole('button', { name: 'Reply to Karim Hasan' }));
+    expect(screen.getByText('Replying to Karim Hasan')).toBeInTheDocument();
+    expect(screen.getByLabelText('Type a message')).toHaveFocus();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByText('Replying to Karim Hasan')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Reply to Karim Hasan' }));
+    await user.type(screen.getByLabelText('Type a message'), 'Yes, tell me more{Enter}');
+    const quote = await screen.findByRole('button', { name: /^In reply to Karim Hasan: Hi Ayesha, our team is hiring/ });
+    expect(screen.queryByText('Replying to Karim Hasan')).not.toBeInTheDocument();
+    const sent = (await services.api.messaging.messages('cnv_karim')).messages.at(-1);
+    expect(sent?.replyTo?.senderName).toBe('Karim Hasan');
+    await user.click(quote);
+    expect(screen.getByText(/our team is hiring a frontend engineer/, { selector: 'p' }).closest('div')).toHaveClass('ring-2');
+  });
+
   it('blocks a member from the menu and replaces the composer', async () => {
     const user = userEvent.setup();
     renderWithProviders(<ConversationPage />, { params: { id: 'cnv_karim' } });
