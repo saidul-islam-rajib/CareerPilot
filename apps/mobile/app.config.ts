@@ -69,9 +69,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     plugins: [
       'expo-router',
       'expo-secure-store',
-      ['expo-image-picker', { photosPermission: catalog.profile.photoPermission, cameraPermission: false, microphonePermission: false }],
+      ['expo-image-picker', { photosPermission: catalog.profile.photoPermission, cameraPermission: false, microphonePermission: catalog.messaging.microphonePermission }],
       'expo-document-picker',
-      ['expo-audio', { microphonePermission: catalog.messaging.microphonePermission }],
+      ['expo-audio', { microphonePermission: catalog.messaging.microphonePermission, enableBackgroundPlayback: false }],
       ['expo-build-properties', { android: { usesCleartextTraffic: plainHttp } }],
       [
         'expo-splash-screen',
