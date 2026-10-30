@@ -1,6 +1,7 @@
 export * from './avatar';
 export * from './badge';
 export * from './banner';
+export * from './bottom-inset';
 export * from './button';
 export * from './card';
 export * from './checkbox';

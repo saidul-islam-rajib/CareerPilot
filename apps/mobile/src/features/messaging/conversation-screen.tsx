@@ -9,7 +9,7 @@ import { ConversationKind, MessageKind } from '@careerpilot/domain-ui-logic';
 import { Ban, Bell, BellOff, FileText, ImageIcon, Mic, Send, Square, X } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 import { pickDocument, toUploadSource } from '@/features/profile/profile-support';
-import { ErrorState, Icon, LoadingState, Text, TextTone, TextVariant, useInputFocus, useSnackbar } from '@/ui';
+import { ErrorState, Icon, LoadingState, Text, TextTone, TextVariant, useBottomInset, useInputFocus, useSnackbar } from '@/ui';
 import { SnackbarTone } from '@/ui/snackbar';
 import { MessageBubble } from './message-parts';
 import { useVoiceNote, type RecordedVoice } from './voice';
@@ -82,7 +82,17 @@ function Composer({ onText, onAttachment, busy }: { onText: (text: string) => Pr
     }
   };
   const focus = useInputFocus();
-  const bar = { flexDirection: 'row' as const, alignItems: 'flex-end' as const, gap: theme.space.xs, padding: theme.space.sm, borderTopWidth: theme.borderWidth.hairline, borderTopColor: theme.colors.border, backgroundColor: theme.colors.card };
+  const bottomInset = useBottomInset();
+  const bar = {
+    flexDirection: 'row' as const,
+    alignItems: 'flex-end' as const,
+    gap: theme.space.xs,
+    padding: theme.space.sm,
+    paddingBottom: theme.space.sm + bottomInset,
+    borderTopWidth: theme.borderWidth.hairline,
+    borderTopColor: theme.colors.border,
+    backgroundColor: theme.colors.card,
+  };
   if (voice.recording) {
     return (
       <View style={[bar, { alignItems: 'center' }]}>
@@ -159,6 +169,7 @@ export function ConversationScreen() {
   const snackbar = useSnackbar();
   const list = useRef<FlatList<MessageView>>(null);
   const headerHeight = useHeaderHeight();
+  const bottomInset = useBottomInset();
   const { page, sendText, sendAttachment, mute } = useConversation(id);
   const block = useBlockMember();
   if (page.isPending) {
@@ -212,7 +223,7 @@ export function ConversationScreen() {
         testID="conversation-messages"
       />
       {conversation.blocked ? (
-        <Text tone={TextTone.Muted} align="center" style={{ padding: theme.space.lg, backgroundColor: theme.colors.card }}>
+        <Text tone={TextTone.Muted} align="center" style={{ padding: theme.space.lg, paddingBottom: theme.space.lg + bottomInset, backgroundColor: theme.colors.card }}>
           {t('messaging.blockedNote')}
         </Text>
       ) : (
