@@ -1258,8 +1258,8 @@ The system should support Bangladesh job portals and employer career pages as pe
 ### 36.1 In-app notifications and member messaging
 
 - The app must have an in-app notification centre (a bell with an unread count, a list, and a banner while the app is open). Message notifications and "application submitted" or "confirmed" notifications appear there and are never sent by email. Each notification opens its subject: the conversation, or the application page that shows what was submitted (route and destination, files, cover letter, answers, sent email, timeline). Push notifications to a closed app use the mobile push channel above once its credentials exist.
-- Registered members can find each other by name, or by an exact email address or phone number, and chat one to one: text, photos, voice notes, and PDF files within configured limits, with sent, delivered, and read ticks. Members see only each other's name, photo, and headline, never phone numbers or email addresses. A member can turn off being found and can block another member, which stops messages both ways.
-- Administrators can message any member in a support conversation shown as the CareerPilot team, and the member can reply in it.
+- Registered members can find each other by name, or by an exact email address or phone number, and chat one to one: text, photos, voice notes, and PDF files within configured limits, with sent, delivered, and read ticks. As in WhatsApp, a member can reply to a chosen message: the reply shows a quote of that message, and tapping the quote goes back to it. Members see only each other's name, photo, and headline, never phone numbers or email addresses. A member can turn off being found and can block another member, which stops messages both ways.
+- Administrators can message any member in a support conversation shown as the CareerPilot team, and the member can reply in it. Both sides can reply to a chosen message the same way.
 
 ## 37. Approve-each mode: approval and automatic completion
 

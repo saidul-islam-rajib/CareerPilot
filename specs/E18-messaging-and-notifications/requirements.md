@@ -7,6 +7,7 @@
 - As a job seeker, I want to tell CareerPilot that I finished an application on the employer's site, so that it moves to Submitted and I can track it.
 - As a job seeker, I want an in-app notification when one of my applications is submitted, so that I can open it and see exactly what was sent.
 - As a member, I want to find other members by name, email, or phone and chat with them like on WhatsApp (text, photos, voice notes, PDFs), without either of us seeing the other's phone number or email.
+- As a member or administrator, I want to reply to one particular message, like on WhatsApp, so that when someone sends several messages I can answer each one clearly.
 - As a member, I want an in-app notification when someone messages me, and I want to block someone who bothers me and stop others from finding me.
 - As an administrator, I want to message any member directly and get their replies.
 - As an administrator, I want to see everything about a member, including their profile, contacts, and uploaded CVs and documents.
@@ -18,6 +19,7 @@
 - WHEN an application reaches Submitted – awaiting confirmation or Confirmed THE SYSTEM SHALL create one in-app notification for the user (no email) linking to the application, whose page shows what was submitted: route and destination, CV and documents, cover letter, answers, sent email, and the timeline.
 - WHEN a member searches the directory THE SYSTEM SHALL match names by text and emails or phone numbers only exactly, return only name, photo, and headline, and leave out members who turned off "Let members find me", members who blocked the searcher, and the searcher.
 - WHEN a member sends a message THE SYSTEM SHALL accept text, an image, a voice note, or a PDF within the configured limits, store attachments in private storage served by signed links, and create an in-app notification for every other member of the conversation unless they muted it.
+- WHEN a member or administrator replies to a chosen message THE SYSTEM SHALL store which message it answers, accept only a message from the same conversation, and show a quote at the top of the reply with the original sender ("You" for the reader's own message) and its text, or "Photo", "Voice message", or the file name; selecting the quote SHALL bring the original message into view when it is loaded.
 - WHEN a member opens a conversation THE SYSTEM SHALL mark it read for them and show the sender each message as sent, delivered (the recipient's app received it), or read.
 - WHEN a member blocks another THE SYSTEM SHALL stop messages between them in both directions and hide each from the other's search.
 - WHEN an administrator messages a member THE SYSTEM SHALL deliver it in a support conversation shown as the CareerPilot team, and the member SHALL be able to reply in it.

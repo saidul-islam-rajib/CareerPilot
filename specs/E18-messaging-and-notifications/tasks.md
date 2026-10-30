@@ -8,4 +8,5 @@
 - [x] Mobile app: Chats tab, conversation, member search, attachments, voice notes, bell and foreground banner
 - [x] Admin app: Messages and Connections tabs, documents and contacts on the user record
 - [x] Device push on Android while the app is closed: `NotificationService` sends every in-app notification through Expo's push service (`messaging.push` config, `push_devices` table); phones register after sign-in and are forgotten on sign-out or when Expo reports the app uninstalled
+- [ ] Replies to a chosen message: backend (`replyToId`, `replyTo` preview, same-conversation check), API client and hooks, web, mobile (swipe or long-press), admin
 - [!] Device push on iPhone: needs an Apple push key, which needs an Apple Developer account. Recommendation: add it in Expo credentials once the account exists; no code change is needed.
