@@ -3,6 +3,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import PurePath
 
+from careerpilot.candidate.consistency import ConsistencyChecker
 from careerpilot.candidate.context import CandidateContext, ChangeListener, ignore_change
 from careerpilot.candidate.models import (
     CompletenessItem,
@@ -22,6 +23,7 @@ from careerpilot.candidate.profile_rules import (
     clean_multiline,
     clean_text,
     normalize_skills,
+    option_index,
     require_length,
     require_photo_crop,
 )
@@ -106,6 +108,8 @@ class ProfileService:
         self._storage = storage
         self._links = links
         self._config = context.settings.profile
+        self._options = option_index(context.settings.enum_values)
+        self._consistency = ConsistencyChecker(self._config.consistency)
         self._on_change = on_change
 
     def get(self, user_id: str) -> Profile:
@@ -118,8 +122,14 @@ class ProfileService:
         return workspace.profile
 
     def view(self, profile: Profile, base_url: str) -> ProfileView:
-        score, items = completeness(profile, self._config)
-        return present_profile(profile, score, items, lambda key, name: self._links.link(base_url, key, name))
+        home = profile.country_code or self._ctx.settings.account.default_country_code
+        return present_profile(
+            profile,
+            completeness(profile, self._config),
+            lambda key, name: self._links.link(base_url, key, name),
+            home_country=home,
+            consistency=self._consistency.check(profile, home),
+        )
 
     def update_basics(self, user_id: str, changes: BasicsChanges) -> Profile:
         return self._mutate(user_id, lambda w: self._apply_basics(user_id, w, changes))
@@ -236,7 +246,7 @@ class ProfileService:
 
         def add(workspace: CandidateWorkspace) -> None:
             active = workspace.profile.active_entries(section.key)
-            if len(active) >= self._config.limits.max_entries_per_section:
+            if len(active) >= (section.max_entries or self._config.limits.max_entries_per_section):
                 raise validation_error(section.key)
             entry = ProfileEntry(
                 id=self._ctx.ids.next("pe"),
@@ -275,7 +285,10 @@ class ProfileService:
             entry = next((e for e in profile.sections.get(section.key, []) if e.id == entry_id and e.deleted_at is not None), None)
             if entry is None:
                 raise not_found("entry")
-            position = self._next_position([e.position for e in profile.active_entries(section.key)])
+            active = profile.active_entries(section.key)
+            if section.max_entries is not None and len(active) >= section.max_entries:
+                raise validation_error(section.key)
+            position = self._next_position([e.position for e in active])
             self._replace_entry(profile, section.key, entry.model_copy(update={"deleted_at": None, "position": position}))
 
         return self._mutate(user_id, restore)
@@ -416,7 +429,7 @@ class ProfileService:
         )
 
     def _rules(self) -> FieldRules:
-        return FieldRules(self._config.limits, self._ctx.settings.validation, self._ctx.clock.now())
+        return FieldRules(self._config.limits, self._ctx.settings.validation, self._ctx.clock.now(), self._options)
 
     def _section(self, key: str) -> ProfileSectionConfig:
         section = self._config.section(key)

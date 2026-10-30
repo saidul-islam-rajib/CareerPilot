@@ -1,21 +1,29 @@
 import re
 from collections.abc import Callable, Mapping
-from datetime import datetime
-from enum import StrEnum
+from datetime import date, datetime
 from typing import cast
 from urllib.parse import urlsplit
 
 from careerpilot.candidate.models import PhotoCrop
-from careerpilot.platform.config import ProfileFieldConfig, ProfileLimits, ProfileSectionConfig, ValidationConfig
-from careerpilot.platform.enums import LanguageProficiency, ProfileFieldType
+from careerpilot.platform.config import EnumValueConfig, ProfileFieldConfig, ProfileLimits, ProfileSectionConfig, ValidationConfig
+from careerpilot.platform.enums import ProfileFieldType
 from careerpilot.platform.errors import DomainError, validation_error
 from careerpilot.platform.validation import require_email
 
 EntryValue = str | int | float | bool | None
 MONTH = re.compile(r"^(\d{4})-(0[1-9]|1[0-2])$")
+DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 WHITESPACE = re.compile(r"\s+")
 URL_SCHEMES = frozenset({"http", "https"})
-SELECT_OPTIONS: dict[str, type[StrEnum]] = {"language_proficiency": LanguageProficiency}
+OptionIndex = Mapping[str, frozenset[str]]
+
+
+def option_index(values: list[EnumValueConfig]) -> dict[str, frozenset[str]]:
+    grouped: dict[str, set[str]] = {}
+    for row in values:
+        if row.is_active:
+            grouped.setdefault(row.enum_key, set()).add(row.value)
+    return {key: frozenset(options) for key, options in grouped.items()}
 
 
 def clean_text(value: str) -> str:
@@ -53,9 +61,10 @@ def require_length(value: str, max_length: int | None, field: str) -> str:
 
 
 class FieldRules:
-    def __init__(self, limits: ProfileLimits, policy: ValidationConfig, now: datetime) -> None:
+    def __init__(self, limits: ProfileLimits, policy: ValidationConfig, now: datetime, options: OptionIndex) -> None:
         self._limits = limits
         self._policy = policy
+        self._options = options
         self._phone = re.compile(limits.phone_pattern)
         self._max_year = now.year + limits.future_years
         self._parsers: dict[ProfileFieldType, Callable[[object, ProfileFieldConfig, str], EntryValue]] = {
@@ -69,6 +78,7 @@ class FieldRules:
             ProfileFieldType.NUMBER: self._number,
             ProfileFieldType.SELECT: self._select,
             ProfileFieldType.BOOLEAN: self._boolean,
+            ProfileFieldType.DATE: self._date,
         }
 
     def phone(self, value: str, field: str) -> str:
@@ -153,9 +163,18 @@ class FieldRules:
         return number
 
     def _select(self, value: object, field: ProfileFieldConfig, name: str) -> EntryValue:
-        options = SELECT_OPTIONS.get(field.options or "")
         text = self._string(value, name)
-        if options is None or text not in {o.value for o in options}:
+        if text not in self._options.get(field.options or "", frozenset[str]()):
+            raise validation_error(name)
+        return text
+
+    def _date(self, value: object, field: ProfileFieldConfig, name: str) -> EntryValue:
+        text = self._string(value, name).strip()
+        try:
+            parsed = date.fromisoformat(text) if DAY.match(text) else None
+        except ValueError:
+            parsed = None
+        if parsed is None or not self._limits.min_year <= parsed.year <= self._max_year:
             raise validation_error(name)
         return text
 

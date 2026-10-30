@@ -1,5 +1,5 @@
 profile:
-  page_order: [about, contacts, experience, education, skills, documents, languages, tests, certifications, projects, links, awards, referees]
+  page_order: [about, contacts, identity, experience, education, academic_records, skills, documents, addresses, special_status, languages, tests, certifications, projects, links, awards, referees]
   limits:
     max_contacts: 12
     max_skills: 60
@@ -148,3 +148,70 @@ profile:
         - { key: organization, type: text, max_length: 120 }
         - { key: email, type: email, max_length: 254 }
         - { key: phone, type: phone, max_length: 24 }
+    - key: identity
+      icon: id-card
+      title_field: name_english
+      subtitle_fields: [name_bangla, date_of_birth]
+      countries: [BD]
+      max_entries: 1
+      fields:
+        - { key: name_english, type: text, required: true, max_length: 120 }
+        - { key: name_bangla, type: text, max_length: 120 }
+        - { key: date_of_birth, type: date, required: true }
+        - { key: father_name_english, type: text, max_length: 120 }
+        - { key: father_name_bangla, type: text, max_length: 120 }
+        - { key: mother_name_english, type: text, max_length: 120 }
+        - { key: mother_name_bangla, type: text, max_length: 120 }
+        - { key: nid_number, type: text, max_length: 20 }
+        - { key: citizenship, type: select, options: citizenship }
+        - { key: home_district, type: select, options: bd_district }
+    - key: academic_records
+      icon: school
+      title_field: exam
+      subtitle_fields: [board_or_university, passing_year, result]
+      countries: [BD]
+      fields:
+        - { key: exam, type: select, required: true, options: bd_exam }
+        - { key: board_or_university, type: text, required: true, max_length: 160 }
+        - { key: roll_number, type: text, max_length: 30 }
+        - { key: registration_number, type: text, max_length: 30 }
+        - { key: passing_year, type: year, required: true }
+        - { key: group_subject, type: text, max_length: 120 }
+        - { key: result_scale, type: select, required: true, options: result_scale }
+        - { key: result, type: text, required: true, max_length: 30 }
+        - { key: name_on_certificate, type: text, max_length: 120 }
+        - { key: date_of_birth_on_certificate, type: date }
+        - { key: father_name_on_certificate, type: text, max_length: 120 }
+        - { key: mother_name_on_certificate, type: text, max_length: 120 }
+    - key: addresses
+      icon: map-pin
+      title_field: kind
+      subtitle_fields: [line, district]
+      countries: [BD]
+      fields:
+        - { key: kind, type: select, required: true, options: address_kind }
+        - { key: line, type: text, required: true, max_length: 200 }
+        - { key: division, type: select, options: bd_division }
+        - { key: district, type: select, required: true, options: bd_district }
+        - { key: upazila, type: text, max_length: 80 }
+        - { key: post_office, type: text, max_length: 80 }
+        - { key: post_code, type: text, max_length: 10 }
+    - key: special_status
+      icon: shield-check
+      title_field: status
+      subtitle_fields: [document_name]
+      body_field: notes
+      countries: [BD]
+      fields:
+        - { key: status, type: select, required: true, options: special_status }
+        - { key: document_name, type: text, max_length: 160 }
+        - { key: notes, type: textarea, max_length: 500 }
+  consistency:
+    ignored_characters: ".,'-"
+    rules:
+      - { kind: name, source: identity.name_english, targets: [profile.full_name, academic_records.name_on_certificate] }
+      - { kind: date_of_birth, source: identity.date_of_birth, targets: [academic_records.date_of_birth_on_certificate] }
+      - { kind: father_name, source: identity.father_name_english, targets: [academic_records.father_name_on_certificate] }
+      - { kind: mother_name, source: identity.mother_name_english, targets: [academic_records.mother_name_on_certificate] }
+    mobile_patterns:
+      - { country: BD, pattern: "^\\+8801[3-9][0-9]{8}$" }

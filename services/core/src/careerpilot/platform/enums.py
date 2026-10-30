@@ -250,6 +250,7 @@ class ProfileFieldType(StrEnum):
     NUMBER = "number"
     SELECT = "select"
     BOOLEAN = "boolean"
+    DATE = "date"
 
 
 class CompletenessKind(StrEnum):
@@ -372,3 +373,55 @@ class DevicePlatform(StrEnum):
 class PushMode(StrEnum):
     EXPO = "expo"
     OFF = "off"
+
+
+class BdExam(StrEnum):
+    SSC = "ssc"
+    DAKHIL = "dakhil"
+    O_LEVEL = "o_level"
+    HSC = "hsc"
+    ALIM = "alim"
+    A_LEVEL = "a_level"
+    DIPLOMA = "diploma"
+    BACHELOR_HONOURS = "bachelor_honours"
+    BACHELOR_PASS = "bachelor_pass"
+    MASTERS = "masters"
+    MBBS = "mbbs"
+    OTHER = "other"
+
+
+class ResultScale(StrEnum):
+    GPA_5 = "gpa_5"
+    CGPA_4 = "cgpa_4"
+    DIVISION = "division"
+    CLASS = "class"
+    GRADE = "grade"
+
+
+class AddressKind(StrEnum):
+    PRESENT = "present"
+    PERMANENT = "permanent"
+
+
+class SpecialStatus(StrEnum):
+    FREEDOM_FIGHTER_CHILD = "freedom_fighter_child"
+    FREEDOM_FIGHTER_GRANDCHILD = "freedom_fighter_grandchild"
+    PERSON_WITH_DISABILITY = "person_with_disability"
+    ETHNIC_MINORITY = "ethnic_minority"
+    ANSAR_VDP = "ansar_vdp"
+    ORPHAN = "orphan"
+    OTHER = "other"
+
+
+class Citizenship(StrEnum):
+    BY_BIRTH = "by_birth"
+    BY_DESCENT = "by_descent"
+    OTHER = "other"
+
+
+class ConsistencyKind(StrEnum):
+    NAME = "name"
+    DATE_OF_BIRTH = "date_of_birth"
+    FATHER_NAME = "father_name"
+    MOTHER_NAME = "mother_name"
+    PHONE_FORMAT = "phone_format"

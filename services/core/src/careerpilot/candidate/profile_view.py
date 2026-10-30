@@ -1,5 +1,8 @@
 from collections.abc import Callable
 
+from pydantic import Field
+
+from careerpilot.candidate.consistency import ConsistencyWarning
 from careerpilot.candidate.models import (
     CompletenessItem,
     Contact,
@@ -61,6 +64,8 @@ class ProfileView(CamelModel):
     skills: list[str]
     sections: dict[str, list[ProfileEntryView]]
     documents: list[ProfileDocumentView]
+    home_country: str = ""
+    consistency: list[ConsistencyWarning] = Field(default_factory=list[ConsistencyWarning])
 
 
 def _file(stored: StoredFile, link: LinkFactory) -> FileView:
@@ -91,7 +96,15 @@ def _document(document: ProfileDocument, link: LinkFactory) -> ProfileDocumentVi
     )
 
 
-def present_profile(profile: Profile, score: int, items: list[CompletenessItem], link: LinkFactory) -> ProfileView:
+def present_profile(
+    profile: Profile,
+    completeness: tuple[int, list[CompletenessItem]],
+    link: LinkFactory,
+    *,
+    home_country: str = "",
+    consistency: list[ConsistencyWarning] | None = None,
+) -> ProfileView:
+    score, items = completeness
     return ProfileView(
         id=profile.id,
         full_name=profile.full_name,
@@ -113,4 +126,6 @@ def present_profile(profile: Profile, score: int, items: list[CompletenessItem],
             for key in profile.sections
         },
         documents=[_document(d, link) for d in profile.active_documents()],
+        home_country=home_country,
+        consistency=consistency or [],
     )

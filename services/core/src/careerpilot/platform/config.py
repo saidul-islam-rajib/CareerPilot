@@ -12,6 +12,7 @@ from careerpilot.platform.enums import (
     AnswerTopic,
     ApplicationRoute,
     CompletenessKind,
+    ConsistencyKind,
     DeliveryMode,
     PauseDuration,
     ProfileFieldType,
@@ -429,6 +430,8 @@ class ProfileSectionConfig(Strict):
     ongoing_field: str | None = None
     body_field: str | None = None
     link_field: str | None = None
+    countries: list[str] = Field(default_factory=list[str])
+    max_entries: int | None = Field(default=None, gt=0)
     fields: list[ProfileFieldConfig]
 
     def field(self, key: str) -> ProfileFieldConfig | None:
@@ -474,6 +477,23 @@ class CompletenessRule(Strict):
         return self.section or self.kind.value
 
 
+class ConsistencyRule(Strict):
+    kind: ConsistencyKind
+    source: str
+    targets: list[str]
+
+
+class MobilePattern(Strict):
+    country: str = Field(pattern=r"^[A-Z]{2}$")
+    pattern: str
+
+
+class ConsistencyConfig(Strict):
+    rules: list[ConsistencyRule] = Field(default_factory=list[ConsistencyRule])
+    mobile_patterns: list[MobilePattern] = Field(default_factory=list[MobilePattern])
+    ignored_characters: str = ""
+
+
 class ProfileConfig(Strict):
     page_order: list[str]
     limits: ProfileLimits
@@ -481,6 +501,7 @@ class ProfileConfig(Strict):
     storage: StorageConfig
     completeness: list[CompletenessRule]
     sections: list[ProfileSectionConfig]
+    consistency: ConsistencyConfig = Field(default_factory=ConsistencyConfig)
 
     def section(self, key: str) -> ProfileSectionConfig | None:
         return next((s for s in self.sections if s.key == key), None)
