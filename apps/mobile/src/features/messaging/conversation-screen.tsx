@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, Pressable, TextInput, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
+import { useHeaderHeight } from 'expo-router/react-navigation';
 import * as ImagePicker from 'expo-image-picker';
 import { ApiErrorCode, isApiError, type MessageView, type NewAttachment } from '@careerpilot/api-client';
 import { useBlockMember, useConversation, useFormat, useServices, useT, voiceLength } from '@careerpilot/client-core';
@@ -154,6 +155,7 @@ export function ConversationScreen() {
   const theme = useTheme();
   const snackbar = useSnackbar();
   const list = useRef<FlatList<MessageView>>(null);
+  const headerHeight = useHeaderHeight();
   const { page, sendText, sendAttachment, mute } = useConversation(id);
   const block = useBlockMember();
   if (page.isPending) {
@@ -176,7 +178,7 @@ export function ConversationScreen() {
   };
   const reversed = [...messages].reverse();
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.colors.surface }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={theme.touchTarget * 2}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.colors.surface }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={headerHeight}>
       <Stack.Screen
         options={{
           title: conversation.title,

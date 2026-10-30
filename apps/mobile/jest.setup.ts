@@ -42,6 +42,8 @@ jest.mock('expo-notifications', () => ({
   }),
 }));
 
+jest.mock('expo-router/react-navigation', () => ({ useHeaderHeight: () => 0 }));
+
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })) }));
 
 jest.mock('expo-secure-store', () => {
