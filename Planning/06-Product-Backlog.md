@@ -21,7 +21,7 @@ Platforms: **B** = backend, **AI** = AI tasks, **W** = user web app, **M** = mob
 | E13 | Automatic mode: rules, dry run, precedence, caps, submission windows, pause, emergency stop, deadline buffer, reconciliation, inactivity safety | 10.1, 10.8, 23, 27, 38, 39, 41, 47, 49, 52.3 | B W M A | 3 |
 | E14 | Bangladesh: government circulars, grades, age rules, stages, fees, applicant copies, Bangla profile data, local portals | 8.4, 35 | B AI W M | 4 |
 | E15 | Students and academics: programs, tests and scores, credentials, referees, supervisor outreach, university portals, decisions, after-admission checklist | 9, 33 | B AI W M | 4 |
-| E16 | After applying: inbox and calendar sync, assessments, interviews, offers, rejections, contacts, insights | 11.4, 11.5, 34 | B AI W M | 5 |
+| E16 | After applying (Google inbox and calendar sync built as E21, `specs/E21-mail-and-calendar-sync`): inbox and calendar sync, assessments, interviews, offers, rejections, contacts, insights | 11.4, 11.5, 34 | B AI W M | 5 |
 | E17 | Admin application: dashboard, management areas, roles, view-as-user, platform settings (including theme selection with preview) and stop | 24, 53 | B A | 1 (basic), 5 (full) |
 | E18 | Privacy and account: data export, account deletion, confidentiality, consent, third-party data, minors | 13, 40, 46.2 | B W M A | 1 (basic), 5 (full) |
 | E19 | Fees and payments tracking: rules, records, receipts, uncertain payments | 10.10 | B W M | 5 |
