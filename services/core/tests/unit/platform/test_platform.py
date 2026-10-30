@@ -140,3 +140,38 @@ def test_every_secret_comes_from_a_named_environment_setting() -> None:
         settings.matching.api_key_env,
     ]
     assert all(name.isupper() and " " not in name for name in names)
+
+
+ADMIN_WEB = "https://admin.example.net"
+MOBILE_WEB = "https://m.example.net"
+
+
+def test_admin_address_override_moves_admin_links_and_allows_that_origin() -> None:
+    settings = load_settings("docker")
+    name = settings.account_links.admin_web_base_url_env
+    moved = with_web_address(settings, {name: f"{ADMIN_WEB}/"})
+    assert moved.account_links.admin_web_base_url == ADMIN_WEB
+    assert moved.notifications.web_base_url == settings.notifications.web_base_url
+    assert ADMIN_WEB in moved.http.cors_origins
+
+
+def test_extra_origins_override_adds_each_origin_once() -> None:
+    settings = load_settings("docker")
+    name = settings.http.cors_origins_env
+    moved = with_web_address(settings, {name: f" {MOBILE_WEB}/ , {ADMIN_WEB},{MOBILE_WEB}"})
+    assert moved.http.cors_origins == [*settings.http.cors_origins, MOBILE_WEB, ADMIN_WEB]
+
+
+def test_extra_origins_override_refuses_unsafe_values() -> None:
+    settings = load_settings("docker")
+    with pytest.raises(ValueError, match="web_base_url_invalid"):
+        with_web_address(settings, {settings.http.cors_origins_env: "javascript:alert(1)"})
+
+
+def test_production_profile_is_locked_down() -> None:
+    settings = load_settings("production")
+    assert settings.http.trusted_proxy_hops == 1
+    assert settings.http.cors_origins == []
+    assert settings.persistence.mode.value == "database"
+    assert settings.submission.delivery_mode.value == "sandbox"
+    assert settings.observability.enabled is True

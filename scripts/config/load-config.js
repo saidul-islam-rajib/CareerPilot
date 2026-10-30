@@ -66,8 +66,23 @@ function clientConfig(config) {
   return Object.fromEntries([...whole, ...partial]);
 }
 
-function loadClientConfig(env, root = CONFIG_ROOT) {
-  return clientConfig(loadConfig(env, root));
+function withAddress(section, value) {
+  return value ? { ...section, baseUrl: value } : section;
 }
 
-module.exports = { loadConfig, loadClientConfig, clientConfig, deepMerge, camelize };
+function withDeploymentAddresses(config, environ = process.env) {
+  const names = isObject(config.deployment) ? config.deployment : {};
+  const api = names.apiUrlEnv ? (environ[names.apiUrlEnv] ?? '').trim() : '';
+  const admin = names.adminApiUrlEnv ? (environ[names.adminApiUrlEnv] ?? '').trim() : '';
+  return {
+    ...config,
+    ...(isObject(config.api) ? { api: withAddress(config.api, api) } : {}),
+    ...(isObject(config.admin) ? { admin: withAddress(config.admin, admin) } : {}),
+  };
+}
+
+function loadClientConfig(env, root = CONFIG_ROOT, environ = process.env) {
+  return clientConfig(withDeploymentAddresses(loadConfig(env, root), environ));
+}
+
+module.exports = { loadConfig, loadClientConfig, clientConfig, withDeploymentAddresses, deepMerge, camelize };

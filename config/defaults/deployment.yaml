@@ -1,0 +1,3 @@
+deployment:
+  api_url_env: CAREERPILOT_API_URL
+  admin_api_url_env: CAREERPILOT_ADMIN_API_URL

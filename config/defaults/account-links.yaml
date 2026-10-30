@@ -8,4 +8,5 @@ account_links:
   set_password_path: /set-password
   sign_in_path: /sign-in
   admin_web_base_url: http://localhost:3001
+  admin_web_base_url_env: CAREERPILOT_ADMIN_WEB_BASE_URL
   owner_email_env: CAREERPILOT_OWNER_EMAIL

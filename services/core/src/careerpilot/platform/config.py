@@ -30,6 +30,7 @@ ENV_NAME_PATTERN = r"^[A-Z][A-Z0-9_]*$"
 WEB_SCHEMES = frozenset({"http", "https"})
 USERINFO_MARK = "@"
 PATH_SEPARATOR = "/"
+LIST_SEPARATOR = ","
 INVALID_WEB_BASE_URL = "web_base_url_invalid"
 
 
@@ -142,6 +143,7 @@ class HttpConfig(Strict):
     admin_api_port: int = Field(gt=0)
     host: str
     cors_origins: list[str]
+    cors_origins_env: EnvName
     trusted_proxy_hops: int = Field(ge=0)
 
 
@@ -572,6 +574,7 @@ class AccountLinksConfig(Strict):
     set_password_path: str = Field(pattern=r"^/")
     sign_in_path: str = Field(pattern=r"^/")
     admin_web_base_url: str
+    admin_web_base_url_env: EnvName
     owner_email_env: EnvName
 
     @model_validator(mode="after")
@@ -735,16 +738,21 @@ def url_origin(url: str) -> str:
 
 
 def with_web_address(settings: Settings, environ: Mapping[str, str] = os.environ) -> Settings:
-    configured = environ.get(settings.notifications.web_base_url_env, "").strip()
-    if not configured:
+    web = environ.get(settings.notifications.web_base_url_env, "").strip()
+    admin = environ.get(settings.account_links.admin_web_base_url_env, "").strip()
+    extra = [part.strip() for part in environ.get(settings.http.cors_origins_env, "").split(LIST_SEPARATOR) if part.strip()]
+    if not web and not admin and not extra:
         return settings
-    base_url = web_base_url(configured)
-    origin = url_origin(base_url)
-    http = settings.http
-    origins = http.cors_origins if origin in http.cors_origins else [*http.cors_origins, origin]
+    web_url = web_base_url(web) if web else settings.notifications.web_base_url
+    admin_url = web_base_url(admin) if admin else settings.account_links.admin_web_base_url
+    requested = [url for url in (web, admin, *extra) if url]
+    allowed = [url_origin(web_base_url(url)) for url in requested]
+    origins = list(settings.http.cors_origins)
+    origins.extend(dict.fromkeys(origin for origin in allowed if origin not in origins))
     return settings.model_copy(
         update={
-            "notifications": settings.notifications.model_copy(update={"web_base_url": base_url}),
-            "http": http.model_copy(update={"cors_origins": origins}),
+            "notifications": settings.notifications.model_copy(update={"web_base_url": web_url}),
+            "account_links": settings.account_links.model_copy(update={"admin_web_base_url": admin_url}),
+            "http": settings.http.model_copy(update={"cors_origins": origins}),
         }
     )

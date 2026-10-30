@@ -5,17 +5,18 @@ import { parseAppConfig, publicConfigFromDefaults } from './client-config';
 import { mergePublicConfig } from './public-config';
 
 const require = createRequire(import.meta.url);
-const { loadConfig, loadClientConfig, clientConfig } = require('../../../../scripts/config/load-config.js') as {
+const { loadConfig, loadClientConfig, clientConfig, withDeploymentAddresses } = require('../../../../scripts/config/load-config.js') as {
   loadConfig: (env: string) => Record<string, unknown>;
   loadClientConfig: (env: string) => Record<string, unknown>;
   clientConfig: (config: Record<string, unknown>) => Record<string, unknown>;
+  withDeploymentAddresses: (config: Record<string, unknown>, environ: Record<string, string>) => { api: { baseUrl: string }; admin: { baseUrl: string } };
 };
 
 const SERVER_ONLY = ['mail', 'persistence', 'security', 'coordination', 'submission', 'discovery', 'matching', 'workers', 'http', 'observability', 'dev'];
 
 describe('client config shipped to browsers and phones', () => {
   it('holds everything the apps need', () => {
-    for (const env of ['local', 'docker', 'http']) {
+    for (const env of ['local', 'docker', 'http', 'production']) {
       expect(() => parseAppConfig({ careerpilot: loadClientConfig(env) })).not.toThrow();
     }
   });
@@ -33,6 +34,23 @@ describe('client config shipped to browsers and phones', () => {
     const full = loadConfig('local');
     const planted = { ...full, mail: { smtpPasswordEnv: 'planted-secret' }, profile: { ...(full.profile as object), storage: { key: 'planted-secret' } } };
     expect(JSON.stringify(clientConfig(planted))).not.toContain('planted-secret');
+  });
+});
+
+describe('deployment addresses', () => {
+  const names = { api: 'CAREERPILOT_API_URL', admin: 'CAREERPILOT_ADMIN_API_URL' };
+
+  it('uses the configured addresses without an override', () => {
+    const full = loadConfig('production');
+    const result = withDeploymentAddresses(full, {});
+    expect(result.api.baseUrl).toBe((full.api as { baseUrl: string }).baseUrl);
+    expect(result.admin.baseUrl).toBe((full.admin as { baseUrl: string }).baseUrl);
+  });
+
+  it('bakes the hosted API addresses from the environment', () => {
+    const result = withDeploymentAddresses(loadConfig('production'), { [names.api]: ' https://api.example.net ', [names.admin]: 'https://admin-api.example.net' });
+    expect(result.api.baseUrl).toBe('https://api.example.net');
+    expect(result.admin.baseUrl).toBe('https://admin-api.example.net');
   });
 });
 

@@ -6,4 +6,5 @@ http:
     - http://localhost:3000
     - http://localhost:3001
     - http://localhost:8081
+  cors_origins_env: CAREERPILOT_CORS_ORIGINS
   trusted_proxy_hops: 0
