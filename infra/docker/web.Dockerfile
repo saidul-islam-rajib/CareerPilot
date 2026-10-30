@@ -9,7 +9,7 @@ COPY config ./config
 COPY scripts/config ./scripts/config
 COPY packages ./packages
 COPY apps/${APP} ./apps/${APP}
-RUN --mount=type=cache,id=careerpilot-corepack,target=/corepack --mount=type=cache,id=careerpilot-pnpm-store,target=/pnpm/store pnpm install --frozen-lockfile --offline --store-dir "$PNPM_STORE" --filter "@careerpilot/${APP}..." \
+RUN --mount=type=cache,id=careerpilot-corepack,target=/corepack --mount=type=cache,id=careerpilot-pnpm-store,target=/pnpm/store pnpm install --frozen-lockfile --prefer-offline --store-dir "$PNPM_STORE" --filter "@careerpilot/${APP}..." \
  && pnpm --filter "@careerpilot/${APP}" build
 
 FROM node:24.14.0-alpine AS runtime
