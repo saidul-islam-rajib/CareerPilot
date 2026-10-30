@@ -32,7 +32,9 @@ function MessageList({ messages, team }: { messages: MessageView[]; team: boolea
   const format = useFormat();
   const end = useRef<HTMLDivElement>(null);
   const last = messages[messages.length - 1]?.id;
-  useEffect(() => end.current?.scrollIntoView?.({ block: 'end' }), [last]);
+  useEffect(() => {
+    end.current?.scrollIntoView?.({ block: 'end' });
+  }, [last]);
   return (
     <div className="flex-1 overflow-y-auto bg-surface px-3 py-4 sm:px-6" aria-live="polite">
       <ol className="flex flex-col gap-2">
