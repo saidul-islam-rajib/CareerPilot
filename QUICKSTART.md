@@ -74,3 +74,7 @@ docker compose -f docker-compose.yml -f docker-compose.observability.yml down
 ```
 
 Press `Ctrl+C` in the `pnpm phone` terminal. Your data stays; never add `-v`, which deletes it.
+
+## Put it on a server (works from any network)
+
+To use the phone apps away from home, deploy to one cloud server over HTTPS: [Oracle Cloud Always Free](docs/runbooks/deploy-oracle.md) or [AWS](docs/runbooks/deploy-aws.md), then the shared steps in [deploy-common.md](docs/runbooks/deploy-common.md).

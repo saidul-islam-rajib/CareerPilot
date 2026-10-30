@@ -140,3 +140,25 @@ Alerts are based on error-budget burn rates, with on-call rotation and runbooks.
 - Tags on every resource (environment, service, owner); monthly budgets with alerts.
 - AI and messaging spend tracked per user and per feature in the admin dashboard.
 - Savings: Graviton instances, Fargate Spot for non-urgent workers (discovery, batch extraction), S3 lifecycle rules, Batch API for bulk AI work.
+
+## 9. Single-VM deployment (built)
+
+The first hosted version runs on one VM (Oracle Cloud Always Free Ampere A1, or AWS Lightsail/EC2) with `docker-compose.prod.yml`; spec: `specs/E20-deployment-and-remote-access`, runbooks: `docs/runbooks/deploy-*.md`.
+
+```mermaid
+flowchart LR
+  phone["Phones and browsers"] -->|"HTTPS 443 / HTTP 80"| caddy["Caddy (Let's Encrypt)"]
+  subgraph vm["One VM, Docker Compose, only 80 and 443 published"]
+    caddy --> web["web"] & adm["admin"] & uapi["user-api"] & aapi["admin-api"]
+    caddy --> mob["m.<domain>: static mobile web build"]
+    uapi & aapi & wk["workers"] --> pg[("Postgres")] & rc[("Redis x2")]
+    wk --> tmp["Temporal"] --> pg
+    uapi & aapi --> lgtm["Grafana LGTM"]
+    uapi & wk --> mp["Mailpit sandbox"]
+  end
+```
+
+- Hosts: `app.`, `admin.`, `api.`, `admin-api.`, and `m.` under `CAREERPILOT_DOMAIN`.
+- Images are built on the VM (ARM64 or x86); `scripts/deploy/deploy.sh` pulls, builds, migrates, restarts, and health-checks; `.github/workflows/deploy.yml` runs it over SSH.
+- Nightly `pg_dump` and files archive with age-based retention (`scripts/deploy/backup.sh`), restore with `restore.sh`.
+- Production settings: `config/env/production.yaml` (`APP_ENV=production`), secrets in the server `.env` only.

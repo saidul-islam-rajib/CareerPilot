@@ -123,3 +123,7 @@ cd services/core && ../.venv/Scripts/python -m pytest       # backend tests
 | "Project is incompatible with this version of Expo Go" | Update Expo Go from the store (the project uses Expo SDK 58). |
 | "You're signed in to Expo Go as …, but not signed in to Expo CLI" | Stop Metro (`Ctrl+C`), run `npx expo login --no-browser` with the same Expo account, then start again. Or sign out of Expo Go on the phone. |
 | `npx expo login` crashes with "cmd.exe /c start … exited with non-zero code: 1" | Expo CLI can't open the browser on Windows because the login link contains `&`. Use `npx expo login --no-browser`, or run `$env:BROWSER = "none"; npx expo login` and `Ctrl+click` the printed link. |
+
+## Running it on a server instead
+
+For a public HTTPS deployment on one cloud VM (phones on any network), see [Oracle Cloud Always Free](docs/runbooks/deploy-oracle.md) or [AWS](docs/runbooks/deploy-aws.md) and [deploy-common.md](docs/runbooks/deploy-common.md). It uses `docker-compose.prod.yml` and `.env.production.example`, never this laptop.

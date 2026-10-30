@@ -12,7 +12,7 @@ An installed app talks to the CareerPilot API it was built for:
 | Build | API address | Set in |
 | --- | --- | --- |
 | Test (`preview`) | This laptop over Wi-Fi, for example `http://192.168.0.104:8000` | EAS environment `preview`: `APP_ENV=http`, `CAREERPILOT_API_URL` |
-| Store (`production`) | The hosted API over `https://` | EAS environment `production` (not set yet: the API is not hosted yet) |
+| Store (`production`) | The hosted API over `https://`, for example `https://api.team-sober.com` | EAS environment `production`: `APP_ENV=production`, `CAREERPILOT_API_URL` (see "Hosted API" below) |
 
 `app.config.ts` allows plain `http://` (Android cleartext, iOS ATS exception) only when the build's API address starts
 with `http://`, so store builds that point at `https://` stay locked down.
@@ -31,6 +31,27 @@ npx -y eas-cli@latest build -p android --profile preview --non-interactive --no-
 ```
 
 A fixed address for the laptop (a DHCP reservation in the Wi-Fi router) avoids rebuilding.
+
+## Hosted API (works from any network)
+
+After the server is deployed ([deploy-oracle.md](deploy-oracle.md), [deploy-aws.md](deploy-aws.md)), builds should point at `https://api.<domain>`. Both profiles in `apps/mobile/eas.json` already read their settings from the EAS environment of the same name, so no file changes are needed. Set the variables once (replace `<domain>`; run from `apps/mobile`; this does not start a build):
+
+```sh
+npx -y eas-cli@latest env:create --environment production --name APP_ENV --value production --visibility plaintext --non-interactive
+npx -y eas-cli@latest env:create --environment production --name CAREERPILOT_API_URL --value https://api.<domain> --visibility plaintext --non-interactive
+```
+
+For an installable test file that uses the hosted server instead of the laptop, change the `preview` environment the same way (`env:update --variable-environment preview --variable-name APP_ENV --value production`, and the same for `CAREERPILOT_API_URL`), then build with `--profile preview`. Switch back to `APP_ENV=http` and a laptop address for laptop testing.
+
+What changes in the app when the address is `https://`:
+
+- `app.config.ts` leaves Android cleartext (`usesCleartextTraffic`) and the iOS App Transport Security exception **off**; they are on only when the address starts with `http://` (laptop test builds).
+- `APP_ENV=production` loads `config/env/production.yaml`: **Server: … · Change** is hidden (`api.allow_server_change: false`).
+- Check what a build will use with `npx -y eas-cli@latest env:list --environment production`.
+
+The iPhone home-screen app needs no build: open `https://m.<domain>` in Safari → Share → **Add to Home Screen**. The server serves a static web export of the same app with the API address baked in at deploy time.
+
+Expo Go loads the app from a Metro server, so it works from any network only after EAS Update is set up (open task in `specs/E20-deployment-and-remote-access/tasks.md`); on the same Wi-Fi as the laptop, run `CAREERPILOT_API_URL=https://api.<domain> pnpm phone` to point Expo Go at the hosted server.
 
 ## Phone notifications (push)
 
@@ -70,8 +91,8 @@ Apple does not allow installing app files without a paid Apple Developer Program
 
 Both need the hosted API first (store users are not on the laptop's Wi-Fi):
 
-1. Host the API over `https://` (Planning/12-Cost-Plan.md, Planning/10-AIDLC-Agents.md §4: production releases are the owner's checkpoint).
-2. Set the production environment: `env:create --environment production` for `APP_ENV` and `CAREERPILOT_API_URL=https://…`.
+1. Host the API over `https://` (the deploy runbooks; Planning/10-AIDLC-Agents.md §4: production releases are the owner's checkpoint).
+2. Set the production environment: `env:create --environment production` for `APP_ENV` and `CAREERPILOT_API_URL=https://…` (see "Hosted API" above).
 3. iPhone: `npx -y eas-cli@latest build -p ios --profile production`, then `npx -y eas-cli@latest submit -p ios --latest`
    (creates the App Store Connect record on first use). Invite testers in TestFlight; submit for review when ready.
 4. Android: create the app in Google Play Console (one-time $25 account, package `com.teamsober.careerpilot`), upload the

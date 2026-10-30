@@ -87,3 +87,14 @@ Installed by `make setup` (pre-commit framework):
 | CI (required checks) | All unit tests with coverage, lint, types, and security scans |
 
 A commit is blocked if any check fails. Claude Code agents use the same commands, so they can't commit failing code either ([14-Testing-and-Quality.md](14-Testing-and-Quality.md)).
+
+## 6. Production-like check without touching the dev stack
+
+`docker-compose.prod.yml` (Caddy, internal databases, health checks, restart policies) can be validated and built on a development machine under a separate project name, without touching the running dev project `careerpilot`:
+
+```bash
+docker compose -p careerpilot-prodcheck --env-file prodcheck.env -f docker-compose.prod.yml config -q
+docker compose -p careerpilot-prodcheck --env-file prodcheck.env -f docker-compose.prod.yml build
+```
+
+Use a throw-away env file outside the repository with `CAREERPILOT_SITE_PREFIX=http://`, `CAREERPILOT_DOMAIN=localhost` and high host ports (`CAREERPILOT_HTTP_PORT=18080`), and remove only `careerpilot-prodcheck` containers, networks, and volumes afterwards. Real deployments follow [../docs/runbooks/deploy-common.md](../docs/runbooks/deploy-common.md); a laptop is never exposed to the internet.

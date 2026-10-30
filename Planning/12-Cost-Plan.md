@@ -6,9 +6,12 @@ Goal: launch on a very small budget using free tiers and small instances, with *
 
 | Stage | When | Shape | Rough monthly infra cost |
 |---|---|---|---|
+| **A0. Free single VM** | Beta, first users, and the first hosted version | One Oracle Cloud Always Free Ampere A1 server (4 OCPU, 24 GB) or one AWS Lightsail/EC2 server running every container with `docker-compose.prod.yml`, Caddy for HTTPS, nightly backups on the same VM copied off by hand | 0 (Oracle) / ≈ 25–50 (AWS) |
 | **A. Lean launch** | Beta and first users | One ARM EC2 instance running all containers with Docker Compose; small managed PostgreSQL; S3; CloudFront | ≈ $45–90 |
 | **B. Growth** | Steady users, more load | 2–3 instances (APIs/web, workers, browser pool) behind a load balancer; larger database with a standby; managed Redis | ≈ $200–400 |
 | **C. Scale** | Large user base | Full target design: ECS/Fargate services, Multi-AZ, separate accounts, WAF, Temporal Cloud ([Design/13-Infrastructure-and-Operations.md](Design/13-Infrastructure-and-Operations.md)) | Grows with usage |
+
+Stage A0 is built and documented in [../docs/runbooks/deploy-oracle.md](../docs/runbooks/deploy-oracle.md) and [../docs/runbooks/deploy-aws.md](../docs/runbooks/deploy-aws.md) (spec `specs/E20-deployment-and-remote-access`); the managed-service pieces of stage A (RDS, S3, CloudFront) are added when the load needs them.
 
 Moving between stages changes infrastructure configuration only (Terraform and Compose files), not application code, because every part already runs as a container with external configuration.
 
