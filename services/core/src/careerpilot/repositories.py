@@ -25,9 +25,16 @@ from careerpilot.messaging.adapters.in_memory import (
     InMemoryConversationRepository,
     InMemoryMessageRepository,
     InMemoryNotificationRepository,
+    InMemoryPushDeviceRepository,
 )
-from careerpilot.messaging.adapters.sql import SqlConversationRepository, SqlMessageRepository, SqlNotificationRepository
-from careerpilot.messaging.ports import ConversationRepository, MessageRepository, NotificationRepository
+from careerpilot.messaging.adapters.sql import (
+    SqlConversationRepository,
+    SqlMessageRepository,
+    SqlNotificationRepository,
+    SqlPushDeviceRepository,
+)
+from careerpilot.messaging.ports import ConversationRepository, MessageRepository, NotificationRepository, PushDeviceRepository
+from careerpilot.platform.clock import SystemClock
 from careerpilot.platform.persistence import Database
 from careerpilot.platform.security import PasswordHasher
 
@@ -47,6 +54,7 @@ class Repositories:
     notifications: NotificationRepository = field(default_factory=InMemoryNotificationRepository)
     conversations: ConversationRepository = field(default_factory=InMemoryConversationRepository)
     messages: MessageRepository = field(default_factory=InMemoryMessageRepository)
+    push_devices: PushDeviceRepository = field(default_factory=InMemoryPushDeviceRepository)
 
 
 RepositoryFactory = Callable[[PasswordHasher, WorkspaceFactory, PlatformSettings], Repositories]
@@ -78,4 +86,5 @@ def sql_repositories(database: Database, empty: WorkspaceFactory, platform_defau
         notifications=SqlNotificationRepository(database),
         conversations=SqlConversationRepository(database),
         messages=SqlMessageRepository(database),
+        push_devices=SqlPushDeviceRepository(database, SystemClock()),
     )

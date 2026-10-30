@@ -20,3 +20,6 @@ discovery:
         work_arrangement: hybrid
         country_code: BD
         organization: Northwind Labs
+messaging:
+  push:
+    mode: "off"

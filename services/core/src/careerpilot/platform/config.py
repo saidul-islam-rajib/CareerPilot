@@ -15,6 +15,7 @@ from careerpilot.platform.enums import (
     DeliveryMode,
     PauseDuration,
     ProfileFieldType,
+    PushMode,
     SmtpSecurity,
     ThemeKey,
 )
@@ -592,6 +593,18 @@ class AttachmentRule(Strict):
     max_seconds: int = Field(default=0, ge=0)
 
 
+class PushConfig(Strict):
+    mode: PushMode
+    endpoint: str
+    timeout_seconds: float = Field(gt=0)
+    batch_size: int = Field(gt=0)
+    workers: int = Field(gt=0)
+    channel_id: str
+    max_devices_per_user: int = Field(gt=0)
+    token_pattern: str
+    unregistered_errors: list[str]
+
+
 class MessagingConfig(Strict):
     poll_seconds: int = Field(gt=0)
     open_conversation_poll_seconds: int = Field(gt=0)
@@ -602,6 +615,7 @@ class MessagingConfig(Strict):
     notifications_page_size: int = Field(gt=0)
     preview_length: int = Field(gt=0)
     attachments: dict[str, AttachmentRule]
+    push: PushConfig
 
 
 class PresenceConfig(Strict):

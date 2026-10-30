@@ -1,10 +1,12 @@
 from sqlalchemy import String, func, select
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
-from careerpilot.messaging.models import Conversation, Member, Message, Notification
+from careerpilot.messaging.models import Conversation, Member, Message, Notification, PushDevice
+from careerpilot.platform.clock import Clock
 from careerpilot.platform.persistence import ID_LENGTH, SHORT_TEXT, Audited, Base, Database, active
 
 PAIR_LENGTH = ID_LENGTH * 2 + 1
+TOKEN_LENGTH = 255
 
 
 class NotificationRow(Audited, Base):
@@ -44,7 +46,16 @@ class MessageRow(Audited, Base):
     document: Mapped[dict[str, object]]
 
 
-def _json(model: Notification | Conversation | Member | Message) -> dict[str, object]:
+class PushDeviceRow(Audited, Base):
+    __tablename__ = "push_devices"
+
+    token: Mapped[str] = mapped_column(String(TOKEN_LENGTH), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(ID_LENGTH), index=True)
+    platform: Mapped[str] = mapped_column(String(SHORT_TEXT))
+    document: Mapped[dict[str, object]]
+
+
+def _json(model: Notification | Conversation | Member | Message | PushDevice) -> dict[str, object]:
     return model.model_dump(mode="json", by_alias=True, exclude_none=True)
 
 
@@ -193,3 +204,36 @@ class SqlMessageRepository:
                 .where(MessageRow.conversation_id == conversation_id, MessageRow.deleted_at.is_(None))
             )
             return session.scalar(query) or 0
+
+
+class SqlPushDeviceRepository:
+    def __init__(self, database: Database, clock: Clock) -> None:
+        self._db = database
+        self._clock = clock
+
+    def save(self, device: PushDevice) -> None:
+        def change(session: Session) -> None:
+            row = session.get(PushDeviceRow, device.token)
+            if row is None:
+                session.add(
+                    PushDeviceRow(token=device.token, user_id=device.user_id, platform=device.platform.value, document=_json(device))
+                )
+                return
+            row.restore()
+            row.user_id = device.user_id
+            row.platform = device.platform.value
+            row.document = _json(device)
+
+        self._db.write(change)
+
+    def for_user(self, user_id: str) -> list[PushDevice]:
+        with self._db.unit_of_work() as session:
+            rows = session.scalars(active(PushDeviceRow).where(PushDeviceRow.user_id == user_id))
+            return sorted((PushDevice.model_validate(r.document) for r in rows), key=lambda d: d.registered_at)
+
+    def remove(self, tokens: list[str], reason: str) -> None:
+        def change(session: Session) -> None:
+            for row in session.scalars(active(PushDeviceRow).where(PushDeviceRow.token.in_(tokens))):
+                row.soft_delete(self._clock, reason)
+
+        self._db.write(change)

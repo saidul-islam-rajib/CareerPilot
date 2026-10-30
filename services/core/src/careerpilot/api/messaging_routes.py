@@ -10,7 +10,7 @@ from careerpilot.api.profile_routes import read_upload
 from careerpilot.bootstrap import Container
 from careerpilot.candidate.models import UserSummary
 from careerpilot.messaging.service import LinkFactory, NewAttachment, Sender
-from careerpilot.platform.enums import MemberType, MessageKind
+from careerpilot.platform.enums import DevicePlatform, MemberType, MessageKind
 from careerpilot.platform.errors import validation_error
 from careerpilot.platform.model import CamelModel
 
@@ -33,6 +33,15 @@ class TextBody(CamelModel):
 
 class ToggleBody(CamelModel):
     value: bool
+
+
+class PushDeviceBody(CamelModel):
+    token: str
+    platform: DevicePlatform
+
+
+class PushTokenBody(CamelModel):
+    token: str
 
 
 @dataclass(frozen=True)
@@ -94,6 +103,18 @@ def notifications(caller: Chatting) -> JSONResponse:
 @router.post("/notifications/read")
 def read_notifications(body: ReadBody, caller: Chatting) -> Response:
     caller.services.notifications.read(caller.user.id, body.ids)
+    return no_content()
+
+
+@router.put("/push-devices")
+def register_push_device(body: PushDeviceBody, caller: Chatting) -> Response:
+    caller.services.notifications.register_device(caller.user.id, body.token, body.platform)
+    return no_content()
+
+
+@router.post("/push-devices/remove")
+def unregister_push_device(body: PushTokenBody, caller: Chatting) -> Response:
+    caller.services.notifications.unregister_device(caller.user.id, body.token)
     return no_content()
 
 

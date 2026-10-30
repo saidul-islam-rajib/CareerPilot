@@ -23,3 +23,17 @@ messaging:
     file:
       types: [application/pdf]
       max_bytes: 20971520
+  # Phone notifications while the app is closed, sent through Expo's free push service.
+  # Android delivery uses the Firebase key stored in the Expo project credentials; iOS needs an Apple push key.
+  push:
+    mode: expo
+    endpoint: https://exp.host/--/api/v2/push/send
+    timeout_seconds: 10
+    # Expo accepts at most 100 messages per request.
+    batch_size: 100
+    workers: 2
+    channel_id: updates
+    max_devices_per_user: 10
+    token_pattern: "^Expo(nent)?PushToken\\[[A-Za-z0-9_-]+\\]$"
+    # Expo ticket errors that mean the app was uninstalled or the address is no longer valid.
+    unregistered_errors: [DeviceNotRegistered]

@@ -1,4 +1,4 @@
-from careerpilot.messaging.models import Conversation, Member, Message, Notification
+from careerpilot.messaging.models import Conversation, Member, Message, Notification, PushDevice
 
 
 class InMemoryNotificationRepository:
@@ -73,3 +73,19 @@ class InMemoryMessageRepository:
 
     def count(self, conversation_id: str) -> int:
         return sum(1 for m in self._messages if m.conversation_id == conversation_id)
+
+
+class InMemoryPushDeviceRepository:
+    def __init__(self) -> None:
+        self._devices: dict[str, PushDevice] = {}
+
+    def save(self, device: PushDevice) -> None:
+        self._devices[device.token] = device.model_copy()
+
+    def for_user(self, user_id: str) -> list[PushDevice]:
+        mine = [d for d in self._devices.values() if d.user_id == user_id]
+        return [d.model_copy() for d in sorted(mine, key=lambda d: d.registered_at)]
+
+    def remove(self, tokens: list[str], reason: str) -> None:
+        for token in tokens:
+            self._devices.pop(token, None)

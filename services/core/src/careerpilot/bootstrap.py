@@ -83,18 +83,20 @@ from careerpilot.platform.email_delivery import (
     connect_smtp,
     connect_smtp_tls,
 )
-from careerpilot.platform.enums import ApplicationMode, DeliveryMode, SmtpSecurity, SubmissionWindowKind
+from careerpilot.platform.enums import ApplicationMode, DeliveryMode, PushMode, SmtpSecurity, SubmissionWindowKind
 from careerpilot.platform.files import FileLinkSigner, FileStorage, LocalFileStorage, SampleAwareStorage
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore
 from careerpilot.platform.messages import translate
 from careerpilot.platform.one_time_codes import OneTimeCodes, random_token
 from careerpilot.platform.persistence import Database, create_database
+from careerpilot.platform.push import BackgroundPush, DirectPush, ExpoPushSender, NoPushSender, PushDispatcher, PushSender
 from careerpilot.platform.security import Argon2PasswordHasher, PasswordHasher, TokenService, token_secret_from_environment
 from careerpilot.repositories import Repositories, RepositoryFactory, WorkspaceFactory, in_memory_repositories, sql_repositories
 
 EMPTY_PROFILE_COMPLETENESS = 0
 PACKAGE = "careerpilot-core"
 MAIL_THREAD_PREFIX = "careerpilot-mail"
+PUSH_THREAD_PREFIX = "careerpilot-push"
 
 
 @dataclass(frozen=True)
@@ -199,6 +201,7 @@ class ContainerOverrides:
     email_sender: EmailSender | None = None
     address_check: Callable[[str], str | None] | None = None
     page_fetcher: PageFetcher | None = None
+    push_sender: PushSender | None = None
 
 
 def _redis_store(settings: Settings, url_env: str) -> KeyValueStore:
@@ -320,8 +323,16 @@ def _source_policy(
     )
 
 
+def push_dispatcher(settings: Settings, override: PushSender | None) -> PushDispatcher:
+    if override is not None:
+        return DirectPush(override)
+    push = settings.messaging.push
+    sender: PushSender = ExpoPushSender(push) if push.mode is PushMode.EXPO else NoPushSender()
+    return BackgroundPush(sender, ThreadPoolExecutor(max_workers=push.workers, thread_name_prefix=PUSH_THREAD_PREFIX))
+
+
 def _messaging(
-    candidate: CandidateContext, repos: Repositories, storage: FileStorage, sender: EmailSender
+    candidate: CandidateContext, repos: Repositories, storage: FileStorage, sender: EmailSender, push: PushDispatcher
 ) -> tuple[NotificationService, MessagingService, SubmissionService]:
     notifications = NotificationService(
         NotificationContext(
@@ -331,6 +342,8 @@ def _messaging(
             clock=candidate.clock,
             ids=candidate.ids,
             config=candidate.settings.messaging,
+            devices=repos.push_devices,
+            push=push,
         )
     )
     messaging = MessagingService(
@@ -425,7 +438,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     )
     sender = options.email_sender or email_sender_for(cfg)
     digests = DigestService(DigestContext(candidate=candidate, sender=sender))
-    notifications, messaging, submissions = _messaging(candidate, repos, storage, sender)
+    notifications, messaging, submissions = _messaging(candidate, repos, storage, sender, push_dispatcher(cfg, options.push_sender))
     courier = DirectCourier(options.email_sender) if options.email_sender else background_courier(cfg, account_sender_for(cfg, sender))
     codes = OneTimeCodes(coord_store, keys, cfg.verification, secret)
     verification = ContactVerificationService(VerificationContext(candidate=candidate, codes=codes, courier=courier))

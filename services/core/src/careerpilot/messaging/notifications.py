@@ -1,15 +1,22 @@
+import re
 from dataclasses import dataclass
 
 from careerpilot.candidate.models import ApplicationRecord
-from careerpilot.messaging.models import Inbox, Member, Notification, NotificationView
-from careerpilot.messaging.ports import ConversationRepository, MessageRepository, NotificationRepository
+from careerpilot.messaging.models import Inbox, Member, Notification, NotificationView, PushDevice
+from careerpilot.messaging.ports import ConversationRepository, MessageRepository, NotificationRepository, PushDeviceRepository
 from careerpilot.platform.clock import Clock, IdGenerator, iso
 from careerpilot.platform.config import MessagingConfig
-from careerpilot.platform.enums import NotificationKind, NotificationTarget, SubmissionStatus
+from careerpilot.platform.enums import DevicePlatform, NotificationKind, NotificationTarget, SubmissionStatus
+from careerpilot.platform.errors import validation_error
 from careerpilot.platform.messages import translate
+from careerpilot.platform.push import PushDispatcher, PushMessage
 
 NOTIFICATION_ID_PREFIX = "ntf"
 LATEST_LIMIT = 5
+PUSH_TOKEN_DETAIL = "push_token"
+UNREGISTERED_REASON = "push address no longer valid"
+SIGNED_OUT_REASON = "signed out on this device"
+DEVICE_LIMIT_REASON = "replaced by a newer device"
 APPLICATION_KINDS = {
     SubmissionStatus.SUBMITTED_AWAITING_CONFIRMATION: NotificationKind.APPLICATION_SUBMITTED,
     SubmissionStatus.CONFIRMED: NotificationKind.APPLICATION_CONFIRMED,
@@ -24,6 +31,8 @@ class NotificationContext:
     clock: Clock
     ids: IdGenerator
     config: MessagingConfig
+    devices: PushDeviceRepository
+    push: PushDispatcher
 
 
 def notification_view(notification: Notification) -> NotificationView:
@@ -42,8 +51,42 @@ def notification_view(notification: Notification) -> NotificationView:
 class NotificationService:
     def __init__(self, context: NotificationContext) -> None:
         self._ctx = context
+        self._token = re.compile(context.config.push.token_pattern)
 
     def notify(self, user_id: str, kind: NotificationKind, title: str, body: str, target: tuple[NotificationTarget, str]) -> None:
+        self._store(user_id, kind, title, body, target)
+        self._push(user_id, kind, title, body, target)
+
+    def notify_once(self, user_id: str, kind: NotificationKind, title: str, body: str, target: tuple[NotificationTarget, str]) -> None:
+        if not self._ctx.notifications.has_unread(user_id, target[1]):
+            self._store(user_id, kind, title, body, target)
+        self._push(user_id, kind, title, body, target)
+
+    def register_device(self, user_id: str, token: str, platform: DevicePlatform) -> None:
+        if not self._token.match(token):
+            raise validation_error(PUSH_TOKEN_DETAIL)
+        now = iso(self._ctx.clock.now())
+        self._ctx.devices.save(PushDevice(token=token, user_id=user_id, platform=platform, registered_at=now))
+        mine = self._ctx.devices.for_user(user_id)
+        extra = len(mine) - self._ctx.config.push.max_devices_per_user
+        if extra > 0:
+            self._ctx.devices.remove([d.token for d in mine[:extra]], DEVICE_LIMIT_REASON)
+
+    def unregister_device(self, user_id: str, token: str) -> None:
+        if any(d.token == token for d in self._ctx.devices.for_user(user_id)):
+            self._ctx.devices.remove([token], SIGNED_OUT_REASON)
+
+    def _push(self, user_id: str, kind: NotificationKind, title: str, body: str, target: tuple[NotificationTarget, str]) -> None:
+        tokens = [d.token for d in self._ctx.devices.for_user(user_id)]
+        if not tokens:
+            return
+        data = {"kind": kind.value, "target": target[0].value, "targetId": target[1]}
+        self._ctx.push.dispatch(
+            PushMessage(to=tokens, title=title, body=body, data=data),
+            lambda gone: self._ctx.devices.remove(gone, UNREGISTERED_REASON),
+        )
+
+    def _store(self, user_id: str, kind: NotificationKind, title: str, body: str, target: tuple[NotificationTarget, str]) -> None:
         self._ctx.notifications.add(
             Notification(
                 id=self._ctx.ids.next(NOTIFICATION_ID_PREFIX),
@@ -56,10 +99,6 @@ class NotificationService:
                 created_at=iso(self._ctx.clock.now()),
             )
         )
-
-    def notify_once(self, user_id: str, kind: NotificationKind, title: str, body: str, target: tuple[NotificationTarget, str]) -> None:
-        if not self._ctx.notifications.has_unread(user_id, target[1]):
-            self.notify(user_id, kind, title, body, target)
 
     def application_changed(self, user_id: str, application: ApplicationRecord) -> None:
         kind = APPLICATION_KINDS.get(application.submission_status)

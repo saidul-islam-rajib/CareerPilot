@@ -362,3 +362,13 @@ class MessageState(StrEnum):
     SENT = "sent"
     DELIVERED = "delivered"
     READ = "read"
+
+
+class DevicePlatform(StrEnum):
+    ANDROID = "android"
+    IOS = "ios"
+
+
+class PushMode(StrEnum):
+    EXPO = "expo"
+    OFF = "off"

@@ -3,6 +3,7 @@ from pydantic import Field
 from careerpilot.candidate.models import StoredFile
 from careerpilot.platform.enums import (
     ConversationKind,
+    DevicePlatform,
     MemberType,
     MessageKind,
     MessageState,
@@ -22,6 +23,13 @@ class Notification(CamelModel):
     target_id: str
     created_at: str
     read_at: str | None = None
+
+
+class PushDevice(CamelModel):
+    token: str
+    user_id: str
+    platform: DevicePlatform
+    registered_at: str
 
 
 class Attachment(CamelModel):

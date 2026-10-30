@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from careerpilot.messaging.models import Conversation, Member, Message, Notification
+from careerpilot.messaging.models import Conversation, Member, Message, Notification, PushDevice
 
 
 class NotificationRepository(Protocol):
@@ -39,3 +39,11 @@ class MessageRepository(Protocol):
     def count_after(self, conversation_id: str, after: str | None, not_from: str) -> int: ...
 
     def count(self, conversation_id: str) -> int: ...
+
+
+class PushDeviceRepository(Protocol):
+    def save(self, device: PushDevice) -> None: ...
+
+    def for_user(self, user_id: str) -> list[PushDevice]: ...
+
+    def remove(self, tokens: list[str], reason: str) -> None: ...
