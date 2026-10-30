@@ -54,7 +54,7 @@ export interface AdminUsersApi {
   updateProfile(id: string, change: AdminProfileChange): Promise<AdminUserRecord>;
   rejectApproval(id: string, approvalId: string): Promise<AdminUserRecord>;
   teamMessages(id: string): Promise<MessagePage>;
-  sendTeamMessage(id: string, text: string): Promise<MessageView>;
+  sendTeamMessage(id: string, text: string, replyToId?: string): Promise<MessageView>;
   sendTeamAttachment(id: string, attachment: NewAttachment): Promise<MessageView>;
   connections(id: string): Promise<Connection[]>;
   conversation(conversationId: string): Promise<MessagePage>;

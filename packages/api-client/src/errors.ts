@@ -36,6 +36,7 @@ export const ApiErrorDetail = {
   JobNotFound: 'job_not_found',
   MemberBlocked: 'member_blocked',
   MessageText: 'message_text',
+  ReplyTo: 'reply_to',
   VoiceTooLong: 'voice_too_long',
   ApplicationNotManual: 'application_not_manual',
 } as const;

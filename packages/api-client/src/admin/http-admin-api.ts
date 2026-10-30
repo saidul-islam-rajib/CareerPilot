@@ -48,9 +48,9 @@ export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
       updateProfile: (id, change) => patch(`/admin/v1/users/${enc(id)}/profile`, change),
       rejectApproval: (id, approvalId) => post(`/admin/v1/users/${enc(id)}/approvals/${enc(approvalId)}/reject`),
       teamMessages: (id) => get(`/admin/v1/users/${enc(id)}/messages`),
-      sendTeamMessage: (id, text) => post(`/admin/v1/users/${enc(id)}/messages`, { text }),
+      sendTeamMessage: (id, text, replyToId) => post(`/admin/v1/users/${enc(id)}/messages`, { text, replyToId }),
       sendTeamAttachment: (id, attachment) =>
-        postLong(`/admin/v1/users/${enc(id)}/attachments`, uploadForm(attachment.file, { kind: attachment.kind, text: attachment.text })),
+        postLong(`/admin/v1/users/${enc(id)}/attachments`, uploadForm(attachment.file, { kind: attachment.kind, text: attachment.text, replyToId: attachment.replyToId })),
       connections: (id) => get(`/admin/v1/users/${enc(id)}/connections`),
       conversation: (conversationId) => get(`/admin/v1/conversations/${enc(conversationId)}/messages`),
       files: (id) => get(`/admin/v1/users/${enc(id)}/files`),

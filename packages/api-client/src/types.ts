@@ -656,12 +656,21 @@ export interface AttachmentView {
   durationSeconds?: number;
 }
 
+export interface ReplyPreview {
+  id: string;
+  kind: MessageKind;
+  senderName: string;
+  fromMe: boolean;
+  text: string;
+}
+
 export interface MessageView {
   id: string;
   conversationId: string;
   kind: MessageKind;
   text: string;
   attachment?: AttachmentView;
+  replyTo?: ReplyPreview;
   fromMe: boolean;
   senderName: string;
   createdAt: IsoDateTime;
@@ -712,6 +721,7 @@ export interface NewAttachment {
   file: UploadSource;
   text?: string;
   durationSeconds?: number;
+  replyToId?: string;
 }
 
 export interface PushDeviceRegistration {

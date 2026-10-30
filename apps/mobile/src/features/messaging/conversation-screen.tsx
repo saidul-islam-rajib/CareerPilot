@@ -227,7 +227,7 @@ export function ConversationScreen() {
           {t('messaging.blockedNote')}
         </Text>
       ) : (
-        <Composer busy={sendAttachment.isPending} onText={(text) => sendText.mutateAsync(text).catch(fail)} onAttachment={(attachment) => sendAttachment.mutateAsync(attachment).catch(fail)} />
+        <Composer busy={sendAttachment.isPending} onText={(text) => sendText.mutateAsync({ text }).catch(fail)} onAttachment={(attachment) => sendAttachment.mutateAsync(attachment).catch(fail)} />
       )}
     </KeyboardAvoidingView>
   );

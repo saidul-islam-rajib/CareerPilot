@@ -1,7 +1,7 @@
 import { ConversationKind, MessageKind, MessageState, NotificationKind, NotificationTarget } from '@careerpilot/domain-ui-logic';
 import { ApiErrorCode, ApiErrorDetail } from '../errors';
 import type { Clock, IdGenerator, MessagingApi } from '../ports';
-import type { AppNotification, ConversationSummary, MemberCard, MessageView, Settings } from '../types';
+import type { AppNotification, ConversationSummary, MemberCard, MessageView, ReplyPreview, Settings } from '../types';
 
 const MIN_QUERY = 2;
 const TEAM_TITLE = 'CareerPilot team';
@@ -9,6 +9,7 @@ const MEMORY_FILE = 'memory://file';
 
 interface StoredMessage extends MessageView {
   senderId: string;
+  replyToId?: string;
 }
 
 interface StoredConversation {
@@ -67,7 +68,14 @@ export function createInMemoryMessaging(options: InMemoryMessagingOptions): Mess
     };
   };
 
-  const view = ({ senderId, ...message }: StoredMessage): MessageView => ({ ...message, fromMe: senderId === me.id });
+  const quote = (replyToId: string | undefined): ReplyPreview | undefined => {
+    const original = messages.find((m) => m.id === replyToId);
+    return original
+      ? { id: original.id, kind: original.kind, senderName: original.senderName, fromMe: original.senderId === me.id, text: original.text || original.attachment?.fileName || '' }
+      : undefined;
+  };
+
+  const view = ({ senderId, replyToId, ...message }: StoredMessage): MessageView => ({ ...message, replyTo: quote(replyToId), fromMe: senderId === me.id });
 
   const add = (conversationId: string, message: Omit<StoredMessage, 'id' | 'conversationId' | 'fromMe' | 'senderId' | 'senderName' | 'createdAt' | 'state'>) => {
     const conversation = find(conversationId);
@@ -76,6 +84,9 @@ export function createInMemoryMessaging(options: InMemoryMessagingOptions): Mess
     }
     if (conversation.memberId && settings.blockedUsers.includes(conversation.memberId)) {
       return reject(ApiErrorCode.Forbidden, ApiErrorDetail.MemberBlocked);
+    }
+    if (message.replyToId && messages.find((m) => m.id === message.replyToId)?.conversationId !== conversationId) {
+      return reject(ApiErrorCode.Validation, ApiErrorDetail.ReplyTo);
     }
     const stored: StoredMessage = {
       ...message,
@@ -145,11 +156,13 @@ export function createInMemoryMessaging(options: InMemoryMessagingOptions): Mess
       }
       return respond({ conversation: summary(conversation), messages: messages.filter((m) => m.conversationId === conversationId).map(view), hasMore: false });
     },
-    sendText: (conversationId, text) => (text.trim() ? add(conversationId, { kind: MessageKind.Text, text: text.trim() }) : reject(ApiErrorCode.Validation, ApiErrorDetail.MessageText)),
+    sendText: (conversationId, text, replyToId) =>
+      text.trim() ? add(conversationId, { kind: MessageKind.Text, text: text.trim(), replyToId }) : reject(ApiErrorCode.Validation, ApiErrorDetail.MessageText),
     sendAttachment: (conversationId, attachment) =>
       add(conversationId, {
         kind: attachment.kind,
         text: attachment.text ?? '',
+        replyToId: attachment.replyToId,
         attachment: {
           url: attachment.file.uri ?? MEMORY_FILE,
           fileName: attachment.file.name,
@@ -204,7 +217,7 @@ export function messagingSeed(at: (days: number) => string): MessagingSeed {
     conversations: [{ id: 'cnv_karim', kind: ConversationKind.Direct, memberId: karim.id, muted: false }],
     messages: [
       {
-        id: 'msg_1',
+        id: 'msg_karim_hello',
         conversationId: 'cnv_karim',
         senderId: karim.id,
         senderName: karim.name,

@@ -138,7 +138,7 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       start: (memberId) => post('/v1/conversations', { memberId }),
       team: () => post('/v1/conversations/team'),
       messages: (conversationId, before) => get(`/v1/conversations/${enc(conversationId)}/messages${before ? `?before=${enc(before)}` : ''}`),
-      sendText: (conversationId, text) => post(`/v1/conversations/${enc(conversationId)}/messages`, { text }),
+      sendText: (conversationId, text, replyToId) => post(`/v1/conversations/${enc(conversationId)}/messages`, { text, replyToId }),
       sendAttachment: (conversationId, attachment) =>
         postLong(
           `/v1/conversations/${enc(conversationId)}/attachments`,
@@ -146,6 +146,7 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
             kind: attachment.kind,
             text: attachment.text,
             durationSeconds: attachment.durationSeconds === undefined ? undefined : String(Math.round(attachment.durationSeconds)),
+            replyToId: attachment.replyToId,
           }),
         ),
       read: (conversationId) => post(`/v1/conversations/${enc(conversationId)}/read`),

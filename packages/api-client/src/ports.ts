@@ -101,7 +101,7 @@ export interface MessagingApi {
   start(memberId: string): Promise<ConversationSummary>;
   team(): Promise<ConversationSummary>;
   messages(conversationId: string, before?: string): Promise<MessagePage>;
-  sendText(conversationId: string, text: string): Promise<MessageView>;
+  sendText(conversationId: string, text: string, replyToId?: string): Promise<MessageView>;
   sendAttachment(conversationId: string, attachment: NewAttachment): Promise<MessageView>;
   read(conversationId: string): Promise<void>;
   mute(conversationId: string, muted: boolean): Promise<void>;

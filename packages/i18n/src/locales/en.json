@@ -1805,6 +1805,13 @@
     "pause": "Pause voice message",
     "openFile": "Open {name}",
     "you": "You",
+    "reply": "Reply",
+    "replyTo": "Reply to {name}",
+    "replyingTo": "Replying to {name}",
+    "cancelReply": "Cancel reply",
+    "quoteLabel": "In reply to {name}: {text}",
+    "showOriginal": "Shows the message this answers",
+    "replyHint": "Swipe right or touch and hold a message to reply to it",
     "states": {
       "sent": "Sent",
       "delivered": "Delivered",
@@ -1833,7 +1840,8 @@
       "file_type": "This kind of file can't be sent. Send a photo, a voice message, or a PDF.",
       "file_too_large": "This file is too large to send.",
       "voice_too_long": "This voice message is too long.",
-      "generic": "Couldn't send. Check your connection and try again."
+      "generic": "Couldn't send. Check your connection and try again.",
+      "reply_to": "That message can't be answered any more. Send your message without the reply."
     },
     "microphonePermission": "CareerPilot uses the microphone only while you record a voice message."
   },

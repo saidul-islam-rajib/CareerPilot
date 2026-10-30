@@ -1,7 +1,8 @@
 import { useDeferredValue, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { AppNotification, MessagePage, NewAttachment } from '@careerpilot/api-client';
-import { MessageState, NotificationTarget } from '@careerpilot/domain-ui-logic';
+import type { AppNotification, MessagePage, MessageView, NewAttachment, ReplyPreview } from '@careerpilot/api-client';
+import { MessageKind, MessageState, NotificationTarget } from '@careerpilot/domain-ui-logic';
+import type { Translate } from '@careerpilot/i18n';
 import { queryKeys } from '../query/query-keys';
 import { useApi, useServices } from '../services/app-services';
 import { SessionStatus, useSession } from '../session/session';
@@ -9,6 +10,16 @@ import { SessionStatus, useSession } from '../session/session';
 const MS_PER_SECOND = 1000;
 const SECONDS_PER_MINUTE = 60;
 const PAD = 2;
+
+const QUOTE_LABEL_KEYS: Partial<Record<MessageKind, string>> = {
+  [MessageKind.Image]: 'messaging.photo',
+  [MessageKind.Voice]: 'messaging.voice',
+};
+
+export interface OutgoingText {
+  text: string;
+  replyToId?: string;
+}
 
 export interface NotificationDestination {
   target: NotificationTarget;
@@ -26,6 +37,19 @@ export function voiceLength(seconds: number | undefined): string {
 
 export function messageStateKey(state: MessageState | undefined): string | undefined {
   return state ? `messaging.states.${state}` : undefined;
+}
+
+export function replyPreviewOf(message: MessageView): ReplyPreview {
+  return { id: message.id, kind: message.kind, senderName: message.senderName, fromMe: message.fromMe, text: message.text || message.attachment?.fileName || '' };
+}
+
+export function quoteText(reply: ReplyPreview, t: Translate): string {
+  const key = QUOTE_LABEL_KEYS[reply.kind];
+  return key ? t(key) : reply.text;
+}
+
+export function quoteSender(reply: ReplyPreview, t: Translate): string {
+  return reply.fromMe ? t('messaging.you') : reply.senderName;
 }
 
 function usePollInterval(open = false): number {
@@ -113,7 +137,7 @@ export function useConversation(conversationId: string) {
     await client.invalidateQueries({ queryKey: key });
     await refresh();
   };
-  const sendText = useMutation({ mutationFn: (text: string) => api.messaging.sendText(conversationId, text), onSuccess: sent });
+  const sendText = useMutation({ mutationFn: ({ text, replyToId }: OutgoingText) => api.messaging.sendText(conversationId, text, replyToId), onSuccess: sent });
   const sendAttachment = useMutation({ mutationFn: (attachment: NewAttachment) => api.messaging.sendAttachment(conversationId, attachment), onSuccess: sent });
   const mute = useMutation({ mutationFn: (muted: boolean) => api.messaging.mute(conversationId, muted), onSuccess: sent });
   return { page, sendText, sendAttachment, mute };

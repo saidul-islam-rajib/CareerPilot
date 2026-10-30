@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { MessageKind } from '@careerpilot/domain-ui-logic';
 import { ApiErrorCode, isApiError } from '../errors';
 import { ApplicationFilter } from '../types';
 import { createHttpApi, nativeFilePart } from './http-api';
@@ -98,6 +99,21 @@ describe('http api', () => {
     }
     const api = createHttpApi(createHttpClient({ baseUrl: 'https://api.example.com', timeoutMs: 1000, fetchFn: strictFetch as unknown as typeof fetch, getAccessToken: () => undefined }));
     await expect(api.config.getPublicConfig()).resolves.toEqual({});
+  });
+});
+
+describe('http messaging api', () => {
+  it('sends the message a reply answers with text and attachments', async () => {
+    const text = setup(jsonResponse(200, {}));
+    await text.api.messaging.sendText('cnv 1', 'Yes', 'msg_1');
+    const [url, init] = text.fetchFn.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://api.example.com/v1/conversations/cnv%201/messages');
+    expect(init.body).toBe(JSON.stringify({ text: 'Yes', replyToId: 'msg_1' }));
+    const voice = setup(jsonResponse(200, {}));
+    const blob = new Blob(['m4a'], { type: 'audio/mp4' });
+    await voice.api.messaging.sendAttachment('cnv_1', { kind: MessageKind.Voice, file: { name: 'voice.m4a', type: 'audio/mp4', size: blob.size, blob }, durationSeconds: 3.4, replyToId: 'msg_1' });
+    const form = (voice.fetchFn.mock.calls[0] as unknown as [string, RequestInit])[1].body as FormData;
+    expect([form.get('kind'), form.get('durationSeconds'), form.get('replyToId')]).toEqual(['voice', '3', 'msg_1']);
   });
 });
 

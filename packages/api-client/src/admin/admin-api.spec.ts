@@ -93,6 +93,14 @@ describe('in-memory admin api', () => {
     expect(audit.items[0]?.actorName).toBe('Super Admin');
   });
 
+  it('replies to a chosen team message and refuses unknown ones', async () => {
+    const api = await signedIn();
+    const first = await api.users.sendTeamMessage('usr_demo', 'Your CV looks good');
+    const reply = await api.users.sendTeamMessage('usr_demo', 'One more thing', first.id);
+    expect(reply.replyTo).toMatchObject({ id: first.id, fromMe: true, text: 'Your CV looks good' });
+    expect(await errorCode(api.users.sendTeamMessage('usr_demo', 'Hi', 'msg_missing'))).toBe(ApiErrorCode.Validation);
+  });
+
   it('suspends, reactivates, and pauses users', async () => {
     const api = await signedIn();
     expect((await api.users.suspendUser('usr_003', 'Check')).status).toBe(UserAccountStatus.Suspended);

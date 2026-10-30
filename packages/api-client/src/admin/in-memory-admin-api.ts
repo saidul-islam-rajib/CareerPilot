@@ -17,7 +17,7 @@ import {
 import { isHttpsAddress, sameAddress, secureAddress, siteName } from '../addresses';
 import { ApiError, ApiErrorCode, ApiErrorDetail } from '../errors';
 import type { Clock, IdGenerator } from '../ports';
-import type { ConversationSummary, MessageView, NewAttachment } from '../types';
+import type { ConversationSummary, MessageView, NewAttachment, ReplyPreview } from '../types';
 import type { DemoState } from '../in-memory/demo.seed';
 import type { CareerPilotAdminApi } from './admin-ports';
 import type { AdminDemoAccount, AdminDemoState } from './admin-demo.seed';
@@ -119,7 +119,13 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
       blocked: false,
     };
   };
-  const teamMessage = (userId: string, text: string, attachment?: NewAttachment): MessageView => {
+  const teamQuote = (userId: string, replyToId?: string): ReplyPreview | undefined => {
+    const original = teamThread(userId).find((m) => m.id === replyToId);
+    return original
+      ? { id: original.id, kind: original.kind, senderName: original.senderName, fromMe: original.fromMe, text: original.text || original.attachment?.fileName || '' }
+      : undefined;
+  };
+  const teamMessage = (userId: string, text: string, attachment?: NewAttachment, replyToId?: string): MessageView => {
     const message: MessageView = {
       id: ids.next('msg'),
       conversationId: teamSummary(userId).id,
@@ -128,6 +134,7 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
       attachment: attachment
         ? { url: attachment.file.uri ?? MEMORY_FILE, fileName: attachment.file.name, contentType: attachment.file.type, sizeBytes: attachment.file.size ?? 0 }
         : undefined,
+      replyTo: teamQuote(userId, replyToId ?? attachment?.replyToId),
       fromMe: true,
       senderName: TEAM_SENDER,
       createdAt: clock.now().toISOString(),
@@ -360,11 +367,14 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
         }
         return respond({ conversation: teamSummary(id), messages: teamThread(id), hasMore: false });
       },
-      async sendTeamMessage(id, text) {
+      async sendTeamMessage(id, text, replyToId) {
         if (!findUser(id)) {
           return fail(ApiErrorCode.NotFound);
         }
-        const message = teamMessage(id, text);
+        if (replyToId && !teamQuote(id, replyToId)) {
+          return fail(ApiErrorCode.Validation, ApiErrorDetail.ReplyTo);
+        }
+        const message = teamMessage(id, text, undefined, replyToId);
         record('chat.team_message', findUser(id)?.fullName ?? id);
         return respond(message);
       },

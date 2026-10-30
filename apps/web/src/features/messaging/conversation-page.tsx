@@ -189,7 +189,7 @@ export function ConversationPage() {
         <Composer
           disabled={sendAttachment.isPending}
           sending={sendText.isPending}
-          onText={(text) => sendText.mutateAsync(text).catch(fail)}
+          onText={(text) => sendText.mutateAsync({ text }).catch(fail)}
           onFile={sendFile}
           onVoice={sendVoice}
         />
