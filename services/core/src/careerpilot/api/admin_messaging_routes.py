@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse, Response
 
 from careerpilot.api.common import ok
 from careerpilot.api.dependencies import CurrentAdmin, Services
-from careerpilot.api.messaging_routes import AttachmentFields, TextBody, new_attachment
+from careerpilot.api.messaging_routes import AttachmentFields, TextBody, attachment_draft, text_draft
 from careerpilot.api.profile_routes import SignedQuery, download
 from careerpilot.bootstrap import Container
 from careerpilot.messaging.service import LinkFactory
@@ -27,13 +27,12 @@ def team_messages(user_id: str, admin: CurrentAdmin, request: Request, services:
 
 @router.post("/users/{user_id}/messages")
 def send_team_message(user_id: str, body: TextBody, admin: CurrentAdmin, request: Request, services: Services) -> JSONResponse:
-    return ok(services.admin_messages.send(admin, user_id, body.text, None, links(request, services)))
+    return ok(services.admin_messages.send(admin, user_id, text_draft(body), links(request, services)))
 
 
 @router.post("/users/{user_id}/attachments")
 def send_team_attachment(user_id: str, form: AttachmentFields, admin: CurrentAdmin, request: Request, services: Services) -> JSONResponse:
-    attachment = new_attachment(form, services)
-    return ok(services.admin_messages.send(admin, user_id, form.text, attachment, links(request, services)))
+    return ok(services.admin_messages.send(admin, user_id, attachment_draft(form, services), links(request, services)))
 
 
 @router.get("/users/{user_id}/connections")

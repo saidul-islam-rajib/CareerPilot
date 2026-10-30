@@ -10,7 +10,7 @@ from careerpilot.bootstrap import Container
 from careerpilot.candidate.models import Contact, UserSummary
 from careerpilot.candidate.ports import Account
 from careerpilot.candidate.services.profile import Upload
-from careerpilot.messaging.service import LinkFactory, NewAttachment, Sender
+from careerpilot.messaging.service import Draft, LinkFactory, NewAttachment, Sender
 from careerpilot.platform.clock import FixedClock
 from careerpilot.platform.enums import (
     ContactKind,
@@ -159,7 +159,7 @@ def test_muted_conversations_send_no_notifications_and_do_not_count_as_unread(ch
 
 def test_the_team_messages_a_member_who_replies_and_admins_see_connections(chat: Container) -> None:
     actor = admin(chat)
-    chat.admin_messages.send(actor, DEMO_USER, "Your CV looks great", None, LINK)
+    chat.admin_messages.send(actor, DEMO_USER, Draft(text="Your CV looks great"), LINK)
     [note] = chat.notifications.recent(DEMO_USER)
     assert (note.kind, note.title) == (NotificationKind.TEAM_MESSAGE, "CareerPilot team")
     [team] = chat.messaging.conversations(DEMO_USER, LINK)
@@ -214,3 +214,72 @@ def test_messaging_endpoints(chat: Container) -> None:
     assert admin_client.get(f"/admin/v1/users/{DEMO_USER}/connections", headers=admin_headers).json()[0]["member"]["id"] == OTHER
     document = admin_client.get(f"/admin/v1/users/{DEMO_USER}/files", headers=admin_headers).json()["documents"][0]
     assert admin_client.get(document["url"].replace("http://testserver", "")).status_code == 200
+
+
+def test_members_reply_to_a_chosen_message_and_see_what_it_answers(chat: Container, clock: FixedClock) -> None:
+    conversation = chat.messaging.start(DEMO_USER, OTHER, LINK)
+    first = chat.messaging.send(me(chat), conversation.id, "Are you hiring?", None, LINK)
+    clock.advance(timedelta(seconds=1))
+    voice = chat.messaging.send(me(chat), conversation.id, "", NewAttachment(MessageKind.VOICE, Upload("voice.m4a", M4A), 3), LINK)
+    clock.advance(timedelta(seconds=1))
+    answer = chat.messaging.post(karim(), conversation.id, Draft(text="Yes, send your CV", reply_to_id=first.id), LINK)
+    clock.advance(timedelta(seconds=1))
+    chat.messaging.post(karim(), conversation.id, Draft(text="Nice voice", reply_to_id=voice.id), LINK)
+    assert answer.reply_to is not None
+    assert (answer.reply_to.id, answer.reply_to.text, answer.reply_to.sender_name, answer.reply_to.from_me) == (
+        first.id,
+        "Are you hiring?",
+        "Ayesha Rahman",
+        False,
+    )
+    mine = chat.messaging.messages(DEMO_USER, conversation.id, None, LINK).messages
+    quotes = [(m.text, m.reply_to.text if m.reply_to else None, m.reply_to.from_me if m.reply_to else None) for m in mine]
+    assert quotes == [
+        ("Are you hiring?", None, None),
+        ("", None, None),
+        ("Yes, send your CV", "Are you hiring?", True),
+        ("Nice voice", "Voice message", True),
+    ]
+
+
+def test_a_reply_must_answer_a_message_in_the_same_conversation(chat: Container) -> None:
+    direct = chat.messaging.start(DEMO_USER, OTHER, LINK)
+    team = chat.messaging.team(DEMO_USER)
+    elsewhere = chat.messaging.send(me(chat), team.id, "Hello team", None, LINK)
+    for missing in (elsewhere.id, "msg_missing"):
+        with pytest.raises(DomainError) as raised:
+            chat.messaging.post(me(chat), direct.id, Draft(text="Hi", reply_to_id=missing), LINK)
+        assert (raised.value.code, raised.value.detail) == (ErrorCode.VALIDATION, "reply_to")
+
+
+def test_replies_travel_through_the_member_and_team_endpoints(chat: Container) -> None:
+    client = TestClient(create_user_app(chat))
+    token = client.post("/v1/auth/sign-in", json={"email": PASSWORD, "password": PASSWORD}).json()["accessToken"]
+    headers = {"Authorization": f"Bearer {token}"}
+    team = client.post("/v1/conversations/team", headers=headers).json()
+    question = client.post(f"/v1/conversations/{team['id']}/messages", json={"text": "Can you check my CV?"}, headers=headers).json()
+    files = {"file": ("note.m4a", M4A, "audio/mp4")}
+    voice = client.post(
+        f"/v1/conversations/{team['id']}/attachments",
+        files=files,
+        data={"kind": "voice", "durationSeconds": "2", "replyToId": question["id"]},
+        headers=headers,
+    )
+    assert voice.json()["replyTo"]["text"] == "Can you check my CV?"
+    admin_client = TestClient(create_admin_app(chat))
+    admin_token = admin_client.post("/admin/v1/auth/sign-in", json={"email": PASSWORD, "password": PASSWORD}).json()["accessToken"]
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+    answer = admin_client.post(
+        f"/admin/v1/users/{DEMO_USER}/messages", json={"text": "Looks good", "replyToId": question["id"]}, headers=admin_headers
+    ).json()
+    assert (answer["replyTo"]["id"], answer["replyTo"]["fromMe"]) == (question["id"], False)
+    page = client.get(f"/v1/conversations/{team['id']}/messages", headers=headers).json()
+    assert page["messages"][-1]["replyTo"] == {
+        "id": question["id"],
+        "kind": "text",
+        "senderName": question["senderName"],
+        "fromMe": True,
+        "text": "Can you check my CV?",
+    }
+    rejected = client.post(f"/v1/conversations/{team['id']}/messages", json={"text": "Hi", "replyToId": "msg_missing"}, headers=headers)
+    assert rejected.status_code == 422

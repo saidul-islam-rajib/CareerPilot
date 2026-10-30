@@ -47,6 +47,7 @@ class Message(CamelModel):
     kind: MessageKind
     text: str = ""
     attachment: Attachment | None = None
+    reply_to_id: str | None = None
     created_at: str
 
 
@@ -79,12 +80,21 @@ class AttachmentView(CamelModel):
     duration_seconds: int | None = None
 
 
+class ReplyPreview(CamelModel):
+    id: str
+    kind: MessageKind
+    sender_name: str
+    from_me: bool
+    text: str
+
+
 class MessageView(CamelModel):
     id: str
     conversation_id: str
     kind: MessageKind
     text: str
     attachment: AttachmentView | None = None
+    reply_to: ReplyPreview | None = None
     from_me: bool
     sender_name: str
     created_at: str

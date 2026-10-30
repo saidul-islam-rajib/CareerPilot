@@ -9,7 +9,7 @@ from careerpilot.api.dependencies import CurrentUser, Services
 from careerpilot.api.profile_routes import read_upload
 from careerpilot.bootstrap import Container
 from careerpilot.candidate.models import UserSummary
-from careerpilot.messaging.service import LinkFactory, NewAttachment, Sender
+from careerpilot.messaging.service import Draft, LinkFactory, NewAttachment, Sender
 from careerpilot.platform.enums import DevicePlatform, MemberType, MessageKind
 from careerpilot.platform.errors import validation_error
 from careerpilot.platform.model import CamelModel
@@ -29,6 +29,7 @@ class StartBody(CamelModel):
 
 class TextBody(CamelModel):
     text: str
+    reply_to_id: str | None = None
 
 
 class ToggleBody(CamelModel):
@@ -50,6 +51,7 @@ class AttachmentForm:
     kind: MessageKind
     text: str
     duration_seconds: int | None
+    reply_to_id: str | None
 
 
 def attachment_form(
@@ -57,8 +59,17 @@ def attachment_form(
     kind: Annotated[MessageKind, Form()],
     text: Annotated[str, Form()] = "",
     duration_seconds: Annotated[int | None, Form(alias="durationSeconds")] = None,
+    reply_to_id: Annotated[str | None, Form(alias="replyToId")] = None,
 ) -> AttachmentForm:
-    return AttachmentForm(file=file, kind=kind, text=text, duration_seconds=duration_seconds)
+    return AttachmentForm(file=file, kind=kind, text=text, duration_seconds=duration_seconds, reply_to_id=reply_to_id)
+
+
+def text_draft(body: TextBody) -> Draft:
+    return Draft(text=body.text, reply_to_id=body.reply_to_id)
+
+
+def attachment_draft(form: AttachmentForm, services: Container) -> Draft:
+    return Draft(text=form.text, attachment=new_attachment(form, services), reply_to_id=form.reply_to_id)
 
 
 AttachmentFields = Annotated[AttachmentForm, Depends(attachment_form)]
@@ -163,13 +174,12 @@ def messages(conversation_id: str, caller: Chatting, before: str | None = None) 
 
 @router.post("/conversations/{conversation_id}/messages")
 def send_text(conversation_id: str, body: TextBody, caller: Chatting) -> JSONResponse:
-    return ok(caller.services.messaging.send(caller.sender, conversation_id, body.text, None, caller.link))
+    return ok(caller.services.messaging.post(caller.sender, conversation_id, text_draft(body), caller.link))
 
 
 @router.post("/conversations/{conversation_id}/attachments")
 def send_file(conversation_id: str, form: AttachmentFields, caller: Chatting) -> JSONResponse:
-    attachment = new_attachment(form, caller.services)
-    return ok(caller.services.messaging.send(caller.sender, conversation_id, form.text, attachment, caller.link))
+    return ok(caller.services.messaging.post(caller.sender, conversation_id, attachment_draft(form, caller.services), caller.link))
 
 
 @router.post("/conversations/{conversation_id}/read")

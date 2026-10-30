@@ -1,5 +1,5 @@
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 
 from careerpilot.candidate.context import CandidateContext
@@ -17,6 +17,7 @@ from careerpilot.messaging.models import (
     Message,
     MessagePage,
     MessageView,
+    ReplyPreview,
 )
 from careerpilot.messaging.notifications import NotificationService
 from careerpilot.messaging.ports import ConversationRepository, MessageRepository
@@ -69,6 +70,13 @@ class NewAttachment:
     kind: MessageKind
     upload: Upload
     duration_seconds: int | None = None
+
+
+@dataclass(frozen=True)
+class Draft:
+    text: str
+    attachment: NewAttachment | None = None
+    reply_to_id: str | None = None
 
 
 def pair_key(first: str, second: str) -> str:
@@ -137,6 +145,10 @@ class MessagingService:
         return self._page(user_id, conversation, before, link)
 
     def send(self, sender: Sender, conversation_id: str, text: str, attachment: NewAttachment | None, link: LinkFactory) -> MessageView:
+        return self.post(sender, conversation_id, Draft(text=text, attachment=attachment), link)
+
+    def post(self, sender: Sender, conversation_id: str, draft: Draft, link: LinkFactory) -> MessageView:
+        attachment = draft.attachment
         conversation = self._ctx.conversations.get(conversation_id)
         members = self._ctx.conversations.members(conversation_id)
         if conversation is None or not any(m.member_id == self._member_id(sender) for m in members):
@@ -152,8 +164,9 @@ class MessagingService:
             sender_name=sender.name,
             author_id=sender.id,
             kind=attachment.kind if attachment else MessageKind.TEXT,
-            text=self._text(text, required=attachment is None),
+            text=self._text(draft.text, required=attachment is None),
             attachment=self._attach(conversation_id, attachment) if attachment else None,
+            reply_to_id=self._reply_target(conversation_id, draft.reply_to_id),
             created_at=iso(self._candidate.clock.now()),
         )
         self._ctx.messages.add(message)
@@ -272,7 +285,7 @@ class MessagingService:
         shown = list(reversed(found[: self._config.page_size]))
         return MessagePage(
             conversation=self._summary(viewer, conversation, link),
-            messages=[self._view(m, viewer, members, link) for m in shown],
+            messages=[self._view(m, viewer, members, link, {m.id: m for m in found}) for m in shown],
             has_more=len(found) > self._config.page_size,
         )
 
@@ -307,7 +320,9 @@ class MessagingService:
         card = self._card(other.member_id, self._candidate.workspaces.get(other.member_id), link)
         return card.name, card.photo_url, card.id
 
-    def _view(self, message: Message, viewer: str, members: list[Member], link: LinkFactory) -> MessageView:
+    def _view(
+        self, message: Message, viewer: str, members: list[Member], link: LinkFactory, known: Mapping[str, Message] | None = None
+    ) -> MessageView:
         from_me = message.sender_id == viewer
         viewer_member = next((m for m in members if m.member_id == viewer), None)
         attachment = message.attachment
@@ -317,10 +332,33 @@ class MessagingService:
             kind=message.kind,
             text=message.text,
             attachment=self._attachment_view(attachment, link) if attachment else None,
+            reply_to=self._reply_preview(message.reply_to_id, viewer, known or {}),
             from_me=from_me,
             sender_name=message.sender_name,
             created_at=message.created_at,
             state=self._state(message.created_at, members, viewer_member) if from_me else None,
+        )
+
+    def _reply_target(self, conversation_id: str, reply_to_id: str | None) -> str | None:
+        if reply_to_id is None:
+            return None
+        original = self._ctx.messages.get(reply_to_id)
+        if original is None or original.conversation_id != conversation_id:
+            raise validation_error("reply_to")
+        return original.id
+
+    def _reply_preview(self, reply_to_id: str | None, viewer: str, known: Mapping[str, Message]) -> ReplyPreview | None:
+        if reply_to_id is None:
+            return None
+        original = known.get(reply_to_id) or self._ctx.messages.get(reply_to_id)
+        if original is None:
+            return None
+        return ReplyPreview(
+            id=original.id,
+            kind=original.kind,
+            sender_name=original.sender_name,
+            from_me=original.sender_id == viewer,
+            text=self.preview(original),
         )
 
     @staticmethod

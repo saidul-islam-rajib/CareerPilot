@@ -60,6 +60,10 @@ class InMemoryMessageRepository:
     def add(self, message: Message) -> None:
         self._messages.append(message.model_copy())
 
+    def get(self, message_id: str) -> Message | None:
+        found = next((m for m in self._messages if m.id == message_id), None)
+        return found.model_copy() if found else None
+
     def page(self, conversation_id: str, before: str | None, limit: int) -> list[Message]:
         mine = [m for m in self._messages if m.conversation_id == conversation_id and (before is None or m.created_at < before)]
         return [m.model_copy() for m in sorted(mine, key=lambda m: (m.created_at, m.id), reverse=True)[:limit]]

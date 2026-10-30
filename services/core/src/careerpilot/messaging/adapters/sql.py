@@ -177,6 +177,11 @@ class SqlMessageRepository:
             )
         )
 
+    def get(self, message_id: str) -> Message | None:
+        with self._db.unit_of_work() as session:
+            row = session.scalar(active(MessageRow).where(MessageRow.id == message_id))
+            return Message.model_validate(row.document) if row else None
+
     def page(self, conversation_id: str, before: str | None, limit: int) -> list[Message]:
         with self._db.unit_of_work() as session:
             query = active(MessageRow).where(MessageRow.conversation_id == conversation_id)

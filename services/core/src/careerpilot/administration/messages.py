@@ -1,7 +1,7 @@
 from careerpilot.administration.context import AdminActor
 from careerpilot.candidate.ports import AccountRepository, WorkspaceRepository
 from careerpilot.messaging.models import Connection, MessagePage, MessageView
-from careerpilot.messaging.service import TEAM_MEMBER, LinkFactory, MessagingService, NewAttachment, Sender
+from careerpilot.messaging.service import TEAM_MEMBER, Draft, LinkFactory, MessagingService, Sender
 from careerpilot.platform.enums import AdminArea, ContactKind, MemberType, PermissionAction
 from careerpilot.platform.errors import not_found
 from careerpilot.platform.model import CamelModel
@@ -46,12 +46,12 @@ class AdminMessages:
         self._messaging.read(TEAM_MEMBER, page.conversation.id)
         return page
 
-    def send(self, actor: AdminActor, user_id: str, text: str, attachment: NewAttachment | None, link: LinkFactory) -> MessageView:
+    def send(self, actor: AdminActor, user_id: str, draft: Draft, link: LinkFactory) -> MessageView:
         actor.require(AdminArea.USERS, PermissionAction.UPDATE)
         name = self._require_user(user_id)
         conversation = self._messaging.team(user_id)
         sender = Sender(id=actor.summary.id, type=MemberType.TEAM, name=actor.summary.full_name)
-        message = self._messaging.send(sender, conversation.id, text, attachment, link)
+        message = self._messaging.post(sender, conversation.id, draft, link)
         actor.record("chat.team_message", name)
         return message
 
