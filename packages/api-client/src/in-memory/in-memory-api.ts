@@ -31,6 +31,7 @@ import type { DemoState } from './demo.seed';
 import { createAccountLinks } from './account-links';
 import { createAnswers, hasBlankAnswers } from './answers';
 import { createFollowUps } from './follow-ups';
+import { createInMemoryIntegrations } from './integrations';
 import { createJobSources } from './job-sources';
 import { createInMemoryMessaging, messagingSeed } from './messaging';
 import { createProfileStore } from './profile-store';
@@ -142,6 +143,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     }
   };
 
+  const integrations = createInMemoryIntegrations({ clock, respond });
   const followUps = createFollowUps({ applications: state.applications, config, clock, ids, respond, reject: failWith });
   const jobSources = createJobSources({ sources: state.jobSources, limit: config.jobSources.maxPerUser, clock, ids, respond, reject: failWith });
   const answers = createAnswers({ saved: state.savedAnswers, approvals: state.approvals, applications: state.applications, config, clock, ids, respond, reject: failWith });
@@ -361,6 +363,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     answers: answers.api,
     sources: jobSources,
     messaging,
+    integrations,
     profile: createProfileStore({
       profile: state.profile,
       config,

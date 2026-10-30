@@ -387,6 +387,9 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
       async connections(id) {
         return findUser(id) ? respond([]) : fail(ApiErrorCode.NotFound);
       },
+      async connectedAccounts(id) {
+        return findUser(id) ? respond([]) : fail(ApiErrorCode.NotFound);
+      },
       async conversation(conversationId) {
         record('chat.viewed', conversationId);
         return fail(ApiErrorCode.NotFound);

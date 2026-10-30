@@ -81,6 +81,12 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       removeAnswer: (id) => del(`/v1/answers/${enc(id)}`),
       restoreAnswer: (id) => post(`/v1/answers/${enc(id)}/restore`),
     },
+    integrations: {
+      googleStatus: () => get('/v1/integrations/google'),
+      googleAuthorizeUrl: () => get('/v1/integrations/google/authorize-url'),
+      syncGoogle: () => postLong('/v1/integrations/google/sync', {}),
+      disconnectGoogle: () => del('/v1/integrations/google'),
+    },
     sources: {
       listSources: () => get('/v1/sources'),
       addSource: (input) => postLong('/v1/sources', input),

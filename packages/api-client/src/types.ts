@@ -31,7 +31,10 @@ import type {
   ConversationKind,
   MessageKind,
   MessageState,
+  ConnectionStatus,
+  IntegrationProvider,
   NotificationKind,
+  SyncFailure,
   NotificationTarget,
 } from '@careerpilot/domain-ui-logic';
 import type { EntryValue, FormLimits, SectionDefinition } from '@careerpilot/dynamic-forms';
@@ -267,6 +270,7 @@ export interface TimelineEntry {
   actor: TimelineActor;
   text: string;
   status?: SubmissionStatus;
+  link?: string;
 }
 
 export interface SentEmail {
@@ -727,4 +731,31 @@ export interface NewAttachment {
 export interface PushDeviceRegistration {
   token: string;
   platform: DevicePlatform;
+}
+
+export interface ConnectedAccount {
+  provider: IntegrationProvider;
+  email: string;
+  status: ConnectionStatus;
+  scopes: string[];
+  connectedAt: IsoDateTime;
+  lastSyncAt?: IsoDateTime;
+  lastError?: SyncFailure;
+}
+
+export interface IntegrationStatus {
+  connected: boolean;
+  configured: boolean;
+  connection?: ConnectedAccount;
+  mailAccess: boolean;
+  calendarAccess: boolean;
+}
+
+export interface AuthorizeUrl {
+  url: string;
+}
+
+export interface SyncSummary {
+  messages: number;
+  events: number;
 }

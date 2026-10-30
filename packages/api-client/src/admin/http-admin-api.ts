@@ -52,6 +52,7 @@ export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
       sendTeamAttachment: (id, attachment) =>
         postLong(`/admin/v1/users/${enc(id)}/attachments`, uploadForm(attachment.file, { kind: attachment.kind, text: attachment.text, replyToId: attachment.replyToId })),
       connections: (id) => get(`/admin/v1/users/${enc(id)}/connections`),
+      connectedAccounts: (id) => get(`/admin/v1/users/${enc(id)}/integrations`),
       conversation: (conversationId) => get(`/admin/v1/conversations/${enc(conversationId)}/messages`),
       files: (id) => get(`/admin/v1/users/${enc(id)}/files`),
     },

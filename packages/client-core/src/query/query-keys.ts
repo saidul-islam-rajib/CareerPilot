@@ -17,6 +17,7 @@ export const queryKeys = {
   sourceJobs: (id: string) => ['job-sources', id, 'jobs'] as const,
   accountLink: (token: string) => ['account-link', token] as const,
   inbox: ['inbox'] as const,
+  googleStatus: ['integrations', 'google'] as const,
   notifications: ['notifications'] as const,
   conversations: ['conversations'] as const,
   conversation: (id: string) => ['conversation', id] as const,

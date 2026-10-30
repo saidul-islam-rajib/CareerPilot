@@ -15,6 +15,7 @@ export * from './hooks/use-auth-forms';
 export * from './hooks/use-account-links';
 export * from './hooks/use-dashboard';
 export * from './hooks/use-follow-ups';
+export * from './hooks/use-integrations';
 export * from './hooks/use-opportunity';
 export * from './hooks/use-messaging';
 export * from './hooks/use-profile';

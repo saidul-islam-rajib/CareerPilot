@@ -47,6 +47,9 @@ import type {
   MessageView,
   NewAttachment,
   PushDeviceRegistration,
+  AuthorizeUrl,
+  IntegrationStatus,
+  SyncSummary,
 } from './types';
 
 export interface AuthApi {
@@ -109,6 +112,13 @@ export interface MessagingApi {
   setDiscoverable(discoverable: boolean): Promise<void>;
   registerPushDevice(device: PushDeviceRegistration): Promise<void>;
   unregisterPushDevice(token: string): Promise<void>;
+}
+
+export interface IntegrationsApi {
+  googleStatus(): Promise<IntegrationStatus>;
+  googleAuthorizeUrl(): Promise<AuthorizeUrl>;
+  syncGoogle(): Promise<SyncSummary>;
+  disconnectGoogle(): Promise<void>;
 }
 
 export interface AnswersApi {
@@ -181,6 +191,7 @@ export interface CareerPilotApi {
   profile: ProfileApi;
   settings: SettingsApi;
   messaging: MessagingApi;
+  integrations: IntegrationsApi;
 }
 
 export interface Clock {

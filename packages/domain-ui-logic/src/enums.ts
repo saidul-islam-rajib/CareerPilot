@@ -444,15 +444,45 @@ export const NotificationKind = {
   TeamMessage: 'team_message',
   ApplicationSubmitted: 'application_submitted',
   ApplicationConfirmed: 'application_confirmed',
+  ApplicationReply: 'application_reply',
+  IntegrationAttention: 'integration_attention',
 } as const;
 export type NotificationKind = (typeof NotificationKind)[keyof typeof NotificationKind];
 
 export const NotificationTarget = {
   Conversation: 'conversation',
   Application: 'application',
+  Integration: 'integration',
 } as const;
 export type NotificationTarget = (typeof NotificationTarget)[keyof typeof NotificationTarget];
 
 export function isEnumValue<T extends Record<string, string>>(enumObject: T, value: unknown): value is T[keyof T] {
   return typeof value === 'string' && (Object.values(enumObject) as string[]).includes(value);
 }
+
+export const ConnectionStatus = {
+  Connected: 'connected',
+  NeedsReconnect: 'needs_reconnect',
+} as const;
+export type ConnectionStatus = (typeof ConnectionStatus)[keyof typeof ConnectionStatus];
+
+export const SyncFailure = {
+  TokenRevoked: 'token_revoked',
+  GoogleUnavailable: 'google_unavailable',
+  GoogleRejected: 'google_rejected',
+  MissingMailAccess: 'missing_mail_access',
+} as const;
+export type SyncFailure = (typeof SyncFailure)[keyof typeof SyncFailure];
+
+export const ConnectFailure = {
+  AccessDenied: 'access_denied',
+  InvalidState: 'invalid_state',
+  ExchangeFailed: 'exchange_failed',
+  NotConfigured: 'not_configured',
+} as const;
+export type ConnectFailure = (typeof ConnectFailure)[keyof typeof ConnectFailure];
+
+export const IntegrationProvider = {
+  Google: 'google',
+} as const;
+export type IntegrationProvider = (typeof IntegrationProvider)[keyof typeof IntegrationProvider];

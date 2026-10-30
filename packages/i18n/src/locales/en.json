@@ -1812,6 +1812,7 @@
       "neverSynced": "Not checked yet.",
       "mailAccess": "Reads replies to your applications",
       "calendarAccess": "Adds your interviews to your calendar",
+      "accessOn": "Allowed",
       "accessOff": "Not allowed",
       "notConfigured": "Google sign-in is not set up on this server yet.",
       "localHint": "While CareerPilot runs on your computer, Google only returns to localhost. Connect from the computer, not from the phone.",

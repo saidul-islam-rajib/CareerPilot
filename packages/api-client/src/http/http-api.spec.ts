@@ -103,6 +103,27 @@ describe('http api', () => {
 });
 
 describe('http messaging api', () => {
+  it('reads the Google connection and starts, runs and ends it with plain requests', async () => {
+    const calls: Array<[string, string | undefined]> = [];
+    for (const run of [
+      (api: ReturnType<typeof setup>['api']) => api.integrations.googleStatus(),
+      (api: ReturnType<typeof setup>['api']) => api.integrations.googleAuthorizeUrl(),
+      (api: ReturnType<typeof setup>['api']) => api.integrations.syncGoogle(),
+      (api: ReturnType<typeof setup>['api']) => api.integrations.disconnectGoogle(),
+    ]) {
+      const { api, fetchFn } = setup(jsonResponse(200, {}));
+      await run(api);
+      const [url, init] = fetchFn.mock.calls[0] as unknown as [string, RequestInit];
+      calls.push([url, init.method]);
+    }
+    expect(calls).toEqual([
+      ['https://api.example.com/v1/integrations/google', 'GET'],
+      ['https://api.example.com/v1/integrations/google/authorize-url', 'GET'],
+      ['https://api.example.com/v1/integrations/google/sync', 'POST'],
+      ['https://api.example.com/v1/integrations/google', 'DELETE'],
+    ]);
+  });
+
   it('sends the message a reply answers with text and attachments', async () => {
     const text = setup(jsonResponse(200, {}));
     await text.api.messaging.sendText('cnv 1', 'Yes', 'msg_1');
