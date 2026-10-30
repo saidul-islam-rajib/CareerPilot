@@ -4,6 +4,7 @@ import { Pressable, TextInput, View, type TextInputProps } from 'react-native';
 import { Eye, EyeOff } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 import { Icon } from './icon';
+import { bareInput } from './input-focus';
 import { Text, TextTone, TextVariant } from './text';
 
 export interface TextFieldProps extends Omit<TextInputProps, 'style'> {
@@ -43,7 +44,7 @@ export function TextField({ label, error, errorParams, hint, secret = false, ...
           secureTextEntry={secret && !revealed}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          style={{ flex: 1, color: theme.colors.text, fontSize: theme.fontSize.md, paddingVertical: theme.space.sm }}
+          style={{ ...bareInput, flex: 1, color: theme.colors.text, fontSize: theme.fontSize.md, paddingVertical: theme.space.sm }}
           {...rest}
         />
         {secret ? (

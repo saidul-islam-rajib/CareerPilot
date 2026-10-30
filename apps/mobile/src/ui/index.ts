@@ -6,6 +6,7 @@ export * from './card';
 export * from './checkbox';
 export * from './choice-list';
 export * from './icon';
+export * from './input-focus';
 export * from './icon-button';
 export * from './layout';
 export * from './screen';

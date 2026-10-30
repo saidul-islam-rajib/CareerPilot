@@ -9,7 +9,7 @@ import { ConversationKind, MessageKind } from '@careerpilot/domain-ui-logic';
 import { Ban, Bell, BellOff, FileText, ImageIcon, Mic, Send, Square, X } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 import { pickDocument, toUploadSource } from '@/features/profile/profile-support';
-import { ErrorState, Icon, LoadingState, Text, TextTone, TextVariant, useSnackbar } from '@/ui';
+import { ErrorState, Icon, LoadingState, Text, TextTone, TextVariant, bareInput, useInputFocus, useSnackbar } from '@/ui';
 import { SnackbarTone } from '@/ui/snackbar';
 import { MessageBubble } from './message-parts';
 import { useVoiceNote, type RecordedVoice } from './voice';
@@ -81,6 +81,7 @@ function Composer({ onText, onAttachment, busy }: { onText: (text: string) => Pr
       void onAttachment({ kind: MessageKind.File, file: picked });
     }
   };
+  const focus = useInputFocus();
   const bar = { flexDirection: 'row' as const, alignItems: 'flex-end' as const, gap: theme.space.xs, padding: theme.space.sm, borderTopWidth: theme.borderWidth.hairline, borderTopColor: theme.colors.border, backgroundColor: theme.colors.card };
   if (voice.recording) {
     return (
@@ -111,7 +112,10 @@ function Composer({ onText, onAttachment, busy }: { onText: (text: string) => Pr
           accessibilityLabel={t('messaging.typeMessage')}
           multiline
           maxLength={config.messaging.maxTextLength}
+          onFocus={focus.onFocus}
+          onBlur={focus.onBlur}
           style={{
+            ...bareInput,
             flex: 1,
             minHeight: theme.touchTarget,
             maxHeight: theme.touchTarget * 3,
@@ -119,8 +123,8 @@ function Composer({ onText, onAttachment, busy }: { onText: (text: string) => Pr
             paddingTop: theme.space.sm,
             paddingBottom: theme.space.sm,
             borderRadius: theme.radius.card,
-            borderWidth: theme.borderWidth.hairline,
-            borderColor: theme.colors.input,
+            borderWidth: focus.focused ? theme.borderWidth.focus : theme.borderWidth.hairline,
+            borderColor: focus.focused ? theme.colors.primary : theme.colors.input,
             backgroundColor: theme.colors.background,
             color: theme.colors.text,
             fontSize: theme.fontSize.md,

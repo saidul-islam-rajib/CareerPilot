@@ -5,6 +5,7 @@ import { useTheme } from '@/core/theme/theme';
 import { Button, ButtonVariant } from './button';
 import { Icon, IconSize } from './icon';
 import { Text, TextTone, TextVariant } from './text';
+import { bareInput, useInputFocus } from './input-focus';
 
 const SEPARATOR = ',';
 
@@ -28,6 +29,7 @@ export interface TagInputProps {
 }
 
 export function TagInput({ label, values, placeholder, hint, error, addLabel, removeLabel, onAdd, onRemove }: TagInputProps) {
+  const focus = useInputFocus();
   const theme = useTheme();
   const [draft, setDraft] = useState('');
   const commit = () => {
@@ -48,13 +50,16 @@ export function TagInput({ label, values, placeholder, hint, error, addLabel, re
           placeholderTextColor={theme.colors.textMuted}
           onChangeText={setDraft}
           onSubmitEditing={commit}
+          onFocus={focus.onFocus}
+          onBlur={focus.onBlur}
           returnKeyType="done"
           blurOnSubmit={false}
           style={{
             flex: 1,
             minHeight: theme.touchTarget,
-            borderWidth: error ? theme.borderWidth.focus : theme.borderWidth.hairline,
-            borderColor: error ? theme.colors.danger : theme.colors.input,
+            ...bareInput,
+            borderWidth: error || focus.focused ? theme.borderWidth.focus : theme.borderWidth.hairline,
+            borderColor: error ? theme.colors.danger : focus.focused ? theme.colors.primary : theme.colors.input,
             borderRadius: theme.radius.control,
             backgroundColor: theme.colors.background,
             color: theme.colors.text,

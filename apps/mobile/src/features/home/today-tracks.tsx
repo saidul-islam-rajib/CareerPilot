@@ -8,7 +8,7 @@ import { ChevronDown, ChevronRight, Search, X } from '@/ui/icons';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { OpportunityCard } from '@/features/opportunities/opportunity-card';
-import { Badge, Card, EmptyState, Icon, IconSize, Text, TextTone, TextVariant, useSnackbar } from '@/ui';
+import { Badge, Card, EmptyState, Icon, IconSize, Text, TextTone, TextVariant, bareInput, useSnackbar } from '@/ui';
 
 type DashboardView = ReturnType<typeof useDashboardView>;
 
@@ -43,7 +43,7 @@ function JobSearch({ view }: { view: DashboardView }) {
           accessibilityLabel={t('home.searchLabel')}
           autoCorrect={false}
           returnKeyType="search"
-          style={{ flex: 1, color: theme.colors.text, fontSize: theme.fontSize.md, paddingVertical: theme.space.sm }}
+          style={{ ...bareInput, flex: 1, color: theme.colors.text, fontSize: theme.fontSize.md, paddingVertical: theme.space.sm }}
           testID="today-search"
         />
         {view.query ? (

@@ -7,7 +7,7 @@ import { ConversationKind, MessageKind } from '@careerpilot/domain-ui-logic';
 import { BellOff, Headset, MessageSquarePlus, Search, X } from '@/ui/icons';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
-import { Button, ButtonVariant, Card, EmptyState, ErrorState, Icon, IconSize, LoadingState, Text, TextTone, TextVariant } from '@/ui';
+import { Button, ButtonVariant, Card, EmptyState, ErrorState, Icon, IconSize, LoadingState, Text, TextTone, TextVariant, bareInput, useInputFocus } from '@/ui';
 import { ChatAvatar, StateTicks } from './message-parts';
 
 const AVATAR = 48;
@@ -94,9 +94,10 @@ function MemberSearch({ onClose }: { onClose: () => void }) {
   const results = useMemberSearch(query);
   const start = useStartConversation();
   const searching = query.trim().length >= config.messaging.directoryMinQuery;
+  const focus = useInputFocus();
   return (
     <Card>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space.sm, minHeight: theme.touchTarget, paddingHorizontal: theme.space.md, borderRadius: theme.radius.control, borderWidth: theme.borderWidth.hairline, borderColor: theme.colors.input }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space.sm, minHeight: theme.touchTarget, paddingHorizontal: theme.space.md, borderRadius: theme.radius.control, borderWidth: focus.focused ? theme.borderWidth.focus : theme.borderWidth.hairline, borderColor: focus.focused ? theme.colors.primary : theme.colors.input }}>
         <Icon icon={Search} size={IconSize.Small} color={theme.colors.textMuted} />
         <TextInput
           value={query}
@@ -107,7 +108,9 @@ function MemberSearch({ onClose }: { onClose: () => void }) {
           placeholder={t('messaging.searchPlaceholder')}
           placeholderTextColor={theme.colors.textMuted}
           accessibilityLabel={t('messaging.searchLabel')}
-          style={{ flex: 1, color: theme.colors.text, fontSize: theme.fontSize.md, paddingVertical: theme.space.sm }}
+          onFocus={focus.onFocus}
+          onBlur={focus.onBlur}
+          style={{ ...bareInput, flex: 1, color: theme.colors.text, fontSize: theme.fontSize.md, paddingVertical: theme.space.sm }}
           testID="member-search"
         />
         <Pressable accessibilityRole="button" accessibilityLabel={t('common.close')} onPress={onClose} hitSlop={theme.space.sm}>

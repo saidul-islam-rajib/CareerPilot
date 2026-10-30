@@ -5,6 +5,7 @@ import { Minus, Plus, type LucideIcon } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 import { Icon } from './icon';
 import { Text, TextTone, TextVariant } from './text';
+import { bareInput, useInputFocus } from './input-focus';
 
 export interface StepperProps {
   name: string;
@@ -43,6 +44,7 @@ function StepButton({ icon, label, disabled, onPress }: { icon: LucideIcon; labe
 
 export function Stepper({ name, value, min, max, onChange }: StepperProps) {
   const t = useT();
+  const focus = useInputFocus();
   const theme = useTheme();
   const [text, setText] = useState(String(value));
   useEffect(() => setText(String(value)), [value]);
@@ -59,7 +61,11 @@ export function Stepper({ name, value, min, max, onChange }: StepperProps) {
       <TextInput
         value={text}
         onChangeText={typed}
-        onBlur={() => setText(String(value))}
+        onFocus={focus.onFocus}
+        onBlur={() => {
+          focus.onBlur();
+          setText(String(value));
+        }}
         keyboardType="number-pad"
         maxLength={String(max).length}
         selectTextOnFocus
@@ -68,8 +74,9 @@ export function Stepper({ name, value, min, max, onChange }: StepperProps) {
           minWidth: theme.touchTarget + theme.space.xl,
           height: theme.touchTarget,
           borderRadius: theme.radius.control,
-          borderWidth: theme.borderWidth.hairline,
-          borderColor: theme.colors.input,
+          ...bareInput,
+          borderWidth: focus.focused ? theme.borderWidth.focus : theme.borderWidth.hairline,
+          borderColor: focus.focused ? theme.colors.primary : theme.colors.input,
           backgroundColor: theme.colors.card,
           color: theme.colors.text,
           textAlign: 'center',
