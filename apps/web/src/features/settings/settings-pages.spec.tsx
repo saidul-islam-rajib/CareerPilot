@@ -22,6 +22,7 @@ describe('SettingsPage', () => {
     expect(screen.getByRole('link', { name: /Delete account/ })).toHaveAttribute('href', '/settings/delete-account');
     expect(screen.getByRole('link', { name: /Notifications/ })).toHaveAttribute('href', '/settings/notifications');
     expect(screen.getByRole('link', { name: /Change password/ })).toHaveAttribute('href', '/settings/password');
+    expect(screen.getByRole('link', { name: /Connected accounts/ })).toHaveAttribute('href', '/settings/connected-accounts');
   });
 });
 

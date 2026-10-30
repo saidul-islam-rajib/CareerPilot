@@ -22,6 +22,7 @@ export const Routes = {
   notifications: '/settings/notifications',
   answers: '/settings/answers',
   sources: '/settings/sources',
+  connectedAccounts: '/settings/connected-accounts',
   sourceJobs: (id: string) => `/settings/sources/${encodeURIComponent(id)}`,
   countries: '/settings/countries',
   changePassword: '/settings/password',

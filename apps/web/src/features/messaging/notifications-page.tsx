@@ -1,15 +1,27 @@
 'use client';
 
 import Link from 'next/link';
-import { Bell, BriefcaseBusiness, CheckCheck, MessageCircle } from 'lucide-react';
+import { Bell, BriefcaseBusiness, CheckCheck, MessageCircle, Plug, type LucideIcon } from 'lucide-react';
 import type { AppNotification } from '@careerpilot/api-client';
 import { useFormat, useNotifications, useReadNotifications, useT } from '@careerpilot/client-core';
 import { NotificationTarget } from '@careerpilot/domain-ui-logic';
 import { Button, Card, EmptyState, ErrorState, LoadingState, PageHeader, cn } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
 
+const HREFS: Record<NotificationTarget, (id: string) => string> = {
+  [NotificationTarget.Conversation]: Routes.conversation,
+  [NotificationTarget.Application]: Routes.application,
+  [NotificationTarget.Integration]: () => Routes.connectedAccounts,
+};
+
+const GLYPHS: Record<NotificationTarget, LucideIcon> = {
+  [NotificationTarget.Conversation]: MessageCircle,
+  [NotificationTarget.Application]: BriefcaseBusiness,
+  [NotificationTarget.Integration]: Plug,
+};
+
 export function notificationHref(notification: AppNotification): string {
-  return notification.target === NotificationTarget.Conversation ? Routes.conversation(notification.targetId) : Routes.application(notification.targetId);
+  return HREFS[notification.target](notification.targetId);
 }
 
 export function NotificationsPage() {
@@ -42,7 +54,7 @@ export function NotificationsPage() {
         <Card className="p-2">
           <ul className="divide-y divide-border">
             {notifications.data.map((notification) => {
-              const Glyph = notification.target === NotificationTarget.Conversation ? MessageCircle : BriefcaseBusiness;
+              const Glyph = GLYPHS[notification.target];
               return (
                 <li key={notification.id}>
                   <Link

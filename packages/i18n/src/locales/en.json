@@ -1795,6 +1795,7 @@
     "page": {
       "title": "Connected accounts",
       "intro": "Connect your Google account so CareerPilot can find employer replies and add your interviews to your calendar.",
+      "menuBody": "Google inbox and calendar",
       "readOnlyNote": "CareerPilot only reads your email. It never sends, changes, or deletes anything.",
       "googleName": "Google",
       "connect": "Connect Google",

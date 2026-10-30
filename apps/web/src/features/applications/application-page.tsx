@@ -76,6 +76,11 @@ export function ApplicationPage() {
                   </span>
                   <span className="flex flex-1 flex-col gap-1 pb-4">
                     <span>{entry.text}</span>
+                    {entry.link ? (
+                      <a href={entry.link} target="_blank" rel="noreferrer" className="w-fit text-sm font-medium text-primary underline">
+                        {t('integrations.timeline.openEmail')}
+                      </a>
+                    ) : null}
                     <span className="text-xs text-muted">{format.dateTime(entry.at)}</span>
                     {entry.status ? <EnumBadge enumKey={EnumKey.SubmissionStatus} value={entry.status} /> : null}
                   </span>

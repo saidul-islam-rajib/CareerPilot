@@ -143,6 +143,7 @@ describe('Applications', () => {
     expect(screen.getByText('Email delivered; no bounce received within 48 hours')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Original circular/ })).toHaveAttribute('href', '/opportunities/opp_bd_dhaka/circular');
     expect(screen.queryByText("Finish this application on the employer's site")).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open email' })).toHaveAttribute('href', 'https://mail.google.com/mail/u/0/#all/demo-interview');
   });
 
   it('points to the employer site when only the user can finish the application', async () => {

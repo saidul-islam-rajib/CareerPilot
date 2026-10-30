@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, Clock, MessageCircle, Globe, Globe2, Info, KeyRound, ListOrdered, LogOut, MessageSquareText, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2 } from 'lucide-react';
+import { Bell, Clock, MessageCircle, Globe, Plug, Globe2, Info, KeyRound, ListOrdered, LogOut, MessageSquareText, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2 } from 'lucide-react';
 import { useDiscoverable, usePublicConfig, useSession, useSettings, useT } from '@careerpilot/client-core';
 import { Card, ListRow, PageHeader, Separator, SwitchField, TeamSoberCredit } from '@careerpilot/ui-web';
 import { teamSoberLogoSrc } from '@/core/brand-assets';
@@ -46,6 +46,8 @@ export function SettingsPage() {
           <ListRow icon={MessageSquareText} title={t('answers.title')} subtitle={t('answers.menuBody')} href={Routes.answers} />
           <Separator />
           <ListRow icon={Globe} title={t('sources.title')} subtitle={t('sources.menuBody')} href={Routes.sources} />
+          <Separator />
+          <ListRow icon={Plug} title={t('integrations.page.title')} subtitle={t('integrations.page.menuBody')} href={Routes.connectedAccounts} />
           <Separator />
           <ListRow icon={Globe2} title={t('settings.countries')} subtitle={t('settings.countriesMenuBody')} href={Routes.countries} />
         </Card>

@@ -397,7 +397,7 @@ export function buildDemoSeed(now: Date): DemoState {
         { at: at(-6, -1), actor: TimelineActor.System, text: 'Email drafted from your template', status: SubmissionStatus.Preparing },
         { at: at(-6), actor: TimelineActor.System, text: 'Email sent to careers@baydigital.example.com', status: SubmissionStatus.SubmittedAwaitingConfirmation },
         { at: at(-4), actor: TimelineActor.System, text: 'No bounce received – confirmed', status: SubmissionStatus.Confirmed },
-        { at: at(-1), actor: TimelineActor.Employer, text: 'Interview invitation received for next Tuesday' },
+        { at: at(-1), actor: TimelineActor.Employer, text: 'Interview invitation received for next Tuesday', link: 'https://mail.google.com/mail/u/0/#all/demo-interview' },
       ],
       tasks: [
         {
