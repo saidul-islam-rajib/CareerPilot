@@ -9,7 +9,7 @@ import { ConversationKind, MessageKind } from '@careerpilot/domain-ui-logic';
 import { Ban, Bell, BellOff, FileText, ImageIcon, Mic, Send, Square, X } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 import { pickDocument, toUploadSource } from '@/features/profile/profile-support';
-import { ErrorState, Icon, LoadingState, Text, TextTone, TextVariant, bareInput, useInputFocus, useSnackbar } from '@/ui';
+import { ErrorState, Icon, LoadingState, Text, TextTone, TextVariant, useInputFocus, useSnackbar } from '@/ui';
 import { SnackbarTone } from '@/ui/snackbar';
 import { MessageBubble } from './message-parts';
 import { useVoiceNote, type RecordedVoice } from './voice';
@@ -115,7 +115,6 @@ function Composer({ onText, onAttachment, busy }: { onText: (text: string) => Pr
           onFocus={focus.onFocus}
           onBlur={focus.onBlur}
           style={{
-            ...bareInput,
             flex: 1,
             minHeight: theme.touchTarget,
             maxHeight: theme.touchTarget * 3,

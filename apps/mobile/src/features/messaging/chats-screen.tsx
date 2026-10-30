@@ -7,7 +7,7 @@ import { ConversationKind, MessageKind } from '@careerpilot/domain-ui-logic';
 import { BellOff, Headset, MessageSquarePlus, Search, X } from '@/ui/icons';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
-import { Button, ButtonVariant, Card, EmptyState, ErrorState, Icon, IconSize, LoadingState, Text, TextTone, TextVariant, bareInput, useInputFocus } from '@/ui';
+import { Button, ButtonVariant, Card, EmptyState, ErrorState, Icon, IconSize, LoadingState, Text, TextTone, TextVariant, useInputFocus } from '@/ui';
 import { ChatAvatar, StateTicks } from './message-parts';
 
 const AVATAR = 48;
@@ -110,7 +110,7 @@ function MemberSearch({ onClose }: { onClose: () => void }) {
           accessibilityLabel={t('messaging.searchLabel')}
           onFocus={focus.onFocus}
           onBlur={focus.onBlur}
-          style={{ ...bareInput, flex: 1, color: theme.colors.text, fontSize: theme.fontSize.md, paddingVertical: theme.space.sm }}
+          style={{ flex: 1, color: theme.colors.text, fontSize: theme.fontSize.md, paddingVertical: theme.space.sm }}
           testID="member-search"
         />
         <Pressable accessibilityRole="button" accessibilityLabel={t('common.close')} onPress={onClose} hitSlop={theme.space.sm}>

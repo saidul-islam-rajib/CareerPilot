@@ -5,7 +5,7 @@ import { useTheme } from '@/core/theme/theme';
 import { Button, ButtonVariant } from './button';
 import { Icon, IconSize } from './icon';
 import { Text, TextTone, TextVariant } from './text';
-import { bareInput, useInputFocus } from './input-focus';
+import { useInputFocus } from './input-focus';
 
 const SEPARATOR = ',';
 
@@ -57,7 +57,6 @@ export function TagInput({ label, values, placeholder, hint, error, addLabel, re
           style={{
             flex: 1,
             minHeight: theme.touchTarget,
-            ...bareInput,
             borderWidth: error || focus.focused ? theme.borderWidth.focus : theme.borderWidth.hairline,
             borderColor: error ? theme.colors.danger : focus.focused ? theme.colors.primary : theme.colors.input,
             borderRadius: theme.radius.control,

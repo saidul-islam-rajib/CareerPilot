@@ -5,7 +5,7 @@ import { Minus, Plus, type LucideIcon } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 import { Icon } from './icon';
 import { Text, TextTone, TextVariant } from './text';
-import { bareInput, useInputFocus } from './input-focus';
+import { useInputFocus } from './input-focus';
 
 export interface StepperProps {
   name: string;
@@ -74,7 +74,6 @@ export function Stepper({ name, value, min, max, onChange }: StepperProps) {
           minWidth: theme.touchTarget + theme.space.xl,
           height: theme.touchTarget,
           borderRadius: theme.radius.control,
-          ...bareInput,
           borderWidth: focus.focused ? theme.borderWidth.focus : theme.borderWidth.hairline,
           borderColor: focus.focused ? theme.colors.primary : theme.colors.input,
           backgroundColor: theme.colors.card,
