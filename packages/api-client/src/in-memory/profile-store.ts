@@ -41,6 +41,7 @@ export interface ProfileStoreOptions {
   respond: <T>(value: T) => Promise<T>;
   reject: (code: ApiErrorCode, detail?: string) => Promise<never>;
   verificationCode: string;
+  homeCountry: () => string;
 }
 
 function invalid(detail: string): never {
@@ -172,6 +173,8 @@ export function createProfileStore(options: ProfileStoreOptions): ProfileApi {
     for (const key of Object.keys(profile.sections)) {
       profile.sections[key] = sortByPosition(entriesOf(key));
     }
+    profile.homeCountry = options.homeCountry();
+    profile.consistency ??= [];
     return options.respond(profile);
   }
 
@@ -372,7 +375,7 @@ export function createProfileStore(options: ProfileStoreOptions): ProfileApi {
       run(() => {
         const section = sectionOf(key);
         const entries = entriesOf(section.key);
-        if (entries.length >= limits.maxEntriesPerSection) {
+        if (entries.length >= (section.maxEntries ?? limits.maxEntriesPerSection)) {
           invalid(section.key);
         }
         entries.push({ id: ids.next('pe'), position: nextPosition(entries), values: entryValues(section, values), updatedAt: nowIso() });
@@ -392,8 +395,11 @@ export function createProfileStore(options: ProfileStoreOptions): ProfileApi {
     restoreEntry: (key, id) =>
       run(() => {
         const section = sectionOf(key);
-        const entry = take(trash.entries[section.key] ?? [], id, 'entry');
         const entries = entriesOf(section.key);
+        if (section.maxEntries !== undefined && entries.length >= section.maxEntries) {
+          invalid(section.key);
+        }
+        const entry = take(trash.entries[section.key] ?? [], id, 'entry');
         entries.push({ ...entry, position: nextPosition(entries) });
       }),
     reorderEntries: (key, orderedIds) => run(() => reorder(entriesOf(sectionOf(key).key), orderedIds, 'entry_order')),

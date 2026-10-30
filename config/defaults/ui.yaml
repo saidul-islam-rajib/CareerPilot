@@ -6,6 +6,8 @@ ui:
   admin_theme: sober
   # Wait this long after the last change before saving a setting the user is adjusting (+/−, typing).
   save_delay_ms: 700
+  # Phone forms show up to this many choices side by side; longer lists open a searchable list.
+  segmented_max_options: 4
   # How many company and role suggestions the Today search shows.
   search_suggestion_limit: 8
   # Where "Learn" sends people for a skill a job asks for; {skill} is replaced with the skill name.

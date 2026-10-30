@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ArrowDown, ArrowUp, ExternalLink, Pencil, Plus, Trash2 } from 'lucide-react';
 import type { ProfileEntry } from '@careerpilot/api-client';
 import { sortEntries, useFormat, useProfileSettings, useRemoveEntry, useReorderEntries, useRestoreEntry, useT } from '@careerpilot/client-core';
-import { describeEntry, type SectionDefinition } from '@careerpilot/dynamic-forms';
+import { canAddEntry, describeEntry, type SectionDefinition } from '@careerpilot/dynamic-forms';
 import { Button, Card, OverflowMenu, SortableList } from '@careerpilot/ui-web';
 import { EntryDialog } from './entry-dialog';
 import { sectionAnchor, sectionIcon, useRemoveWithUndo } from './profile-support';
@@ -74,6 +74,7 @@ export function EntrySection({ section, entries }: { section: SectionDefinition;
   const restore = useRestoreEntry(section.key);
   const [dialog, setDialog] = useState<DialogState>({ open: false, version: 0 });
   const sorted = sortEntries(entries);
+  const addable = canAddEntry(section, sorted.length);
   const Glyph = sectionIcon(section.icon);
   const titleId = `${sectionAnchor(section.key)}-title`;
 
@@ -91,9 +92,11 @@ export function EntrySection({ section, entries }: { section: SectionDefinition;
           <h2 id={titleId} className="min-w-0 flex-1 text-lg font-semibold text-foreground">
             {t(`profile.sections.${section.key}.title`)}
           </h2>
-          <Button variant="secondary" size="sm" icon={Plus} onClick={() => open()}>
-            {t('common.add')}
-          </Button>
+          {addable ? (
+            <Button variant="secondary" size="sm" icon={Plus} onClick={() => open()}>
+              {t('common.add')}
+            </Button>
+          ) : null}
         </div>
         {sorted.length === 0 ? (
           <button

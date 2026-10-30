@@ -30,6 +30,8 @@ const sectionSchema = z.object({
   ongoingField: z.string().optional(),
   bodyField: z.string().optional(),
   linkField: z.string().optional(),
+  countries: z.array(z.string()).optional(),
+  maxEntries: z.number().int().positive().optional(),
   fields: z.array(fieldSchema),
 });
 
@@ -109,6 +111,7 @@ export const appConfigSchema = z.object({
     activeTheme: themeKey,
     adminTheme: themeKey,
     saveDelayMs: z.number().int().positive(),
+    segmentedMaxOptions: z.number().int().positive(),
     searchSuggestionLimit: z.number().int().positive(),
     learnSkillUrl: z.string().url(),
     submissionWindowPresets: z.array(z.object({ key: z.string(), start: z.string(), end: z.string() })),

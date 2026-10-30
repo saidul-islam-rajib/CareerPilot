@@ -24,6 +24,13 @@ import {
   TaskKind,
   TaskStatus,
   AnswerTopic,
+  AddressKind,
+  BD_DISTRICTS,
+  BD_DIVISIONS,
+  BdExam,
+  Citizenship,
+  ResultScale,
+  SpecialStatus,
   type EnumValueMetadata,
 } from '@careerpilot/domain-ui-logic';
 
@@ -209,4 +216,11 @@ export const enumCatalog: EnumValueMetadata[] = [
     [AnswerTopic.Eligibility, StatusTone.Neutral],
     [AnswerTopic.Other, StatusTone.Neutral],
   ]),
+  ...rows(EnumKey.BdExam, Object.values(BdExam).map((value): Row => [value, StatusTone.Neutral])),
+  ...rows(EnumKey.ResultScale, Object.values(ResultScale).map((value): Row => [value, StatusTone.Neutral])),
+  ...rows(EnumKey.AddressKind, Object.values(AddressKind).map((value): Row => [value, StatusTone.Neutral])),
+  ...rows(EnumKey.SpecialStatus, Object.values(SpecialStatus).map((value): Row => [value, StatusTone.Neutral])),
+  ...rows(EnumKey.Citizenship, Object.values(Citizenship).map((value): Row => [value, StatusTone.Neutral])),
+  ...rows(EnumKey.BdDivision, BD_DIVISIONS.map((value): Row => [value, StatusTone.Neutral])),
+  ...rows(EnumKey.BdDistrict, BD_DISTRICTS.map((value): Row => [value, StatusTone.Neutral])),
 ];

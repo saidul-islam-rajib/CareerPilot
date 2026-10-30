@@ -5,8 +5,12 @@ import {
   FileText,
   FolderGit2,
   GraduationCap,
+  IdCard,
   Languages,
   Link,
+  MapPin,
+  School,
+  ShieldCheck,
   Trophy,
   Users,
   type LucideIcon,
@@ -25,6 +29,10 @@ const SECTION_ICONS: Record<string, LucideIcon> = {
   link: Link,
   trophy: Trophy,
   users: Users,
+  'id-card': IdCard,
+  school: School,
+  'map-pin': MapPin,
+  'shield-check': ShieldCheck,
 };
 
 export function sectionIcon(name: string): LucideIcon {

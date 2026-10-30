@@ -23,6 +23,8 @@ export interface SectionDefinition {
   ongoingField?: string;
   bodyField?: string;
   linkField?: string;
+  countries?: string[];
+  maxEntries?: number;
   fields: FieldDefinition[];
 }
 
@@ -39,6 +41,7 @@ export const FieldMessage = {
   Email: 'validation.email',
   Phone: 'validation.phone',
   Month: 'validation.month',
+  Date: 'validation.date',
   Year: 'validation.year',
   Number: 'validation.number',
   Option: 'validation.option',

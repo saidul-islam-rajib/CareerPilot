@@ -437,6 +437,30 @@
         "add": "Add referee",
         "empty": "Add people who can give you a reference.",
         "edit": "Edit referee"
+      },
+      "identity": {
+        "title": "Identity for official forms",
+        "add": "Add identity details",
+        "empty": "Add your name in English and Bangla, date of birth, and parents' names exactly as on your certificates and NID.",
+        "edit": "Edit identity details"
+      },
+      "academic_records": {
+        "title": "SSC, HSC, and degree records",
+        "add": "Add a record",
+        "empty": "Add each examination with board, roll, registration, and result exactly as printed on the certificate.",
+        "edit": "Edit record"
+      },
+      "addresses": {
+        "title": "Addresses",
+        "add": "Add address",
+        "empty": "Add your present and permanent addresses with division, district, and upazila.",
+        "edit": "Edit address"
+      },
+      "special_status": {
+        "title": "Special status (quota)",
+        "add": "Add special status",
+        "empty": "Only add this if it applies to you. It is used only for circulars that offer a quota, and never assumed.",
+        "edit": "Edit special status"
       }
     },
     "fields": {
@@ -498,6 +522,46 @@
         "organization": "Organization",
         "email": "Email",
         "phone": "Phone"
+      },
+      "identity": {
+        "name_english": "Name in English (as on certificates)",
+        "name_bangla": "Name in Bangla",
+        "date_of_birth": "Date of birth",
+        "father_name_english": "Father's name in English",
+        "father_name_bangla": "Father's name in Bangla",
+        "mother_name_english": "Mother's name in English",
+        "mother_name_bangla": "Mother's name in Bangla",
+        "nid_number": "NID or birth registration number",
+        "citizenship": "Citizenship",
+        "home_district": "Home district"
+      },
+      "academic_records": {
+        "exam": "Examination",
+        "board_or_university": "Board or university",
+        "roll_number": "Roll number",
+        "registration_number": "Registration number",
+        "passing_year": "Passing year",
+        "group_subject": "Group or subject",
+        "result_scale": "Result scale",
+        "result": "Result, for example 5.00 or First class",
+        "name_on_certificate": "Name on the certificate",
+        "date_of_birth_on_certificate": "Date of birth on the certificate",
+        "father_name_on_certificate": "Father's name on the certificate",
+        "mother_name_on_certificate": "Mother's name on the certificate"
+      },
+      "addresses": {
+        "kind": "Address type",
+        "line": "House, road, and village or area",
+        "division": "Division",
+        "district": "District",
+        "upazila": "Upazila or thana",
+        "post_office": "Post office",
+        "post_code": "Post code"
+      },
+      "special_status": {
+        "status": "Status",
+        "document_name": "Supporting document",
+        "notes": "Notes"
       }
     },
     "about": "About",
@@ -510,7 +574,18 @@
     "openDocument": "Open document",
     "monthHint": "Use YYYY-MM, for example 2024-03.",
     "country": "Home country (2-letter code)",
-    "countryHint": "For example BD or SG. Jobs in this country are listed first."
+    "countryHint": "For example BD or SG. Jobs in this country are listed first.",
+    "dateHint": "Use YYYY-MM-DD, for example 1998-04-23.",
+    "consistency": {
+      "title": "Check these details",
+      "body": "Official forms are often rejected when details differ from your certificates.",
+      "name": "Your name is written differently: “{expected}” and “{found}”.",
+      "date_of_birth": "Your date of birth differs: {expected} and {found}.",
+      "father_name": "Your father's name is written differently: “{expected}” and “{found}”.",
+      "mother_name": "Your mother's name is written differently: “{expected}” and “{found}”.",
+      "phone_format": "“{found}” is not a Bangladesh mobile number in +880 format, for example +8801712345678.",
+      "fix": "Fix"
+    }
   },
   "settings": {
     "title": "More",
@@ -831,6 +906,121 @@
     "contact_kind": {
       "email": "Email",
       "phone": "Phone"
+    },
+    "bd_exam": {
+      "ssc": "SSC",
+      "dakhil": "Dakhil",
+      "o_level": "O level",
+      "hsc": "HSC",
+      "alim": "Alim",
+      "a_level": "A level",
+      "diploma": "Diploma",
+      "bachelor_honours": "Bachelor's (honours)",
+      "bachelor_pass": "Bachelor's (pass)",
+      "masters": "Master's",
+      "mbbs": "MBBS",
+      "other": "Other"
+    },
+    "result_scale": {
+      "gpa_5": "GPA out of 5",
+      "cgpa_4": "CGPA out of 4",
+      "division": "Division",
+      "class": "Class",
+      "grade": "Grade"
+    },
+    "address_kind": {
+      "present": "Present address",
+      "permanent": "Permanent address"
+    },
+    "special_status": {
+      "freedom_fighter_child": "Child of a freedom fighter",
+      "freedom_fighter_grandchild": "Grandchild of a freedom fighter",
+      "person_with_disability": "Person with disability",
+      "ethnic_minority": "Ethnic minority",
+      "ansar_vdp": "Ansar-VDP",
+      "orphan": "Orphan",
+      "other": "Other"
+    },
+    "citizenship": {
+      "by_birth": "Bangladeshi by birth",
+      "by_descent": "Bangladeshi by descent",
+      "other": "Other"
+    },
+    "bd_division": {
+      "barishal": "Barishal",
+      "chattogram": "Chattogram",
+      "dhaka": "Dhaka",
+      "khulna": "Khulna",
+      "mymensingh": "Mymensingh",
+      "rajshahi": "Rajshahi",
+      "rangpur": "Rangpur",
+      "sylhet": "Sylhet"
+    },
+    "bd_district": {
+      "barguna": "Barguna",
+      "barishal": "Barishal",
+      "bhola": "Bhola",
+      "jhalokati": "Jhalokati",
+      "patuakhali": "Patuakhali",
+      "pirojpur": "Pirojpur",
+      "bandarban": "Bandarban",
+      "brahmanbaria": "Brahmanbaria",
+      "chandpur": "Chandpur",
+      "chattogram": "Chattogram",
+      "cumilla": "Cumilla",
+      "coxs_bazar": "Cox's Bazar",
+      "feni": "Feni",
+      "khagrachhari": "Khagrachhari",
+      "lakshmipur": "Lakshmipur",
+      "noakhali": "Noakhali",
+      "rangamati": "Rangamati",
+      "dhaka": "Dhaka",
+      "faridpur": "Faridpur",
+      "gazipur": "Gazipur",
+      "gopalganj": "Gopalganj",
+      "kishoreganj": "Kishoreganj",
+      "madaripur": "Madaripur",
+      "manikganj": "Manikganj",
+      "munshiganj": "Munshiganj",
+      "narayanganj": "Narayanganj",
+      "narsingdi": "Narsingdi",
+      "rajbari": "Rajbari",
+      "shariatpur": "Shariatpur",
+      "tangail": "Tangail",
+      "bagerhat": "Bagerhat",
+      "chuadanga": "Chuadanga",
+      "jashore": "Jashore",
+      "jhenaidah": "Jhenaidah",
+      "khulna": "Khulna",
+      "kushtia": "Kushtia",
+      "magura": "Magura",
+      "meherpur": "Meherpur",
+      "narail": "Narail",
+      "satkhira": "Satkhira",
+      "jamalpur": "Jamalpur",
+      "mymensingh": "Mymensingh",
+      "netrokona": "Netrokona",
+      "sherpur": "Sherpur",
+      "bogura": "Bogura",
+      "chapainawabganj": "Chapai Nawabganj",
+      "joypurhat": "Joypurhat",
+      "naogaon": "Naogaon",
+      "natore": "Natore",
+      "pabna": "Pabna",
+      "rajshahi": "Rajshahi",
+      "sirajganj": "Sirajganj",
+      "dinajpur": "Dinajpur",
+      "gaibandha": "Gaibandha",
+      "kurigram": "Kurigram",
+      "lalmonirhat": "Lalmonirhat",
+      "nilphamari": "Nilphamari",
+      "panchagarh": "Panchagarh",
+      "rangpur": "Rangpur",
+      "thakurgaon": "Thakurgaon",
+      "habiganj": "Habiganj",
+      "moulvibazar": "Moulvibazar",
+      "sunamganj": "Sunamganj",
+      "sylhet": "Sylhet"
     }
   },
   "admin": {
@@ -1129,7 +1319,11 @@
       "settings": "Settings",
       "paused": "Applications paused until {until}",
       "favorites": "Favorite companies",
-      "off": "Off"
+      "off": "Off",
+      "profileDetails": "Profile details",
+      "noProfileDetails": "This member has not added any profile details yet.",
+      "yes": "Yes",
+      "no": "No"
     },
     "presence": {
       "online": "Online now",
@@ -1637,5 +1831,9 @@
       "generic": "Couldn't send. Check your connection and try again."
     },
     "microphonePermission": "CareerPilot uses the microphone only while you record a voice message."
+  },
+  "select": {
+    "search": "Search",
+    "noMatches": "No matches"
   }
 }

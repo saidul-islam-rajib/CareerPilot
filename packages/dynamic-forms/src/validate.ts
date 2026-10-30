@@ -12,6 +12,7 @@ import {
 } from './types';
 
 const MONTH = /^(\d{4})-(0[1-9]|1[0-2])$/;
+const DAY = /^(\d{4})-(\d{2})-(\d{2})$/;
 const DIGITS = /^\d+$/;
 const WHITESPACE = /\s+/g;
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -45,6 +46,11 @@ function maxYear(context: ValidationContext): number {
   return context.now.getFullYear() + context.limits.futureYears;
 }
 
+function isCalendarDay(year: number, month: number, day: number): boolean {
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+
 function isUrl(value: string): boolean {
   try {
     const url = new URL(value);
@@ -74,6 +80,13 @@ const parsers: Record<ProfileFieldType, Parser> = {
     const match = MONTH.exec(value);
     const year = match ? Number(match[1]) : Number.NaN;
     return year >= context.limits.minYear && year <= maxYear(context) ? { value } : fail(FieldMessage.Month);
+  },
+  [ProfileFieldType.Date]: (raw, _field, context) => {
+    const value = String(raw).trim();
+    const match = DAY.exec(value);
+    const [year, month, day] = match ? [Number(match[1]), Number(match[2]), Number(match[3])] : [Number.NaN, 0, 0];
+    const valid = isCalendarDay(year, month, day) && year >= context.limits.minYear && year <= maxYear(context);
+    return valid ? { value } : fail(FieldMessage.Date);
   },
   [ProfileFieldType.Year]: (raw, _field, context) => {
     const text = String(raw).trim();

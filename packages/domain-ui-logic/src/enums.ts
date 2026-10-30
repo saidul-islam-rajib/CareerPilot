@@ -245,6 +245,7 @@ export const ProfileFieldType = {
   Number: 'number',
   Select: 'select',
   Boolean: 'boolean',
+  Date: 'date',
 } as const;
 export type ProfileFieldType = (typeof ProfileFieldType)[keyof typeof ProfileFieldType];
 
@@ -339,6 +340,13 @@ export const EnumKey = {
   TaskKind: 'task_kind',
   TaskStatus: 'task_status',
   AnswerTopic: 'answer_topic',
+  BdExam: 'bd_exam',
+  ResultScale: 'result_scale',
+  AddressKind: 'address_kind',
+  SpecialStatus: 'special_status',
+  Citizenship: 'citizenship',
+  BdDivision: 'bd_division',
+  BdDistrict: 'bd_district',
 } as const;
 export type EnumKey = (typeof EnumKey)[keyof typeof EnumKey];
 
@@ -353,6 +361,64 @@ export const MessageKind = {
   File: 'file',
 } as const;
 export type MessageKind = (typeof MessageKind)[keyof typeof MessageKind];
+
+export const BdExam = {
+  Ssc: 'ssc',
+  Dakhil: 'dakhil',
+  OLevel: 'o_level',
+  Hsc: 'hsc',
+  Alim: 'alim',
+  ALevel: 'a_level',
+  Diploma: 'diploma',
+  BachelorHonours: 'bachelor_honours',
+  BachelorPass: 'bachelor_pass',
+  Masters: 'masters',
+  Mbbs: 'mbbs',
+  Other: 'other',
+} as const;
+export type BdExam = (typeof BdExam)[keyof typeof BdExam];
+
+export const ResultScale = {
+  Gpa5: 'gpa_5',
+  Cgpa4: 'cgpa_4',
+  Division: 'division',
+  Class: 'class',
+  Grade: 'grade',
+} as const;
+export type ResultScale = (typeof ResultScale)[keyof typeof ResultScale];
+
+export const AddressKind = {
+  Present: 'present',
+  Permanent: 'permanent',
+} as const;
+export type AddressKind = (typeof AddressKind)[keyof typeof AddressKind];
+
+export const SpecialStatus = {
+  FreedomFighterChild: 'freedom_fighter_child',
+  FreedomFighterGrandchild: 'freedom_fighter_grandchild',
+  PersonWithDisability: 'person_with_disability',
+  EthnicMinority: 'ethnic_minority',
+  AnsarVdp: 'ansar_vdp',
+  Orphan: 'orphan',
+  Other: 'other',
+} as const;
+export type SpecialStatus = (typeof SpecialStatus)[keyof typeof SpecialStatus];
+
+export const Citizenship = {
+  ByBirth: 'by_birth',
+  ByDescent: 'by_descent',
+  Other: 'other',
+} as const;
+export type Citizenship = (typeof Citizenship)[keyof typeof Citizenship];
+
+export const ConsistencyKind = {
+  Name: 'name',
+  DateOfBirth: 'date_of_birth',
+  FatherName: 'father_name',
+  MotherName: 'mother_name',
+  PhoneFormat: 'phone_format',
+} as const;
+export type ConsistencyKind = (typeof ConsistencyKind)[keyof typeof ConsistencyKind];
 
 export const DevicePlatform = {
   Android: 'android',

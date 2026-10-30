@@ -1,7 +1,8 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { createMemoryStore } from '@careerpilot/client-core';
 import { TEST_VERIFICATION_CODE } from '@careerpilot/client-core/src/testing';
-import { renderWithProviders } from '@/test/render';
+import { createTestServices, demoSession, renderWithProviders, testNow } from '@/test/render';
 import { ProfilePage } from './profile-page';
 
 async function renderProfile() {
@@ -184,5 +185,34 @@ describe('ProfilePage', () => {
     expect(await screen.findByText('Email verified')).toBeInTheDocument();
     await waitFor(async () => expect((await services.api.profile.getProfile()).contacts.find((c) => c.id === 'c_email_personal')?.verified).toBe(true));
     expect(screen.queryByRole('button', { name: 'Verify ayesha.personal@example.com' })).not.toBeInTheDocument();
+  });
+
+  it('adds one Bangladesh identity entry with a date of birth and then hides Add', async () => {
+    const user = userEvent.setup();
+    const { services } = await renderProfile();
+    const identity = region('Identity for official forms');
+    await user.click(within(identity).getByRole('button', { name: 'Add' }));
+    const dialog = await screen.findByRole('dialog');
+    await user.type(within(dialog).getByLabelText(/Name in English/), 'Ayesha Rahman');
+    fireEvent.change(within(dialog).getByLabelText(/Date of birth/), { target: { value: '1998-04-23' } });
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await waitFor(async () => expect((await services.api.profile.getProfile()).sections.identity?.[0]?.values.date_of_birth).toBe('1998-04-23'));
+    await waitFor(() => expect(within(region('Identity for official forms')).queryByRole('button', { name: 'Add' })).not.toBeInTheDocument());
+    for (const name of ['SSC, HSC, and degree records', 'Addresses', 'Special status (quota)']) {
+      expect(region(name)).toBeInTheDocument();
+    }
+  });
+
+  it('lists details that differ between records', async () => {
+    const services = createTestServices(createMemoryStore({ 'careerpilot.session': JSON.stringify(demoSession) }), { now: () => new Date(testNow) });
+    const real = services.api.profile.getProfile.bind(services.api.profile);
+    services.api.profile.getProfile = async () => ({
+      ...(await real()),
+      consistency: [{ kind: 'date_of_birth', section: 'academic_records', entryId: 'pe_1', field: 'date_of_birth_on_certificate', expected: '1998-04-23', found: '1998-04-24' }],
+    });
+    renderWithProviders(<ProfilePage />, { services });
+    const card = await screen.findByRole('region', { name: 'Check these details' });
+    expect(within(card).getByText('Your date of birth differs: 1998-04-23 and 1998-04-24.')).toBeInTheDocument();
+    expect(within(card).getByRole('link', { name: 'Fix' })).toHaveAttribute('href', '#profile-academic_records');
   });
 });

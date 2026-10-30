@@ -361,7 +361,16 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     answers: answers.api,
     sources: jobSources,
     messaging,
-    profile: createProfileStore({ profile: state.profile, config, clock, ids, respond, reject: failWith, verificationCode: options.demoVerificationCode }),
+    profile: createProfileStore({
+      profile: state.profile,
+      config,
+      clock,
+      ids,
+      respond,
+      reject: failWith,
+      verificationCode: options.demoVerificationCode,
+      homeCountry: () => state.profile.countryCode || HOME_COUNTRY,
+    }),
     settings: {
       getSettings: async () => respond({ ...state.settings, tracks: orderTracks(state.settings.tracks), homeCountry: state.profile.countryCode || HOME_COUNTRY }),
       async updateTrack(id, update) {

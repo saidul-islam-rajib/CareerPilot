@@ -4,6 +4,7 @@ import type {
   ApplicationRoute,
   ApprovalState,
   CompletenessKind,
+  ConsistencyKind,
   ContactKind,
   DevicePlatform,
   DocumentKind,
@@ -421,6 +422,17 @@ export interface Profile {
   skills: string[];
   sections: Record<string, ProfileEntry[]>;
   documents: ProfileDocument[];
+  homeCountry?: string;
+  consistency?: ConsistencyWarning[];
+}
+
+export interface ConsistencyWarning {
+  kind: ConsistencyKind;
+  section: string;
+  entryId: string;
+  field: string;
+  expected: string;
+  found: string;
 }
 
 export interface ProfileLimits extends FormLimits {

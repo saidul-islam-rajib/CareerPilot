@@ -17,7 +17,7 @@ export interface EntryDisplay {
 
 export type OptionLabel = (enumKey: EnumKey, value: string) => string;
 
-export type InputKind = 'text' | 'email' | 'tel' | 'url' | 'month' | 'number';
+export type InputKind = 'text' | 'email' | 'tel' | 'url' | 'month' | 'number' | 'date';
 
 function present(value: EntryValue | undefined): value is string | number | boolean {
   return value !== undefined && value !== null && value !== '';
@@ -51,10 +51,19 @@ const INPUT_KINDS: Partial<Record<ProfileFieldType, InputKind>> = {
   [ProfileFieldType.Phone]: 'tel',
   [ProfileFieldType.Url]: 'url',
   [ProfileFieldType.Month]: 'month',
+  [ProfileFieldType.Date]: 'date',
   [ProfileFieldType.Year]: 'number',
   [ProfileFieldType.Number]: 'number',
 };
 
 export function fieldInputKind(type: ProfileFieldType): InputKind {
   return INPUT_KINDS[type] ?? 'text';
+}
+
+export function sectionVisible(section: SectionDefinition, homeCountry: string, entryCount: number): boolean {
+  return entryCount > 0 || !section.countries?.length || section.countries.includes(homeCountry);
+}
+
+export function canAddEntry(section: SectionDefinition, entryCount: number): boolean {
+  return section.maxEntries === undefined || entryCount < section.maxEntries;
 }

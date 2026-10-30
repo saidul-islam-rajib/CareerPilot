@@ -5,8 +5,9 @@ import { CheckCircle2, Circle } from 'lucide-react';
 import type { Profile } from '@careerpilot/api-client';
 import { useProfile, useProfileSettings, useT } from '@careerpilot/client-core';
 import { ProfileBlock, isEnumValue } from '@careerpilot/domain-ui-logic';
-import type { SectionDefinition } from '@careerpilot/dynamic-forms';
+import { sectionVisible, type SectionDefinition } from '@careerpilot/dynamic-forms';
 import { Card, ErrorState, ImageViewer, LoadingState, cn } from '@careerpilot/ui-web';
+import { ConsistencyCard } from './consistency-card';
 import { ContactsSection } from './contacts-section';
 import { DocumentsSection } from './documents-section';
 import { EntrySection } from './entry-section';
@@ -36,14 +37,16 @@ function useBlocks(profile: Profile): PageBlock[] {
     filled: (profile.sections[section.key]?.length ?? 0) > 0,
     render: () => <EntrySection section={section} entries={profile.sections[section.key]} />,
   });
+  const homeCountry = profile.homeCountry ?? profile.countryCode ?? '';
+  const visible = settings.sections.filter((section) => sectionVisible(section, homeCountry, profile.sections[section.key]?.length ?? 0));
   const ordered = settings.pageOrder.flatMap((key): PageBlock[] => {
     if (isEnumValue(ProfileBlock, key)) {
       return [{ key, ...fixed[key] }];
     }
-    const section = settings.sections.find((s) => s.key === key);
+    const section = visible.find((s) => s.key === key);
     return section ? [sectionBlock(section)] : [];
   });
-  const remaining = settings.sections.filter((section) => !settings.pageOrder.includes(section.key)).map(sectionBlock);
+  const remaining = visible.filter((section) => !settings.pageOrder.includes(section.key)).map(sectionBlock);
   return [...ordered, ...remaining];
 }
 
@@ -93,6 +96,7 @@ function ProfileContent({ profile, signatureLabel, zoomLabel }: { profile: Profi
   return (
     <div className="flex flex-col gap-6">
       <ProfileHeader profile={profile} />
+      <ConsistencyCard warnings={profile.consistency ?? []} />
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">
         <SectionIndex blocks={blocks} />
         <div className="flex min-w-0 flex-col gap-6">
