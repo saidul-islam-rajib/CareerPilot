@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
+cat > /dev/null
 root=$(git rev-parse --show-toplevel)
 cd "$root"
 if [ -d services/.venv/Scripts ]; then bin="$root/services/.venv/Scripts"; else bin="$root/services/.venv/bin"; fi
