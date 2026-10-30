@@ -376,7 +376,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     secret = options.token_secret or token_secret_from_environment()
     tokens = TokenService(cfg.security, clk, secret)
     storage = SampleAwareStorage(options.file_storage or LocalFileStorage(storage_root(cfg)))
-    file_links = FileLinkSigner(secret, clk, cfg.profile.storage.signed_url_ttl_seconds)
+    file_links = FileLinkSigner(secret, clk, cfg.profile.storage.signed_url_ttl_seconds, cfg.profile.storage.signed_url_reuse_seconds)
     empty = empty_workspace_factory(cfg, clk)
     database = (
         options.database or create_database(_database_url(cfg, options), clk) if cfg.persistence.mode is PersistenceMode.DATABASE else None

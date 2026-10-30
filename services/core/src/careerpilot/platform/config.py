@@ -465,6 +465,7 @@ class UploadConfig(Strict):
 class StorageConfig(Strict):
     local_root: str
     signed_url_ttl_seconds: int = Field(gt=0)
+    signed_url_reuse_seconds: int = Field(gt=0)
 
 
 class CompletenessRule(Strict):

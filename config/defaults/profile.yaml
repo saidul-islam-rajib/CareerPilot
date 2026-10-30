@@ -23,6 +23,7 @@ profile:
   storage:
     local_root: .data/files
     signed_url_ttl_seconds: 900
+    signed_url_reuse_seconds: 600
   completeness:
     - kind: basics
       weight: 10

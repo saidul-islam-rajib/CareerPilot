@@ -66,13 +66,14 @@ export function VoicePlayer({ url, durationSeconds, tint }: { url: string; durat
   const theme = useTheme();
   const player = useAudioPlayer(url);
   const status = useAudioPlayerStatus(player);
-  const toggle = () => {
+  const toggle = async () => {
     if (status.playing) {
       player.pause();
       return;
     }
+    await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true });
     if (status.didJustFinish || (status.duration > 0 && status.currentTime >= status.duration)) {
-      void player.seekTo(0);
+      await player.seekTo(0);
     }
     player.play();
   };
@@ -83,7 +84,7 @@ export function VoicePlayer({ url, durationSeconds, tint }: { url: string; durat
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={status.playing ? t('messaging.pause') : t('messaging.play')}
-        onPress={toggle}
+        onPress={() => void toggle()}
         hitSlop={theme.space.xs}
         style={{ width: theme.touchTarget, height: theme.touchTarget, borderRadius: theme.touchTarget / 2, alignItems: 'center', justifyContent: 'center' }}
       >

@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse, Response
 
 from careerpilot.api.common import ok
 from careerpilot.api.dependencies import CurrentUser, Services
+from careerpilot.api.file_responses import RANGE_HEADER, file_response
 from careerpilot.bootstrap import Container
 from careerpilot.candidate.models import PhotoCrop, Profile
 from careerpilot.candidate.services.profile import BasicsChanges, ProfileService, Upload
@@ -226,12 +227,24 @@ def restore_document(document_id: str, caller: Caller) -> JSONResponse:
     return caller.respond(caller.profiles.restore_document(caller.user_id, document_id))
 
 
+@dataclass(frozen=True)
+class SignedFileQuery:
+    key: str
+    expires: int
+    name: str
+    signature: str
+
+
+SignedQuery = Annotated[SignedFileQuery, Depends()]
+
+
 @router.get("/files/{key:path}")
-def download(key: str, expires: int, name: str, signature: str, services: Services) -> Response:
-    if services.file_links.verify(key, expires, name, signature) is None:
+def download(query: SignedQuery, request: Request, services: Services) -> Response:
+    if services.file_links.verify(query.key, query.expires, query.name, query.signature) is None:
         raise not_found("file")
-    data = services.files.get(key)
+    data = services.files.get(query.key)
     if data is None:
         raise not_found("file")
-    disposition = f"inline; filename*=UTF-8''{quote(name)}"
-    return Response(content=data, media_type=detect_content_type(data) or OCTET_STREAM, headers={CONTENT_DISPOSITION: disposition})
+    disposition = f"inline; filename*=UTF-8''{quote(query.name)}"
+    media_type = detect_content_type(data) or OCTET_STREAM
+    return file_response(data, media_type, {CONTENT_DISPOSITION: disposition}, request.headers.get(RANGE_HEADER))

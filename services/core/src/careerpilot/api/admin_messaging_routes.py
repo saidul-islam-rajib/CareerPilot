@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse, Response
 from careerpilot.api.common import ok
 from careerpilot.api.dependencies import CurrentAdmin, Services
 from careerpilot.api.messaging_routes import AttachmentFields, TextBody, new_attachment
-from careerpilot.api.profile_routes import download
+from careerpilot.api.profile_routes import SignedQuery, download
 from careerpilot.bootstrap import Container
 from careerpilot.messaging.service import LinkFactory
 
@@ -54,5 +54,5 @@ def conversation(
 
 
 @files.get("/files/{key:path}")
-def signed_file(key: str, expires: int, name: str, signature: str, services: Services) -> Response:
-    return download(key, expires, name, signature, services)
+def signed_file(query: SignedQuery, request: Request, services: Services) -> Response:
+    return download(query, request, services)

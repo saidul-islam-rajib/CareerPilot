@@ -169,13 +169,15 @@ class SignedFile:
 
 
 class FileLinkSigner:
-    def __init__(self, secret: str, clock: Clock, ttl_seconds: int) -> None:
+    def __init__(self, secret: str, clock: Clock, ttl_seconds: int, reuse_seconds: int) -> None:
         self._secret = secret.encode()
         self._clock = clock
         self._ttl = ttl_seconds
+        self._reuse = reuse_seconds
 
     def link(self, base_url: str, key: str, name: str) -> str:
-        expires = int((self._clock.now() + timedelta(seconds=self._ttl)).timestamp())
+        earliest = int((self._clock.now() + timedelta(seconds=self._ttl)).timestamp())
+        expires = (earliest // self._reuse + 1) * self._reuse
         query = urlencode({"expires": expires, "name": name, "signature": self._sign(key, expires, name)})
         return f"{base_url.rstrip('/')}/{FILES_PATH}/{quote(key)}?{query}"
 

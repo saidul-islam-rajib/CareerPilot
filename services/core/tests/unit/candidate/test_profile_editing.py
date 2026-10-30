@@ -198,7 +198,8 @@ def test_view_hides_removed_items_and_signs_file_links(container: Container, clo
     assert container.file_links.verify(key, int(query["expires"]), query["name"], query["signature"]) is not None
     assert container.file_links.verify(key, int(query["expires"]), "other.pdf", query["signature"]) is None
     assert (container.files.get(key) or b"").startswith(b"%PDF-")
-    clock.advance(timedelta(seconds=container.settings.profile.storage.signed_url_ttl_seconds + 1))
+    storage = container.settings.profile.storage
+    clock.advance(timedelta(seconds=storage.signed_url_ttl_seconds + storage.signed_url_reuse_seconds + 1))
     assert container.file_links.verify(key, int(query["expires"]), query["name"], query["signature"]) is None
 
 

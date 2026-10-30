@@ -44,6 +44,38 @@ def test_profile_is_returned_with_sections_and_signed_document_links(client: Tes
     assert download.content.startswith(b"%PDF-")
 
 
+def test_file_links_stay_the_same_between_refreshes_so_players_keep_playing(
+    client: TestClient, headers: dict[str, str], clock: FixedClock, container: Container
+) -> None:
+    storage = container.settings.profile.storage
+    reuse = storage.signed_url_reuse_seconds
+    clock.advance(timedelta(seconds=reuse - (int(clock.now().timestamp()) + storage.signed_url_ttl_seconds) % reuse))
+    first = client.get("/v1/profile", headers=headers).json()["documents"][0]["file"]["url"]
+    clock.advance(timedelta(seconds=reuse - 1))
+    assert client.get("/v1/profile", headers=headers).json()["documents"][0]["file"]["url"] == first
+    clock.advance(timedelta(seconds=1))
+    assert client.get("/v1/profile", headers=headers).json()["documents"][0]["file"]["url"] != first
+
+
+def test_files_answer_byte_range_requests_for_audio_players(client: TestClient, headers: dict[str, str]) -> None:
+    url = relative(client.get("/v1/profile", headers=headers).json()["documents"][0]["file"]["url"])
+    whole = client.get(url)
+    assert whole.headers["accept-ranges"] == "bytes"
+    size = len(whole.content)
+    first = client.get(url, headers={"Range": "bytes=0-1"})
+    assert first.status_code == 206
+    assert first.content == whole.content[:2]
+    assert first.headers["content-range"] == f"bytes 0-1/{size}"
+    rest = client.get(url, headers={"Range": "bytes=5-"})
+    assert rest.content == whole.content[5:]
+    tail = client.get(url, headers={"Range": "bytes=-3"})
+    assert tail.content == whole.content[-3:]
+    beyond = client.get(url, headers={"Range": f"bytes={size}-"})
+    assert beyond.status_code == 416
+    assert beyond.headers["content-range"] == f"bytes */{size}"
+    assert client.get(url, headers={"Range": "lines=1-2"}).content == whole.content
+
+
 def test_file_links_cannot_be_tampered_with_or_reused_after_expiry(
     client: TestClient, headers: dict[str, str], clock: FixedClock, container: Container
 ) -> None:
@@ -51,7 +83,8 @@ def test_file_links_cannot_be_tampered_with_or_reused_after_expiry(
     assert client.get(url.replace("signature=", "signature=0")).status_code == 404
     assert "doc-cv-v3" in url
     assert client.get(url.replace("doc-cv-v3", "doc-cv-v2")).status_code == 404
-    clock.advance(timedelta(seconds=container.settings.profile.storage.signed_url_ttl_seconds + 1))
+    storage = container.settings.profile.storage
+    clock.advance(timedelta(seconds=storage.signed_url_ttl_seconds + storage.signed_url_reuse_seconds + 1))
     assert client.get(url).status_code == 404
 
 
