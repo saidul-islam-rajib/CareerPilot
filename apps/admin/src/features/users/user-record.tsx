@@ -23,6 +23,7 @@ import { adminKeys, useAdminMutation } from '@/core/admin-queries';
 import { useAdminApi } from '@/core/admin-services';
 import { useCan } from '@/core/admin-session';
 import { ProfileDetails } from './profile-details';
+import { ConnectedAccountsCard } from './connected-accounts-card';
 import { ConnectionsPanel, FilesPanel, TeamMessagesPanel } from './user-messages';
 
 const TAB = {
@@ -223,6 +224,11 @@ function ApplicationsPanel({ record, actions, canEdit }: { record: AdminUserReco
                   {application.timeline.map((entry, index) => (
                     <li key={`${entry.at}-${index}`} className="flex flex-col rounded-control bg-surface p-2">
                       <span className="text-foreground">{entry.text}</span>
+                      {entry.link ? (
+                        <a href={entry.link} target="_blank" rel="noreferrer" className="w-fit text-sm font-medium text-primary underline">
+                          {t('integrations.timeline.openEmail')}
+                        </a>
+                      ) : null}
                       <span className="text-xs text-muted">
                         {format.dateTime(entry.at)} · {t(`admin.records.actors.${entry.actor}`)}
                       </span>
@@ -556,7 +562,10 @@ export function UserRecordTabs({ userId }: { userId: string }) {
         <TeamMessagesPanel userId={userId} />
       </Tabs.Content>
       <Tabs.Content value={TAB.Connections}>
-        <ConnectionsPanel userId={userId} />
+        <div className="flex flex-col gap-6">
+          <ConnectedAccountsCard userId={userId} />
+          <ConnectionsPanel userId={userId} />
+        </div>
       </Tabs.Content>
       <Tabs.Content value={TAB.Files}>
         <FilesPanel userId={userId} />

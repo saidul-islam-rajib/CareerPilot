@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { ConnectionStatus, IntegrationProvider, SyncFailure } from '@careerpilot/domain-ui-logic';
 import { navigation, renderAdmin } from '@/test/render';
 import { UserPage } from './user-page';
 
@@ -63,5 +64,39 @@ describe('everything about a user', () => {
     expect(await screen.findByRole('button', { name: 'In reply to You: Please upload your CV' })).toBeInTheDocument();
     expect(screen.queryByText('Replying to You')).not.toBeInTheDocument();
     expect((await services.api.users.teamMessages('usr_demo')).messages.at(-1)?.replyTo?.text).toBe('Please upload your CV');
+  });
+
+  it('lists connected accounts on the connections tab without any token', async () => {
+    await renderAdmin(<UserPage />, {
+      params: { id: 'usr_demo' },
+      prepare: async (services) => {
+        services.api.users.connectedAccounts = async () => [
+          {
+            provider: IntegrationProvider.Google,
+            email: 'ayesha@gmail.com',
+            status: ConnectionStatus.NeedsReconnect,
+            scopes: [],
+            connectedAt: '2026-10-20T06:00:00.000Z',
+            lastSyncAt: '2026-10-20T07:00:00.000Z',
+            lastError: SyncFailure.TokenRevoked,
+          },
+        ];
+      },
+    });
+    fireEvent.mouseDown(await screen.findByRole('tab', { name: 'Connections' }));
+    expect(await screen.findByRole('heading', { name: 'Connected accounts' })).toBeInTheDocument();
+    expect(screen.getByText('ayesha@gmail.com')).toBeInTheDocument();
+    expect(screen.getByText('Needs reconnecting')).toBeInTheDocument();
+    expect(screen.getByText('Google access ended. Reconnect to continue.')).toBeInTheDocument();
+    expect(screen.getByText('Sign-in tokens are never shown.')).toBeInTheDocument();
+  });
+
+  it('says when a member has not connected any account, and links to the email behind a reply', async () => {
+    await renderAdmin(<UserPage />, { params: { id: 'usr_demo' } });
+    const details = (await screen.findAllByRole('button', { name: 'Show timeline and emails' }))[0]!;
+    fireEvent.click(details);
+    expect((await screen.findAllByRole('link', { name: 'Open email' }))[0]).toHaveAttribute('href', 'https://mail.google.com/mail/u/0/#all/demo-interview');
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Connections' }));
+    expect(await screen.findByText('No connected accounts.')).toBeInTheDocument();
   });
 });
