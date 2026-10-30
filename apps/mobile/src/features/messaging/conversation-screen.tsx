@@ -1,15 +1,15 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, Pressable, TextInput, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useHeaderHeight } from 'expo-router/react-navigation';
 import * as ImagePicker from 'expo-image-picker';
-import { ApiErrorCode, isApiError, type MessageView, type NewAttachment } from '@careerpilot/api-client';
-import { useBlockMember, useConversation, useFormat, useServices, useT, voiceLength } from '@careerpilot/client-core';
+import { ApiErrorCode, ApiErrorDetail, isApiError, type MessageView, type NewAttachment, type ReplyPreview } from '@careerpilot/api-client';
+import { quoteSender, quoteText, replyPreviewOf, useBlockMember, useConversation, useFormat, useServices, useT, voiceLength } from '@careerpilot/client-core';
 import { ConversationKind, MessageKind } from '@careerpilot/domain-ui-logic';
-import { Ban, Bell, BellOff, FileText, ImageIcon, Mic, Send, Square, X } from '@/ui/icons';
+import { Ban, Bell, BellOff, FileText, ImageIcon, Mic, Reply, Send, Square, X } from '@/ui/icons';
 import { useTheme } from '@/core/theme/theme';
 import { pickDocument, toUploadSource } from '@/features/profile/profile-support';
-import { ErrorState, Icon, LoadingState, Text, TextTone, TextVariant, useBottomInset, useInputFocus, useSnackbar } from '@/ui';
+import { ErrorState, Icon, IconSize, LoadingState, Text, TextTone, TextVariant, useBottomInset, useInputFocus, useSnackbar } from '@/ui';
 import { SnackbarTone } from '@/ui/snackbar';
 import { MessageBubble } from './message-parts';
 import { useVoiceNote, type RecordedVoice } from './voice';
@@ -20,8 +20,10 @@ const ERROR_KEYS: Readonly<Record<string, string>> = {
   file_type: 'messaging.errors.file_type',
   file_too_large: 'messaging.errors.file_too_large',
   voice_too_long: 'messaging.errors.voice_too_long',
+  reply_to: 'messaging.errors.reply_to',
 };
 const IMAGE_QUALITY = 0.8;
+const MIDDLE = 0.5;
 
 function errorKey(error: unknown): string {
   if (isApiError(error) && ERROR_KEYS[error.detail ?? '']) {
@@ -56,11 +58,60 @@ function RoundButton({ label, icon, onPress, filled = false, testID, disabled = 
   );
 }
 
-function Composer({ onText, onAttachment, busy }: { onText: (text: string) => Promise<unknown>; onAttachment: (attachment: NewAttachment) => Promise<unknown>; busy: boolean }) {
+function ReplyBar({ reply, onCancel }: { reply: ReplyPreview; onCancel: () => void }) {
+  const t = useT();
+  const theme = useTheme();
+  return (
+    <View
+      accessibilityLiveRegion="polite"
+      testID="reply-bar"
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: theme.space.xs,
+        marginHorizontal: theme.space.sm,
+        marginTop: theme.space.sm,
+        paddingLeft: theme.space.sm,
+        borderRadius: theme.radius.control,
+        borderLeftWidth: theme.borderWidth.accent,
+        borderLeftColor: theme.colors.primary,
+        backgroundColor: theme.colors.surface,
+      }}
+    >
+      <Icon icon={Reply} size={IconSize.Small} color={theme.colors.primary} />
+      <View style={{ flex: 1, gap: theme.space.xxs, paddingVertical: theme.space.xs }}>
+        <Text variant={TextVariant.Caption} numberOfLines={1} style={{ color: theme.colors.primary, fontWeight: theme.fontWeight.semibold }}>
+          {t('messaging.replyingTo', { name: quoteSender(reply, t) })}
+        </Text>
+        <Text variant={TextVariant.Caption} tone={TextTone.Muted} numberOfLines={1}>
+          {quoteText(reply, t)}
+        </Text>
+      </View>
+      <RoundButton label={t('messaging.cancelReply')} icon={X} onPress={onCancel} testID="reply-cancel" />
+    </View>
+  );
+}
+
+interface ComposerProps {
+  onText: (text: string) => Promise<unknown>;
+  onAttachment: (attachment: NewAttachment) => Promise<unknown>;
+  busy: boolean;
+  reply?: ReplyPreview;
+  onCancelReply: () => void;
+}
+
+function Composer({ onText, onAttachment, busy, reply, onCancelReply }: ComposerProps) {
   const t = useT();
   const theme = useTheme();
   const { config } = useServices();
   const [text, setText] = useState('');
+  const input = useRef<ComponentRef<typeof TextInput>>(null);
+  const replyId = reply?.id;
+  useEffect(() => {
+    if (replyId) {
+      input.current?.focus();
+    }
+  }, [replyId]);
   const voice = useVoiceNote((recorded: RecordedVoice) => void onAttachment({ kind: MessageKind.Voice, file: recorded.file, durationSeconds: recorded.durationSeconds }));
   const send = () => {
     const value = text.trim();
@@ -83,29 +134,32 @@ function Composer({ onText, onAttachment, busy }: { onText: (text: string) => Pr
   };
   const focus = useInputFocus();
   const bottomInset = useBottomInset();
+  const frame = { borderTopWidth: theme.borderWidth.hairline, borderTopColor: theme.colors.border, backgroundColor: theme.colors.card };
   const bar = {
     flexDirection: 'row' as const,
     alignItems: 'flex-end' as const,
     gap: theme.space.xs,
     padding: theme.space.sm,
     paddingBottom: theme.space.sm + bottomInset,
-    borderTopWidth: theme.borderWidth.hairline,
-    borderTopColor: theme.colors.border,
-    backgroundColor: theme.colors.card,
   };
+  const replyBar = reply ? <ReplyBar reply={reply} onCancel={onCancelReply} /> : null;
   if (voice.recording) {
     return (
-      <View style={[bar, { alignItems: 'center' }]}>
-        <RoundButton label={t('messaging.cancelRecording')} icon={X} onPress={() => void voice.cancel()} testID="voice-cancel" />
-        <Text style={{ flex: 1, color: theme.colors.danger }} accessibilityLiveRegion="polite">
-          {t('messaging.recording', { time: voiceLength(voice.seconds) })}
-        </Text>
-        <RoundButton label={t('messaging.stopRecording')} icon={Square} filled onPress={() => void voice.stop()} testID="voice-stop" />
+      <View style={frame}>
+        {replyBar}
+        <View style={[bar, { alignItems: 'center' }]}>
+          <RoundButton label={t('messaging.cancelRecording')} icon={X} onPress={() => void voice.cancel()} testID="voice-cancel" />
+          <Text style={{ flex: 1, color: theme.colors.danger }} accessibilityLiveRegion="polite">
+            {t('messaging.recording', { time: voiceLength(voice.seconds) })}
+          </Text>
+          <RoundButton label={t('messaging.stopRecording')} icon={Square} filled onPress={() => void voice.stop()} testID="voice-stop" />
+        </View>
       </View>
     );
   }
   return (
-    <View>
+    <View style={frame}>
+      {replyBar}
       {voice.denied ? (
         <Text variant={TextVariant.Caption} tone={TextTone.Danger} style={{ paddingHorizontal: theme.space.md }}>
           {t('messaging.microphoneDenied')}
@@ -115,6 +169,7 @@ function Composer({ onText, onAttachment, busy }: { onText: (text: string) => Pr
         <RoundButton label={t('messaging.photo')} icon={ImageIcon} onPress={() => void photo()} disabled={busy} testID="attach-photo" />
         <RoundButton label={t('messaging.document')} icon={FileText} onPress={() => void pdf()} disabled={busy} testID="attach-pdf" />
         <TextInput
+          ref={input}
           value={text}
           onChangeText={setText}
           placeholder={t('messaging.typeMessage')}
@@ -172,6 +227,12 @@ export function ConversationScreen() {
   const bottomInset = useBottomInset();
   const { page, sendText, sendAttachment, mute } = useConversation(id);
   const block = useBlockMember();
+  const [reply, setReply] = useState<ReplyPreview>();
+  const [highlighted, setHighlighted] = useState<string>();
+  useEffect(() => {
+    const timer = highlighted ? setTimeout(() => setHighlighted(undefined), theme.feedback.highlightMs) : undefined;
+    return () => clearTimeout(timer);
+  }, [highlighted, theme.feedback.highlightMs]);
   if (page.isPending) {
     return <LoadingState />;
   }
@@ -180,7 +241,14 @@ export function ConversationScreen() {
   }
   const { conversation, messages } = page.data;
   const team = conversation.kind === ConversationKind.Team;
-  const fail = (error: unknown) => snackbar.show({ message: t(errorKey(error)), tone: SnackbarTone.Danger });
+  const clearReply = () => setReply(undefined);
+  const fail = (error: unknown) => {
+    if (isApiError(error) && error.detail === ApiErrorDetail.ReplyTo) {
+      clearReply();
+    }
+    snackbar.show({ message: t(errorKey(error)), tone: SnackbarTone.Danger });
+  };
+  const replyToId = reply?.id;
   const toggleBlock = () => {
     if (!conversation.otherMemberId) {
       return;
@@ -191,6 +259,15 @@ export function ConversationScreen() {
     );
   };
   const reversed = [...messages].reverse();
+  const startReply = conversation.blocked ? undefined : (message: MessageView) => setReply(replyPreviewOf(message));
+  const showOriginal = (messageId: string) => {
+    const index = reversed.findIndex((message) => message.id === messageId);
+    if (index < 0) {
+      return;
+    }
+    list.current?.scrollToIndex({ index, animated: true, viewPosition: MIDDLE });
+    setHighlighted(messageId);
+  };
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.colors.surface }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={headerHeight}>
       <Stack.Screen
@@ -208,7 +285,9 @@ export function ConversationScreen() {
         ref={list}
         inverted
         data={reversed}
+        extraData={highlighted}
         keyExtractor={(message) => message.id}
+        onScrollToIndexFailed={(info) => list.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true })}
         contentContainerStyle={{ padding: theme.space.md, gap: theme.space.sm }}
         renderItem={({ item, index }) => {
           const older = reversed[index + 1];
@@ -216,7 +295,7 @@ export function ConversationScreen() {
           return (
             <View style={{ gap: theme.space.sm }}>
               {newDay ? <DaySeparator iso={item.createdAt} /> : null}
-              <MessageBubble message={item} showSender={team} />
+              <MessageBubble message={item} showSender={team} onReply={startReply} onQuote={showOriginal} highlighted={highlighted === item.id} />
             </View>
           );
         }}
@@ -227,7 +306,13 @@ export function ConversationScreen() {
           {t('messaging.blockedNote')}
         </Text>
       ) : (
-        <Composer busy={sendAttachment.isPending} onText={(text) => sendText.mutateAsync({ text }).catch(fail)} onAttachment={(attachment) => sendAttachment.mutateAsync(attachment).catch(fail)} />
+        <Composer
+          busy={sendAttachment.isPending}
+          reply={reply}
+          onCancelReply={clearReply}
+          onText={(text) => sendText.mutateAsync({ text, replyToId }).then(clearReply).catch(fail)}
+          onAttachment={(attachment) => sendAttachment.mutateAsync({ ...attachment, replyToId }).then(clearReply).catch(fail)}
+        />
       )}
     </KeyboardAvoidingView>
   );

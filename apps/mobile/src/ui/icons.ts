@@ -77,6 +77,7 @@ export { default as Phone } from 'lucide-react-native/icons/phone';
 export { default as Play } from 'lucide-react-native/icons/play';
 export { default as PlayCircle } from 'lucide-react-native/icons/circle-play';
 export { default as Plus } from 'lucide-react-native/icons/plus';
+export { default as Reply } from 'lucide-react-native/icons/reply';
 export { default as RotateCcw } from 'lucide-react-native/icons/rotate-ccw';
 export { default as RotateCw } from 'lucide-react-native/icons/rotate-cw';
 export { default as Scale } from 'lucide-react-native/icons/scale';

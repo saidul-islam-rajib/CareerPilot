@@ -1,4 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
+import { borderWidth } from '@careerpilot/ui-tokens';
 import { mockParams, mockRouter, renderWithProviders } from '@/test/render';
 import { ApplicationScreen } from '@/features/applications/application-screen';
 import { ChatsScreen } from './chats-screen';
@@ -27,6 +29,26 @@ describe('ConversationScreen', () => {
     await fireEvent.press(screen.getByTestId('message-send'));
     expect(await screen.findByText('Sounds great, tell me more')).toBeTruthy();
     expect(screen.getAllByTestId('ticks-sent').length).toBeGreaterThan(0);
+  });
+
+  it('replies to a message held down, shows the quote, and jumps back to the original', async () => {
+    mockParams.current = { id: 'cnv_karim' };
+    const { services } = await renderWithProviders(<ConversationScreen />);
+    await screen.findByText(/our team is hiring a frontend engineer/);
+    await fireEvent(screen.getByTestId('message-msg_karim_hello'), 'longPress');
+    expect(screen.getByText('Replying to Karim Hasan')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('reply-cancel'));
+    expect(screen.queryByTestId('reply-bar')).toBeNull();
+    await fireEvent(screen.getByTestId('message-meta-msg_karim_hello'), 'accessibilityAction', { nativeEvent: { actionName: 'reply' } });
+    expect(screen.getByTestId('reply-bar')).toBeTruthy();
+    await fireEvent.changeText(screen.getByTestId('message-input'), 'Yes, tell me more');
+    await fireEvent.press(screen.getByTestId('message-send'));
+    const quote = await screen.findByTestId('quote-msg_karim_hello');
+    expect(screen.getByLabelText(/^In reply to Karim Hasan: Hi Ayesha/)).toBeTruthy();
+    expect(screen.queryByTestId('reply-bar')).toBeNull();
+    expect((await services.api.messaging.messages('cnv_karim')).messages.at(-1)?.replyTo?.id).toBe('msg_karim_hello');
+    await fireEvent.press(quote);
+    await waitFor(() => expect(StyleSheet.flatten(screen.getByTestId('message-msg_karim_hello').props.style).borderWidth).toBe(borderWidth.focus));
   });
 
   it('blocks the member and hides the composer', async () => {

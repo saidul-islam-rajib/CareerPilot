@@ -58,7 +58,7 @@ export const iconStroke = 2;
 
 export const fontScaleMax = 2;
 
-export const borderWidth = { hairline: 1, focus: 2 } as const;
+export const borderWidth = { hairline: 1, focus: 2, accent: 4 } as const;
 
 export const contentMaxWidth = 720;
 
