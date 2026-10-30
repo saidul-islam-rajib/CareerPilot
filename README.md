@@ -20,7 +20,7 @@ Documentation: [Requirements](Requirement%20Analysis/Requirements.md) · [Planni
 
 ## Run locally with Docker
 
-**Step-by-step guide with every command: [RUN-LOCALLY.md](RUN-LOCALLY.md).**
+**Short version: [QUICKSTART.md](QUICKSTART.md). Step-by-step guide with every command: [RUN-LOCALLY.md](RUN-LOCALLY.md).**
 
 Requirements: Docker Desktop (running) and Git. For mobile: Node.js LTS and an Android emulator or Expo Go on a phone.
 
