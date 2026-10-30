@@ -1,0 +1,295 @@
+name: careerpilot-prod
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+x-api-env: &api-env
+  APP_ENV: production
+  CAREERPILOT_DATABASE_URL: postgresql+psycopg://${CAREERPILOT_APP_DB_USER}:${CAREERPILOT_APP_DB_PASSWORD}@postgres:5432/${POSTGRES_DB}
+  CAREERPILOT_TOKEN_SECRET: ${CAREERPILOT_TOKEN_SECRET:?set CAREERPILOT_TOKEN_SECRET}
+  CAREERPILOT_REDIS_CACHE_URL: redis://redis-cache:6379/0
+  CAREERPILOT_REDIS_COORD_URL: redis://redis-coord:6379/0
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  CAREERPILOT_SMTP_HOST: mailpit
+  CAREERPILOT_MAIL_USER: ${CAREERPILOT_MAIL_USER:-}
+  CAREERPILOT_MAIL_PASSWORD: ${CAREERPILOT_MAIL_PASSWORD:-}
+  CAREERPILOT_WEB_BASE_URL: https://app.${CAREERPILOT_DOMAIN:?set CAREERPILOT_DOMAIN}
+  CAREERPILOT_ADMIN_WEB_BASE_URL: https://admin.${CAREERPILOT_DOMAIN}
+  CAREERPILOT_API_PUBLIC_URL: https://api.${CAREERPILOT_DOMAIN}
+  CAREERPILOT_CORS_ORIGINS: https://m.${CAREERPILOT_DOMAIN}
+  CAREERPILOT_OWNER_EMAIL: ${CAREERPILOT_OWNER_EMAIL:?set CAREERPILOT_OWNER_EMAIL}
+  CAREERPILOT_GOOGLE_CLIENT_ID: ${CAREERPILOT_GOOGLE_CLIENT_ID:-}
+  CAREERPILOT_GOOGLE_CLIENT_SECRET: ${CAREERPILOT_GOOGLE_CLIENT_SECRET:-}
+  CAREERPILOT_VAULT_KEY: ${CAREERPILOT_VAULT_KEY:-}
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4318
+
+x-api-build: &api-build
+  context: .
+  dockerfile: infra/docker/api.Dockerfile
+
+x-api-deps: &api-deps
+  migrate:
+    condition: service_completed_successfully
+  redis-cache:
+    condition: service_healthy
+  redis-coord:
+    condition: service_healthy
+  lgtm:
+    condition: service_started
+
+x-probe: &probe
+  interval: 15s
+  timeout: 5s
+  retries: 5
+  start_period: 30s
+
+services:
+  postgres:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      CAREERPILOT_APP_DB_USER: ${CAREERPILOT_APP_DB_USER}
+      CAREERPILOT_APP_DB_PASSWORD: ${CAREERPILOT_APP_DB_PASSWORD:?set CAREERPILOT_APP_DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infra/compose/postgres:/docker-entrypoint-initdb.d:ro
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  redis-cache:
+    image: redis:8.2-alpine
+    restart: unless-stopped
+    logging: *logging
+    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru", "--save", ""]
+    networks: [backend]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  redis-coord:
+    image: redis:8.2-alpine
+    restart: unless-stopped
+    logging: *logging
+    command: ["redis-server", "--maxmemory-policy", "noeviction", "--appendonly", "yes"]
+    volumes:
+      - redis-coord-data:/data
+    networks: [backend]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    restart: unless-stopped
+    logging: *logging
+    networks: [backend]
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build: *api-build
+    restart: "no"
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      APP_ENV: production
+      CAREERPILOT_MIGRATION_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      CAREERPILOT_DATABASE_URL: postgresql+psycopg://${CAREERPILOT_APP_DB_USER}:${CAREERPILOT_APP_DB_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      CAREERPILOT_TOKEN_SECRET: ${CAREERPILOT_TOKEN_SECRET:?set CAREERPILOT_TOKEN_SECRET}
+      CAREERPILOT_REDIS_CACHE_URL: redis://redis-cache:6379/0
+      CAREERPILOT_REDIS_COORD_URL: redis://redis-coord:6379/0
+    networks: [backend]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  user-api:
+    build: *api-build
+    restart: unless-stopped
+    logging: *logging
+    environment: *api-env
+    volumes:
+      - profile-files:/data/files
+    networks: [backend, edge]
+    depends_on: *api-deps
+    healthcheck:
+      <<: *probe
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/config', timeout=4)"]
+
+  admin-api:
+    build: *api-build
+    restart: unless-stopped
+    logging: *logging
+    command: ["uvicorn", "careerpilot_api.apps:admin_api", "--factory", "--host", "0.0.0.0", "--port", "8001"]
+    environment: *api-env
+    volumes:
+      - profile-files:/data/files
+    networks: [backend, edge]
+    depends_on: *api-deps
+    healthcheck:
+      <<: *probe
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8001), 4).close()"]
+
+  workers:
+    build: *api-build
+    restart: unless-stopped
+    logging: *logging
+    command: ["careerpilot-workers"]
+    environment:
+      <<: *api-env
+      CAREERPILOT_TEMPORAL_ADDRESS: temporal:7233
+    volumes:
+      - profile-files:/data/files
+    networks: [backend]
+    depends_on:
+      <<: *api-deps
+      temporal:
+        condition: service_healthy
+
+  temporal:
+    image: temporalio/auto-setup:1.27.2
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      DB: postgres12
+      DB_PORT: "5432"
+      POSTGRES_SEEDS: postgres
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PWD: ${POSTGRES_PASSWORD}
+    networks: [backend]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "tctl --address temporal:7233 cluster health | grep -q SERVING"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+
+  temporal-ui:
+    image: temporalio/ui:2.36.0
+    restart: unless-stopped
+    logging: *logging
+    profiles: [tools]
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+    networks: [backend]
+    depends_on:
+      temporal:
+        condition: service_healthy
+
+  lgtm:
+    image: grafana/otel-lgtm:0.11.10
+    restart: unless-stopped
+    logging: *logging
+    volumes:
+      - lgtm-data:/data
+      - ./observability/provisioning/careerpilot-dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/careerpilot.yaml:ro
+      - ./observability/dashboards:/careerpilot/dashboards:ro
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:3000/api/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 90s
+
+  web:
+    build: &web-build
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+      args: &web-args
+        APP: web
+        PORT: "3000"
+        APP_ENV: production
+        CAREERPILOT_API_URL: https://api.${CAREERPILOT_DOMAIN}
+        CAREERPILOT_ADMIN_API_URL: https://admin-api.${CAREERPILOT_DOMAIN}
+    restart: unless-stopped
+    logging: *logging
+    networks: [edge]
+    healthcheck:
+      <<: *probe
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/"]
+
+  admin:
+    build:
+      <<: *web-build
+      args:
+        <<: *web-args
+        APP: admin
+        PORT: "3001"
+    restart: unless-stopped
+    logging: *logging
+    networks: [edge]
+    healthcheck:
+      <<: *probe
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3001/"]
+
+  caddy:
+    build:
+      context: .
+      dockerfile: infra/docker/edge.Dockerfile
+      args:
+        APP_ENV: production
+        CAREERPILOT_API_URL: https://api.${CAREERPILOT_DOMAIN}
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      CAREERPILOT_DOMAIN: ${CAREERPILOT_DOMAIN}
+      CAREERPILOT_ACME_EMAIL: ${CAREERPILOT_ACME_EMAIL:?set CAREERPILOT_ACME_EMAIL}
+      CAREERPILOT_ACME_CA: ${CAREERPILOT_ACME_CA:-https://acme-v02.api.letsencrypt.org/directory}
+      CAREERPILOT_SITE_PREFIX: ${CAREERPILOT_SITE_PREFIX:-}
+      CAREERPILOT_MAX_UPLOAD: ${CAREERPILOT_MAX_UPLOAD:-25MB}
+    ports:
+      - "${CAREERPILOT_HTTP_PORT:-80}:80"
+      - "${CAREERPILOT_HTTPS_PORT:-443}:443"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [edge]
+    depends_on:
+      web:
+        condition: service_healthy
+      admin:
+        condition: service_healthy
+      user-api:
+        condition: service_healthy
+      admin-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:2019/config/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+networks:
+  backend:
+  edge:
+
+volumes:
+  postgres-data:
+  redis-coord-data:
+  profile-files:
+  lgtm-data:
+  caddy-data:
+  caddy-config:

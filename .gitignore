@@ -50,3 +50,5 @@ google-service-account*.json
 apps/mobile/dist/
 
 apps/mobile/google-services.json
+
+!.env.production.example

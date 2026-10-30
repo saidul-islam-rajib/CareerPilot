@@ -1,0 +1,10 @@
+services:
+  lgtm:
+    ports:
+      - "127.0.0.1:3100:3000"
+  temporal-ui:
+    ports:
+      - "127.0.0.1:8233:8080"
+  mailpit:
+    ports:
+      - "127.0.0.1:8025:8025"
