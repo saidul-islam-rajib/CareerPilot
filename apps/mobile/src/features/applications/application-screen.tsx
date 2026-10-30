@@ -101,6 +101,15 @@ export function ApplicationScreen() {
                 </View>
                 <View style={{ flex: 1, gap: theme.space.xxs, paddingBottom: theme.space.md }}>
                   <Text>{entry.text}</Text>
+                  {entry.link ? (
+                    <Button
+                      label={t('integrations.timeline.openEmail')}
+                      icon={ExternalLink}
+                      variant={ButtonVariant.Outline}
+                      onPress={() => void WebBrowser.openBrowserAsync(entry.link ?? '')}
+                      testID={`timeline-email-${index}`}
+                    />
+                  ) : null}
                   <Text variant={TextVariant.Caption} tone={TextTone.Muted}>
                     {format.dateTime(entry.at)}
                   </Text>

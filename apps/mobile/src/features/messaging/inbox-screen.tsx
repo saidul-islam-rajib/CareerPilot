@@ -4,13 +4,25 @@ import { useRouter } from 'expo-router';
 import type { AppNotification } from '@careerpilot/api-client';
 import { useFormat, useNewNotifications, useNotifications, useReadNotifications, useT } from '@careerpilot/client-core';
 import { NotificationTarget } from '@careerpilot/domain-ui-logic';
-import { BriefcaseBusiness, CheckCheck, MessageCircle } from '@/ui/icons';
+import { BriefcaseBusiness, CheckCheck, MessageCircle, Plug, type LucideIcon } from '@/ui/icons';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { Button, ButtonVariant, EmptyState, ErrorState, Icon, LoadingState, Text, TextTone, TextVariant, useSnackbar } from '@/ui';
 
+const ROUTES = {
+  [NotificationTarget.Conversation]: Routes.chat,
+  [NotificationTarget.Application]: Routes.application,
+  [NotificationTarget.Integration]: () => Routes.connectedAccounts,
+} as const;
+
+const GLYPHS: Record<NotificationTarget, LucideIcon> = {
+  [NotificationTarget.Conversation]: MessageCircle,
+  [NotificationTarget.Application]: BriefcaseBusiness,
+  [NotificationTarget.Integration]: Plug,
+};
+
 export function notificationRoute(notification: Pick<AppNotification, 'target' | 'targetId'>) {
-  return notification.target === NotificationTarget.Conversation ? Routes.chat(notification.targetId) : Routes.application(notification.targetId);
+  return ROUTES[notification.target](notification.targetId);
 }
 
 export function useNotificationBanner() {
@@ -68,7 +80,7 @@ export function InboxScreen() {
           }}
           testID={`notification-${item.id}`}
         >
-          <Icon icon={item.target === NotificationTarget.Conversation ? MessageCircle : BriefcaseBusiness} color={theme.colors.primary} />
+          <Icon icon={GLYPHS[item.target]} color={theme.colors.primary} />
           <View style={{ flex: 1, gap: theme.space.xxs }}>
             <Text variant={TextVariant.Subheading}>{item.title}</Text>
             <Text tone={TextTone.Muted}>{item.body}</Text>

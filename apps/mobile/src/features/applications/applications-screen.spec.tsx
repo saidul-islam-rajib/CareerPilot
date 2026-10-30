@@ -1,3 +1,4 @@
+import * as WebBrowser from 'expo-web-browser';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { mockParams, mockRouter, renderWithProviders } from '@/test/render';
 import { ApplicationScreen } from './application-screen';
@@ -36,6 +37,13 @@ describe('ApplicationScreen', () => {
     expect(screen.getByText('Application: Software Engineer – Ayesha Rahman')).toBeTruthy();
     expect(screen.getByText('Email delivered; no bounce received within 48 hours')).toBeTruthy();
     expect(screen.getByText('Ayesha-Rahman-CV.pdf')).toBeTruthy();
+  });
+
+  it('opens the email an employer reply came from', async () => {
+    mockParams.current = { id: 'app_bay' };
+    await renderWithProviders(<ApplicationScreen />);
+    await fireEvent.press(await screen.findByTestId('timeline-email-3'));
+    expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith('https://mail.google.com/mail/u/0/#all/demo-interview');
   });
 
   it('points to the employer site when only the user can finish the application', async () => {

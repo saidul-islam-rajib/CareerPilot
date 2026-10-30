@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
-import { ApplicationMode, SubmissionWindowKind } from '@careerpilot/domain-ui-logic';
+import { ApplicationMode, NotificationTarget, SubmissionWindowKind } from '@careerpilot/domain-ui-logic';
+import { notificationRoute } from '@/features/messaging/inbox-screen';
 import { mockParams, mockRouter, renderWithProviders } from '@/test/render';
 import { AboutScreen } from './about-screen';
 import { ActivityScreen } from './activity-screen';
@@ -18,6 +19,13 @@ describe('MoreScreen', () => {
     await renderWithProviders(<MoreScreen />);
     expect(await screen.findByText('Current theme: Sober')).toBeTruthy();
     expect(screen.getByText('Developed by Team Sober')).toBeTruthy();
+  });
+
+  it('opens connected accounts and sends integration notifications there', async () => {
+    await renderWithProviders(<MoreScreen />);
+    await fireEvent.press(await screen.findByText('Connected accounts'));
+    expect(mockRouter.push).toHaveBeenCalledWith('/settings/connected-accounts');
+    expect(notificationRoute({ target: NotificationTarget.Integration, targetId: 'con_1' })).toBe('/settings/connected-accounts');
   });
 });
 

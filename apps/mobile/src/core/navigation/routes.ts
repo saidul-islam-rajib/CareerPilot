@@ -34,6 +34,7 @@ export const Routes = {
   notifications: '/settings/notifications',
   answers: '/settings/answers',
   sources: '/settings/sources',
+  connectedAccounts: '/settings/connected-accounts',
   server: '/server',
   countries: '/settings/countries',
   addSource: '/settings/source',
