@@ -48,4 +48,20 @@ describe('everything about a user', () => {
     expect(await screen.findByRole('heading', { name: 'CVs and documents' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Contact details' })).toBeInTheDocument();
   });
+
+  it('replies to a chosen message in the team chat, and Esc cancels the reply', async () => {
+    const { services } = await renderAdmin(<UserPage />, { params: { id: 'usr_demo' } });
+    await services.api.users.sendTeamMessage('usr_demo', 'Please upload your CV');
+    fireEvent.mouseDown(await screen.findByRole('tab', { name: 'Messages' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Reply' }));
+    expect(screen.getByText('Replying to You')).toBeInTheDocument();
+    fireEvent.keyDown(screen.getByLabelText('Write to this member'), { key: 'Escape' });
+    expect(screen.queryByText('Replying to You')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Reply' }));
+    fireEvent.change(screen.getByLabelText('Write to this member'), { target: { value: 'Thanks, got it' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+    expect(await screen.findByRole('button', { name: 'In reply to You: Please upload your CV' })).toBeInTheDocument();
+    expect(screen.queryByText('Replying to You')).not.toBeInTheDocument();
+    expect((await services.api.users.teamMessages('usr_demo')).messages.at(-1)?.replyTo?.text).toBe('Please upload your CV');
+  });
 });

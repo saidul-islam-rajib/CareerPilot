@@ -1,28 +1,81 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState, type KeyboardEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Check, CheckCheck, ExternalLink, FileText, MessageCircle, Send, ShieldCheck, UserRound } from 'lucide-react';
-import type { MessageView } from '@careerpilot/api-client';
-import { messageStateKey, useFormat, useT, voiceLength } from '@careerpilot/client-core';
+import { Check, CheckCheck, ExternalLink, FileText, MessageCircle, Reply, Send, ShieldCheck, UserRound, X } from 'lucide-react';
+import type { MessageView, ReplyPreview } from '@careerpilot/api-client';
+import { messageStateKey, quoteSender, quoteText, replyPreviewOf, useFormat, useT, voiceLength } from '@careerpilot/client-core';
 import { AdminArea, MessageKind, MessageState, PermissionAction } from '@careerpilot/domain-ui-logic';
+import { feedback } from '@careerpilot/ui-tokens';
 import { Badge, Button, Card, EmptyState, ErrorState, FormDialog, ListRow, LoadingState, cn } from '@careerpilot/ui-web';
 import { adminKeys, useAdminMutation } from '@/core/admin-queries';
 import { useAdminApi } from '@/core/admin-services';
 import { useCan } from '@/core/admin-session';
 
 const KILOBYTE = 1024;
+const ANCHOR_PREFIX = 'team-message-';
+const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
 
-function Bubble({ message }: { message: MessageView }) {
+function anchorOf(id: string): string {
+  return `${ANCHOR_PREFIX}${id}`;
+}
+
+function Quote({ reply, mine, onSelect }: { reply: ReplyPreview; mine: boolean; onSelect?: (id: string) => void }) {
+  const t = useT();
+  const sender = quoteSender(reply, t);
+  const text = quoteText(reply, t);
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect?.(reply.id)}
+      aria-label={t('messaging.quoteLabel', { name: sender, text })}
+      title={t('messaging.showOriginal')}
+      className={cn(
+        'flex min-w-0 flex-col rounded-control border-l-4 px-2 py-1 text-left text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+        mine ? 'border-primary-foreground bg-primary-foreground/15' : 'border-primary bg-surface',
+      )}
+    >
+      <span className={cn('text-xs font-semibold', mine ? 'text-primary-foreground' : 'text-primary')}>{sender}</span>
+      <span className={cn('line-clamp-2 break-words', mine ? 'text-primary-foreground/85' : 'text-muted')}>{text}</span>
+    </button>
+  );
+}
+
+interface BubbleProps {
+  message: MessageView;
+  onReply?: (message: MessageView) => void;
+  onQuote?: (id: string) => void;
+  highlighted?: boolean;
+}
+
+function Bubble({ message, onReply, onQuote, highlighted = false }: BubbleProps) {
   const t = useT();
   const format = useFormat();
   const mine = message.fromMe;
   const key = messageStateKey(message.state);
   const file = message.attachment;
+  const replyButton = onReply ? (
+    <Button
+      size="icon"
+      variant="ghost"
+      icon={Reply}
+      aria-label={mine ? t('messaging.reply') : t('messaging.replyTo', { name: message.senderName })}
+      onClick={() => onReply(message)}
+      className="shrink-0 self-center opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+    />
+  ) : null;
   return (
-    <li className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
-      <div className={cn('flex max-w-[80%] flex-col gap-1 rounded-card px-3 py-2', mine ? 'bg-primary text-primary-foreground' : 'border border-border bg-card text-foreground')}>
+    <li id={anchorOf(message.id)} className={cn('group flex items-end gap-1', mine ? 'justify-end' : 'justify-start')}>
+      {mine ? replyButton : null}
+      <div
+        className={cn(
+          'flex max-w-[80%] flex-col gap-1 rounded-card px-3 py-2 transition-shadow',
+          mine ? 'bg-primary text-primary-foreground' : 'border border-border bg-card text-foreground',
+          highlighted && 'ring-2 ring-focus ring-offset-2 ring-offset-surface',
+        )}
+      >
         <span className={cn('text-xs font-semibold', mine ? 'text-primary-foreground/80' : 'text-primary')}>{message.senderName}</span>
+        {message.replyTo ? <Quote reply={message.replyTo} mine={mine} onSelect={onQuote} /> : null}
         {file && message.kind === MessageKind.Image ? <img src={file.url} alt={file.fileName} className="max-h-60 rounded-control object-cover" /> : null}
         {file && message.kind === MessageKind.Voice ? (
           <span className="flex items-center gap-2">
@@ -46,8 +99,27 @@ function Bubble({ message }: { message: MessageView }) {
           ) : null}
         </span>
       </div>
+      {mine ? null : replyButton}
     </li>
   );
+}
+
+function ReplyBar({ reply, onCancel }: { reply: ReplyPreview; onCancel: () => void }) {
+  const t = useT();
+  return (
+    <div className="flex items-center gap-2 rounded-control border-l-4 border-primary bg-surface py-1 pl-3 pr-1" aria-live="polite">
+      <Reply className="size-4 shrink-0 text-primary" aria-hidden />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="text-xs font-semibold text-primary">{t('messaging.replyingTo', { name: quoteSender(reply, t) })}</span>
+        <span className="truncate text-sm text-muted">{quoteText(reply, t)}</span>
+      </div>
+      <Button size="icon" variant="ghost" icon={X} aria-label={t('messaging.cancelReply')} onClick={onCancel} />
+    </div>
+  );
+}
+
+function scrollBehavior(): ScrollBehavior {
+  return window.matchMedia?.(REDUCED_MOTION).matches ? 'auto' : 'smooth';
 }
 
 export function TeamMessagesPanel({ userId }: { userId: string }) {
@@ -55,8 +127,20 @@ export function TeamMessagesPanel({ userId }: { userId: string }) {
   const api = useAdminApi();
   const canWrite = useCan(AdminArea.Users, PermissionAction.Update);
   const [text, setText] = useState('');
+  const [reply, setReply] = useState<ReplyPreview>();
+  const [highlighted, setHighlighted] = useState<string>();
   const thread = useQuery({ queryKey: [...adminKeys.user(userId), 'messages'], queryFn: () => api.users.teamMessages(userId), refetchInterval: 5000 });
-  const send = useAdminMutation((value: string) => api.users.sendTeamMessage(userId, value));
+  const send = useAdminMutation(({ value, replyToId }: { value: string; replyToId?: string }) => api.users.sendTeamMessage(userId, value, replyToId));
+  const replyId = reply?.id;
+  useEffect(() => {
+    if (replyId) {
+      document.getElementById('team-message')?.focus();
+    }
+  }, [replyId]);
+  useEffect(() => {
+    const timer = highlighted ? setTimeout(() => setHighlighted(undefined), feedback.highlightMs) : undefined;
+    return () => clearTimeout(timer);
+  }, [highlighted]);
   if (thread.isPending) {
     return <LoadingState />;
   }
@@ -66,7 +150,24 @@ export function TeamMessagesPanel({ userId }: { userId: string }) {
   const submit = () => {
     const value = text.trim();
     if (value) {
-      void send.mutateAsync(value).then(() => setText(''));
+      void send.mutateAsync({ value, replyToId: reply?.id }).then(() => {
+        setText('');
+        setReply(undefined);
+      });
+    }
+  };
+  const showOriginal = (id: string) => {
+    const original = document.getElementById(anchorOf(id));
+    if (!original) {
+      return;
+    }
+    original.scrollIntoView?.({ block: 'center', behavior: scrollBehavior() });
+    setHighlighted(id);
+  };
+  const onKey = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Escape' && reply) {
+      event.preventDefault();
+      setReply(undefined);
     }
   };
   return (
@@ -77,10 +178,17 @@ export function TeamMessagesPanel({ userId }: { userId: string }) {
       ) : (
         <ol className="flex max-h-[28rem] flex-col gap-2 overflow-y-auto rounded-control bg-surface p-3">
           {thread.data.messages.map((message) => (
-            <Bubble key={message.id} message={message} />
+            <Bubble
+              key={message.id}
+              message={message}
+              onReply={canWrite ? (chosen) => setReply(replyPreviewOf(chosen)) : undefined}
+              onQuote={showOriginal}
+              highlighted={highlighted === message.id}
+            />
           ))}
         </ol>
       )}
+      {canWrite && reply ? <ReplyBar reply={reply} onCancel={() => setReply(undefined)} /> : null}
       {canWrite ? (
         <div className="flex items-end gap-2">
           <label htmlFor="team-message" className="sr-only">
@@ -90,6 +198,7 @@ export function TeamMessagesPanel({ userId }: { userId: string }) {
             id="team-message"
             value={text}
             onChange={(event) => setText(event.target.value)}
+            onKeyDown={onKey}
             rows={2}
             placeholder={t('admin.messages.compose')}
             className="min-h-11 flex-1 resize-y rounded-control border border-input bg-background px-3 py-2 text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-focus"
