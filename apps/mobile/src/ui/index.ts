@@ -10,6 +10,7 @@ export * from './icon-button';
 export * from './layout';
 export * from './screen';
 export * from './segmented';
+export * from './select-field';
 export * from './states';
 export * from './text';
 export * from './text-field';

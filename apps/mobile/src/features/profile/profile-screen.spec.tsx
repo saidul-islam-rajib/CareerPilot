@@ -2,7 +2,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { TEST_VERIFICATION_CODE } from '@careerpilot/client-core/src/testing';
-import { mockParams, mockRouter, renderWithProviders } from '@/test/render';
+import { createTestServices, mockParams, mockRouter, renderWithProviders } from '@/test/render';
 import { DocumentScreen } from './document-screen';
 import { EntryScreen } from './entry-screen';
 import { PhotoCropScreen } from './photo-crop-screen';
@@ -189,5 +189,54 @@ describe('VerifyContactScreen', () => {
     await fireEvent.press(await screen.findByLabelText('Verify ayesha.personal@example.com'));
     expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/profile/verify-contact', params: { id: 'c_email_personal' } });
     expect(screen.queryByLabelText('Verify admin@sober.com')).toBeNull();
+  });
+});
+
+describe('Bangladesh profile data', () => {
+  it('adds an address by picking a district from a searchable list', async () => {
+    mockParams.current = { section: 'addresses' };
+    const { services } = await renderWithProviders(<EntryScreen />);
+    await fireEvent.press(await screen.findByText('Present address'));
+    await fireEvent.changeText(screen.getByLabelText('House, road, and village or area'), 'House 12, Road 4');
+    await fireEvent.press(screen.getByTestId('field-district'));
+    await fireEvent.changeText(screen.getByTestId('field-district-search'), 'gaz');
+    await fireEvent.press(await screen.findByTestId('field-district-gazipur'));
+    expect(screen.getByLabelText('District: Gazipur')).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText('Save'));
+    await waitFor(async () => expect((await services.api.profile.getProfile()).sections.addresses?.[0]?.values).toMatchObject({ kind: 'present', district: 'gazipur' }));
+  });
+
+  it('checks the date of birth and allows only one identity entry', async () => {
+    mockParams.current = { section: 'identity' };
+    const entry = await renderWithProviders(<EntryScreen />);
+    const { services } = entry;
+    await fireEvent.changeText(await screen.findByLabelText('Name in English (as on certificates)'), 'Ayesha Rahman');
+    await fireEvent.changeText(screen.getByLabelText('Date of birth'), '23-04-1998');
+    await fireEvent.press(screen.getByLabelText('Save'));
+    expect(await screen.findByText('Enter a date as YYYY-MM-DD.')).toBeTruthy();
+    await fireEvent.changeText(screen.getByLabelText('Date of birth'), '1998-04-23');
+    await fireEvent.press(screen.getByLabelText('Save'));
+    await waitFor(async () => expect((await services.api.profile.getProfile()).sections.identity).toHaveLength(1));
+    await entry.unmount();
+    const withIdentity = await renderWithProviders(<ProfileScreen />, { services });
+    await screen.findByText('Identity for official forms');
+    const addsWithIdentity = screen.getAllByLabelText('Add').length;
+    await withIdentity.unmount();
+    const without = await renderWithProviders(<ProfileScreen />);
+    await screen.findByText('Identity for official forms');
+    expect(screen.getAllByLabelText('Add')).toHaveLength(addsWithIdentity + 1);
+    await without.unmount();
+  });
+
+  it('shows details that differ and opens the record to fix', async () => {
+    const services = createTestServices();
+    const real = services.api.profile.getProfile.bind(services.api.profile);
+    services.api.profile.getProfile = async () => ({
+      ...(await real()),
+      consistency: [{ kind: 'name', section: 'profile', entryId: '', field: 'full_name', expected: 'Ayesha Rahman', found: 'Ayesha Siddiqua' }],
+    });
+    await renderWithProviders(<ProfileScreen />, { services });
+    await fireEvent.press(await screen.findByLabelText('Your name is written differently: “Ayesha Rahman” and “Ayesha Siddiqua”. Fix'));
+    expect(mockRouter.push).toHaveBeenCalledWith('/profile/basics');
   });
 });

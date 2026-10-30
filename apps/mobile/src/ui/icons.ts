@@ -43,6 +43,7 @@ export { default as GraduationCap } from 'lucide-react-native/icons/graduation-c
 export { default as GripVertical } from 'lucide-react-native/icons/grip-vertical';
 export { default as Headset } from 'lucide-react-native/icons/headset';
 export { default as House } from 'lucide-react-native/icons/house';
+export { default as IdCard } from 'lucide-react-native/icons/id-card';
 export { default as ImageIcon } from 'lucide-react-native/icons/image';
 export { default as Inbox } from 'lucide-react-native/icons/inbox';
 export { default as InfinityIcon } from 'lucide-react-native/icons/infinity';
@@ -84,6 +85,7 @@ export { default as Search } from 'lucide-react-native/icons/search';
 export { default as Send } from 'lucide-react-native/icons/send';
 export { default as Server } from 'lucide-react-native/icons/server';
 export { default as ShieldAlert } from 'lucide-react-native/icons/shield-alert';
+export { default as School } from 'lucide-react-native/icons/school';
 export { default as ShieldCheck } from 'lucide-react-native/icons/shield-check';
 export { default as Sparkles } from 'lucide-react-native/icons/sparkles';
 export { default as Square } from 'lucide-react-native/icons/square';

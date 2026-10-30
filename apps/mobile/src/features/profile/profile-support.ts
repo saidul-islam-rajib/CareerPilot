@@ -1,7 +1,7 @@
 import * as DocumentPicker from 'expo-document-picker';
 import { File as LocalFile } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
-import { Award, Briefcase, ClipboardCheck, FileText, FolderGit2, GraduationCap, Languages, Link, Trophy, Users, type LucideIcon } from '@/ui/icons';
+import { Award, Briefcase, ClipboardCheck, FileText, FolderGit2, GraduationCap, IdCard, Languages, Link, MapPin, School, ShieldCheck, Trophy, Users, type LucideIcon } from '@/ui/icons';
 import type { UploadSource } from '@careerpilot/api-client';
 import { UPLOAD_REJECTION_KEYS, checkUpload, profileErrorKey, useFormat, useProfileSettings, useT } from '@careerpilot/client-core';
 import { SnackbarTone, useSnackbar } from '@/ui/snackbar';
@@ -16,6 +16,10 @@ const SECTION_ICONS: Record<string, LucideIcon> = {
   link: Link,
   trophy: Trophy,
   users: Users,
+  'id-card': IdCard,
+  school: School,
+  'map-pin': MapPin,
+  'shield-check': ShieldCheck,
 };
 
 const PHOTO_ASPECT: [number, number] = [1, 1];

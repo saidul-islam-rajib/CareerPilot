@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, type KeyboardTypeOptions } from 'react-native';
 import type { ProfileEntry } from '@careerpilot/api-client';
-import { profileErrorKey, useAddEntry, useProfileSettings, useRemoveEntry, useRestoreEntry, useT, useUpdateEntry } from '@careerpilot/client-core';
+import { profileErrorKey, useAddEntry, useProfileSettings, useRemoveEntry, useRestoreEntry, useServices, useT, useUpdateEntry } from '@careerpilot/client-core';
 import { ProfileFieldType } from '@careerpilot/domain-ui-logic';
 import { describeEntry, emptyValues, formValues, validateEntry, type EntryErrors, type EntryValues, type FieldDefinition, type SectionDefinition } from '@careerpilot/dynamic-forms';
 import { useTheme } from '@/core/theme/theme';
-import { Button, ButtonVariant, Checkbox, ErrorState, Screen, Segmented, Text, TextField, TextTone, TextVariant } from '@/ui';
+import { Button, ButtonVariant, Checkbox, ErrorState, Screen, Segmented, SelectField, Text, TextField, TextTone, TextVariant } from '@/ui';
 import { ServerError, useLoadedProfile } from './profile-edit-screens';
 import { useProfileFeedback, useRemoveWithUndo } from './profile-support';
 
@@ -17,6 +17,11 @@ const KEYBOARDS: Partial<Record<ProfileFieldType, KeyboardTypeOptions>> = {
   [ProfileFieldType.Year]: 'number-pad',
   [ProfileFieldType.Number]: 'decimal-pad',
   [ProfileFieldType.Month]: 'numbers-and-punctuation',
+  [ProfileFieldType.Date]: 'numbers-and-punctuation',
+};
+const HINTS: Partial<Record<ProfileFieldType, string>> = {
+  [ProfileFieldType.Month]: 'profile.monthHint',
+  [ProfileFieldType.Date]: 'profile.dateHint',
 };
 const NO_CAPITALIZE: ReadonlySet<string> = new Set([ProfileFieldType.Email, ProfileFieldType.Url]);
 const TEXTAREA_LINES = 5;
@@ -25,6 +30,7 @@ function Field({ section, field, value, error, disabled, onChange }: { section: 
   const t = useT();
   const theme = useTheme();
   const { optionsOf, optionLabel } = useProfileSettings();
+  const { config } = useServices();
   const label = t(`profile.fields.${section.key}.${field.key}`);
   if (field.type === ProfileFieldType.Boolean) {
     return (
@@ -35,6 +41,21 @@ function Field({ section, field, value, error, disabled, onChange }: { section: 
   }
   if (field.type === ProfileFieldType.Select && field.options) {
     const key = field.options;
+    const options = optionsOf(key).map((option) => ({ value: option, label: optionLabel(key, option) }));
+    if (options.length > config.ui.segmentedMaxOptions) {
+      return (
+        <SelectField
+          label={label}
+          value={String(value ?? '')}
+          options={options}
+          placeholder={t('common.choose')}
+          onChange={onChange}
+          error={error?.message}
+          errorParams={error?.params}
+          testID={`field-${field.key}`}
+        />
+      );
+    }
     return (
       <View style={{ gap: theme.space.xs }}>
         <Text variant={TextVariant.Label}>{label}</Text>
@@ -54,7 +75,7 @@ function Field({ section, field, value, error, disabled, onChange }: { section: 
       value={String(value ?? '')}
       error={error?.message}
       errorParams={error?.params}
-      hint={field.type === ProfileFieldType.Month ? t('profile.monthHint') : undefined}
+      hint={HINTS[field.type] ? t(HINTS[field.type] ?? '') : undefined}
       keyboardType={KEYBOARDS[field.type]}
       autoCapitalize={NO_CAPITALIZE.has(field.type) ? 'none' : undefined}
       maxLength={field.maxLength}

@@ -20,8 +20,9 @@ import {
   useUploadDocument,
 } from '@careerpilot/client-core';
 import { ContactKind, DocumentKind, EnumKey, ProfileBlock, StatusTone, isEnumValue } from '@careerpilot/domain-ui-logic';
-import { describeEntry, type SectionDefinition } from '@careerpilot/dynamic-forms';
+import { canAddEntry, describeEntry, sectionVisible, type SectionDefinition } from '@careerpilot/dynamic-forms';
 import { Routes } from '@/core/navigation/routes';
+import { ConsistencyCard } from './consistency-card';
 import { useTheme } from '@/core/theme/theme';
 import {
   Avatar,
@@ -142,7 +143,11 @@ function SectionBlock({ section, entries }: { section: SectionDefinition; entrie
   const reorder = useReorderEntries(section.key);
   const sorted = sortEntries(entries);
   return (
-    <BlockCard icon={sectionIcon(section.icon)} title={t(`profile.sections.${section.key}.title`)} action={<AddButton label={t('common.add')} onPress={() => router.push(Routes.editEntry(section.key))} />}>
+    <BlockCard
+      icon={sectionIcon(section.icon)}
+      title={t(`profile.sections.${section.key}.title`)}
+      action={canAddEntry(section, sorted.length) ? <AddButton label={t('common.add')} onPress={() => router.push(Routes.editEntry(section.key))} /> : undefined}
+    >
       {sorted.length === 0 ? (
         <Text tone={TextTone.Muted}>{t(`profile.sections.${section.key}.empty`)}</Text>
       ) : (
@@ -342,8 +347,10 @@ function ProfileContent({ profile, refreshing, onRefresh }: { profile: Profile; 
     ),
   };
 
-  const sectionByKey = new Map(settings.sections.map((section) => [section.key, section]));
-  const ordered = [...settings.pageOrder, ...settings.sections.map((s) => s.key).filter((key) => !settings.pageOrder.includes(key))];
+  const homeCountry = profile.homeCountry ?? profile.countryCode ?? '';
+  const visible = settings.sections.filter((section) => sectionVisible(section, homeCountry, profile.sections[section.key]?.length ?? 0));
+  const sectionByKey = new Map(visible.map((section) => [section.key, section]));
+  const ordered = [...settings.pageOrder, ...visible.map((s) => s.key).filter((key) => !settings.pageOrder.includes(key))];
 
   const goTo = (key: string) => {
     const actions: Record<string, () => void> = {
@@ -359,6 +366,7 @@ function ProfileContent({ profile, refreshing, onRefresh }: { profile: Profile; 
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh} testID="profile-screen">
       <Header profile={profile} onNext={goTo} />
+      <ConsistencyCard warnings={profile.consistency ?? []} />
       {ordered.map((key) => {
         const section = sectionByKey.get(key);
         const content = isEnumValue(ProfileBlock, key) ? fixed[key]() : section ? <SectionBlock section={section} entries={profile.sections[section.key]} /> : null;

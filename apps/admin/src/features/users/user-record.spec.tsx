@@ -25,6 +25,9 @@ describe('everything about a user', () => {
     expect(await screen.findAllByRole('button', { name: 'Remove from list' })).not.toHaveLength(0);
     fireEvent.mouseDown(screen.getByRole('tab', { name: 'Profile and settings' }));
     expect(await screen.findByRole('heading', { name: 'Profile' })).toBeInTheDocument();
+    const details = screen.getByRole('region', { name: 'Experience' });
+    expect(within(details).getAllByText('Job title').length).toBeGreaterThan(0);
+    expect(within(screen.getByRole('region', { name: 'Languages' })).getAllByText('Native').length).toBeGreaterThan(0);
     fireEvent.mouseDown(screen.getByRole('tab', { name: 'Activity and sessions' }));
     expect(await screen.findByRole('heading', { name: 'Never signed in' })).toBeInTheDocument();
     expect(screen.getByText(/No sessions recorded yet/)).toBeInTheDocument();

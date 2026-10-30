@@ -22,6 +22,7 @@ import { Badge, Button, Card, ConfirmDialog, EmptyState, EnumBadge, ErrorState, 
 import { adminKeys, useAdminMutation } from '@/core/admin-queries';
 import { useAdminApi } from '@/core/admin-services';
 import { useCan } from '@/core/admin-session';
+import { ProfileDetails } from './profile-details';
 import { ConnectionsPanel, FilesPanel, TeamMessagesPanel } from './user-messages';
 
 const TAB = {
@@ -372,6 +373,7 @@ function ProfilePanel({ record, actions, canEdit }: { record: AdminUserRecord; a
           {preferences.notifications.digestEnabled ? preferences.notifications.digestTime : t('admin.records.off')}
         </p>
       </Card>
+      <ProfileDetails profile={profile} />
       {editing > 0 ? <EditProfileDialog key={editing} record={record} actions={actions} onClose={() => setEditing(0)} /> : null}
     </div>
   );
