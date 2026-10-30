@@ -155,5 +155,6 @@ describe('ForgotPasswordPage', () => {
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'admin@sober.com' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send reset link' }));
     expect(await screen.findByText(/we've sent a link to reset your password/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to sign in' })).toHaveAttribute('href', '/sign-in');
   });
 });

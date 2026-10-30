@@ -1,9 +1,11 @@
 'use client';
 
-import { MailCheck } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowLeft, MailCheck } from 'lucide-react';
 import { usePasswordReset, useT } from '@careerpilot/client-core';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
-import { Banner, BrandLockup, Button, Card, TextField } from '@careerpilot/ui-web';
+import { Banner, BrandLockup, Button, Card, TextField, buttonVariants } from '@careerpilot/ui-web';
+import { Routes } from '@/core/routes';
 
 export function ForgotPasswordPage() {
   const t = useT();
@@ -26,11 +28,15 @@ export function ForgotPasswordPage() {
           }}
         >
           <TextField label={t('auth.email')} type="email" autoComplete="email" value={form.email} onChange={(e) => form.setEmail(e.target.value)} error={form.error} />
-          <Button type="submit" fullWidth loading={form.submitting}>
+          <Button type="submit" variant={form.sent ? 'secondary' : 'primary'} fullWidth loading={form.submitting}>
             {t('auth.sendResetLink')}
           </Button>
         </form>
       </Card>
+      <Link href={Routes.signIn} className={buttonVariants({ variant: form.sent ? 'primary' : 'ghost', fullWidth: true })}>
+        <ArrowLeft className="size-5" aria-hidden />
+        {t('accountLinks.backToSignIn')}
+      </Link>
     </>
   );
 }
