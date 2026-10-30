@@ -32,6 +32,14 @@ npx -y eas-cli@latest build -p android --profile preview --non-interactive --no-
 
 A fixed address for the laptop (a DHCP reservation in the Wi-Fi router) avoids rebuilding.
 
+## Phone notifications (push)
+
+- Firebase project `careerpilot-sober` (free Spark plan), Android app `com.teamsober.careerpilot`, Firebase Cloud Messaging API (V1) enabled.
+- `apps/mobile/google-services.json` stays out of git; EAS builds get it from the secret file variable `GOOGLE_SERVICES_JSON` (preview and production).
+- The FCM V1 service account key is stored only in Expo: expo.dev → careerpilot → Credentials → Android → FCM V1 service account key. Never put it in the repository.
+- The backend sends pushes through Expo's push service (`messaging.push` in `config/defaults/messaging.yaml`). Expo Go on Android cannot receive pushes; use an installed APK.
+- iPhone pushes need an Apple push key (Apple Developer account).
+
 ## Android: install a file (no store account needed)
 
 1. Build: `npx -y eas-cli@latest build -p android --profile preview --non-interactive --no-wait`.

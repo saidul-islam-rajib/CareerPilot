@@ -152,6 +152,8 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       mute: (conversationId, muted) => put(`/v1/conversations/${enc(conversationId)}/mute`, { value: muted }),
       block: (memberId, blocked) => put(`/v1/members/${enc(memberId)}/block`, { value: blocked }),
       setDiscoverable: (discoverable) => put('/v1/settings/discoverable', { value: discoverable }),
+      registerPushDevice: (device) => put('/v1/push-devices', device),
+      unregisterPushDevice: (token) => post('/v1/push-devices/remove', { token }),
     },
   };
 }

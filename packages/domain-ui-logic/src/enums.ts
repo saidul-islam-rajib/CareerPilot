@@ -354,6 +354,12 @@ export const MessageKind = {
 } as const;
 export type MessageKind = (typeof MessageKind)[keyof typeof MessageKind];
 
+export const DevicePlatform = {
+  Android: 'android',
+  Ios: 'ios',
+} as const;
+export type DevicePlatform = (typeof DevicePlatform)[keyof typeof DevicePlatform];
+
 export const MessageState = {
   Sent: 'sent',
   Delivered: 'delivered',

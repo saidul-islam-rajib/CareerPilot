@@ -46,6 +46,7 @@ import type {
   MessagePage,
   MessageView,
   NewAttachment,
+  PushDeviceRegistration,
 } from './types';
 
 export interface AuthApi {
@@ -106,6 +107,8 @@ export interface MessagingApi {
   mute(conversationId: string, muted: boolean): Promise<void>;
   block(memberId: string, blocked: boolean): Promise<void>;
   setDiscoverable(discoverable: boolean): Promise<void>;
+  registerPushDevice(device: PushDeviceRegistration): Promise<void>;
+  unregisterPushDevice(token: string): Promise<void>;
 }
 
 export interface AnswersApi {

@@ -23,6 +23,7 @@ export * from './i18n/i18n';
 export * from './query/query-client';
 export * from './query/query-keys';
 export * from './services/app-services';
+export * from './services/push-token';
 export * from './services/server-address';
 export * from './hooks/use-server-address';
 export * from './session/session';

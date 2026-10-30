@@ -69,3 +69,4 @@ export async function renderWithProviders(ui: ReactElement, options: RenderOptio
 
 export const mockRouter = (globalThis as unknown as { mockRouter: { push: jest.Mock; replace: jest.Mock; back: jest.Mock } }).mockRouter;
 export const mockParams = (globalThis as unknown as { mockParams: { current: Record<string, string> } }).mockParams;
+export const mockNotificationResponse = (globalThis as unknown as { mockNotificationResponse: { current: unknown } }).mockNotificationResponse;

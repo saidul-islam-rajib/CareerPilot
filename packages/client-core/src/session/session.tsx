@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useQueryClient } from '@tanstack/react-query';
 import type { Session, UserSummary } from '@careerpilot/api-client';
 import { useServices } from '../services/app-services';
+import { PUSH_TOKEN_KEY } from '../services/push-token';
 import { SERVER_ADDRESS_KEY } from '../services/server-address';
 
 export const SessionStatus = {
@@ -70,9 +71,14 @@ export function SessionProvider({ children }: PropsWithChildren) {
   );
 
   const end = useCallback(async () => {
+    const pushToken = await store.get(PUSH_TOKEN_KEY).catch(() => undefined);
+    if (pushToken) {
+      await api.messaging.unregisterPushDevice(pushToken).catch(() => undefined);
+      await store.remove(PUSH_TOKEN_KEY).catch(() => undefined);
+    }
     await api.auth.signOut().catch(() => undefined);
     await clear();
-  }, [api, clear]);
+  }, [api, clear, store]);
 
   const value = useMemo(() => ({ status, user, start, end }), [status, user, start, end]);
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

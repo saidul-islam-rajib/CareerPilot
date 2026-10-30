@@ -2,11 +2,13 @@ import { Stack } from 'expo-router';
 import { useT } from '@careerpilot/client-core';
 import { useTheme } from '@/core/theme/theme';
 import { useNotificationBanner } from '@/features/messaging/inbox-screen';
+import { usePhoneNotifications } from '@/features/messaging/phone-notifications';
 
 export default function SignedInLayout() {
   const t = useT();
   const theme = useTheme();
   useNotificationBanner();
+  usePhoneNotifications();
   return (
     <Stack
       screenOptions={{

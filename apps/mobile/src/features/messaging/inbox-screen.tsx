@@ -9,7 +9,7 @@ import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { Button, ButtonVariant, EmptyState, ErrorState, Icon, LoadingState, Text, TextTone, TextVariant, useSnackbar } from '@/ui';
 
-export function notificationRoute(notification: AppNotification) {
+export function notificationRoute(notification: Pick<AppNotification, 'target' | 'targetId'>) {
   return notification.target === NotificationTarget.Conversation ? Routes.chat(notification.targetId) : Routes.application(notification.targetId);
 }
 

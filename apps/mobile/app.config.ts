@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 const { loadConfig, clientConfig } = require('../../scripts/config/load-config') as {
   loadConfig: (env: string) => Record<string, unknown>;
@@ -9,9 +11,20 @@ const catalog = require('../../packages/i18n/src/locales/en.json') as { profile:
 const APP_ENV = process.env.APP_ENV ?? 'local';
 const API_URL = process.env.CAREERPILOT_API_URL;
 const INSECURE_SCHEME = 'http://';
+const BRAND_COLOR = '#0F766E';
+const LOCAL_GOOGLE_SERVICES = './google-services.json';
+const NOTIFICATION_ICON = './assets/images/android-icon-monochrome.png';
+
+function googleServicesFile(): string | undefined {
+  return process.env.GOOGLE_SERVICES_JSON ?? (existsSync(join(__dirname, LOCAL_GOOGLE_SERVICES)) ? LOCAL_GOOGLE_SERVICES : undefined);
+}
 
 function withApiUrl(settings: Record<string, unknown>, url: string | undefined): Record<string, unknown> {
   return url ? { ...settings, api: { ...(settings.api as Record<string, unknown>), baseUrl: url } } : settings;
+}
+
+interface PushSection {
+  channelId: string;
 }
 
 interface MobileSection {
@@ -34,6 +47,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   const settings = withApiUrl(loadConfig(APP_ENV), API_URL);
   const mobile = settings.mobile as unknown as MobileSection;
   const plainHttp = usesPlainHttp(settings);
+  const push = (settings.messaging as { push: PushSection }).push;
   return {
     ...config,
     owner: mobile.expoOwner,
@@ -54,8 +68,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     android: {
       package: mobile.androidPackage,
+      googleServicesFile: googleServicesFile(),
       adaptiveIcon: {
-        backgroundColor: '#0F766E',
+        backgroundColor: BRAND_COLOR,
         foregroundImage: './assets/images/android-icon-foreground.png',
         backgroundImage: './assets/images/android-icon-background.png',
         monochromeImage: './assets/images/android-icon-monochrome.png',
@@ -72,6 +87,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ['expo-image-picker', { photosPermission: catalog.profile.photoPermission, cameraPermission: false, microphonePermission: catalog.messaging.microphonePermission }],
       'expo-document-picker',
       ['expo-audio', { microphonePermission: catalog.messaging.microphonePermission, enableBackgroundPlayback: false }],
+      ['expo-notifications', { icon: NOTIFICATION_ICON, color: BRAND_COLOR, defaultChannel: push.channelId }],
       ['expo-build-properties', { android: { usesCleartextTraffic: plainHttp } }],
       [
         'expo-splash-screen',

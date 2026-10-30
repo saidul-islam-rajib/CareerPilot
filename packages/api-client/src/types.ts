@@ -5,6 +5,7 @@ import type {
   ApprovalState,
   CompletenessKind,
   ContactKind,
+  DevicePlatform,
   DocumentKind,
   EnumValueMetadata,
   Money,
@@ -699,4 +700,9 @@ export interface NewAttachment {
   file: UploadSource;
   text?: string;
   durationSeconds?: number;
+}
+
+export interface PushDeviceRegistration {
+  token: string;
+  platform: DevicePlatform;
 }

@@ -7,4 +7,5 @@
 - [x] Web app: bell and notifications, chats list, conversation, member search, attachments, voice notes
 - [x] Mobile app: Chats tab, conversation, member search, attachments, voice notes, bell and foreground banner
 - [x] Admin app: Messages and Connections tabs, documents and contacts on the user record
-- [!] Device push while the app is closed: needs Firebase (Android `google-services.json`) and Apple push key (needs Apple Developer account). Recommendation: add an Expo push sender behind `NotificationService` once both exist.
+- [x] Device push on Android while the app is closed: `NotificationService` sends every in-app notification through Expo's push service (`messaging.push` config, `push_devices` table); phones register after sign-in and are forgotten on sign-out or when Expo reports the app uninstalled
+- [!] Device push on iPhone: needs an Apple push key, which needs an Apple Developer account. Recommendation: add it in Expo credentials once the account exists; no code change is needed.

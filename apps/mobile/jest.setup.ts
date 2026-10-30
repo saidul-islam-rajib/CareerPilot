@@ -27,6 +27,21 @@ jest.mock('expo-audio', () => {
   };
 });
 
+const mockNotificationResponse: { current: unknown } = { current: undefined };
+
+jest.mock('expo-notifications', () => ({
+  AndroidImportance: { HIGH: 4 },
+  setNotificationHandler: jest.fn(),
+  setNotificationChannelAsync: jest.fn(() => Promise.resolve(null)),
+  getPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
+  requestPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
+  getExpoPushTokenAsync: jest.fn(() => Promise.resolve({ type: 'expo', data: 'ExponentPushToken[testDevice]' })),
+  useLastNotificationResponse: () => mockNotificationResponse.current,
+  clearLastNotificationResponse: jest.fn(() => {
+    mockNotificationResponse.current = null;
+  }),
+}));
+
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })) }));
 
 jest.mock('expo-secure-store', () => {
@@ -54,9 +69,10 @@ jest.mock('expo-router', () => {
   };
 });
 
-Object.assign(globalThis, { mockRouter, mockParams });
+Object.assign(globalThis, { mockRouter, mockParams, mockNotificationResponse });
 
 beforeEach(() => {
+  mockNotificationResponse.current = undefined;
   mockRouter.push.mockClear();
   mockRouter.replace.mockClear();
   mockRouter.back.mockClear();

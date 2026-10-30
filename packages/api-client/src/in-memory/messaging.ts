@@ -40,6 +40,7 @@ export function createInMemoryMessaging(options: InMemoryMessagingOptions): Mess
   const { me, seed, settings, clock, ids, respond, reject } = options;
   const { members, conversations, messages, notifications } = seed;
   const now = () => clock.now().toISOString();
+  const pushDevices = new Set<string>();
   const member = (id: string) => members.find((m) => m.id === id);
   const find = (id: string) => conversations.find((c) => c.id === id);
   const unread = (conversation: StoredConversation) =>
@@ -182,6 +183,14 @@ export function createInMemoryMessaging(options: InMemoryMessagingOptions): Mess
     },
     async setDiscoverable(discoverable) {
       settings.discoverable = discoverable;
+      return respond(undefined);
+    },
+    async registerPushDevice(device) {
+      pushDevices.add(device.token);
+      return respond(undefined);
+    },
+    async unregisterPushDevice(token) {
+      pushDevices.delete(token);
       return respond(undefined);
     },
   };
