@@ -6,5 +6,5 @@
 - [x] Admin API: team messages, connections, audited conversation view, user files
 - [x] Web app: bell and notifications, chats list, conversation, member search, attachments, voice notes
 - [x] Mobile app: Chats tab, conversation, member search, attachments, voice notes, bell and foreground banner
-- [ ] Admin app: Messages and Connections tabs, documents and contacts on the user record
+- [x] Admin app: Messages and Connections tabs, documents and contacts on the user record
 - [!] Device push while the app is closed: needs Firebase (Android `google-services.json`) and Apple push key (needs Apple Developer account). Recommendation: add an Expo push sender behind `NotificationService` once both exist.

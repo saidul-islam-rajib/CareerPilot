@@ -22,6 +22,7 @@ import { Badge, Button, Card, ConfirmDialog, EmptyState, EnumBadge, ErrorState, 
 import { adminKeys, useAdminMutation } from '@/core/admin-queries';
 import { useAdminApi } from '@/core/admin-services';
 import { useCan } from '@/core/admin-session';
+import { ConnectionsPanel, FilesPanel, TeamMessagesPanel } from './user-messages';
 
 const TAB = {
   Lists: 'lists',
@@ -30,6 +31,9 @@ const TAB = {
   Profile: 'profile',
   Sources: 'sources',
   Activity: 'activity',
+  Messages: 'messages',
+  Connections: 'connections',
+  Files: 'files',
 } as const;
 type Tab = (typeof TAB)[keyof typeof TAB];
 const KEEP = 'keep';
@@ -511,6 +515,9 @@ export function UserRecordTabs({ userId }: { userId: string }) {
     { value: TAB.Profile, label: t('admin.records.tabs.profile') },
     { value: TAB.Sources, label: t('admin.records.tabs.sources', { count: data.sources.length }) },
     { value: TAB.Activity, label: t('admin.records.tabs.activity') },
+    { value: TAB.Messages, label: t('admin.records.tabs.messages') },
+    { value: TAB.Connections, label: t('admin.records.tabs.connections') },
+    { value: TAB.Files, label: t('admin.records.tabs.files') },
   ];
   return (
     <Tabs.Root value={tab} onValueChange={(value) => setTab(value as Tab)} className="flex flex-col gap-4">
@@ -542,6 +549,15 @@ export function UserRecordTabs({ userId }: { userId: string }) {
       </Tabs.Content>
       <Tabs.Content value={TAB.Activity}>
         <ActivityPanel record={data} />
+      </Tabs.Content>
+      <Tabs.Content value={TAB.Messages}>
+        <TeamMessagesPanel userId={userId} />
+      </Tabs.Content>
+      <Tabs.Content value={TAB.Connections}>
+        <ConnectionsPanel userId={userId} />
+      </Tabs.Content>
+      <Tabs.Content value={TAB.Files}>
+        <FilesPanel userId={userId} />
       </Tabs.Content>
     </Tabs.Root>
   );

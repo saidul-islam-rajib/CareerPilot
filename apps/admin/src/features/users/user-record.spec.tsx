@@ -30,4 +30,19 @@ describe('everything about a user', () => {
     expect(screen.getByText(/No sessions recorded yet/)).toBeInTheDocument();
     expect(await screen.findAllByText(/Signed in|Failed attempt/)).not.toHaveLength(0);
   });
+
+  it('messages the member as the team, lists connections, and shows files and contacts', async () => {
+    const { services } = await renderAdmin(<UserPage />, { params: { id: 'usr_demo' } });
+    fireEvent.mouseDown(await screen.findByRole('tab', { name: 'Messages' }));
+    expect(await screen.findByText('No messages with this member yet.')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Write to this member'), { target: { value: 'Your CV looks great' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+    expect(await screen.findByText('Your CV looks great', { selector: 'p' })).toBeInTheDocument();
+    expect((await services.api.users.teamMessages('usr_demo')).messages).toHaveLength(1);
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Connections' }));
+    expect(await screen.findByText("This member hasn't chatted with anyone yet.")).toBeInTheDocument();
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Files and contacts' }));
+    expect(await screen.findByRole('heading', { name: 'CVs and documents' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Contact details' })).toBeInTheDocument();
+  });
 });

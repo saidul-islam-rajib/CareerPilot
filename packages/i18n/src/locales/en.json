@@ -1084,7 +1084,10 @@
         "approvals": "Approvals ({count})",
         "profile": "Profile and settings",
         "sources": "Job sources ({count})",
-        "activity": "Activity and sessions"
+        "activity": "Activity and sessions",
+        "messages": "Messages",
+        "connections": "Connections",
+        "files": "Files and contacts"
       },
       "noJobs": "No jobs in this list.",
       "noApplications": "No applications yet.",
@@ -1146,6 +1149,31 @@
       "sessionDetail": "Started {started} · last seen {seen} · active {active}",
       "signInsTitle": "Sign-in attempts",
       "locationNote": "Locations are approximate: from the device's time zone, or the network when known."
+    },
+    "messages": {
+      "body": "Messages you send here reach the member as the CareerPilot team, in the app and never by email. Their replies appear here.",
+      "empty": "No messages with this member yet.",
+      "compose": "Write to this member"
+    },
+    "connections": {
+      "body": "Members this person chats with, like a friends list.",
+      "empty": "This member hasn't chatted with anyone yet.",
+      "messages": "{count} messages",
+      "since": "Connected {date}",
+      "lastActive": "last message {time}",
+      "view": "Open conversation",
+      "audited": "Read-only. Opening a conversation is recorded in the audit log.",
+      "auditedNote": "Your name and the time are recorded in the audit log."
+    },
+    "files": {
+      "contacts": "Contact details",
+      "documents": "CVs and documents",
+      "noContacts": "No contact details.",
+      "noDocuments": "No documents uploaded.",
+      "primary": "Primary",
+      "verified": "Verified",
+      "unverified": "Not verified",
+      "open": "Open"
     }
   },
   "timeline": {
