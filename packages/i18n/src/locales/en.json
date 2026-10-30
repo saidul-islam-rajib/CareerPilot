@@ -882,6 +882,13 @@
       "eligibility": "Eligibility",
       "other": "Other"
     },
+    "reply_kind": {
+      "rejection": "Rejection",
+      "offer": "Offer",
+      "interview_invite": "Interview invitation",
+      "assessment": "Assessment",
+      "other_reply": "Reply"
+    },
     "task_kind": {
       "follow_up": "Follow-up",
       "interview": "Interview",
@@ -1754,6 +1761,89 @@
     "errors": {
       "invalid": "Enter an address like 192.168.0.106 or http://192.168.0.106:8000.",
       "unreachable": "CareerPilot didn't answer at this address. Check the phone and computer are on the same Wi-Fi and the server is running."
+    }
+  },
+  "integrations": {
+    "timeline": {
+      "applied": "{sender} replied ({kind}): {subject}. The outcome was updated.",
+      "suggested": "{sender} sent what looks like a {kind}: {subject}. Check the email, then update the outcome yourself.",
+      "recorded": "{sender} replied ({kind}): {subject}",
+      "confirmed": "The employer replied, so your application was received.",
+      "openEmail": "Open email"
+    },
+    "evidenceReply": "A reply from the employer arrived in your connected inbox.",
+    "interviewTaskTitle": "Interview with {organization}",
+    "interviewTaskNotes": "Found in an email from the employer: {link}",
+    "calendar": {
+      "title": "{title} ({role})",
+      "description": "Application: {link} {notes}"
+    },
+    "notification": {
+      "reply": {
+        "title": "{kind} from {organization}",
+        "body": "{title}. Open the application to read it."
+      },
+      "suggested": {
+        "title": "Possible {kind} from {organization}",
+        "body": "{title}. Check the email, then update the outcome yourself."
+      },
+      "attention": {
+        "title": "Reconnect Google",
+        "body": "CareerPilot lost access to your Google account. Reconnect to keep syncing replies and interviews."
+      }
+    },
+    "page": {
+      "title": "Connected accounts",
+      "intro": "Connect your Google account so CareerPilot can find employer replies and add your interviews to your calendar.",
+      "readOnlyNote": "CareerPilot only reads your email. It never sends, changes, or deletes anything.",
+      "googleName": "Google",
+      "connect": "Connect Google",
+      "reconnect": "Reconnect Google",
+      "syncNow": "Check now",
+      "syncing": "Checking...",
+      "syncDone": "Checked: {messages} new replies, {events} calendar changes.",
+      "disconnect": "Disconnect",
+      "disconnectTitle": "Disconnect Google?",
+      "disconnectBody": "CareerPilot stops reading your email and updating your calendar. Entries already added stay.",
+      "disconnectConfirm": "Disconnect",
+      "disconnectKeep": "Keep connected",
+      "connectedAs": "Connected as {email}",
+      "lastSync": "Last checked {time}",
+      "neverSynced": "Not checked yet.",
+      "mailAccess": "Reads replies to your applications",
+      "calendarAccess": "Adds your interviews to your calendar",
+      "accessOff": "Not allowed",
+      "notConfigured": "Google sign-in is not set up on this server yet.",
+      "localHint": "While CareerPilot runs on your computer, Google only returns to localhost. Connect from the computer, not from the phone.",
+      "actionFailed": "Something went wrong. Try again.",
+      "connectFailed": "We couldn't open Google. Try again."
+    },
+    "status": {
+      "connected": "Connected",
+      "needs_reconnect": "Needs reconnecting",
+      "notConnected": "Not connected"
+    },
+    "banner": {
+      "connected": "Google is connected.",
+      "error": "We couldn't connect Google. {reason}"
+    },
+    "reason": {
+      "access_denied": "You didn't allow access.",
+      "invalid_state": "The sign-in took too long or was not started here. Try again.",
+      "exchange_failed": "Google didn't accept the sign-in. Try again.",
+      "not_configured": "Google sign-in is not set up on this server yet."
+    },
+    "failure": {
+      "token_revoked": "Google access ended. Reconnect to continue.",
+      "google_unavailable": "Google didn't answer. We will try again soon.",
+      "google_rejected": "Google refused the request. Reconnect to continue.",
+      "missing_mail_access": "Mail access wasn't allowed. Reconnect and allow it to read replies."
+    },
+    "admin": {
+      "title": "Connected accounts",
+      "empty": "No connected accounts.",
+      "note": "Sign-in tokens are never shown.",
+      "provider": "Google"
     }
   },
   "notifications": {

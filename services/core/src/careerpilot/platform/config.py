@@ -14,9 +14,11 @@ from careerpilot.platform.enums import (
     CompletenessKind,
     ConsistencyKind,
     DeliveryMode,
+    OutcomeStatus,
     PauseDuration,
     ProfileFieldType,
     PushMode,
+    ReplyKind,
     SmtpSecurity,
     ThemeKey,
 )
@@ -410,6 +412,9 @@ class WorkersConfig(Strict):
     digest_workflow_id: str
     digest_schedule_id: str
     digest_interval_minutes: int = Field(gt=0)
+    inbox_sync_workflow_id: str
+    inbox_sync_schedule_id: str
+    inbox_sync_interval_minutes: int = Field(gt=0)
 
 
 class ProfileFieldConfig(Strict):
@@ -652,6 +657,104 @@ class PresenceConfig(Strict):
     max_sessions_per_user: int = Field(gt=0)
 
 
+class GoogleConfig(Strict):
+    client_id_env: EnvName
+    client_secret_env: EnvName
+    redirect_base_url_env: EnvName
+    redirect_base_url: str
+    callback_path: str = Field(pattern=r"^/")
+    web_return_path: str = Field(pattern=r"^/")
+    return_flag: str
+    return_reason: str
+    authorize_endpoint: HttpUrl
+    token_endpoint: HttpUrl
+    revoke_endpoint: HttpUrl
+    userinfo_endpoint: HttpUrl
+    gmail_base_url: HttpUrl
+    calendar_base_url: HttpUrl
+    mail_link_template: str
+    scopes: list[str]
+    mail_scope: str
+    calendar_scope: str
+    state_audience: str
+    state_ttl_minutes: int = Field(gt=0)
+    pkce_verifier_bytes: int = Field(ge=32, le=96)
+    refresh_skew_seconds: int = Field(ge=0)
+    timeout_seconds: float = Field(gt=0)
+
+
+class VaultConfig(Strict):
+    key_env: EnvName
+    key_context: str
+
+
+class SyncConfig(Strict):
+    lookback_days: int = Field(gt=0)
+    overlap_hours: int = Field(ge=0)
+    max_messages_per_run: int = Field(gt=0)
+    max_body_chars: int = Field(gt=0)
+    max_subject_chars: int = Field(gt=0)
+    max_users_per_run: int = Field(gt=0)
+    query_template: str
+    sender_template: str
+    subject_template: str
+    any_separator: str
+
+
+class MailMatchingConfig(Strict):
+    subject_keywords: list[str]
+    min_organization_length: int = Field(gt=0)
+    address_strength: int = Field(gt=0)
+    domain_strength: int = Field(gt=0)
+    organization_strength: int = Field(gt=0)
+
+
+class PhraseConfig(Strict):
+    text: str
+    weight: float = Field(gt=0)
+
+
+class ReplyKindConfig(Strict):
+    kind: ReplyKind
+    outcome: OutcomeStatus
+    phrases: list[PhraseConfig]
+
+
+class ReplyClassificationConfig(Strict):
+    full_score: float = Field(gt=0)
+    subject_boost: float = Field(ge=1)
+    apply_min_confidence: float = Field(ge=0, le=1)
+    unclassified_confidence: float = Field(ge=0, le=1)
+    suggest_only_kinds: list[ReplyKind]
+    outcome_progress: list[OutcomeStatus]
+    kinds: list[ReplyKindConfig]
+
+
+class CalendarSyncConfig(Strict):
+    default_duration_minutes: int = Field(gt=0)
+    reminder_minutes: int = Field(ge=0)
+    event_id_prefix: str = Field(pattern=r"^[a-v0-9]*$")
+    event_id_length: int = Field(ge=5, le=100)
+
+
+class DatesConfig(Strict):
+    date_formats: list[str]
+    time_formats: list[str]
+    window_tokens: int = Field(gt=0)
+    time_search_tokens: int = Field(gt=0)
+    ignored_words: list[str]
+
+
+class IntegrationsConfig(Strict):
+    google: GoogleConfig
+    vault: VaultConfig
+    sync: SyncConfig
+    matching: MailMatchingConfig
+    classification: ReplyClassificationConfig
+    calendar: CalendarSyncConfig
+    dates: DatesConfig
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -683,6 +786,7 @@ class Settings(Strict):
     platform: PlatformDefaultsConfig
     presence: PresenceConfig
     messaging: MessagingConfig
+    integrations: IntegrationsConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

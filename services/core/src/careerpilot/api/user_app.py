@@ -5,7 +5,7 @@ from fastapi import APIRouter, FastAPI, Query, Request
 from fastapi.responses import JSONResponse, Response
 
 from careerpilot.administration.models import NewUserSource
-from careerpilot.api import messaging_routes, profile_routes
+from careerpilot.api import integrations_routes, messaging_routes, profile_routes
 from careerpilot.api.common import bearer_token, client_info, configure, no_content, ok
 from careerpilot.api.dependencies import Credentials, CurrentUser, Services
 from careerpilot.api.instrumentation import instrument
@@ -374,5 +374,6 @@ def create_user_app(container: Container) -> FastAPI:
     app.include_router(router)
     app.include_router(profile_routes.router)
     app.include_router(messaging_routes.router)
+    app.include_router(integrations_routes.router)
     instrument(app, container, container.settings.observability.user_api_service)
     return app

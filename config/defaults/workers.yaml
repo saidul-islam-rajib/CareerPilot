@@ -14,3 +14,6 @@ workers:
   digest_workflow_id: daily-digests
   digest_schedule_id: digest-schedule
   digest_interval_minutes: 15
+  inbox_sync_workflow_id: inbox-sync
+  inbox_sync_schedule_id: inbox-sync-schedule
+  inbox_sync_interval_minutes: 10

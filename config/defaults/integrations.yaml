@@ -1,0 +1,155 @@
+integrations:
+  google:
+    client_id_env: CAREERPILOT_GOOGLE_CLIENT_ID
+    client_secret_env: CAREERPILOT_GOOGLE_CLIENT_SECRET
+    redirect_base_url_env: CAREERPILOT_API_PUBLIC_URL
+    redirect_base_url: http://localhost:8000
+    callback_path: /v1/integrations/google/callback
+    web_return_path: /settings/connected-accounts
+    return_flag: google
+    return_reason: reason
+    authorize_endpoint: https://accounts.google.com/o/oauth2/v2/auth
+    token_endpoint: https://oauth2.googleapis.com/token
+    revoke_endpoint: https://oauth2.googleapis.com/revoke
+    userinfo_endpoint: https://openidconnect.googleapis.com/v1/userinfo
+    gmail_base_url: https://gmail.googleapis.com/gmail/v1/users/me
+    calendar_base_url: https://www.googleapis.com/calendar/v3/calendars/primary
+    mail_link_template: https://mail.google.com/mail/u/0/#all/{message_id}
+    scopes:
+      - openid
+      - email
+      - https://www.googleapis.com/auth/gmail.readonly
+      - https://www.googleapis.com/auth/calendar.events
+    mail_scope: https://www.googleapis.com/auth/gmail.readonly
+    calendar_scope: https://www.googleapis.com/auth/calendar.events
+    state_audience: google-oauth
+    state_ttl_minutes: 10
+    pkce_verifier_bytes: 48
+    refresh_skew_seconds: 120
+    timeout_seconds: 15
+  vault:
+    key_env: CAREERPILOT_VAULT_KEY
+    key_context: careerpilot-integration-vault-v1
+  sync:
+    lookback_days: 14
+    overlap_hours: 24
+    max_messages_per_run: 50
+    max_body_chars: 4000
+    max_subject_chars: 120
+    max_users_per_run: 200
+    query_template: "after:{after} -from:me ({terms})"
+    sender_template: "from:{sender}"
+    subject_template: "subject:({keywords})"
+    any_separator: " OR "
+  matching:
+    subject_keywords:
+      - application
+      - applying
+      - applied
+      - interview
+      - position
+      - vacancy
+      - candidate
+      - assessment
+      - offer
+      - hiring
+      - recruitment
+    min_organization_length: 4
+    address_strength: 3
+    domain_strength: 2
+    organization_strength: 1
+  classification:
+    full_score: 3.0
+    subject_boost: 1.5
+    apply_min_confidence: 0.6
+    unclassified_confidence: 0.4
+    suggest_only_kinds:
+      - rejection
+      - offer
+    outcome_progress:
+      - no_response_yet
+      - under_review
+      - assessment
+      - interview
+    kinds:
+      - kind: rejection
+        outcome: rejected
+        phrases:
+          - {text: "regret to inform you", weight: 3}
+          - {text: "we will not be moving forward", weight: 3}
+          - {text: "not be proceeding with your application", weight: 3}
+          - {text: "decided not to proceed", weight: 3}
+          - {text: "decided to move forward with other candidates", weight: 3}
+          - {text: "unfortunately", weight: 1}
+          - {text: "not selected", weight: 2}
+          - {text: "unsuccessful", weight: 2}
+          - {text: "position has been filled", weight: 2}
+      - kind: offer
+        outcome: offer_received
+        phrases:
+          - {text: "pleased to offer you", weight: 3}
+          - {text: "offer of employment", weight: 3}
+          - {text: "job offer", weight: 3}
+          - {text: "we are delighted to offer", weight: 3}
+          - {text: "offer letter", weight: 2}
+          - {text: "congratulations", weight: 1}
+      - kind: interview_invite
+        outcome: interview
+        phrases:
+          - {text: "invite you to an interview", weight: 3}
+          - {text: "invite you to interview", weight: 3}
+          - {text: "invitation to interview", weight: 3}
+          - {text: "interview invitation", weight: 3}
+          - {text: "schedule an interview", weight: 3}
+          - {text: "schedule your interview", weight: 3}
+          - {text: "interview is scheduled", weight: 3}
+          - {text: "like to interview you", weight: 3}
+          - {text: "phone screen", weight: 2}
+          - {text: "interview", weight: 1}
+          - {text: "zoom", weight: 1}
+          - {text: "google meet", weight: 1}
+      - kind: assessment
+        outcome: assessment
+        phrases:
+          - {text: "online assessment", weight: 3}
+          - {text: "coding challenge", weight: 3}
+          - {text: "technical assessment", weight: 3}
+          - {text: "take-home assignment", weight: 3}
+          - {text: "complete the assessment", weight: 3}
+          - {text: "written test", weight: 3}
+          - {text: "assessment", weight: 2}
+          - {text: "assignment", weight: 1}
+          - {text: "hackerrank", weight: 2}
+          - {text: "codility", weight: 2}
+      - kind: other_reply
+        outcome: under_review
+        phrases:
+          - {text: "received your application", weight: 3}
+          - {text: "thank you for applying", weight: 3}
+          - {text: "thanks for applying", weight: 3}
+          - {text: "application is under review", weight: 3}
+          - {text: "reviewing your application", weight: 3}
+          - {text: "application has been received", weight: 3}
+  calendar:
+    default_duration_minutes: 60
+    reminder_minutes: 30
+    event_id_prefix: cp
+    event_id_length: 40
+  dates:
+    date_formats:
+      - "%d %B %Y"
+      - "%B %d %Y"
+      - "%d %b %Y"
+      - "%b %d %Y"
+      - "%Y-%m-%d"
+    time_formats:
+      - "%H:%M"
+      - "%I:%M %p"
+      - "%I %p"
+    window_tokens: 4
+    time_search_tokens: 6
+    ignored_words:
+      - at
+      - "on"
+      - the
+      - of

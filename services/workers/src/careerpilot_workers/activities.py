@@ -10,6 +10,7 @@ from careerpilot_workers.workflows import (
     DUE_SOURCES,
     SEND_DIGESTS,
     SUBMIT_APPLICATION,
+    SYNC_INBOXES,
     QueuedItem,
     SourceCheckResult,
     SubmissionReport,
@@ -65,3 +66,13 @@ class DigestActivities:
     @activity.defn(name=SEND_DIGESTS)
     def send_digests(self) -> int:
         return self._container.digests.send_due()
+
+
+class IntegrationActivities:
+    def __init__(self, container: Container) -> None:
+        self._container = container
+
+    @activity.defn(name=SYNC_INBOXES)
+    def sync_inboxes(self) -> int:
+        summary = self._container.integrations.sync.sync_all()
+        return summary.messages + summary.events

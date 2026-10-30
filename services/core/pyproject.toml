@@ -23,6 +23,7 @@ dependencies = [
   "defusedxml>=0.7.1",
   "anthropic>=2.3",
   "python-multipart>=0.0.20",
+  "cryptography>=43",
 ]
 
 [project.optional-dependencies]

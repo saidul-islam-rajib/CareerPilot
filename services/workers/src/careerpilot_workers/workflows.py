@@ -97,3 +97,16 @@ class DigestWorkflow:
         return await workflow.execute_activity(
             SEND_DIGESTS, start_to_close_timeout=timeout, retry_policy=RetryPolicy(maximum_attempts=1), result_type=int
         )
+
+
+SYNC_INBOXES = "sync_inboxes"
+
+
+@workflow.defn(name="InboxSyncWorkflow")
+class InboxSyncWorkflow:
+    @workflow.run
+    async def run(self, plan: ActivityPlan) -> int:
+        timeout = timedelta(seconds=plan.activity_timeout_seconds)
+        return await workflow.execute_activity(
+            SYNC_INBOXES, start_to_close_timeout=timeout, retry_policy=RetryPolicy(maximum_attempts=1), result_type=int
+        )

@@ -54,6 +54,17 @@ from careerpilot.discovery.ports import Fetcher
 from careerpilot.discovery.resolver import SourceResolver
 from careerpilot.discovery.safety import public_https_url
 from careerpilot.discovery.service import DiscoveryContext, DiscoveryService
+from careerpilot.integrations.admin import AdminIntegrations
+from careerpilot.integrations.calendar_sync import CalendarContext, CalendarSync
+from careerpilot.integrations.classifier import RuleBasedClassifier
+from careerpilot.integrations.connections import ConnectionContext, ConnectionService, credentials_reader
+from careerpilot.integrations.dates import MomentFinder
+from careerpilot.integrations.google_http import HttpGoogleGateway
+from careerpilot.integrations.matching import ApplicationMatcher
+from careerpilot.integrations.ports import GoogleGateway
+from careerpilot.integrations.replies import ReplyApplier
+from careerpilot.integrations.sync import SyncContext, SyncService
+from careerpilot.integrations.vault import FernetCipher, vault_secret
 from careerpilot.matching.claude import ClaudeMatcher
 from careerpilot.matching.ports import Matcher
 from careerpilot.matching.rules import RuleBasedMatcher
@@ -100,6 +111,13 @@ PUSH_THREAD_PREFIX = "careerpilot-push"
 
 
 @dataclass(frozen=True)
+class IntegrationServices:
+    google: ConnectionService
+    sync: SyncService
+    admin: AdminIntegrations
+
+
+@dataclass(frozen=True)
 class Container:
     settings: Settings
     database: Database | None
@@ -135,6 +153,7 @@ class Container:
     user_records: AdminUserRecords
     source_checks: SourceCheckRunner
     invite_owner: Callable[[], bool]
+    integrations: IntegrationServices
 
 
 def default_tracks(settings: Settings) -> list[Track]:
@@ -202,6 +221,7 @@ class ContainerOverrides:
     address_check: Callable[[str], str | None] | None = None
     page_fetcher: PageFetcher | None = None
     push_sender: PushSender | None = None
+    google_gateway: GoogleGateway | None = None
 
 
 def _redis_store(settings: Settings, url_env: str) -> KeyValueStore:
@@ -367,6 +387,62 @@ def _messaging(
     return notifications, messaging, submissions
 
 
+@dataclass(frozen=True)
+class IntegrationParts:
+    candidate: CandidateContext
+    repos: Repositories
+    notifications: NotificationService
+    tokens: TokenService
+    store: KeyValueStore
+    keys: KeySpace
+    secret: str
+
+
+def _integrations(parts: IntegrationParts, options: ContainerOverrides) -> IntegrationServices:
+    cfg = parts.candidate.settings
+    settings = cfg.integrations
+    gateway = options.google_gateway or HttpGoogleGateway(settings.google, credentials_reader(settings.google))
+    context = ConnectionContext(
+        config=settings,
+        web_base_url=cfg.notifications.web_base_url,
+        clock=parts.candidate.clock,
+        ids=parts.candidate.ids,
+        connections=parts.repos.connections,
+        gateway=gateway,
+        cipher=FernetCipher(vault_secret(settings.vault, parts.secret), settings.vault.key_context),
+        tokens=parts.tokens,
+        store=parts.store,
+        keys=parts.keys,
+    )
+    connections = ConnectionService(context)
+    calendar = CalendarSync(
+        CalendarContext(
+            config=settings.calendar,
+            web_base_url=cfg.notifications.web_base_url,
+            ids=parts.candidate.ids,
+            workspaces=parts.repos.workspaces,
+            events=parts.repos.calendar_events,
+            gateway=gateway,
+        )
+    )
+    applier = ReplyApplier(settings.classification, settings.matching, settings.sync, MomentFinder(settings.dates), parts.candidate.ids)
+    sync = SyncService(
+        SyncContext(
+            connection=context,
+            workspaces=parts.repos.workspaces,
+            opportunities=parts.repos.opportunities,
+            synced=parts.repos.synced_messages,
+            matcher=ApplicationMatcher(settings.matching, frozenset(cfg.discovery.warning_signs.free_mail_domains)),
+            classifier=RuleBasedClassifier(settings.classification),
+            applier=applier,
+            calendar=calendar,
+            notifications=parts.notifications,
+            on_status=parts.notifications.application_changed,
+        )
+    )
+    return IntegrationServices(connections, sync, AdminIntegrations(connections, parts.repos.accounts))
+
+
 def build_container(overrides: ContainerOverrides | None = None) -> Container:
     options = overrides or ContainerOverrides()
     cfg = options.settings or with_web_address(load_settings())
@@ -528,4 +604,5 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         ),
         user_sources=user_sources,
         invite_owner=lambda: invite_owner(admin, admin_links),
+        integrations=_integrations(IntegrationParts(candidate, repos, notifications, tokens, coord_store, keys, secret), options),
     )

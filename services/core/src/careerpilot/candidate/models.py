@@ -184,6 +184,7 @@ class TimelineEntry(CamelModel):
     actor: TimelineActor
     text: str
     status: SubmissionStatus | None = None
+    link: str | None = None
 
 
 class SentEmail(CamelModel):

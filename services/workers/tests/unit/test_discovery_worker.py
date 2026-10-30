@@ -10,8 +10,8 @@ from careerpilot.platform.config import load_settings
 from careerpilot.platform.email_delivery import InMemoryEmailSender
 from careerpilot.platform.files import InMemoryFileStorage
 from careerpilot.testing import load_sample_data, sample_repositories, sample_settings
-from careerpilot_workers.activities import DigestActivities, DiscoveryActivities, SubmissionActivities
-from careerpilot_workers.main import activity_plan, digest_schedule, discovery_schedule, submission_schedule
+from careerpilot_workers.activities import DigestActivities, DiscoveryActivities, IntegrationActivities, SubmissionActivities
+from careerpilot_workers.main import activity_plan, digest_schedule, discovery_schedule, inbox_sync_schedule, submission_schedule
 from careerpilot_workers.workflows import ActivityPlan, QueuedItem
 
 TEST_SECRET = "unit-test-secret-that-is-long-enough-for-hmac"
@@ -90,3 +90,12 @@ def test_digests_run_on_the_email_queue(container: Container) -> None:
     assert isinstance(action, ScheduleActionStartWorkflow)
     assert action.task_queue == config.submission_task_queue
     assert ActivityEnvironment().run(DigestActivities(container).send_digests) >= 0
+
+
+def test_inbox_sync_runs_on_a_schedule_and_does_nothing_without_connections(container: Container) -> None:
+    config = load_settings("local").workers
+    schedule = inbox_sync_schedule(config)
+    assert schedule.spec.intervals[0].every == timedelta(minutes=config.inbox_sync_interval_minutes)
+    assert isinstance(schedule.action, ScheduleActionStartWorkflow)
+    assert schedule.action.task_queue == config.submission_task_queue
+    assert ActivityEnvironment().run(IntegrationActivities(container).sync_inboxes) == 0

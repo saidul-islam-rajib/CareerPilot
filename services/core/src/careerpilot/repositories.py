@@ -21,6 +21,13 @@ from careerpilot.candidate.ports import AccountRepository, CandidateWorkspace, O
 from careerpilot.discovery.adapters.in_memory import InMemoryListingCatalog
 from careerpilot.discovery.adapters.sql import SqlListingCatalog
 from careerpilot.discovery.ports import ListingCatalog
+from careerpilot.integrations.adapters.in_memory import (
+    InMemoryCalendarEventRepository,
+    InMemoryConnectionRepository,
+    InMemorySyncedMessageRepository,
+)
+from careerpilot.integrations.adapters.sql import SqlCalendarEventRepository, SqlConnectionRepository, SqlSyncedMessageRepository
+from careerpilot.integrations.ports import CalendarEventRepository, ConnectionRepository, SyncedMessageRepository
 from careerpilot.messaging.adapters.in_memory import (
     InMemoryConversationRepository,
     InMemoryMessageRepository,
@@ -55,6 +62,9 @@ class Repositories:
     conversations: ConversationRepository = field(default_factory=InMemoryConversationRepository)
     messages: MessageRepository = field(default_factory=InMemoryMessageRepository)
     push_devices: PushDeviceRepository = field(default_factory=InMemoryPushDeviceRepository)
+    connections: ConnectionRepository = field(default_factory=InMemoryConnectionRepository)
+    synced_messages: SyncedMessageRepository = field(default_factory=InMemorySyncedMessageRepository)
+    calendar_events: CalendarEventRepository = field(default_factory=InMemoryCalendarEventRepository)
 
 
 RepositoryFactory = Callable[[PasswordHasher, WorkspaceFactory, PlatformSettings], Repositories]
@@ -87,4 +97,7 @@ def sql_repositories(database: Database, empty: WorkspaceFactory, platform_defau
         conversations=SqlConversationRepository(database),
         messages=SqlMessageRepository(database),
         push_devices=SqlPushDeviceRepository(database, SystemClock()),
+        connections=SqlConnectionRepository(database, SystemClock()),
+        synced_messages=SqlSyncedMessageRepository(database),
+        calendar_events=SqlCalendarEventRepository(database),
     )

@@ -335,11 +335,14 @@ class NotificationKind(StrEnum):
     TEAM_MESSAGE = "team_message"
     APPLICATION_SUBMITTED = "application_submitted"
     APPLICATION_CONFIRMED = "application_confirmed"
+    APPLICATION_REPLY = "application_reply"
+    INTEGRATION_ATTENTION = "integration_attention"
 
 
 class NotificationTarget(StrEnum):
     CONVERSATION = "conversation"
     APPLICATION = "application"
+    INTEGRATION = "integration"
 
 
 class ConversationKind(StrEnum):
@@ -425,3 +428,45 @@ class ConsistencyKind(StrEnum):
     FATHER_NAME = "father_name"
     MOTHER_NAME = "mother_name"
     PHONE_FORMAT = "phone_format"
+
+
+class IntegrationProvider(StrEnum):
+    GOOGLE = "google"
+
+
+class ConnectionStatus(StrEnum):
+    CONNECTED = "connected"
+    NEEDS_RECONNECT = "needs_reconnect"
+
+
+class SyncFailure(StrEnum):
+    TOKEN_REVOKED = "token_revoked"
+    GOOGLE_UNAVAILABLE = "google_unavailable"
+    GOOGLE_REJECTED = "google_rejected"
+    MISSING_MAIL_ACCESS = "missing_mail_access"
+
+
+class ConnectFailure(StrEnum):
+    ACCESS_DENIED = "access_denied"
+    INVALID_STATE = "invalid_state"
+    EXCHANGE_FAILED = "exchange_failed"
+    NOT_CONFIGURED = "not_configured"
+
+
+class ReplyKind(StrEnum):
+    REJECTION = "rejection"
+    OFFER = "offer"
+    INTERVIEW_INVITE = "interview_invite"
+    ASSESSMENT = "assessment"
+    OTHER_REPLY = "other_reply"
+
+
+class ReplyDisposition(StrEnum):
+    APPLIED = "applied"
+    SUGGESTED = "suggested"
+    RECORDED = "recorded"
+
+
+class CalendarEventState(StrEnum):
+    SYNCED = "synced"
+    CANCELLED = "cancelled"
