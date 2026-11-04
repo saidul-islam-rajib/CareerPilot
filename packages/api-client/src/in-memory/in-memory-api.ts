@@ -35,6 +35,7 @@ import { createInMemoryGovernment } from '../government/in-memory';
 import { createInMemoryAutomation } from '../automation/in-memory';
 import { createInMemoryPrivacy } from '../privacy/in-memory';
 import { createInMemoryWriting } from '../writing/in-memory';
+import { createInMemoryAcademic } from '../academic/in-memory';
 import { createInMemoryIntegrations } from './integrations';
 import { createJobSources } from './job-sources';
 import { createInMemoryMessaging, messagingSeed } from './messaging';
@@ -372,6 +373,14 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     messaging,
     integrations,
     government,
+    academic: createInMemoryAcademic({
+      clock,
+      ids,
+      respond,
+      fail: failWith,
+      profileName: () => state.profile.fullName,
+      opportunity: (id) => state.opportunities.find((o) => o.id === id),
+    }),
     writing: createInMemoryWriting({
       clock,
       ids,
