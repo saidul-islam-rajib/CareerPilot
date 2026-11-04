@@ -1,0 +1,98 @@
+government:
+  currency: BDT
+  time_zone: Asia/Dhaka
+  vault_context: careerpilot-government-credentials
+  grades:
+    - { grade: 1, pay_min: 78000, pay_max: 78000 }
+    - { grade: 2, pay_min: 66000, pay_max: 76490 }
+    - { grade: 3, pay_min: 56500, pay_max: 74400 }
+    - { grade: 4, pay_min: 50000, pay_max: 71200 }
+    - { grade: 5, pay_min: 43000, pay_max: 69850 }
+    - { grade: 6, pay_min: 35500, pay_max: 67010 }
+    - { grade: 7, pay_min: 29000, pay_max: 63410 }
+    - { grade: 8, pay_min: 23000, pay_max: 55480 }
+    - { grade: 9, pay_min: 22000, pay_max: 53060 }
+    - { grade: 10, pay_min: 16000, pay_max: 38640 }
+    - { grade: 11, pay_min: 12500, pay_max: 30230 }
+    - { grade: 12, pay_min: 11300, pay_max: 27300 }
+    - { grade: 13, pay_min: 11000, pay_max: 26590 }
+    - { grade: 14, pay_min: 10200, pay_max: 24680 }
+    - { grade: 15, pay_min: 9700, pay_max: 23490 }
+    - { grade: 16, pay_min: 9300, pay_max: 22490 }
+    - { grade: 17, pay_min: 9000, pay_max: 21800 }
+    - { grade: 18, pay_min: 8800, pay_max: 21310 }
+    - { grade: 19, pay_min: 8500, pay_max: 20570 }
+    - { grade: 20, pay_min: 8250, pay_max: 20010 }
+  profile:
+    identity_section: identity
+    birth_date_field: date_of_birth
+    citizenship_field: citizenship
+    home_district_field: home_district
+    academic_section: academic_records
+    exam_field: exam
+    scale_field: result_scale
+    result_field: result
+    subject_field: group_subject
+    address_section: addresses
+    address_kind_field: kind
+    address_district_field: district
+    status_section: special_status
+    status_field: status
+    verification_field: document_name
+    citizen_values: [by_birth, by_descent]
+  age:
+    default_max_years: 30
+    relaxation_suggestions:
+      - { status: freedom_fighter_child, max_years: 32 }
+      - { status: freedom_fighter_grandchild, max_years: 32 }
+  quota_statuses:
+    - { quota: freedom_fighter, statuses: [freedom_fighter_child, freedom_fighter_grandchild] }
+    - { quota: ethnic_minority, statuses: [ethnic_minority] }
+    - { quota: person_with_disability, statuses: [person_with_disability] }
+    - { quota: ansar_vdp, statuses: [ansar_vdp] }
+    - { quota: orphan, statuses: [orphan] }
+  numeric_scales: [gpa_5, cgpa_4]
+  result_ranks:
+    - { scale: division, order: [third, second, first] }
+    - { scale: class, order: [pass, third, second, first] }
+  office:
+    start: "09:00"
+    end: "17:00"
+    working_days: [sunday, monday, tuesday, wednesday, thursday]
+    weekend_days: [friday, saturday]
+  recurring_holidays:
+    - { month: 2, day: 21, name: International Mother Language Day }
+    - { month: 3, day: 26, name: Independence Day }
+    - { month: 4, day: 14, name: Bengali New Year }
+    - { month: 5, day: 1, name: May Day }
+    - { month: 12, day: 16, name: Victory Day }
+    - { month: 12, day: 25, name: Christmas Day }
+  fee:
+    due_soon_days: 2
+  limits:
+    max_posts: 60
+    max_stages: 20
+    max_copies: 10
+    max_notices: 40
+    max_text_chars: 200000
+    max_name_chars: 120
+    max_secret_chars: 200
+    copy_max_bytes: 5242880
+    copy_types: [application/pdf, image/png, image/jpeg]
+    upcoming_days: 60
+  connector:
+    allowed_hosts: [alljobs.teletalk.com.bd]
+    max_title_chars: 200
+    deadline_keywords: [deadline, last date, closing date, last day]
+    fee_keywords: [fee, tk, taka, bdt]
+    date_formats: ["%d-%m-%Y", "%d/%m/%Y", "%Y-%m-%d", "%d %B %Y", "%d %b %Y", "%B %d, %Y", "%b %d, %Y"]
+  guide:
+    steps:
+      - { kind: check_eligibility, actor: system }
+      - { kind: prepare_photo_signature, actor: user }
+      - { kind: open_official_site, actor: user }
+      - { kind: complete_verification, actor: user }
+      - { kind: submit_form, actor: user }
+      - { kind: save_applicant_copy, actor: user }
+      - { kind: pay_fee, actor: user }
+      - { kind: confirm_payment, actor: user }

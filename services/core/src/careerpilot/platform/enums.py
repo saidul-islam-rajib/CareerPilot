@@ -470,3 +470,179 @@ class ReplyDisposition(StrEnum):
 class CalendarEventState(StrEnum):
     SYNCED = "synced"
     CANCELLED = "cancelled"
+
+
+class CircularStatus(StrEnum):
+    DRAFT = "draft"
+    PUBLISHED = "published"
+    WITHDRAWN = "withdrawn"
+
+
+class CircularPhase(StrEnum):
+    UPCOMING = "upcoming"
+    OPEN = "open"
+    CLOSED = "closed"
+
+
+class QuotaKind(StrEnum):
+    GENERAL = "general"
+    FREEDOM_FIGHTER = "freedom_fighter"
+    ETHNIC_MINORITY = "ethnic_minority"
+    PERSON_WITH_DISABILITY = "person_with_disability"
+    ANSAR_VDP = "ansar_vdp"
+    ORPHAN = "orphan"
+    WOMEN = "women"
+    DISTRICT = "district"
+
+
+class DistrictBasis(StrEnum):
+    HOME_DISTRICT = "home_district"
+    PERMANENT_ADDRESS = "permanent_address"
+    PRESENT_ADDRESS = "present_address"
+
+
+class CriterionKind(StrEnum):
+    CITIZENSHIP = "citizenship"
+    AGE = "age"
+    EDUCATION = "education"
+    DISTRICT = "district"
+
+
+class Eligibility(StrEnum):
+    MET = "met"
+    NOT_MET = "not_met"
+    UNKNOWN = "unknown"
+
+
+class EligibilityReason(StrEnum):
+    PROFILE_MISSING = "profile_missing"
+    CUTOFF_NOT_STATED = "cutoff_not_stated"
+    ABOVE_MAXIMUM = "above_maximum"
+    BELOW_MINIMUM = "below_minimum"
+    RELAXATION_UNVERIFIED = "relaxation_unverified"
+    RELAXATION_APPLIED = "relaxation_applied"
+    RECORD_MISSING = "record_missing"
+    SCALE_DIFFERS = "scale_differs"
+    RESULT_BELOW = "result_below"
+    SUBJECT_MISMATCH = "subject_mismatch"
+    SUBJECT_MISSING = "subject_missing"
+    DISTRICT_OUTSIDE = "district_outside"
+    NOT_A_CITIZEN = "not_a_citizen"
+    SATISFIED = "satisfied"
+
+
+class GovApplicationStatus(StrEnum):
+    PREPARING = "preparing"
+    SUBMITTED = "submitted"
+    CONFIRMED = "confirmed"
+    WITHDRAWN = "withdrawn"
+
+
+class FeeStatus(StrEnum):
+    NOT_REQUIRED = "not_required"
+    DUE = "due"
+    UNCONFIRMED = "unconfirmed"
+    PAID = "paid"
+
+
+class PaymentMethod(StrEnum):
+    MOBILE_BANKING = "mobile_banking"
+    SMS = "sms"
+    BANK = "bank"
+    OTHER = "other"
+
+
+class FeeUrgency(StrEnum):
+    NONE = "none"
+    OK = "ok"
+    DUE_SOON = "due_soon"
+    OVERDUE = "overdue"
+
+
+class GovStage(StrEnum):
+    APPLICATION = "application"
+    ADMIT_CARD = "admit_card"
+    PRELIMINARY = "preliminary"
+    WRITTEN = "written"
+    PRACTICAL = "practical"
+    VIVA = "viva"
+    DOCUMENT_VERIFICATION = "document_verification"
+    POLICE_VERIFICATION = "police_verification"
+    MEDICAL = "medical"
+    RESULT = "result"
+
+
+class StageStatus(StrEnum):
+    EXPECTED = "expected"
+    SCHEDULED = "scheduled"
+    RESCHEDULED = "rescheduled"
+    DONE = "done"
+    PASSED = "passed"
+    FAILED = "failed"
+
+
+class EvidenceSource(StrEnum):
+    OFFICIAL_NOTICE = "official_notice"
+    USER_ENTRY = "user_entry"
+
+
+class NoticeKind(StrEnum):
+    CORRECTION = "correction"
+    AMENDMENT = "amendment"
+    RESCHEDULE = "reschedule"
+    ADMIT_CARD = "admit_card"
+    RESULT = "result"
+    VERIFICATION = "verification"
+    OTHER = "other"
+
+
+class DayKind(StrEnum):
+    WORKING = "working"
+    WEEKEND = "weekend"
+    HOLIDAY = "holiday"
+
+
+class DeadlineSubject(StrEnum):
+    APPLICATION_CLOSE = "application_close"
+    FEE_PAYMENT = "fee_payment"
+    STAGE = "stage"
+
+
+class GuideStepKind(StrEnum):
+    CHECK_ELIGIBILITY = "check_eligibility"
+    PREPARE_PHOTO_SIGNATURE = "prepare_photo_signature"
+    OPEN_OFFICIAL_SITE = "open_official_site"
+    COMPLETE_VERIFICATION = "complete_verification"
+    SUBMIT_FORM = "submit_form"
+    SAVE_APPLICANT_COPY = "save_applicant_copy"
+    PAY_FEE = "pay_fee"
+    CONFIRM_PAYMENT = "confirm_payment"
+
+
+class GuideActor(StrEnum):
+    USER = "user"
+    SYSTEM = "system"
+
+
+class ConnectorFailure(StrEnum):
+    HOST_NOT_ALLOWED = "host_not_allowed"
+    UNREACHABLE = "unreachable"
+    NO_CONTENT = "no_content"
+
+
+class Weekday(StrEnum):
+    MONDAY = "monday"
+    TUESDAY = "tuesday"
+    WEDNESDAY = "wednesday"
+    THURSDAY = "thursday"
+    FRIDAY = "friday"
+    SATURDAY = "saturday"
+    SUNDAY = "sunday"
+
+
+class SecretKind(StrEnum):
+    APPLICATION_ID = "application_id"
+    USER_ID = "user_id"
+    PASSWORD = "password"
+    ROLL_NUMBER = "roll_number"
+    TRANSACTION_ID = "transaction_id"
