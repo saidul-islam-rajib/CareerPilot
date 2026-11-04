@@ -51,8 +51,8 @@ describe('ui components', () => {
   });
 
   it('reveals a secret field and shows translated errors', async () => {
-    await renderWithProviders(<TextField label="Password" secret error="validation.passwordLength" errorParams={{ min: 10 }} value="" />);
-    expect(await screen.findByText('Use at least 10 characters.')).toBeTruthy();
+    await renderWithProviders(<TextField label="Password" secret error="validation.passwordLength" errorParams={{ min: 6, max: 50 }} value="" />);
+    expect(await screen.findByText('Use 6 to 50 characters.')).toBeTruthy();
     expect(screen.getByLabelText('Password').props.secureTextEntry).toBe(true);
     await fireEvent.press(screen.getByLabelText('Show password'));
     expect(screen.getByLabelText('Password').props.secureTextEntry).toBe(false);

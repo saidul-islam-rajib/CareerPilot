@@ -42,7 +42,7 @@ function PasswordForm({ token, details }: { token: string; details: AccountLinkD
   const t = useT();
   const form = useSetPasswordForm(token);
   const copy = COPY[details.purpose];
-  const passwordParams = { min: form.policy.password.minLength };
+  const passwordParams = { min: form.policy.password.minLength, max: form.policy.password.maxLength };
   return (
     <Screen
       testID="set-password-screen"

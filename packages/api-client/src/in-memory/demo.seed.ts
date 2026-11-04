@@ -275,6 +275,8 @@ export function buildDemoSeed(now: Date): DemoState {
   const settings: Settings = {
     timeZone: 'Asia/Dhaka',
     excludedCountries: [],
+    excludedOrganizations: [],
+    privateNotifications: false,
     favoriteCompanies: [],
     homeCountry: 'BD',
     discoverable: true,

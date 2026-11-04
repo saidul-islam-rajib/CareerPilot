@@ -197,3 +197,31 @@ export function useExcludedCountries() {
     failed: save.isError,
   };
 }
+
+export function useExcludedOrganizations() {
+  const api = useApi();
+  const settings = useSettings();
+  const save = useSettingsMutation((organizations: string[]) => api.settings.updateExcludedOrganizations(organizations));
+  const organizations = settings.data?.excludedOrganizations ?? [];
+  return {
+    settings,
+    organizations,
+    add: (names: string[]) => save.mutate([...organizations, ...names]),
+    remove: (name: string) => save.mutate(organizations.filter((existing) => existing !== name)),
+    saving: save.isPending,
+    failed: save.isError,
+  };
+}
+
+export function usePrivateNotifications() {
+  const api = useApi();
+  const settings = useSettings();
+  const save = useSettingsMutation((enabled: boolean) => api.settings.updatePrivateNotifications(enabled));
+  return {
+    settings,
+    enabled: settings.data?.privateNotifications ?? false,
+    set: (enabled: boolean) => save.mutate(enabled),
+    saving: save.isPending,
+    failed: save.isError,
+  };
+}

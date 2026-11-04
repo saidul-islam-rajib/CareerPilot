@@ -132,3 +132,16 @@ def test_excluded_countries_must_be_two_letter_codes(app: Container) -> None:
     with pytest.raises(DomainError) as raised:
         app.preferences.update_excluded_countries(DEMO_USER, ["Bangladesh"])
     assert raised.value.detail == "country_code"
+
+
+def test_jobs_from_excluded_organizations_leave_the_lists(app: Container) -> None:
+    catalog = app.discovery._catalog  # pyright: ignore[reportPrivateUsage]
+    listing = next(item for item in app.discovery.listings() if item.id == PYTHON_LISTING)
+    catalog.save(listing.model_copy(update={"organization": "Northwind Holdings Ltd"}))
+    add_skill(app, "Python")
+    assert PYTHON_LISTING in placements(app)[REMOTE_TRACK]
+    saved = app.preferences.update_excluded_organizations(DEMO_USER, [" northwind holdings ", "Northwind Holdings"])
+    assert saved.excluded_organizations == ["northwind holdings"]
+    assert PYTHON_LISTING not in placements(app)[REMOTE_TRACK]
+    app.preferences.update_excluded_organizations(DEMO_USER, [])
+    assert PYTHON_LISTING in placements(app)[REMOTE_TRACK]

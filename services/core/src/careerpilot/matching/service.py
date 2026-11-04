@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 
 from careerpilot.candidate.models import ArchivedCircular, OpportunityDetail, OpportunityMatch, SourceRef, Track
 from careerpilot.candidate.ports import AccountRepository, CandidateWorkspace, OpportunityRepository, WorkspaceRepository
-from careerpilot.candidate.tracks import CompanyQuota, UserScope, ordered_tracks, role_key, user_scope
+from careerpilot.candidate.tracks import CompanyQuota, UserScope, is_excluded, ordered_tracks, role_key, user_scope
 from careerpilot.discovery.models import Listing
 from careerpilot.matching.ports import Matcher
 from careerpilot.matching.rules import is_eligible, sponsorship_evidence
@@ -90,6 +90,7 @@ class RecommendationService:
     def _fits(self, item: Listing, track: Track, scope: UserScope) -> bool:
         return (
             item.country_code not in scope.excluded_countries
+            and not is_excluded(item.organization, scope.excluded_organizations)
             and role_key(item.organization, item.title) not in scope.recent_roles
             and is_eligible(item, track, self._ctx.config, scope.home_country)
         )

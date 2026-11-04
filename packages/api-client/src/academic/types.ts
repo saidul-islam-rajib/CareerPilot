@@ -30,7 +30,7 @@ import type {
   SubmissionMethod,
   UserAction,
   WarningKind,
-} from "@careerpilot/domain-ui-logic";
+} from '@careerpilot/domain-ui-logic';
 
 export type IsoDay = string;
 

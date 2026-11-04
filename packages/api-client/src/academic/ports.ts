@@ -1,8 +1,4 @@
-import type {
-  DraftKind,
-  ReplyOutcome,
-  UserAction,
-} from "@careerpilot/domain-ui-logic";
+import type { DraftKind, ReplyOutcome, UserAction } from '@careerpilot/domain-ui-logic';
 import type {
   AcademicOverview,
   AcademicReference,
@@ -24,7 +20,7 @@ import type {
   RecommendationStatusChange,
   Referee,
   RefereeInput,
-} from "./types";
+} from './types';
 
 export interface AcademicApi {
   reference(): Promise<AcademicReference>;
@@ -38,11 +34,7 @@ export interface AcademicApi {
   updateProgram(id: string, input: ProgramInput): Promise<Program>;
   removeProgram(id: string): Promise<void>;
   plan(id: string): Promise<Plan>;
-  recordAction(
-    id: string,
-    action: UserAction,
-    confirmed: boolean,
-  ): Promise<Program>;
+  recordAction(id: string, action: UserAction, confirmed: boolean): Promise<Program>;
   decisionMessage(id: string, action: UserAction): Promise<MessageDraft>;
   generateChecklist(id: string): Promise<Program>;
   compareOffers(ids?: string[]): Promise<OfferRow[]>;
@@ -61,24 +53,14 @@ export interface AcademicApi {
   removeReferee(id: string): Promise<void>;
   listRecommendations(programId?: string): Promise<Recommendation[]>;
   createRecommendation(input: RecommendationInput): Promise<Recommendation>;
-  updateRecommendation(
-    id: string,
-    input: RecommendationInput,
-  ): Promise<Recommendation>;
-  setRecommendationStatus(
-    id: string,
-    change: RecommendationStatusChange,
-  ): Promise<Recommendation>;
+  updateRecommendation(id: string, input: RecommendationInput): Promise<Recommendation>;
+  setRecommendationStatus(id: string, change: RecommendationStatusChange): Promise<Recommendation>;
   recommendationDraft(id: string, kind: DraftKind): Promise<MessageDraft>;
   removeRecommendation(id: string): Promise<void>;
   listOutreach(): Promise<Outreach[]>;
   draftOutreach(input: OutreachDraftInput): Promise<Outreach>;
   updateOutreach(id: string, input: OutreachInput): Promise<Outreach>;
   markOutreachSent(id: string, on?: string): Promise<Outreach>;
-  recordOutreachReply(
-    id: string,
-    outcome: ReplyOutcome,
-    note?: string,
-  ): Promise<Outreach>;
+  recordOutreachReply(id: string, outcome: ReplyOutcome, note?: string): Promise<Outreach>;
   removeOutreach(id: string): Promise<void>;
 }

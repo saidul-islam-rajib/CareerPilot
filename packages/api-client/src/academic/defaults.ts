@@ -15,7 +15,7 @@ import {
   StudyKind,
   SubmissionMethod,
   DecisionKind,
-} from "@careerpilot/domain-ui-logic";
+} from '@careerpilot/domain-ui-logic';
 import type {
   CredentialInput,
   Decision,
@@ -25,57 +25,55 @@ import type {
   ProgramInput,
   RecommendationInput,
   RefereeInput,
-} from "./types";
+} from './types';
 
 export function emptyProgramInput(): ProgramInput {
   return {
     kind: StudyKind.TaughtMasters,
-    title: "",
-    university: "",
-    department: "",
-    degree: "",
-    field: "",
-    countryCode: "",
-    campus: "",
-    supervisor: "",
-    researchArea: "",
-    studyMode: "",
-    sourceUrl: "",
-    portalUrl: "",
-    notes: "",
+    title: '',
+    university: '',
+    department: '',
+    degree: '',
+    field: '',
+    countryCode: '',
+    campus: '',
+    supervisor: '',
+    researchArea: '',
+    studyMode: '',
+    sourceUrl: '',
+    portalUrl: '',
+    notes: '',
     status: ProgramStatus.Saved,
     linkedProgramIds: [],
     deadlines: [],
     examRequirements: [],
     credentialRequirements: [],
-    equivalence: { evidence: EvidenceStatus.NotStated, note: "" },
-    funding: { status: FundingStatus.NotStated, currency: "", conditions: "" },
+    equivalence: { evidence: EvidenceStatus.NotStated, note: '' },
+    funding: { status: FundingStatus.NotStated, currency: '', conditions: '' },
     fee: {
-      currency: "",
+      currency: '',
       source: AmountSource.Estimate,
-      waiverNote: "",
-      waiverConditions: "",
+      waiverNote: '',
+      waiverConditions: '',
     },
-    workInfo: { note: "", sourceUrl: "" },
+    workInfo: { note: '', sourceUrl: '' },
     budget: [],
     portal: {
-      accountLabel: "",
+      accountLabel: '',
       sections: [],
       documents: [],
       invites: [],
       fee: PortalFee.NotRequired,
-      feeEvidence: "",
+      feeEvidence: '',
       submission: PortalSubmission.NotStarted,
-      privacyNoticeUrl: "",
+      privacyNoticeUrl: '',
       pendingItems: [],
     },
     checklist: [],
   };
 }
 
-export function emptyStudyExamRequirement(
-  exam: ExamKind = ExamKind.Ielts,
-): StudyExamRequirement {
+export function emptyStudyExamRequirement(exam: ExamKind = ExamKind.Ielts): StudyExamRequirement {
   return {
     exam,
     need: NeedLevel.NotStated,
@@ -84,7 +82,7 @@ export function emptyStudyExamRequirement(
     policy: ScorePolicy.NotStated,
     policyEvidence: EvidenceStatus.NotStated,
     waiverDescribed: false,
-    note: "",
+    note: '',
   };
 }
 
@@ -92,9 +90,9 @@ export function emptyDecision(): Decision {
   return {
     kind: DecisionKind.Pending,
     conditions: [],
-    depositCurrency: "",
-    deferralNote: "",
-    scholarshipNote: "",
+    depositCurrency: '',
+    deferralNote: '',
+    scholarshipNote: '',
     actions: [],
   };
 }
@@ -103,42 +101,39 @@ export function emptyExamInput(): ExamInput {
   return {
     exam: ExamKind.Ielts,
     status: ExamStatus.Planned,
-    feeCurrency: "",
+    feeCurrency: '',
     feeSource: AmountSource.Estimate,
     reports: [],
-    note: "",
+    note: '',
   };
 }
 
 export function emptyCredentialInput(): CredentialInput {
   return {
     kind: CredentialKind.Transcript,
-    institution: "",
-    title: "",
+    institution: '',
+    title: '',
     scale: GradeScale.Cgpa4,
-    value: "",
-    outOf: "",
-    convertedValue: "",
-    documentName: "",
-    note: "",
+    value: '',
+    outOf: '',
+    convertedValue: '',
+    documentName: '',
+    note: '',
   };
 }
 
 export function emptyRefereeInput(): RefereeInput {
   return {
-    name: "",
-    email: "",
-    phone: "",
-    title: "",
-    institution: "",
-    relationship: "",
+    name: '',
+    email: '',
+    phone: '',
+    title: '',
+    institution: '',
+    relationship: '',
   };
 }
 
-export function emptyRecommendationInput(
-  refereeId: string,
-  programId: string,
-): RecommendationInput {
+export function emptyRecommendationInput(refereeId: string, programId: string): RecommendationInput {
   return {
     refereeId,
     programId,
@@ -146,17 +141,17 @@ export function emptyRecommendationInput(
     method: SubmissionMethod.NotStated,
     inviteAuthorized: false,
     remindersSent: [],
-    note: "",
+    note: '',
   };
 }
 
 export function emptyOutreachDraft(): OutreachDraftInput {
   return {
-    supervisorName: "",
-    supervisorEmail: "",
-    university: "",
-    department: "",
-    researchReference: "",
-    sourceUrl: "",
+    supervisorName: '',
+    supervisorEmail: '',
+    university: '',
+    department: '',
+    researchReference: '',
+    sourceUrl: '',
   };
 }

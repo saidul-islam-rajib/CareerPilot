@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { ApiError, ApiErrorCode } from '@careerpilot/api-client';
 import { renderAdmin } from '@/test/render';
-import { GovernmentAdminPage } from './government-admin-page';
+import { GovernmentAdminPage, importErrorKey } from './government-admin-page';
 
 describe('GovernmentAdminPage', () => {
   it('creates a circular with a post, publishes it, and adds a holiday', async () => {
@@ -25,5 +26,11 @@ describe('GovernmentAdminPage', () => {
     await renderAdmin(<GovernmentAdminPage />);
     expect(await screen.findByText(/Fixed national days come from settings/)).toBeInTheDocument();
     expect(screen.getAllByText('None yet.').length).toBeGreaterThan(0);
+  });
+
+  it('explains why a page could not be imported', () => {
+    expect(importErrorKey(new ApiError(ApiErrorCode.Validation, 422, 'no_content'))).toBe('government.admin.importErrors.no_content');
+    expect(importErrorKey(new ApiError(ApiErrorCode.Validation, 422, 'host_not_allowed'))).toBe('government.admin.importErrors.host_not_allowed');
+    expect(importErrorKey(new Error('offline'))).toBe('government.admin.importFailed');
   });
 });

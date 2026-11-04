@@ -60,6 +60,8 @@ from careerpilot.discovery.ports import Fetcher
 from careerpilot.discovery.resolver import SourceResolver
 from careerpilot.discovery.safety import public_https_url
 from careerpilot.discovery.service import DiscoveryContext, DiscoveryService
+from careerpilot.fees.context import FeesContext
+from careerpilot.fees.service import FeesServices, build_fees
 from careerpilot.government.circulars import CircularContext, CircularService
 from careerpilot.government.connector import TeletalkReader
 from careerpilot.government.tracking import GovernmentTracking, TrackingContext
@@ -185,6 +187,7 @@ class Container:
     government: GovernmentServices
     writing: WritingService
     academic: AcademicServices
+    fees: FeesServices
 
 
 def default_tracks(settings: Settings) -> list[Track]:
@@ -408,6 +411,7 @@ def _messaging(
             config=candidate.settings.messaging,
             devices=repos.push_devices,
             push=push,
+            private_lookup=lambda user_id: repos.workspaces.get(user_id).preferences.private_notifications,
         )
     )
     messaging = MessagingService(
@@ -537,6 +541,20 @@ def _live_figures(catalog: AdminCatalogService, records: AdminUserRecords, repos
     catalog.track_real_applications(records)
     catalog.track_live_figures(figures)
     return figures
+
+
+def _fees(cfg: Settings, parts: GovernmentParts) -> FeesServices:
+    tracking = _government(parts).tracking
+    candidate = parts.candidate
+    return build_fees(
+        FeesContext(
+            config=cfg.fees,
+            clock=candidate.clock,
+            ids=candidate.ids,
+            records=parts.repos.fee_records,
+            government=lambda user_id: tracking.list_for(user_id, ""),
+        )
+    )
 
 
 def build_container(overrides: ContainerOverrides | None = None) -> Container:
@@ -757,4 +775,5 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
             )
         ),
         government=_government(GovernmentParts(candidate, repos, storage, file_links, fetch_page, secret)),
+        fees=_fees(cfg, GovernmentParts(candidate, repos, storage, file_links, fetch_page, secret)),
     )

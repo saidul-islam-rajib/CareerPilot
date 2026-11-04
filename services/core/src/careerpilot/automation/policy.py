@@ -9,6 +9,7 @@ from careerpilot.automation.models import AutomationRule, AutomationSettings, Ef
 from careerpilot.automation.timing import all_open, day_start, deadline_at_risk, next_open, week_start
 from careerpilot.candidate.models import ApplicationRecord, OpportunityDetail, OpportunityMatch, Track
 from careerpilot.candidate.ports import CandidateWorkspace
+from careerpilot.candidate.tracks import is_excluded
 from careerpilot.platform.clock import parse_iso
 from careerpilot.platform.enums import (
     ApplicationMode,
@@ -143,6 +144,7 @@ class AutomationPolicy:
         checks = [
             (candidate.match.has_hard_failure, SkipReason.HARD_REQUIREMENT_FAILED),
             (opportunity.country_code in workspace.preferences.excluded_countries, SkipReason.EXCLUDED_COUNTRY),
+            (is_excluded(opportunity.organization, workspace.preferences.excluded_organizations), SkipReason.EXCLUDED_EMPLOYER),
             (candidate.track.mode is not ApplicationMode.AUTOMATIC, SkipReason.TRACK_NOT_AUTOMATIC),
             (deadline is not None and parse_iso(deadline) <= situation.now, SkipReason.DEADLINE_PASSED),
             (not workspace.profile.active_documents(), SkipReason.CV_MISSING),

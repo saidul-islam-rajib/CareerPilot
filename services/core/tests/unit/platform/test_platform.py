@@ -11,6 +11,7 @@ from careerpilot.platform.config import deep_merge, load_settings, with_web_addr
 from careerpilot.platform.enums import ThemeKey
 from careerpilot.platform.errors import DomainError, ErrorCode
 from careerpilot.platform.security import Argon2PasswordHasher, TokenService
+from careerpilot.platform.validation import require_password
 from careerpilot.testing import load_sample_data, shift_timestamps
 
 NOW = datetime(2026, 10, 20, 6, 0, tzinfo=UTC)
@@ -175,3 +176,14 @@ def test_production_profile_is_locked_down() -> None:
     assert settings.persistence.mode.value == "database"
     assert settings.submission.delivery_mode.value == "sandbox"
     assert settings.observability.enabled is True
+
+
+def test_passwords_must_be_six_to_fifty_characters() -> None:
+    policy = load_settings().validation.password
+    shortest = "Aa1!xy"
+    longest = "Aa1!" + "x" * 46
+    assert require_password(shortest, policy) == shortest
+    assert require_password(longest, policy) == longest
+    for rejected in (shortest[:-1], longest + "x"):
+        with pytest.raises(DomainError):
+            require_password(rejected, policy)

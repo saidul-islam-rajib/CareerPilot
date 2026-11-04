@@ -30,11 +30,11 @@ describe('ui-web components', () => {
   });
 
   it('links a text field to its translated error and reveals secrets', () => {
-    render(<TextField label="Password" secret error="validation.passwordLength" errorParams={{ min: 10 }} />);
+    render(<TextField label="Password" secret error="validation.passwordLength" errorParams={{ min: 6, max: 50 }} />);
     const input = screen.getByLabelText('Password');
     expect(input).toHaveAttribute('type', 'password');
     expect(input).toHaveAttribute('aria-invalid', 'true');
-    expect(screen.getByRole('alert')).toHaveTextContent('Use at least 10 characters.');
+    expect(screen.getByRole('alert')).toHaveTextContent('Use 6 to 50 characters.');
     fireEvent.click(screen.getByRole('button', { name: 'Show password' }));
     expect(input).toHaveAttribute('type', 'text');
   });

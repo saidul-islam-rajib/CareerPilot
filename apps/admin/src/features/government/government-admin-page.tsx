@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { AgeRelaxation, Circular, CircularContent, ExamRequirement, GovPost, Quota } from '@careerpilot/api-client';
-import { emptyCircularContent, emptyPost } from '@careerpilot/api-client';
+import { emptyCircularContent, emptyPost, isApiError } from '@careerpilot/api-client';
 import { enumLabelKey, useT } from '@careerpilot/client-core';
 import { BdExam, CircularStatus, DistrictBasis, QuotaKind, ResultScale, SpecialStatus, StatusTone } from '@careerpilot/domain-ui-logic';
 import { Badge, Button, Card, ConfirmDialog, EmptyState, ErrorState, LoadingState, PageHeader, Section, SelectField, TextField, useToast } from '@careerpilot/ui-web';
@@ -100,6 +100,16 @@ function PostEditor({ post, onChange, onRemove }: { post: GovPost; onChange: (ne
   );
 }
 
+const IMPORT_ERROR_KEYS: Readonly<Record<string, string>> = {
+  host_not_allowed: 'government.admin.importErrors.host_not_allowed',
+  no_content: 'government.admin.importErrors.no_content',
+  unreachable: 'government.admin.importErrors.unreachable',
+};
+
+export function importErrorKey(error: unknown): string {
+  return (isApiError(error) && IMPORT_ERROR_KEYS[error.detail ?? '']) || 'government.admin.importFailed';
+}
+
 function CircularForm({ initial, id, onDone }: { initial: CircularContent; id?: string; onDone: () => void }) {
   const t = useT();
   const toast = useToast();
@@ -185,7 +195,7 @@ function ImportCard({ onDraft }: { onDraft: (content: CircularContent) => void }
                 toast.show({ message: t('government.admin.draftReady') });
                 onDraft({ ...emptyCircularContent(), ...draft.content });
               },
-              onError: () => toast.show({ message: t('government.admin.importFailed') }),
+              onError: (error) => toast.show({ message: t(importErrorKey(error)) }),
             })
           }
         >

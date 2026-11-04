@@ -10,6 +10,7 @@
 - [x] Worker schedule and activity
 - [x] API client, in-memory implementation, client-core hooks, i18n
 - [x] Web screens, mobile screens, admin screens
-- [!] Excluded organizations, private lock-screen notifications, referee agreement (REQ-40.1, 40.3): recommend a follow-up epic touching matching, submission and the profile editors
+- [x] Excluded organizations and private lock-screen notifications (REQ-40.1): built in specs/E28-fees-and-payments
+- [!] Referee agreement (REQ-40.3): recommend a follow-up touching the profile editors
 - [!] Minimum age and guardian consent (REQ-42): minimum age is still open (REQ question 48); recommend 16 with guardian consent below, once the owner decides
 - [!] Legal retention periods (REQ-46.2): the configured values are placeholders until the lawyer's review

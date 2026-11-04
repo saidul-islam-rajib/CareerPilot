@@ -10,6 +10,7 @@ from careerpilot.platform.email_delivery import InMemoryEmailSender
 from careerpilot.platform.enums import DevicePlatform, NotificationKind
 from careerpilot.platform.errors import DomainError
 from careerpilot.platform.files import InMemoryFileStorage
+from careerpilot.platform.messages import translate
 from careerpilot.platform.push import ExpoPushSender, InMemoryPushSender, PushMessage
 from careerpilot.testing import load_sample_data, sample_repositories, sample_settings
 from tests.unit.conftest import CLIENT, DEMO_USER, TEST_SECRET, FakeHasher
@@ -127,3 +128,17 @@ def test_push_device_endpoints(phone: Container) -> None:
     assert client.put("/v1/push-devices", json={"token": TOKEN, "platform": "windows"}, headers=headers).status_code == 422
     assert client.post("/v1/push-devices/remove", json={"token": TOKEN}, headers=headers).status_code == 204
     assert client.put("/v1/push-devices", json={"token": TOKEN, "platform": "android"}).status_code == 401
+
+
+def test_private_notifications_hide_details_from_the_lock_screen(phone: Container, pushes: InMemoryPushSender) -> None:
+    phone.notifications.register_device(DEMO_USER, TOKEN, DevicePlatform.ANDROID)
+    chat = phone.messaging.start(OTHER, DEMO_USER, LINK)
+    phone.preferences.update_private_notifications(DEMO_USER, True)
+    phone.messaging.send(karim(), chat.id, "Interview moved to Friday", None, LINK)
+    sent = pushes.sent[-1]
+    assert (sent.title, sent.body) == (translate("notifications.private.title"), translate("notifications.private.body"))
+    assert "Karim" not in f"{sent.title}{sent.body}" and "Interview" not in f"{sent.title}{sent.body}"
+    assert phone.notifications.recent(DEMO_USER)[0].body == "Interview moved to Friday"
+    phone.preferences.update_private_notifications(DEMO_USER, False)
+    phone.messaging.send(karim(), chat.id, "Hello again", None, LINK)
+    assert pushes.sent[-1].body == "Hello again"

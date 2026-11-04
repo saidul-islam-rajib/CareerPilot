@@ -241,3 +241,11 @@ def test_smtp_sender_classifies_failures() -> None:
     with pytest.raises(DeliveryError):
         smtp_sender(FakeSmtp(refused={"hr@x.example": (550, b"no")})).send(EMAIL)
     assert smtp_sender(FakeSmtp(), host="smtp.example.com", mode=DeliveryMode.LIVE).send(EMAIL).message_id
+
+
+def test_queued_application_to_a_newly_excluded_organization_is_cancelled_not_sent(service: Container, sender: InMemoryEmailSender) -> None:
+    application_id = approve(service, EMAIL_OPPORTUNITY)
+    organization = record(service, application_id).opportunity.organization
+    service.preferences.update_excluded_organizations(DEMO_USER, [organization])
+    assert service.submissions.submit(DEMO_USER, application_id).status is SubmissionStatus.CANCELLED
+    assert sender.sent == []

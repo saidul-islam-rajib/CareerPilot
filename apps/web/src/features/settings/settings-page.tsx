@@ -1,6 +1,31 @@
 'use client';
 
-import { BarChart3, FileDown, FileCheck2, Landmark, Bell, Clock, MessageCircle, Globe, Plug, Globe2, Info, KeyRound, ListOrdered, LogOut, MessageSquareText, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2, Zap } from 'lucide-react';
+import {
+  BarChart3,
+  GraduationCap,
+  FileDown,
+  FileCheck2,
+  Landmark,
+  EyeOff,
+  Receipt,
+  Bell,
+  Clock,
+  MessageCircle,
+  Globe,
+  Plug,
+  Globe2,
+  Info,
+  KeyRound,
+  ListOrdered,
+  LogOut,
+  MessageSquareText,
+  Palette,
+  PauseCircle,
+  ScrollText,
+  ShieldCheck,
+  Trash2,
+  Zap,
+} from 'lucide-react';
 import { useDiscoverable, usePublicConfig, useSession, useSettings, useT } from '@careerpilot/client-core';
 import { Card, ListRow, PageHeader, Separator, SwitchField, TeamSoberCredit } from '@careerpilot/ui-web';
 import { teamSoberLogoSrc } from '@/core/brand-assets';
@@ -49,11 +74,17 @@ export function SettingsPage() {
           <Separator />
           <ListRow icon={Landmark} title={t('government.title')} subtitle={t('government.menuBody')} href={Routes.government} />
           <Separator />
+          <ListRow icon={GraduationCap} title={t('academic.title')} subtitle={t('academic.menuBody')} href={Routes.students} />
+          <Separator />
           <ListRow icon={Zap} title={t('automation.title')} subtitle={t('automation.menuBody')} href={Routes.automation} />
           <Separator />
           <ListRow icon={Plug} title={t('integrations.page.title')} subtitle={t('integrations.page.menuBody')} href={Routes.connectedAccounts} />
           <Separator />
           <ListRow icon={Globe2} title={t('settings.countries')} subtitle={t('settings.countriesMenuBody')} href={Routes.countries} />
+          <Separator />
+          <ListRow icon={EyeOff} title={t('settings.confidential')} subtitle={t('settings.confidentialBody')} href={Routes.confidential} />
+          <Separator />
+          <ListRow icon={Receipt} title={t('fees.title')} subtitle={t('fees.menuBody')} href={Routes.fees} />
         </Card>
         <Card>
           <ListRow icon={Bell} title={t('settings.notifications')} subtitle={t('settings.digestBody')} href={Routes.notifications} />

@@ -135,5 +135,25 @@ class PreferencesService:
         self._on_change(user_id)
         return self._view_of(user_id)
 
+    def update_excluded_organizations(self, user_id: str, organizations: list[str]) -> Preferences:
+        names: list[str] = []
+        for organization in organizations:
+            name = require_text(organization, self._ctx.settings.validation.name)
+            if name.casefold() not in {existing.casefold() for existing in names}:
+                names.append(name)
+        if len(names) > self._ctx.settings.account.max_excluded_organizations:
+            raise validation_error("excluded_organization_limit")
+        workspace = self._ctx.workspaces.get(user_id)
+        workspace.preferences.excluded_organizations = names
+        self._ctx.workspaces.save(user_id, workspace)
+        self._on_change(user_id)
+        return self._view_of(user_id)
+
+    def update_private_notifications(self, user_id: str, enabled: bool) -> Preferences:
+        workspace = self._ctx.workspaces.get(user_id)
+        workspace.preferences.private_notifications = enabled
+        self._ctx.workspaces.save(user_id, workspace)
+        return self._view_of(user_id)
+
     def sign_in_activity(self, user_id: str) -> list[SignInEvent]:
         return sorted(self._ctx.workspaces.get(user_id).sign_in_events, key=lambda e: e.at, reverse=True)

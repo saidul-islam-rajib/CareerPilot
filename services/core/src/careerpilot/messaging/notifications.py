@@ -1,4 +1,5 @@
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from careerpilot.candidate.models import ApplicationRecord
@@ -13,6 +14,8 @@ from careerpilot.platform.push import PushDispatcher, PushMessage
 
 NOTIFICATION_ID_PREFIX = "ntf"
 LATEST_LIMIT = 5
+PRIVATE_TITLE_KEY = "notifications.private.title"
+PRIVATE_BODY_KEY = "notifications.private.body"
 PUSH_TOKEN_DETAIL = "push_token"
 UNREGISTERED_REASON = "push address no longer valid"
 SIGNED_OUT_REASON = "signed out on this device"
@@ -33,6 +36,7 @@ class NotificationContext:
     config: MessagingConfig
     devices: PushDeviceRepository
     push: PushDispatcher
+    private_lookup: Callable[[str], bool] = lambda _user_id: False
 
 
 def notification_view(notification: Notification) -> NotificationView:
@@ -81,6 +85,8 @@ class NotificationService:
         if not tokens:
             return
         data = {"kind": kind.value, "target": target[0].value, "targetId": target[1]}
+        if self._ctx.private_lookup(user_id):
+            title, body = translate(PRIVATE_TITLE_KEY), translate(PRIVATE_BODY_KEY)
         self._ctx.push.dispatch(
             PushMessage(to=tokens, title=title, body=body, data=data),
             lambda gone: self._ctx.devices.remove(gone, UNREGISTERED_REASON),

@@ -12,6 +12,7 @@ from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import ApplicationRecord, Evidence, ProfileDocument, SentEmail, SentFile, TimelineEntry
 from careerpilot.candidate.ports import CandidateWorkspace
 from careerpilot.candidate.submission_checks import EMAIL_CHECKS, FAILURE_STATUS, SubmissionCase, first_failure
+from careerpilot.candidate.tracks import is_excluded
 from careerpilot.platform.clock import iso, parse_iso
 from careerpilot.platform.email_delivery import Attachment, DeliveryError, DeliveryUncertainError, EmailSender, OutgoingEmail
 from careerpilot.platform.enums import (
@@ -74,6 +75,8 @@ class SubmissionService:
         application = next((a for a in workspace.applications if a.id == application_id), None)
         if application is None or application.submission_status is not SubmissionStatus.APPROVED_QUEUED:
             return SubmissionResult(application.submission_status if application else SubmissionStatus.CANCELLED)
+        if is_excluded(application.opportunity.organization, workspace.preferences.excluded_organizations):
+            return self._cancel_excluded(user_id, workspace, application)
         hold = self._hold(user_id, workspace, application)
         if hold is not None:
             return SubmissionResult(application.submission_status, hold)
@@ -86,6 +89,12 @@ class SubmissionService:
         self._candidate.workspaces.save(user_id, workspace)
         if application.submission_status is not before:
             self._ctx.on_status(user_id, application)
+        return SubmissionResult(application.submission_status)
+
+    def _cancel_excluded(self, user_id: str, workspace: CandidateWorkspace, application: ApplicationRecord) -> SubmissionResult:
+        self._move(application, SubmissionStatus.CANCELLED, translate("timeline.cancelledExcludedOrganization"))
+        self._candidate.workspaces.save(user_id, workspace)
+        self._ctx.on_status(user_id, application)
         return SubmissionResult(application.submission_status)
 
     def _follow_current_route(self, application: ApplicationRecord) -> None:

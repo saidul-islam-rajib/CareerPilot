@@ -4,6 +4,7 @@ account:
   # Home country (ISO 3166-1 alpha-2) until the user sets their own in the profile.
   default_country_code: BD
   max_favorite_companies: 50
+  max_excluded_organizations: 50
   deletion_grace_days: 14
   approval_validity_days: 3
   recent_window_days: 7

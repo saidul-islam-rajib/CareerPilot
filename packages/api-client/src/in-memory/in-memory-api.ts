@@ -36,6 +36,7 @@ import { createInMemoryAutomation } from '../automation/in-memory';
 import { createInMemoryPrivacy } from '../privacy/in-memory';
 import { createInMemoryWriting } from '../writing/in-memory';
 import { createInMemoryAcademic } from '../academic/in-memory';
+import { createInMemoryFees } from '../fees/in-memory';
 import { createInMemoryIntegrations } from './integrations';
 import { createJobSources } from './job-sources';
 import { createInMemoryMessaging, messagingSeed } from './messaging';
@@ -373,6 +374,13 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     messaging,
     integrations,
     government,
+    fees: createInMemoryFees({
+      clock,
+      ids,
+      respond,
+      fail: failWith,
+      userId: () => signedInId ?? state.accounts[0]?.user.id ?? '',
+    }),
     academic: createInMemoryAcademic({
       clock,
       ids,
@@ -470,6 +478,17 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
           return failWith(ApiErrorCode.Validation, ApiErrorDetail.CountryCode);
         }
         state.settings.excludedCountries = codes;
+        return respond(state.settings);
+      },
+      async updateExcludedOrganizations(organizations) {
+        const names = organizations.map((name) => name.trim()).filter(Boolean);
+        state.settings.excludedOrganizations = names.filter(
+          (name, index) => names.findIndex((other) => other.toLowerCase() === name.toLowerCase()) === index,
+        );
+        return respond(state.settings);
+      },
+      async updatePrivateNotifications(enabled) {
+        state.settings.privateNotifications = enabled;
         return respond(state.settings);
       },
       listSignInActivity: async () => respond([...state.signInEvents].sort((a, b) => b.at.localeCompare(a.at))),

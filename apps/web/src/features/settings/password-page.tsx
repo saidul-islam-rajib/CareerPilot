@@ -9,7 +9,7 @@ export function PasswordPage() {
   const t = useT();
   const form = useChangePasswordForm();
   const { config } = usePublicConfig();
-  const passwordParams = { min: config.validationPolicy.password.minLength };
+  const passwordParams = { min: config.validationPolicy.password.minLength, max: config.validationPolicy.password.maxLength };
   return (
     <>
       <PageHeader title={t('settings.changePassword')} />

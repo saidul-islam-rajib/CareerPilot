@@ -452,6 +452,8 @@ class Preferences(CamelModel):
     time_zone: str
     notifications: NotificationPreferences = Field(default_factory=NotificationPreferences)
     excluded_countries: list[str] = Field(default_factory=list[str])
+    excluded_organizations: list[str] = Field(default_factory=list[str])
+    private_notifications: bool = False
     favorite_companies: list[str] = Field(default_factory=list[str])
     blocked_users: list[str] = Field(default_factory=list[str])
     discoverable: bool = True

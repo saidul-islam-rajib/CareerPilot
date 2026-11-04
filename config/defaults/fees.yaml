@@ -1,0 +1,14 @@
+# Fees and payments tracking: records only, no payments are made (Requirements 10.10, 10.11; specs/E28-fees-and-payments).
+fees:
+  max_text_length: 1000
+  max_items: 200
+  max_receipts_per_payment: 10
+  max_amount: 100000000
+  due_soon_days: 3
+  default_currency: BDT
+  currencies: [BDT, USD, GBP, EUR, CAD, AUD, AED, SAR, MYR, SGD, INR, JPY]
+  guidance:
+    - {status: uncertain, steps: [verify_with_payee, do_not_pay_again, add_receipt]}
+    - {status: failed, steps: [verify_with_payee, retry_after_check]}
+    - {status: refunded, steps: [add_receipt]}
+    - {status: paid, steps: [check_duplicate]}

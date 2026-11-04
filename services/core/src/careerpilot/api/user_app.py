@@ -8,6 +8,7 @@ from careerpilot.administration.models import NewUserSource
 from careerpilot.api import (
     academic_routes,
     automation_routes,
+    fees_routes,
     government_routes,
     integrations_routes,
     messaging_routes,
@@ -77,6 +78,14 @@ class FavoriteCompaniesBody(CamelModel):
 
 class ExcludedCountriesBody(CamelModel):
     countries: list[str]
+
+
+class ExcludedOrganizationsBody(CamelModel):
+    organizations: list[str]
+
+
+class PrivateNotificationsBody(CamelModel):
+    enabled: bool
 
 
 class JobLinkBody(CamelModel):
@@ -360,6 +369,16 @@ def excluded_countries(body: ExcludedCountriesBody, user: CurrentUser, services:
     return ok(services.preferences.update_excluded_countries(user.id, body.countries))
 
 
+@router.put("/settings/excluded-organizations")
+def excluded_organizations(body: ExcludedOrganizationsBody, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.preferences.update_excluded_organizations(user.id, body.organizations))
+
+
+@router.put("/settings/private-notifications")
+def private_notifications(body: PrivateNotificationsBody, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.preferences.update_private_notifications(user.id, body.enabled))
+
+
 @router.get("/account/sign-in-activity")
 def sign_in_activity(user: CurrentUser, services: Services) -> JSONResponse:
     return ok(services.preferences.sign_in_activity(user.id))
@@ -384,5 +403,6 @@ def create_user_app(container: Container) -> FastAPI:
     app.include_router(writing_routes.router)
     app.include_router(automation_routes.router)
     app.include_router(academic_routes.router)
+    app.include_router(fees_routes.router)
     instrument(app, container, container.settings.observability.user_api_service)
     return app

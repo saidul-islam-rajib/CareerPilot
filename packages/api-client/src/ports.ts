@@ -171,6 +171,8 @@ export interface SettingsApi {
   resume(): Promise<Settings>;
   updateSubmissionWindow(window: SubmissionWindow): Promise<Settings>;
   updateExcludedCountries(countries: string[]): Promise<Settings>;
+  updateExcludedOrganizations(organizations: string[]): Promise<Settings>;
+  updatePrivateNotifications(enabled: boolean): Promise<Settings>;
   updateFavoriteCompanies(companies: string[]): Promise<Settings>;
   listSignInActivity(): Promise<SignInEvent[]>;
   changePassword(change: PasswordChange): Promise<void>;
@@ -182,6 +184,7 @@ import type { AutomationApi } from './automation/ports';
 import type { PrivacyApi } from './privacy/ports';
 import type { WritingApi } from './writing/ports';
 import type { AcademicApi } from './academic/ports';
+import type { FeesApi } from './fees/ports';
 
 export interface CareerPilotApi {
   auth: AuthApi;
@@ -201,6 +204,7 @@ export interface CareerPilotApi {
   automation: AutomationApi;
   writing: WritingApi;
   academic: AcademicApi;
+  fees: FeesApi;
 }
 
 export interface Clock {

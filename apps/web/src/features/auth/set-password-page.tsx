@@ -41,7 +41,7 @@ function PasswordForm({ token, details }: { token: string; details: AccountLinkD
   const router = useRouter();
   const form = useSetPasswordForm(token);
   const copy = COPY[details.purpose];
-  const passwordParams = { min: form.policy.password.minLength };
+  const passwordParams = { min: form.policy.password.minLength, max: form.policy.password.maxLength };
 
   useEffect(() => {
     if (form.done) {

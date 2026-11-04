@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
 from careerpilot.academic.config import AcademicConfig
 from careerpilot.automation.config import AutomationConfig
+from careerpilot.fees.config import FeesConfig
 from careerpilot.platform.enums import (
     AnswerTopic,
     ApplicationRoute,
@@ -63,6 +64,7 @@ class AccountConfig(Strict):
     default_time_zone: str
     default_country_code: str = Field(pattern=r"^[A-Z]{2}$")
     max_favorite_companies: int = Field(gt=0)
+    max_excluded_organizations: int = Field(gt=0)
     deletion_grace_days: int = Field(gt=0)
     approval_validity_days: int = Field(gt=0)
     recent_window_days: int = Field(gt=0)
@@ -915,6 +917,7 @@ class Settings(Strict):
     writing: WritingConfig
     automation: AutomationConfig
     academic: AcademicConfig
+    fees: FeesConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

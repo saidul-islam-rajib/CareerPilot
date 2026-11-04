@@ -1,6 +1,28 @@
 import { useRouter } from 'expo-router';
 import { useDiscoverable, usePublicConfig, useSession, useSettings, useT } from '@careerpilot/client-core';
-import { FileText, Landmark, Bell, Clock, Globe, Info, MapPinOff, KeyRound, Plug, ListOrdered, LogOut, MessageSquareText, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2, Zap } from '@/ui/icons';
+import {
+  FileText,
+  GraduationCap,
+  EyeOff,
+  Landmark,
+  Receipt,
+  Bell,
+  Clock,
+  Globe,
+  Info,
+  MapPinOff,
+  KeyRound,
+  Plug,
+  ListOrdered,
+  LogOut,
+  MessageSquareText,
+  Palette,
+  PauseCircle,
+  ScrollText,
+  ShieldCheck,
+  Trash2,
+  Zap,
+} from '@/ui/icons';
 import { Routes } from '@/core/navigation/routes';
 import { ServerLink } from '@/features/settings/server-screen';
 import { Card, Divider, ListRow, Screen, TeamSoberCredit, Text, TextTone, TextVariant } from '@/ui';
@@ -43,7 +65,12 @@ export function MoreScreen() {
         <Divider />
         <ListRow icon={PauseCircle} title={t('settings.pause')} subtitle={t('settings.pauseBody')} onPress={() => router.push(Routes.pause)} />
         <Divider />
-        <ListRow icon={Clock} title={t('settings.submissionWindow')} subtitle={t('settings.submissionWindowBody')} onPress={() => router.push(Routes.submissionWindow)} />
+        <ListRow
+          icon={Clock}
+          title={t('settings.submissionWindow')}
+          subtitle={t('settings.submissionWindowBody')}
+          onPress={() => router.push(Routes.submissionWindow)}
+        />
         <Divider />
         <ListRow icon={MessageSquareText} title={t('answers.title')} subtitle={t('answers.menuBody')} onPress={() => router.push(Routes.answers)} />
         <Divider />
@@ -51,12 +78,36 @@ export function MoreScreen() {
         <Divider />
         <ListRow icon={Zap} title={t('automation.title')} subtitle={t('automation.menuBody')} onPress={() => router.push(Routes.automation)} />
         <ListRow icon={Landmark} title={t('government.title')} subtitle={t('government.menuBody')} onPress={() => router.push(Routes.government)} />
-        <ListRow icon={Plug} title={t('integrations.page.title')} subtitle={t('integrations.page.menuBody')} onPress={() => router.push(Routes.connectedAccounts)} />
+        <ListRow icon={Receipt} title={t('fees.title')} subtitle={t('fees.menuBody')} onPress={() => router.push(Routes.fees)} />
+        <ListRow icon={GraduationCap} title={t('academic.title')} subtitle={t('academic.menuBody')} onPress={() => router.push(Routes.students)} />
+        <ListRow
+          icon={Plug}
+          title={t('integrations.page.title')}
+          subtitle={t('integrations.page.menuBody')}
+          onPress={() => router.push(Routes.connectedAccounts)}
+        />
         <Divider />
-        <ListRow icon={MapPinOff} title={t('settings.countries')} subtitle={t('settings.countriesMenuBody')} onPress={() => router.push(Routes.countries)} />
+        <ListRow
+          icon={MapPinOff}
+          title={t('settings.countries')}
+          subtitle={t('settings.countriesMenuBody')}
+          onPress={() => router.push(Routes.countries)}
+        />
+        <Divider />
+        <ListRow
+          icon={EyeOff}
+          title={t('settings.confidential')}
+          subtitle={t('settings.confidentialBody')}
+          onPress={() => router.push(Routes.confidential)}
+        />
       </Card>
       <Card>
-        <ListRow icon={Bell} title={t('settings.notifications')} subtitle={t('settings.digestBody')} onPress={() => router.push(Routes.notifications)} />
+        <ListRow
+          icon={Bell}
+          title={t('settings.notifications')}
+          subtitle={t('settings.digestBody')}
+          onPress={() => router.push(Routes.notifications)}
+        />
         <Divider />
         <ListRow icon={KeyRound} title={t('settings.changePassword')} onPress={() => router.push(Routes.changePassword)} />
         <Divider />

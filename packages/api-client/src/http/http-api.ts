@@ -5,6 +5,7 @@ import { createHttpAutomation } from '../automation/http';
 import { createHttpPrivacy } from '../privacy/http';
 import { createHttpWriting } from '../writing/http';
 import { createHttpAcademic } from '../academic/http';
+import { createHttpFees } from '../fees/http';
 import { HttpMethod, RequestPace, type HttpClient } from './http-client';
 
 const enc = encodeURIComponent;
@@ -91,6 +92,7 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
     automation: createHttpAutomation(http),
     writing: createHttpWriting(http),
     academic: createHttpAcademic(http),
+    fees: createHttpFees(http),
     integrations: {
       googleStatus: () => get('/v1/integrations/google'),
       googleAuthorizeUrl: () => get('/v1/integrations/google/authorize-url'),
@@ -138,6 +140,8 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       resume: () => post('/v1/settings/resume'),
       updateSubmissionWindow: (window) => put('/v1/settings/submission-window', window),
       updateExcludedCountries: (countries) => put('/v1/settings/excluded-countries', { countries }),
+      updateExcludedOrganizations: (organizations) => put('/v1/settings/excluded-organizations', { organizations }),
+      updatePrivateNotifications: (enabled) => put('/v1/settings/private-notifications', { enabled }),
       updateFavoriteCompanies: (companies) => put('/v1/settings/favorite-companies', { companies }),
       listSignInActivity: () => get('/v1/account/sign-in-activity'),
       changePassword: (change) => post('/v1/account/password', change),

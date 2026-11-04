@@ -37,7 +37,7 @@ function PasswordForm({ token, details }: { token: string; details: AdminLinkDet
   const t = useT();
   const router = useRouter();
   const form = useAdminPasswordForm(token);
-  const passwordParams = { min: form.policy.password.minLength };
+  const passwordParams = { min: form.policy.password.minLength, max: form.policy.password.maxLength };
 
   useEffect(() => {
     if (form.done) {

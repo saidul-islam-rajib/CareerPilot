@@ -538,6 +538,8 @@ export interface Settings {
   timeZone: string;
   notifications: NotificationPreferences;
   excludedCountries: string[];
+  excludedOrganizations: string[];
+  privateNotifications: boolean;
   favoriteCompanies: string[];
   homeCountry: string;
   discoverable: boolean;

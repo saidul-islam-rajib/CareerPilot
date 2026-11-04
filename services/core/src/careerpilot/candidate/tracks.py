@@ -1,4 +1,5 @@
 from collections import Counter
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
@@ -14,6 +15,7 @@ ROLE_SEPARATOR = "|"
 class UserScope:
     home_country: str
     excluded_countries: frozenset[str]
+    excluded_organizations: frozenset[str]
     recent_roles: frozenset[str]
 
 
@@ -28,6 +30,11 @@ def ordered_tracks(tracks: list[Track], lead_kinds: list[str]) -> list[Track]:
 
 def role_key(organization: str, title: str) -> str:
     return f"{normalized(organization)}{ROLE_SEPARATOR}{normalized(title)}"
+
+
+def is_excluded(organization: str, excluded: Iterable[str]) -> bool:
+    name = f" {normalized(organization)} "
+    return any(f" {key} " in name for key in map(normalized, excluded) if key)
 
 
 def company_key(organization: str) -> str:
@@ -64,5 +71,6 @@ def user_scope(workspace: CandidateWorkspace, default_country: str, now: datetim
     return UserScope(
         home_country=home_country(workspace, default_country),
         excluded_countries=frozenset(workspace.preferences.excluded_countries),
+        excluded_organizations=frozenset(workspace.preferences.excluded_organizations),
         recent_roles=recent_roles(workspace, now, cooldown_days),
     )

@@ -45,6 +45,8 @@ export default function SignedInLayout() {
       <Stack.Screen name="settings/answers" options={{ title: t('answers.title') }} />
       <Stack.Screen name="settings/answer" options={{ title: t('answers.edit') }} />
       <Stack.Screen name="settings/sources" options={{ title: t('sources.title') }} />
+      <Stack.Screen name="students/overview" options={{ title: t('academic.title') }} />
+      <Stack.Screen name="students/program/[id]" options={{ title: t('academic.program.detail') }} />
       <Stack.Screen name="government/index" options={{ title: t('government.title') }} />
       <Stack.Screen name="government/[id]" options={{ title: t('government.title') }} />
       <Stack.Screen name="government/application/[id]" options={{ title: t('government.application.title') }} />
@@ -54,6 +56,9 @@ export default function SignedInLayout() {
       <Stack.Screen name="settings/consents" options={{ title: t('privacy.consent.title') }} />
       <Stack.Screen name="settings/connected-accounts" options={{ title: t('integrations.page.title') }} />
       <Stack.Screen name="settings/countries" options={{ title: t('settings.countries') }} />
+      <Stack.Screen name="settings/confidential" options={{ title: t('settings.confidential') }} />
+      <Stack.Screen name="fees/overview" options={{ title: t('fees.title') }} />
+      <Stack.Screen name="fees/[id]" options={{ title: t('fees.title') }} />
       <Stack.Screen name="settings/source" options={{ title: t('sources.addTitle') }} />
       <Stack.Screen name="settings/source-jobs" options={{ title: t('sources.viewJobs') }} />
       <Stack.Screen name="settings/password" options={{ title: t('settings.changePassword') }} />

@@ -132,3 +132,12 @@ def test_passed_deadline_is_a_safeguard(service: Container, clock: FixedClock) -
     make_remote_automatic(service)
     add_candidate(service, "opp_old", deadline=iso(clock.now() - timedelta(hours=1)))
     assert item(service, "opp_old").reasons == [SkipReason.DEADLINE_PASSED]
+
+
+def test_excluded_organizations_block_every_rule(service: Container) -> None:
+    make_remote_automatic(service)
+    created = service.automation.create_rule(USER, rule())
+    add_candidate(service, "opp_x3", organization="Acme Group Bangladesh")
+    assert SkipReason.EXCLUDED_EMPLOYER not in item(service, "opp_x3", created.id).reasons
+    service.preferences.update_excluded_organizations(USER, ["Acme Group"])
+    assert SkipReason.EXCLUDED_EMPLOYER in item(service, "opp_x3", created.id).reasons

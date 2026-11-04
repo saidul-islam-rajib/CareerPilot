@@ -24,6 +24,9 @@ from careerpilot.candidate.ports import AccountRepository, CandidateWorkspace, O
 from careerpilot.discovery.adapters.in_memory import InMemoryListingCatalog
 from careerpilot.discovery.adapters.sql import SqlListingCatalog
 from careerpilot.discovery.ports import ListingCatalog
+from careerpilot.fees.adapters.in_memory import InMemoryFeeRecords
+from careerpilot.fees.adapters.sql import SqlFeeRecords
+from careerpilot.fees.ports import FeeRecordRepository
 from careerpilot.government.adapters.in_memory import (
     InMemoryCircularRepository,
     InMemoryGovApplicationRepository,
@@ -89,6 +92,7 @@ class Repositories:
     consents: ConsentRepository = field(default_factory=InMemoryConsentRepository)
     writing_drafts: WritingRepository = field(default_factory=InMemoryWritingRepository)
     academic_records: AcademicRecordRepository = field(default_factory=InMemoryAcademicRecords)
+    fee_records: FeeRecordRepository = field(default_factory=InMemoryFeeRecords)
 
 
 RepositoryFactory = Callable[[PasswordHasher, WorkspaceFactory, PlatformSettings], Repositories]
@@ -132,4 +136,5 @@ def sql_repositories(database: Database, empty: WorkspaceFactory, platform_defau
         consents=SqlConsentRepository(database),
         writing_drafts=SqlWritingRepository(database, SystemClock()),
         academic_records=SqlAcademicRecords(database, SystemClock()),
+        fee_records=SqlFeeRecords(database, SystemClock()),
     )
