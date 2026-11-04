@@ -31,6 +31,8 @@ import type { DemoState } from './demo.seed';
 import { createAccountLinks } from './account-links';
 import { createAnswers, hasBlankAnswers } from './answers';
 import { createFollowUps } from './follow-ups';
+import { createInMemoryGovernment } from '../government/in-memory';
+import { createInMemoryPrivacy } from '../privacy/in-memory';
 import { createInMemoryIntegrations } from './integrations';
 import { createJobSources } from './job-sources';
 import { createInMemoryMessaging, messagingSeed } from './messaging';
@@ -144,6 +146,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
   };
 
   const integrations = createInMemoryIntegrations({ clock, respond });
+  const government = createInMemoryGovernment({ clock, ids, respond, fail: failWith }).user;
   const followUps = createFollowUps({ applications: state.applications, config, clock, ids, respond, reject: failWith });
   const jobSources = createJobSources({ sources: state.jobSources, limit: config.jobSources.maxPerUser, clock, ids, respond, reject: failWith });
   const answers = createAnswers({ saved: state.savedAnswers, approvals: state.approvals, applications: state.applications, config, clock, ids, respond, reject: failWith });
@@ -364,6 +367,15 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     sources: jobSources,
     messaging,
     integrations,
+    government,
+    privacy: createInMemoryPrivacy({
+      clock,
+      ids,
+      respond,
+      fail,
+      graceDays: config.accountDeletionGraceDays,
+      password: () => state.accounts.find((a) => a.user.id === (signedInId ?? DEMO_ID))?.password ?? '',
+    }),
     profile: createProfileStore({
       profile: state.profile,
       config,
@@ -433,7 +445,6 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
         state.settings.notifications = { ...state.settings.notifications, ...changes };
         return respond(state.settings);
       },
-      requestAccountDeletion: async () => respond({ scheduledFor: addDays(config.accountDeletionGraceDays) }),
     },
   };
 }

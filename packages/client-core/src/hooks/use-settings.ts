@@ -63,11 +63,6 @@ export function useSignInActivity() {
   return useQuery({ queryKey: queryKeys.signInActivity, queryFn: () => api.settings.listSignInActivity() });
 }
 
-export function useAccountDeletion() {
-  const api = useApi();
-  return useMutation({ mutationFn: () => api.settings.requestAccountDeletion() });
-}
-
 export function clampCount(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, Math.round(value)));
 }

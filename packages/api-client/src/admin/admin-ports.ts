@@ -100,6 +100,9 @@ export interface AdminAccountsApi {
   setSuspended(id: string, suspended: boolean): Promise<AdminAccount>;
 }
 
+import type { GovernmentAdminApi } from '../government/ports';
+import type { AdminPrivacyApi } from '../privacy/ports';
+
 export interface CareerPilotAdminApi {
   auth: AdminAuthApi;
   dashboard: AdminDashboardApi;
@@ -110,4 +113,6 @@ export interface CareerPilotAdminApi {
   settings: AdminSettingsApi;
   audit: AdminAuditApi;
   admins: AdminAccountsApi;
+  government: GovernmentAdminApi;
+  privacy: AdminPrivacyApi;
 }

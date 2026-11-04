@@ -557,10 +557,6 @@ export interface SignInEvent {
   current: boolean;
 }
 
-export interface DeletionRequest {
-  scheduledFor: IsoDateTime;
-}
-
 export type { Money };
 
 export interface SavedAnswer {

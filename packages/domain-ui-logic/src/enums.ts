@@ -460,6 +460,88 @@ export function isEnumValue<T extends Record<string, string>>(enumObject: T, val
   return typeof value === 'string' && (Object.values(enumObject) as string[]).includes(value);
 }
 
+export const ReportPeriod = {
+  Daily: 'daily',
+  Weekly: 'weekly',
+} as const;
+export type ReportPeriod = (typeof ReportPeriod)[keyof typeof ReportPeriod];
+
+export const ReportBucket = {
+  Submitted: 'submitted',
+  Confirmed: 'confirmed',
+  Failed: 'failed',
+  Waiting: 'waiting',
+  Other: 'other',
+} as const;
+export type ReportBucket = (typeof ReportBucket)[keyof typeof ReportBucket];
+
+export const ExportKind = {
+  Applications: 'applications',
+  Report: 'report',
+  Application: 'application',
+  Archive: 'archive',
+} as const;
+export type ExportKind = (typeof ExportKind)[keyof typeof ExportKind];
+
+export const ExportFormat = {
+  Csv: 'csv',
+  Pdf: 'pdf',
+  Zip: 'zip',
+} as const;
+export type ExportFormat = (typeof ExportFormat)[keyof typeof ExportFormat];
+
+export const ExportStatus = {
+  Queued: 'queued',
+  Running: 'running',
+  Ready: 'ready',
+  Failed: 'failed',
+  Expired: 'expired',
+} as const;
+export type ExportStatus = (typeof ExportStatus)[keyof typeof ExportStatus];
+
+export const DeletionStatus = {
+  Requested: 'requested',
+  Cancelled: 'cancelled',
+  Completed: 'completed',
+} as const;
+export type DeletionStatus = (typeof DeletionStatus)[keyof typeof DeletionStatus];
+
+export const DeletionScope = {
+  Profile: 'profile',
+  Documents: 'documents',
+  Applications: 'applications',
+  Answers: 'answers',
+  Preferences: 'preferences',
+  SignInHistory: 'sign_in_history',
+  ConnectedAccounts: 'connected_accounts',
+  Devices: 'devices',
+  Messages: 'messages',
+} as const;
+export type DeletionScope = (typeof DeletionScope)[keyof typeof DeletionScope];
+
+export const RetainedRecord = {
+  AuditEvents: 'audit_events',
+  ConsentRecords: 'consent_records',
+  DeletionRecord: 'deletion_record',
+} as const;
+export type RetainedRecord = (typeof RetainedRecord)[keyof typeof RetainedRecord];
+
+export const ExternalData = {
+  EmployerCopies: 'employer_copies',
+  PortalAccounts: 'portal_accounts',
+} as const;
+export type ExternalData = (typeof ExternalData)[keyof typeof ExternalData];
+
+export const ConsentKind = {
+  Terms: 'terms',
+  Privacy: 'privacy',
+  Analytics: 'analytics',
+  PreciseLocation: 'precise_location',
+  Marketing: 'marketing',
+  AiImprovement: 'ai_improvement',
+} as const;
+export type ConsentKind = (typeof ConsentKind)[keyof typeof ConsentKind];
+
 export const ConnectionStatus = {
   Connected: 'connected',
   NeedsReconnect: 'needs_reconnect',
@@ -486,3 +568,201 @@ export const IntegrationProvider = {
   Google: 'google',
 } as const;
 export type IntegrationProvider = (typeof IntegrationProvider)[keyof typeof IntegrationProvider];
+
+export const CircularStatus = {
+  Draft: 'draft',
+  Published: 'published',
+  Withdrawn: 'withdrawn',
+} as const;
+export type CircularStatus = (typeof CircularStatus)[keyof typeof CircularStatus];
+
+export const CircularPhase = {
+  Upcoming: 'upcoming',
+  Open: 'open',
+  Closed: 'closed',
+} as const;
+export type CircularPhase = (typeof CircularPhase)[keyof typeof CircularPhase];
+
+export const QuotaKind = {
+  General: 'general',
+  FreedomFighter: 'freedom_fighter',
+  EthnicMinority: 'ethnic_minority',
+  PersonWithDisability: 'person_with_disability',
+  AnsarVdp: 'ansar_vdp',
+  Orphan: 'orphan',
+  Women: 'women',
+  District: 'district',
+} as const;
+export type QuotaKind = (typeof QuotaKind)[keyof typeof QuotaKind];
+
+export const DistrictBasis = {
+  HomeDistrict: 'home_district',
+  PermanentAddress: 'permanent_address',
+  PresentAddress: 'present_address',
+} as const;
+export type DistrictBasis = (typeof DistrictBasis)[keyof typeof DistrictBasis];
+
+export const CriterionKind = {
+  Citizenship: 'citizenship',
+  Age: 'age',
+  Education: 'education',
+  District: 'district',
+} as const;
+export type CriterionKind = (typeof CriterionKind)[keyof typeof CriterionKind];
+
+export const Eligibility = {
+  Met: 'met',
+  NotMet: 'not_met',
+  Unknown: 'unknown',
+} as const;
+export type Eligibility = (typeof Eligibility)[keyof typeof Eligibility];
+
+export const EligibilityReason = {
+  ProfileMissing: 'profile_missing',
+  CutoffNotStated: 'cutoff_not_stated',
+  AboveMaximum: 'above_maximum',
+  BelowMinimum: 'below_minimum',
+  RelaxationUnverified: 'relaxation_unverified',
+  RelaxationApplied: 'relaxation_applied',
+  RecordMissing: 'record_missing',
+  ScaleDiffers: 'scale_differs',
+  ResultBelow: 'result_below',
+  SubjectMismatch: 'subject_mismatch',
+  SubjectMissing: 'subject_missing',
+  DistrictOutside: 'district_outside',
+  NotACitizen: 'not_a_citizen',
+  Satisfied: 'satisfied',
+} as const;
+export type EligibilityReason = (typeof EligibilityReason)[keyof typeof EligibilityReason];
+
+export const GovApplicationStatus = {
+  Preparing: 'preparing',
+  Submitted: 'submitted',
+  Confirmed: 'confirmed',
+  Withdrawn: 'withdrawn',
+} as const;
+export type GovApplicationStatus = (typeof GovApplicationStatus)[keyof typeof GovApplicationStatus];
+
+export const FeeStatus = {
+  NotRequired: 'not_required',
+  Due: 'due',
+  Unconfirmed: 'unconfirmed',
+  Paid: 'paid',
+} as const;
+export type FeeStatus = (typeof FeeStatus)[keyof typeof FeeStatus];
+
+export const PaymentMethod = {
+  MobileBanking: 'mobile_banking',
+  Sms: 'sms',
+  Bank: 'bank',
+  Other: 'other',
+} as const;
+export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod];
+
+export const FeeUrgency = {
+  None: 'none',
+  Ok: 'ok',
+  DueSoon: 'due_soon',
+  Overdue: 'overdue',
+} as const;
+export type FeeUrgency = (typeof FeeUrgency)[keyof typeof FeeUrgency];
+
+export const GovStage = {
+  Application: 'application',
+  AdmitCard: 'admit_card',
+  Preliminary: 'preliminary',
+  Written: 'written',
+  Practical: 'practical',
+  Viva: 'viva',
+  DocumentVerification: 'document_verification',
+  PoliceVerification: 'police_verification',
+  Medical: 'medical',
+  Result: 'result',
+} as const;
+export type GovStage = (typeof GovStage)[keyof typeof GovStage];
+
+export const StageStatus = {
+  Expected: 'expected',
+  Scheduled: 'scheduled',
+  Rescheduled: 'rescheduled',
+  Done: 'done',
+  Passed: 'passed',
+  Failed: 'failed',
+} as const;
+export type StageStatus = (typeof StageStatus)[keyof typeof StageStatus];
+
+export const EvidenceSource = {
+  OfficialNotice: 'official_notice',
+  UserEntry: 'user_entry',
+} as const;
+export type EvidenceSource = (typeof EvidenceSource)[keyof typeof EvidenceSource];
+
+export const NoticeKind = {
+  Correction: 'correction',
+  Amendment: 'amendment',
+  Reschedule: 'reschedule',
+  AdmitCard: 'admit_card',
+  Result: 'result',
+  Verification: 'verification',
+  Other: 'other',
+} as const;
+export type NoticeKind = (typeof NoticeKind)[keyof typeof NoticeKind];
+
+export const DayKind = {
+  Working: 'working',
+  Weekend: 'weekend',
+  Holiday: 'holiday',
+} as const;
+export type DayKind = (typeof DayKind)[keyof typeof DayKind];
+
+export const DeadlineSubject = {
+  ApplicationClose: 'application_close',
+  FeePayment: 'fee_payment',
+  Stage: 'stage',
+} as const;
+export type DeadlineSubject = (typeof DeadlineSubject)[keyof typeof DeadlineSubject];
+
+export const GuideStepKind = {
+  CheckEligibility: 'check_eligibility',
+  PreparePhotoSignature: 'prepare_photo_signature',
+  OpenOfficialSite: 'open_official_site',
+  CompleteVerification: 'complete_verification',
+  SubmitForm: 'submit_form',
+  SaveApplicantCopy: 'save_applicant_copy',
+  PayFee: 'pay_fee',
+  ConfirmPayment: 'confirm_payment',
+} as const;
+export type GuideStepKind = (typeof GuideStepKind)[keyof typeof GuideStepKind];
+
+export const GuideActor = {
+  User: 'user',
+  System: 'system',
+} as const;
+export type GuideActor = (typeof GuideActor)[keyof typeof GuideActor];
+
+export const ConnectorFailure = {
+  HostNotAllowed: 'host_not_allowed',
+  Unreachable: 'unreachable',
+  NoContent: 'no_content',
+} as const;
+export type ConnectorFailure = (typeof ConnectorFailure)[keyof typeof ConnectorFailure];
+
+export const Weekday = {
+  Monday: 'monday',
+  Tuesday: 'tuesday',
+  Wednesday: 'wednesday',
+  Thursday: 'thursday',
+  Friday: 'friday',
+  Saturday: 'saturday',
+  Sunday: 'sunday',
+} as const;
+export type Weekday = (typeof Weekday)[keyof typeof Weekday];
+
+export const SecretKind = {
+  ApplicationId: 'application_id',
+  UserId: 'user_id',
+  Password: 'password',
+  RollNumber: 'roll_number',
+  TransactionId: 'transaction_id',
+} as const;
+export type SecretKind = (typeof SecretKind)[keyof typeof SecretKind];

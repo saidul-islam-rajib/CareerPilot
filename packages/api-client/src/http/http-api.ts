@@ -1,5 +1,7 @@
 import type { CareerPilotApi } from '../ports';
 import type { UploadSource } from '../types';
+import { createHttpGovernment } from '../government/http';
+import { createHttpPrivacy } from '../privacy/http';
 import { HttpMethod, RequestPace, type HttpClient } from './http-client';
 
 const enc = encodeURIComponent;
@@ -81,6 +83,8 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       removeAnswer: (id) => del(`/v1/answers/${enc(id)}`),
       restoreAnswer: (id) => post(`/v1/answers/${enc(id)}/restore`),
     },
+    government: createHttpGovernment(http),
+    privacy: createHttpPrivacy(http),
     integrations: {
       googleStatus: () => get('/v1/integrations/google'),
       googleAuthorizeUrl: () => get('/v1/integrations/google/authorize-url'),
@@ -130,7 +134,6 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       updateExcludedCountries: (countries) => put('/v1/settings/excluded-countries', { countries }),
       updateFavoriteCompanies: (companies) => put('/v1/settings/favorite-companies', { companies }),
       listSignInActivity: () => get('/v1/account/sign-in-activity'),
-      requestAccountDeletion: () => post('/v1/account/deletion'),
       changePassword: (change) => post('/v1/account/password', change),
       updateNotifications: (changes) => patch('/v1/settings/notifications', changes),
     },

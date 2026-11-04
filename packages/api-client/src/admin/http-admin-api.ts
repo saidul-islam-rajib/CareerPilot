@@ -3,6 +3,8 @@ import { HttpMethod, RequestPace } from '../http/http-client';
 import type { CareerPilotAdminApi } from './admin-ports';
 import type { PageQuery } from './admin-types';
 import { uploadForm } from '../http/http-api';
+import { createHttpGovernmentAdmin } from '../government/http';
+import { createHttpPrivacyAdmin } from '../privacy/http';
 
 const enc = encodeURIComponent;
 
@@ -25,6 +27,8 @@ export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
   const put = <T>(path: string, body: unknown) => http.request<T>(HttpMethod.Put, path, body);
 
   return {
+    government: createHttpGovernmentAdmin(http),
+    privacy: createHttpPrivacyAdmin(http),
     auth: {
       signIn: (request) => post('/admin/v1/auth/sign-in', request),
       signOut: () => post('/admin/v1/auth/sign-out'),

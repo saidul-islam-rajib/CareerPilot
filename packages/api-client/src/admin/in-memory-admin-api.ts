@@ -1,3 +1,5 @@
+import { createInMemoryGovernment } from '../government/in-memory';
+import type { AdminPrivacyApi } from '../privacy/ports';
 import {
   ActorType,
   ApprovalState,
@@ -219,7 +221,17 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
     return detail ? respond(detail) : fail(ApiErrorCode.NotFound);
   };
 
+  const government = createInMemoryGovernment({ clock, ids, respond, fail }).admin;
+
+  const privacy: AdminPrivacyApi = {
+    exports: () => respond([]),
+    deletions: () => respond([]),
+    userConsents: (id) => (findUser(id) ? respond({ current: [], history: [] }) : fail(ApiErrorCode.NotFound)),
+  };
+
   return {
+    government,
+    privacy,
     auth: {
       async signIn(request) {
         const match = findAdmin(request.email);

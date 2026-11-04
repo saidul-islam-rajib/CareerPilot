@@ -12,7 +12,6 @@ import type {
   ContactChanges,
   ContactInput,
   DashboardSummary,
-  DeletionRequest,
   DocumentChanges,
   DocumentInput,
   NewUserSource,
@@ -174,10 +173,12 @@ export interface SettingsApi {
   updateExcludedCountries(countries: string[]): Promise<Settings>;
   updateFavoriteCompanies(companies: string[]): Promise<Settings>;
   listSignInActivity(): Promise<SignInEvent[]>;
-  requestAccountDeletion(): Promise<DeletionRequest>;
   changePassword(change: PasswordChange): Promise<void>;
   updateNotifications(changes: Partial<NotificationPreferences>): Promise<Settings>;
 }
+
+import type { GovernmentApi } from './government/ports';
+import type { PrivacyApi } from './privacy/ports';
 
 export interface CareerPilotApi {
   auth: AuthApi;
@@ -192,6 +193,8 @@ export interface CareerPilotApi {
   settings: SettingsApi;
   messaging: MessagingApi;
   integrations: IntegrationsApi;
+  government: GovernmentApi;
+  privacy: PrivacyApi;
 }
 
 export interface Clock {

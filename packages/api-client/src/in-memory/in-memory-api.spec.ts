@@ -164,11 +164,10 @@ describe('in-memory profile and settings', () => {
     expect((await api.dashboard.getDashboard()).pause).toBeUndefined();
   });
 
-  it('updates the submission window and schedules deletion after the grace period', async () => {
+  it('updates the submission window', async () => {
     const api = createTestApi();
     const settings = await api.settings.updateSubmissionWindow({ kind: SubmissionWindowKind.AsSoonAsReady });
     expect(settings.submissionWindow.kind).toBe(SubmissionWindowKind.AsSoonAsReady);
-    expect((await api.settings.requestAccountDeletion()).scheduledFor).toBe('2026-11-03T06:00:00.000Z');
   });
 
   it('never leaks internal state through returned objects', async () => {
