@@ -210,6 +210,21 @@ class MessagingService:
     def team_page(self, user_id: str, before: str | None, link: LinkFactory) -> MessagePage:
         return self._page(TEAM_MEMBER, self.team(user_id), before, link)
 
+    def team_inbox(self, query: str, link: LinkFactory) -> list[ConversationSummary]:
+        typed = query.strip().lower()
+        summaries = [
+            self._summary(TEAM_MEMBER, c, link) for c in self._ctx.conversations.all(ConversationKind.TEAM.value) if c.last_message_at
+        ]
+        matching = [s for s in summaries if not typed or typed in f"{s.title} {s.last_message_preview}".lower()]
+        return sorted(matching, key=lambda s: s.last_message_at or "", reverse=True)
+
+    def team_unread(self) -> int:
+        total = 0
+        for conversation in self._ctx.conversations.all(ConversationKind.TEAM.value):
+            mine = next((m for m in self._ctx.conversations.members(conversation.id) if m.member_id == TEAM_MEMBER), None)
+            total += self._ctx.messages.count_after(conversation.id, mine.last_read_at if mine else None, TEAM_MEMBER)
+        return total
+
     def admin_page(self, conversation_id: str, before: str | None, link: LinkFactory) -> MessagePage:
         conversation = self._ctx.conversations.get(conversation_id)
         if conversation is None:

@@ -13,6 +13,7 @@ from careerpilot.administration.account_links import AdminLinkContext, AdminLink
 from careerpilot.administration.context import AdminContext
 from careerpilot.administration.discovery_sync import SourceCheckRunner, discover_when_empty
 from careerpilot.administration.limits import effective_source_limit
+from careerpilot.administration.live_figures import LiveFigures
 from careerpilot.administration.messages import AdminMessages
 from careerpilot.administration.models import AdminSourceRow, EmergencyStop, PlatformSettings
 from careerpilot.administration.presence import PresenceContext, PresenceService
@@ -27,6 +28,7 @@ from careerpilot.administration.services import (
     effective_link_ttl_minutes,
 )
 from careerpilot.administration.sources import SourcePolicy, directory_definitions, is_link_source, listing_visibility
+from careerpilot.administration.user_overview import AdminUserOverviewService, UserOverviewParts
 from careerpilot.administration.user_records import AdminUserRecords, UserRecordsContext
 from careerpilot.administration.user_sources import UserSourceContext, UserSourceService
 from careerpilot.automation.assembly import automation_policy, automation_service
@@ -149,6 +151,7 @@ class Container:
     notifications: NotificationService
     messaging: MessagingService
     admin_messages: AdminMessages
+    admin_overview: AdminUserOverviewService
     public_config: PublicConfigService
     opportunities: OpportunityService
     approvals: ApprovalService
@@ -529,6 +532,13 @@ def _government(parts: GovernmentParts) -> GovernmentServices:
     return GovernmentServices(circulars, tracking, calendar)
 
 
+def _live_figures(catalog: AdminCatalogService, records: AdminUserRecords, repos: Repositories) -> LiveFigures:
+    figures = LiveFigures(records, repos.directory, repos.listings.list_all)
+    catalog.track_real_applications(records)
+    catalog.track_live_figures(figures)
+    return figures
+
+
 def build_container(overrides: ContainerOverrides | None = None) -> Container:
     options = overrides or ContainerOverrides()
     cfg = options.settings or with_web_address(load_settings())
@@ -653,7 +663,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         )
     )
     admin_catalog = AdminCatalogService(admin, source_checks, source_policy, recommendations.refresh_all)
-    admin_catalog.track_real_applications(user_records)
+    live_figures = _live_figures(admin_catalog, user_records, repos)
     integrations = _integrations(IntegrationParts(candidate, repos, notifications, tokens, coord_store, keys, secret), options)
     privacy = build_privacy(
         PrivacyParts(
@@ -689,11 +699,22 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         notifications=notifications,
         messaging=messaging,
         admin_messages=AdminMessages(messaging, repos.accounts, repos.workspaces),
+        admin_overview=AdminUserOverviewService(
+            UserOverviewParts(
+                accounts=repos.accounts,
+                gov_applications=repos.gov_applications,
+                circulars=repos.circulars,
+                drafts=repos.writing_drafts,
+                exports=repos.exports,
+                deletions=repos.deletions,
+                notifications=repos.notifications,
+            )
+        ),
         profile=profile,
         preferences=preferences,
         dashboard=DashboardService(candidate, opportunity_service),
         admin_auth=AdminAuthService(admin, guard, admin_links),
-        admin_dashboard=AdminDashboardService(admin),
+        admin_dashboard=AdminDashboardService(admin, live_figures, messaging.team_unread),
         admin_users=AdminUserService(admin, user_records),
         user_records=user_records,
         admin_catalog=admin_catalog,

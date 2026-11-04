@@ -26,6 +26,7 @@ from careerpilot.platform.enums import (
     AdminArea,
     ApplicationMode,
     ApprovalState,
+    ContactKind,
     OpportunityDecision,
     OutcomeStatus,
     PermissionAction,
@@ -88,6 +89,12 @@ def last_sign_in(workspace: CandidateWorkspace) -> str | None:
     return max(successful) if successful else None
 
 
+def primary_phone(workspace: CandidateWorkspace) -> str | None:
+    phones = [c for c in workspace.profile.active_contacts() if c.kind is ContactKind.PHONE]
+    chosen = next((c for c in phones if c.is_primary), phones[0] if phones else None)
+    return chosen.value if chosen else None
+
+
 def user_row(account: Account, workspace: CandidateWorkspace, default_country: str) -> AdminUserRow:
     return AdminUserRow(
         id=account.user.id,
@@ -100,6 +107,7 @@ def user_row(account: Account, workspace: CandidateWorkspace, default_country: s
         applications_count=len(workspace.applications),
         automatic_enabled=any(track.mode is ApplicationMode.AUTOMATIC for track in workspace.preferences.tracks),
         profile_completeness=workspace.profile.completeness,
+        phone=primary_phone(workspace),
     )
 
 
@@ -156,6 +164,12 @@ class AdminUserRecords:
             rows.extend(application_row(application, account.user.full_name, workspace) for application in workspace.applications)
         known = {row.id for row in rows}
         return rows + [row for row in self._ctx.directory.applications() if row.id not in known]
+
+    def applied_opportunity_ids(self) -> list[str]:
+        ids: list[str] = []
+        for user_id in self._ctx.accounts.all_ids():
+            ids.extend(a.opportunity.id for a in self._ctx.workspaces.get(user_id).applications if a.archived_at is None)
+        return ids
 
     def owner_of(self, application_id: str) -> str | None:
         for user_id in self._ctx.accounts.all_ids():

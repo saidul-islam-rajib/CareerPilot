@@ -7,6 +7,7 @@ from careerpilot.administration.account_links import AdminLinkDetails, AdminLink
 from careerpilot.administration.context import ADMIN_AUDIENCE, AdminActor, AdminContext, PageRequest, paginate
 from careerpilot.administration.discovery_sync import SourceCheckRunner
 from careerpilot.administration.limits import effective_source_limit
+from careerpilot.administration.live_figures import DirectoryFigures, Figures
 from careerpilot.administration.models import (
     AdminAccount,
     AdminApplicationRow,
@@ -56,6 +57,7 @@ from careerpilot.platform.enums import (
     SubmissionStatus,
     ThemeKey,
     UserAccountStatus,
+    UserSegment,
 )
 from careerpilot.platform.errors import DomainError, ErrorCode, conflict, not_found, validation_error
 from careerpilot.platform.model import CamelModel
@@ -79,6 +81,8 @@ class UsersBlock(CamelModel):
     paused: int
     suspended: int
     pending_deletion: int
+    registered: int = 0
+    deleted: int = 0
     automatic_enabled: int
     incomplete_profiles: int
 
@@ -119,6 +123,7 @@ class AdminDashboard(CamelModel):
     notifications: NotificationCounts
     health: list[ServiceStatus]
     emergency_stop: EmergencyStop
+    unread_messages: int = 0
 
 
 def count_by(values: list[str]) -> list[CountByKey]:
@@ -178,17 +183,23 @@ class AdminAuthService:
         return AdminSummary(id=account.id, full_name=account.full_name, email=account.email, role=account.role)
 
 
+def no_unread() -> int:
+    return 0
+
+
 class AdminDashboardService:
-    def __init__(self, context: AdminContext) -> None:
+    def __init__(self, context: AdminContext, figures: Figures | None = None, unread: Callable[[], int] = no_unread) -> None:
         self._ctx = context
+        self._figures = figures or DirectoryFigures(context.directory)
+        self._unread = unread
 
     def get(self, actor: AdminActor) -> AdminDashboard:
         actor.require(AdminArea.DASHBOARD, PermissionAction.READ)
         now = self._ctx.clock.now()
-        users = self._ctx.directory.users()
-        apps = self._ctx.directory.applications()
-        opportunities = self._ctx.directory.opportunities()
-        sources = self._ctx.directory.sources()
+        users = self._figures.users()
+        apps = self._figures.applications()
+        opportunities = self._figures.opportunities()
+        sources = self._figures.sources()
         operations = self._ctx.directory.operations()
         week_ago = now - timedelta(days=self._ctx.settings.account.recent_window_days)
         chart_days = self._ctx.settings.admin.chart_days
@@ -197,11 +208,13 @@ class AdminDashboardService:
             generated_at=iso(now),
             users=UsersBlock(
                 total=len(users),
-                new_this_week=sum(1 for u in users if parse_iso(u.created_at) >= week_ago),
+                new_this_week=sum(1 for u in users if u.created_at and parse_iso(u.created_at) >= week_ago),
                 active=sum(1 for u in users if u.status is UserAccountStatus.ACTIVE),
                 paused=sum(1 for u in users if u.status is UserAccountStatus.PAUSED),
                 suspended=sum(1 for u in users if u.status is UserAccountStatus.SUSPENDED),
                 pending_deletion=sum(1 for u in users if u.status is UserAccountStatus.PENDING_DELETION),
+                registered=sum(1 for u in users if u.status is UserAccountStatus.REGISTERED),
+                deleted=sum(1 for u in users if u.status is UserAccountStatus.DELETED),
                 automatic_enabled=sum(1 for u in users if u.automatic_enabled),
                 incomplete_profiles=sum(1 for u in users if u.profile_completeness < self._ctx.settings.admin.complete_profile_percent),
             ),
@@ -232,6 +245,7 @@ class AdminDashboardService:
             notifications=operations.notifications,
             health=operations.services,
             emergency_stop=self._ctx.platform.get().emergency_stop,
+            unread_messages=self._unread(),
         )
 
 
@@ -243,13 +257,27 @@ class AdminUserService:
     def _rows(self) -> list[AdminUserRow]:
         return self._records.rows() if self._records else self._ctx.directory.users()
 
+    def _applications(self) -> list[AdminApplicationRow]:
+        return self._records.application_rows() if self._records else self._ctx.directory.applications()
+
+    def _in_segment(self, segment: UserSegment | None) -> list[AdminUserRow]:
+        rows = self._rows()
+        if segment is UserSegment.AUTOMATIC:
+            return [u for u in rows if u.automatic_enabled]
+        if segment is UserSegment.INCOMPLETE:
+            return [u for u in rows if u.profile_completeness < self._ctx.settings.admin.complete_profile_percent]
+        if segment is UserSegment.NEW:
+            since = self._ctx.clock.now() - timedelta(days=self._ctx.settings.account.recent_window_days)
+            return [u for u in rows if u.created_at and parse_iso(u.created_at) >= since]
+        return rows
+
     def list(self, actor: AdminActor, request: PageRequest) -> Page[AdminUserRow]:
         actor.require(AdminArea.USERS, PermissionAction.READ)
         return paginate(
-            self._rows(),
+            self._in_segment(request.segment),
             request,
             self._ctx.settings.admin.page_size,
-            lambda u: f"{u.full_name} {u.email} {u.country}",
+            lambda u: f"{u.full_name} {u.email} {u.country} {u.phone or ''}",
             lambda u: u.status.value,
         )
 
@@ -280,10 +308,10 @@ class AdminUserService:
         operations = self._ctx.directory.operations()
         has_account = self._ctx.accounts.get(row.id) is not None
         workspace = self._ctx.workspaces.get(row.id) if has_account else None
-        recent = [a for a in self._ctx.directory.applications() if a.user_name == row.full_name][:RECENT_APPLICATIONS_LIMIT]
+        recent = [a for a in self._applications() if a.user_name == row.full_name][:RECENT_APPLICATIONS_LIMIT]
         return AdminUserDetail(
-            **row.model_dump(),
-            phone=operations.user_phones.get(row.id),
+            **row.model_dump(exclude={"phone"}),
+            phone=row.phone or operations.user_phones.get(row.id),
             tracks=workspace.preferences.tracks if workspace else [],
             recent_applications=recent,
             sign_ins=workspace.sign_in_events if workspace else [],
@@ -300,18 +328,21 @@ class AdminCatalogService:
         self._sources = sources
         self._on_shared = on_shared
         self._records: AdminUserRecords | None = None
+        self._figures: Figures = DirectoryFigures(context.directory)
 
     def track_real_applications(self, records: AdminUserRecords) -> None:
         self._records = records
+
+    def track_live_figures(self, figures: Figures) -> None:
+        self._figures = figures
 
     def _application_rows(self) -> list[AdminApplicationRow]:
         return self._records.application_rows() if self._records else self._ctx.directory.applications()
 
     def opportunities(self, actor: AdminActor, request: PageRequest) -> Page[AdminOpportunityRow]:
         actor.require(AdminArea.OPPORTUNITIES, PermissionAction.READ)
-        rows = self._ctx.directory.opportunities()
         return paginate(
-            rows,
+            self._figures.opportunities(),
             request,
             self._ctx.settings.admin.page_size,
             lambda o: f"{o.title} {o.organization} {o.country_code}",
@@ -320,7 +351,7 @@ class AdminCatalogService:
 
     def set_opportunity_status(self, actor: AdminActor, opportunity_id: str, status: OpportunityStatus, action: str) -> AdminOpportunityRow:
         actor.require(AdminArea.OPPORTUNITIES, PermissionAction.UPDATE)
-        row = next((o for o in self._ctx.directory.opportunities() if o.id == opportunity_id), None)
+        row = next((o for o in self._figures.opportunities() if o.id == opportunity_id), None)
         if row is None:
             raise not_found("opportunity")
         updated = row.model_copy(update={"status": status})

@@ -20,6 +20,16 @@ def links(request: Request, services: Container) -> LinkFactory:
     return lambda key, name: services.file_links.link(base_url, key, name)
 
 
+@router.get("/messages/inbox")
+def inbox(admin: CurrentAdmin, request: Request, services: Services, q: str = "") -> JSONResponse:
+    return ok(services.admin_messages.inbox(admin, q, links(request, services)))
+
+
+@router.get("/messages/unread")
+def unread(admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.admin_messages.unread(admin))
+
+
 @router.get("/users/{user_id}/messages")
 def team_messages(user_id: str, admin: CurrentAdmin, request: Request, services: Services, before: str | None = None) -> JSONResponse:
     return ok(services.admin_messages.team_page(admin, user_id, before, links(request, services)))
@@ -33,6 +43,11 @@ def send_team_message(user_id: str, body: TextBody, admin: CurrentAdmin, request
 @router.post("/users/{user_id}/attachments")
 def send_team_attachment(user_id: str, form: AttachmentFields, admin: CurrentAdmin, request: Request, services: Services) -> JSONResponse:
     return ok(services.admin_messages.send(admin, user_id, attachment_draft(form, services), links(request, services)))
+
+
+@router.get("/users/{user_id}/overview")
+def user_overview(user_id: str, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.admin_overview.get(admin, user_id))
 
 
 @router.get("/users/{user_id}/connections")

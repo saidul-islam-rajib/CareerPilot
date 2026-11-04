@@ -84,6 +84,7 @@ class AdminUserRow(CamelModel):
     applications_count: int
     automatic_enabled: bool
     profile_completeness: int
+    phone: str | None = None
     presence: UserPresence = Field(default_factory=UserPresence)
 
 
@@ -107,7 +108,6 @@ class AdminApplicationRow(CamelModel):
 
 
 class AdminUserDetail(AdminUserRow):
-    phone: str | None = None
     tracks: list[Track]
     recent_applications: list[AdminApplicationRow]
     sign_ins: list[SignInEvent]

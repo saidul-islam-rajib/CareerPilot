@@ -8,7 +8,7 @@ from careerpilot.administration.ports import AdminAccountRepository, AuditLog, D
 from careerpilot.candidate.ports import AccountRepository, WorkspaceRepository
 from careerpilot.platform.clock import Clock, IdGenerator, iso
 from careerpilot.platform.config import Settings
-from careerpilot.platform.enums import ActorType, AdminArea, PermissionAction
+from careerpilot.platform.enums import ActorType, AdminArea, PermissionAction, UserSegment
 from careerpilot.platform.errors import DomainError, ErrorCode
 from careerpilot.platform.security import PasswordHasher, TokenService
 
@@ -61,6 +61,7 @@ class PageRequest:
     page_size: int = 0
     search: str | None = None
     status: str | None = None
+    segment: UserSegment | None = None
 
 
 def paginate(

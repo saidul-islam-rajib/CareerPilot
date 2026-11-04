@@ -9,7 +9,7 @@ from careerpilot.administration.context import FIRST_PAGE, AdminActor, PageReque
 from careerpilot.api.common import bearer_token, client_info
 from careerpilot.bootstrap import Container
 from careerpilot.candidate.models import UserSummary
-from careerpilot.platform.enums import ActorType
+from careerpilot.platform.enums import ActorType, UserSegment
 from careerpilot.platform.persistence import Actor, acting_as
 
 bearer = HTTPBearer(auto_error=False)
@@ -41,8 +41,9 @@ def page_request(
     page_size: Annotated[int, Query(alias="pageSize", ge=0)] = 0,
     search: str | None = None,
     status: str | None = None,
+    segment: UserSegment | None = None,
 ) -> PageRequest:
-    return PageRequest(page=page, page_size=page_size, search=search, status=status)
+    return PageRequest(page=page, page_size=page_size, search=search, status=status, segment=segment)
 
 
 CurrentUser = Annotated[UserSummary, Depends(current_user)]

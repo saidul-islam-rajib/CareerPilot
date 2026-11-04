@@ -139,6 +139,12 @@ class UserAccountStatus(StrEnum):
     DELETED = "deleted"
 
 
+class UserSegment(StrEnum):
+    NEW = "new"
+    AUTOMATIC = "automatic"
+    INCOMPLETE = "incomplete"
+
+
 class SourceStatus(StrEnum):
     HEALTHY = "healthy"
     DEGRADED = "degraded"

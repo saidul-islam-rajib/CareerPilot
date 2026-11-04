@@ -1,6 +1,6 @@
 from careerpilot.administration.context import AdminActor
 from careerpilot.candidate.ports import AccountRepository, WorkspaceRepository
-from careerpilot.messaging.models import Connection, MessagePage, MessageView
+from careerpilot.messaging.models import Connection, ConversationSummary, MessagePage, MessageView
 from careerpilot.messaging.service import TEAM_MEMBER, Draft, LinkFactory, MessagingService, Sender
 from careerpilot.platform.enums import AdminArea, ContactKind, MemberType, PermissionAction
 from careerpilot.platform.errors import not_found
@@ -33,6 +33,10 @@ class AdminUserFiles(CamelModel):
     photo_url: str | None = None
 
 
+class TeamUnread(CamelModel):
+    count: int
+
+
 class AdminMessages:
     def __init__(self, messaging: MessagingService, accounts: AccountRepository, workspaces: WorkspaceRepository) -> None:
         self._messaging = messaging
@@ -45,6 +49,14 @@ class AdminMessages:
         page = self._messaging.team_page(user_id, before, link)
         self._messaging.read(TEAM_MEMBER, page.conversation.id)
         return page
+
+    def inbox(self, actor: AdminActor, query: str, link: LinkFactory) -> list[ConversationSummary]:
+        actor.require(AdminArea.USERS, PermissionAction.READ)
+        return self._messaging.team_inbox(query, link)
+
+    def unread(self, actor: AdminActor) -> TeamUnread:
+        actor.require(AdminArea.USERS, PermissionAction.READ)
+        return TeamUnread(count=self._messaging.team_unread())
 
     def send(self, actor: AdminActor, user_id: str, draft: Draft, link: LinkFactory) -> MessageView:
         actor.require(AdminArea.USERS, PermissionAction.UPDATE)

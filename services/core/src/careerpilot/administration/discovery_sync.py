@@ -26,6 +26,20 @@ def opportunity_row(listing: Listing) -> AdminOpportunityRow:
     )
 
 
+def live_opportunities(
+    directory: Directory, listings: Callable[[], list[Listing]], applications: dict[str, int]
+) -> list[AdminOpportunityRow]:
+    known = {row.id: row for row in directory.opportunities()}
+    rows: dict[str, AdminOpportunityRow] = {}
+    for listing in listings():
+        row = opportunity_row(listing)
+        override = known.get(listing.id)
+        rows[listing.id] = row.model_copy(update={"status": override.status}) if override else row
+    for row_id, row in known.items():
+        rows.setdefault(row_id, row)
+    return [row.model_copy(update={"applications_count": applications.get(row.id, NO_APPLICATIONS)}) for row in rows.values()]
+
+
 def source_row_after(row: AdminSourceRow, check: SourceCheck, failing_after: int) -> AdminSourceRow:
     found = row.opportunities_found + len(check.listings(ListingChange.NEW))
     if check.outcome is CheckOutcome.FAILED:
