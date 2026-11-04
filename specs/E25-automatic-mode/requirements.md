@@ -26,4 +26,5 @@
 - WHEN a queued automatic application's rule is disabled, deleted or expired, or its deadline has passed THE SYSTEM SHALL cancel it with a timeline entry (reconciliation).
 - WHEN the outcome of a submission is unknown THE SYSTEM SHALL never resubmit it.
 - WHEN an opportunity leaves the pipeline before submission THE SYSTEM SHALL record the stage and reasons.
+- WHEN the route is not automatable THE SYSTEM SHALL still prepare and queue the application and move it to manual action at send time.
 - User-only steps (Section 27.3) and pre-submission checks (Section 27.4) always apply and cannot be turned off by any rule.
