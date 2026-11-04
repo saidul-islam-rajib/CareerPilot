@@ -14,6 +14,7 @@ import {
   SubmissionStatus,
   TimelineActor,
   UserAccountStatus,
+  UserSegment,
   WorkArrangement,
 } from '@careerpilot/domain-ui-logic';
 import { isHttpsAddress, sameAddress, secureAddress, siteName } from '../addresses';
@@ -23,7 +24,7 @@ import type { ConversationSummary, MessageView, NewAttachment, ReplyPreview } fr
 import type { DemoState } from '../in-memory/demo.seed';
 import type { CareerPilotAdminApi } from './admin-ports';
 import type { AdminDemoAccount, AdminDemoState } from './admin-demo.seed';
-import { SourceConnector, type AdminSourceRow, type AdminSummary, type AdminUserDetail, type AdminUserRecord, type CountByKey, type NewSource, type Page, type PageQuery } from './admin-types';
+import { SourceConnector, type AdminSourceRow, type AdminSummary, type AdminUserDetail, type AdminUserRecord, type AdminUserRow, type CountByKey, type NewSource, type Page, type PageQuery } from './admin-types';
 import { permissionsForRole } from './permissions';
 
 export interface InMemoryAdminApiOptions {
@@ -102,6 +103,18 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
   };
   const sourceAt = (address: string) => state.sources.find((s) => !!s.setup && (sameAddress(s.setup.url, address) || sameAddress(s.setup.siteUrl ?? '', address)));
   const sourceAdded = (address: string) => sourceAt(address) !== undefined;
+  const inSegment = (segment?: UserSegment) => (user: AdminUserRow) => {
+    if (segment === UserSegment.Automatic) {
+      return user.automaticEnabled;
+    }
+    if (segment === UserSegment.Incomplete) {
+      return user.profileCompleteness < options.completeProfilePercent;
+    }
+    if (segment === UserSegment.New) {
+      return !!user.createdAt && new Date(user.createdAt).getTime() >= clock.now().getTime() - options.recentWindowDays * DAY_MS;
+    }
+    return true;
+  };
   const findUser = (id: string) => state.users.find((u) => u.id === id);
   const teamThreads = new Map<string, MessageView[]>();
   const teamThread = (userId: string) => teamThreads.get(userId) ?? [];
@@ -112,6 +125,7 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
       id: `cnv_team_${userId}`,
       kind: ConversationKind.Team,
       title: findUser(userId)?.fullName ?? '',
+      otherMemberId: userId,
       lastMessageAt: last?.createdAt,
       lastMessagePreview: last?.text ?? '',
       lastMessageKind: last?.kind,
@@ -277,11 +291,13 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
           generatedAt: nowIso(),
           users: {
             total: users.length,
-            newThisWeek: users.filter((u) => new Date(u.createdAt).getTime() >= weekAgo).length,
+            newThisWeek: users.filter((u) => !!u.createdAt && new Date(u.createdAt).getTime() >= weekAgo).length,
             active: users.filter((u) => u.status === UserAccountStatus.Active).length,
             paused: users.filter((u) => u.status === UserAccountStatus.Paused).length,
             suspended: users.filter((u) => u.status === UserAccountStatus.Suspended).length,
             pendingDeletion: users.filter((u) => u.status === UserAccountStatus.PendingDeletion).length,
+            registered: users.filter((u) => u.status === UserAccountStatus.Registered).length,
+            deleted: users.filter((u) => u.status === UserAccountStatus.Deleted).length,
             automaticEnabled: users.filter((u) => u.automaticEnabled).length,
             incompleteProfiles: users.filter((u) => u.profileCompleteness < options.completeProfilePercent).length,
           },
@@ -312,11 +328,13 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
           notifications: state.notifications,
           health: state.services,
           emergencyStop: state.settings.emergencyStop,
+          unreadMessages: 0,
         });
       },
     },
     users: {
-      listUsers: async (query) => respond(paginate(state.users, query, (u) => `${u.fullName} ${u.email} ${u.country}`, (u) => u.status)),
+      listUsers: async (query) =>
+        respond(paginate(state.users.filter(inSegment(query.segment)), query, (u) => `${u.fullName} ${u.email} ${u.country} ${u.phone ?? ''}`, (u) => u.status)),
       getRecord: (id) => recordOf(id, 'user.record_viewed', findUser(id)?.fullName ?? id),
       async changeApplication(id, applicationId, change) {
         const application = userApplication(applicationId);
@@ -402,6 +420,14 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
       async connectedAccounts(id) {
         return findUser(id) ? respond([]) : fail(ApiErrorCode.NotFound);
       },
+      async overview(id) {
+        const user = findUser(id);
+        if (!user) {
+          return fail(ApiErrorCode.NotFound);
+        }
+        record('user.overview_viewed', user.fullName);
+        return respond({ governmentApplications: [], writingDrafts: [], exports: [], notifications: [], unreadNotifications: 0, automationRules: [] });
+      },
       async conversation(conversationId) {
         record('chat.viewed', conversationId);
         return fail(ApiErrorCode.NotFound);
@@ -441,6 +467,17 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
       suspendUser: (id) => updateUser(id, UserAccountStatus.Suspended, 'user.suspended'),
       reactivateUser: (id) => updateUser(id, UserAccountStatus.Active, 'user.reactivated'),
       pauseAutomation: (id) => updateUser(id, UserAccountStatus.Paused, 'user.automation_paused'),
+    },
+    messages: {
+      async inbox(search) {
+        const typed = (search ?? '').trim().toLowerCase();
+        const rows = [...teamThreads.keys()]
+          .map(teamSummary)
+          .filter((c) => c.lastMessageAt && (!typed || `${c.title} ${c.lastMessagePreview}`.toLowerCase().includes(typed)))
+          .sort((a, b) => (b.lastMessageAt ?? '').localeCompare(a.lastMessageAt ?? ''));
+        return respond(rows);
+      },
+      unread: async () => respond({ count: 0 }),
     },
     opportunities: {
       listOpportunities: async (query) => respond(paginate(state.opportunities, query, (o) => `${o.title} ${o.organization} ${o.countryCode}`, (o) => o.status)),

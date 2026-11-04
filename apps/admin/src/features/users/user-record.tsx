@@ -26,6 +26,7 @@ import { ProfileDetails } from './profile-details';
 import { ConnectedAccountsCard } from './connected-accounts-card';
 import { ConsentHistoryCard } from './consent-history-card';
 import { ConnectionsPanel, FilesPanel, TeamMessagesPanel } from './user-messages';
+import { OverviewPanel } from './user-overview';
 
 const TAB = {
   Lists: 'lists',
@@ -37,6 +38,7 @@ const TAB = {
   Messages: 'messages',
   Connections: 'connections',
   Files: 'files',
+  Overview: 'overview',
 } as const;
 type Tab = (typeof TAB)[keyof typeof TAB];
 const KEEP = 'keep';
@@ -527,6 +529,7 @@ export function UserRecordTabs({ userId }: { userId: string }) {
     { value: TAB.Messages, label: t('admin.records.tabs.messages') },
     { value: TAB.Connections, label: t('admin.records.tabs.connections') },
     { value: TAB.Files, label: t('admin.records.tabs.files') },
+    { value: TAB.Overview, label: t('admin.records.tabs.overview') },
   ];
   return (
     <Tabs.Root value={tab} onValueChange={(value) => setTab(value as Tab)} className="flex flex-col gap-4">
@@ -571,6 +574,9 @@ export function UserRecordTabs({ userId }: { userId: string }) {
       </Tabs.Content>
       <Tabs.Content value={TAB.Files}>
         <FilesPanel userId={userId} />
+      </Tabs.Content>
+      <Tabs.Content value={TAB.Overview}>
+        <OverviewPanel userId={userId} />
       </Tabs.Content>
     </Tabs.Root>
   );

@@ -1,5 +1,5 @@
 import type { AdminRole, OpportunityDecision } from '@careerpilot/domain-ui-logic';
-import type { CompleteAccountLinkRequest, ConnectedAccount, MessagePage, MessageView, NewAttachment, SignInRequest } from '../types';
+import type { CompleteAccountLinkRequest, ConnectedAccount, ConversationSummary, MessagePage, MessageView, NewAttachment, SignInRequest } from '../types';
 import type {
   AdminAccount,
   AdminApplicationRow,
@@ -10,6 +10,8 @@ import type {
   AdminSourceRow,
   AdminApplicationChange,
   AdminUserFiles,
+  AdminUserOverview,
+  TeamUnread,
   Connection,
   AdminProfileChange,
   AdminTrackChange,
@@ -60,6 +62,12 @@ export interface AdminUsersApi {
   connectedAccounts(id: string): Promise<ConnectedAccount[]>;
   conversation(conversationId: string): Promise<MessagePage>;
   files(id: string): Promise<AdminUserFiles>;
+  overview(id: string): Promise<AdminUserOverview>;
+}
+
+export interface AdminMessagesApi {
+  inbox(search?: string): Promise<ConversationSummary[]>;
+  unread(): Promise<TeamUnread>;
 }
 
 export interface AdminOpportunitiesApi {
@@ -107,6 +115,7 @@ export interface CareerPilotAdminApi {
   auth: AdminAuthApi;
   dashboard: AdminDashboardApi;
   users: AdminUsersApi;
+  messages: AdminMessagesApi;
   opportunities: AdminOpportunitiesApi;
   sources: AdminSourcesApi;
   applications: AdminApplicationsApi;

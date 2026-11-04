@@ -16,6 +16,9 @@ function queryString(query: PageQuery): string {
   if (query.status) {
     params.set('status', query.status);
   }
+  if (query.segment) {
+    params.set('segment', query.segment);
+  }
   return params.toString();
 }
 
@@ -59,6 +62,11 @@ export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
       connectedAccounts: (id) => get(`/admin/v1/users/${enc(id)}/integrations`),
       conversation: (conversationId) => get(`/admin/v1/conversations/${enc(conversationId)}/messages`),
       files: (id) => get(`/admin/v1/users/${enc(id)}/files`),
+      overview: (id) => get(`/admin/v1/users/${enc(id)}/overview`),
+    },
+    messages: {
+      inbox: (search) => get(`/admin/v1/messages/inbox?q=${enc(search ?? '')}`),
+      unread: () => get('/admin/v1/messages/unread'),
     },
     opportunities: {
       listOpportunities: (query) => get(`/admin/v1/opportunities?${queryString(query)}`),

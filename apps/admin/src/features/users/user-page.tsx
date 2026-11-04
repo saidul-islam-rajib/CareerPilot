@@ -2,13 +2,14 @@
 
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { KeyRound, Mail, Phone } from 'lucide-react';
+import { KeyRound } from 'lucide-react';
 import { useFormat, useT } from '@careerpilot/client-core';
 import { AdminArea, EnumKey, PermissionAction, UserAccountStatus } from '@careerpilot/domain-ui-logic';
 import { Button, Card, ConfirmDialog, EnumBadge, ErrorState, ListRow, LoadingState, PageHeader, Section } from '@careerpilot/ui-web';
 import { adminKeys, useAdminMutation } from '@/core/admin-queries';
 import { useAdminApi } from '@/core/admin-services';
 import { useCan } from '@/core/admin-session';
+import { ContactsCard } from './user-overview';
 import { UserRecordTabs } from './user-record';
 
 export function UserPage() {
@@ -71,10 +72,9 @@ export function UserPage() {
       <div className="grid gap-6 xl:grid-cols-2">
         <Section title={t('admin.users.contact')}>
           <Card>
-            <ListRow icon={Mail} title={u.email} />
-            {u.phone ? <ListRow icon={Phone} title={u.phone} /> : null}
+            <ContactsCard userId={id} />
             <p className="text-sm text-muted">
-              {t('admin.columns.joined')}: {format.date(u.createdAt)} · {t('admin.columns.completeness')}: {u.profileCompleteness}%
+              {t('admin.columns.joined')}: {u.createdAt ? format.date(u.createdAt) : '-'} · {t('admin.columns.completeness')}: {u.profileCompleteness}%
             </p>
           </Card>
         </Section>

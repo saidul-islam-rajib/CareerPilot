@@ -1,6 +1,18 @@
 import type {
   ActorType,
   ContactKind,
+  DeletionStatus,
+  DraftStatus,
+  ExportFormat,
+  ExportKind,
+  ExportStatus,
+  FeeStatus,
+  GovApplicationStatus,
+  NotificationKind,
+  SecretKind,
+  UserSegment,
+  WritingKind,
+  WritingTone,
   AdminArea,
   AdminRole,
   ApplicationMode,
@@ -18,6 +30,7 @@ import type {
   UserAccountStatus,
   WorkArrangement,
 } from '@careerpilot/domain-ui-logic';
+import type { AutomationRule } from '../automation/types';
 import type { ThemeKey } from '@careerpilot/ui-tokens';
 import type { ApplicationRecord, ApprovalDetail, IsoDateTime, MemberCard, Profile, Settings, SignInEvent, Track, UserSource } from '../types';
 
@@ -51,6 +64,7 @@ export interface AdminPermission {
 export interface PageQuery {
   search?: string;
   status?: string;
+  segment?: UserSegment;
   page: number;
   pageSize: number;
 }
@@ -81,6 +95,8 @@ export interface AdminDashboard {
     paused: number;
     suspended: number;
     pendingDeletion: number;
+    registered: number;
+    deleted: number;
     automaticEnabled: number;
     incompleteProfiles: number;
   };
@@ -99,6 +115,7 @@ export interface AdminDashboard {
   notifications: { sent: number; delivered: number; failed: number };
   health: Array<{ service: string; status: ServiceHealth }>;
   emergencyStop: EmergencyStop;
+  unreadMessages: number;
 }
 
 export interface UserPresence {
@@ -133,6 +150,7 @@ export interface AdminUserRow {
   applicationsCount: number;
   automaticEnabled: boolean;
   profileCompleteness: number;
+  phone?: string;
   presence: UserPresence;
 }
 
@@ -144,7 +162,6 @@ export interface SecretMetadata {
 }
 
 export interface AdminUserDetail extends AdminUserRow {
-  phone?: string;
   tracks: Track[];
   recentApplications: AdminApplicationRow[];
   signIns: SignInEvent[];
@@ -365,4 +382,67 @@ export interface AdminUserFiles {
   contacts: AdminContactView[];
   documents: AdminFileLink[];
   photoUrl?: string;
+}
+
+export interface AdminGovApplication {
+  id: string;
+  circularTitle: string;
+  status: GovApplicationStatus;
+  submittedAt?: IsoDateTime;
+  feeStatus: FeeStatus;
+  stages: number;
+  secretsPresent: SecretKind[];
+  createdAt: IsoDateTime;
+}
+
+export interface AdminWritingDraft {
+  id: string;
+  kind: WritingKind;
+  title: string;
+  organization: string;
+  version: number;
+  status: DraftStatus;
+  tone: WritingTone;
+  wordCount: number;
+  createdAt: IsoDateTime;
+}
+
+export interface AdminExport {
+  id: string;
+  kind: ExportKind;
+  format: ExportFormat;
+  status: ExportStatus;
+  requestedAt: IsoDateTime;
+  completedAt?: IsoDateTime;
+}
+
+export interface AdminDeletion {
+  id: string;
+  status: DeletionStatus;
+  requestedAt: IsoDateTime;
+  scheduledFor: IsoDateTime;
+  cancelledAt?: IsoDateTime;
+  completedAt?: IsoDateTime;
+}
+
+export interface AdminNotification {
+  id: string;
+  kind: NotificationKind;
+  title: string;
+  createdAt: IsoDateTime;
+  read: boolean;
+}
+
+export interface AdminUserOverview {
+  governmentApplications: AdminGovApplication[];
+  writingDrafts: AdminWritingDraft[];
+  exports: AdminExport[];
+  deletion?: AdminDeletion;
+  notifications: AdminNotification[];
+  unreadNotifications: number;
+  automationRules: AutomationRule[];
+}
+
+export interface TeamUnread {
+  count: number;
 }

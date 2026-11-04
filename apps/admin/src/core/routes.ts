@@ -13,4 +13,9 @@ export const AdminRoutes = {
   audit: '/audit',
   privacy: '/privacy',
   admins: '/admins',
+  messages: '/messages',
 } as const;
+
+export function listLink(route: string, filter: Record<string, string>): string {
+  return `${route}?${new URLSearchParams(filter).toString()}`;
+}

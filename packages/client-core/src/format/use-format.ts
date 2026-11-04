@@ -19,8 +19,8 @@ export function useFormat() {
   return useMemo(() => {
     const ctx: FormatContext = { locale: config.locale, timeZone: config.defaultTimeZone };
     return {
-      date: (iso: string) => formatDate(iso, ctx),
-      dateTime: (iso: string) => formatDateTime(iso, ctx),
+      date: (iso: string) => (iso ? formatDate(iso, ctx) : ''),
+      dateTime: (iso: string) => (iso ? formatDateTime(iso, ctx) : ''),
       timeOf: (iso: string) => new Intl.DateTimeFormat(ctx.locale, { hour: 'numeric', minute: '2-digit', timeZone: ctx.timeZone }).format(new Date(iso)),
       time: (value: string) => formatTimeOfDay(value, ctx),
       money: (range?: MoneyRange) => (range ? formatMoneyRange(range, ctx) : undefined),

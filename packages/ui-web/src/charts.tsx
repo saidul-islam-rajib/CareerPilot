@@ -90,11 +90,20 @@ export function Breakdown({ title, items }: { title: string; items: BreakdownIte
   );
 }
 
-export function MetricTile({ label, value, tone }: { label: string; value: number | string; tone?: 'default' | 'warning' | 'danger' }) {
-  return (
-    <div className="flex flex-col gap-1 rounded-card border border-border bg-card p-4">
+export function MetricTile({ label, value, tone, href }: { label: string; value: number | string; tone?: 'default' | 'warning' | 'danger'; href?: string }) {
+  const content = (
+    <>
       <span className={cn('text-2xl font-bold tabular-nums', tone === 'danger' ? 'text-danger' : tone === 'warning' ? 'text-warning' : 'text-foreground')}>{value}</span>
       <span className="text-sm text-muted">{label}</span>
-    </div>
+    </>
+  );
+  const frame = 'flex flex-col gap-1 rounded-card border border-border bg-card p-4';
+  if (!href) {
+    return <div className={frame}>{content}</div>;
+  }
+  return (
+    <a href={href} className={cn(frame, 'transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus')}>
+      {content}
+    </a>
   );
 }

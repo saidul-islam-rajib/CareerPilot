@@ -161,6 +161,13 @@ export const UserAccountStatus = {
 } as const;
 export type UserAccountStatus = (typeof UserAccountStatus)[keyof typeof UserAccountStatus];
 
+export const UserSegment = {
+  New: 'new',
+  Automatic: 'automatic',
+  Incomplete: 'incomplete',
+} as const;
+export type UserSegment = (typeof UserSegment)[keyof typeof UserSegment];
+
 export const SourceStatus = {
   Healthy: 'healthy',
   Degraded: 'degraded',

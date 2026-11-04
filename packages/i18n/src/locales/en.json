@@ -599,6 +599,19 @@
     "countriesRemove": "Remove {value}",
     "countriesEmpty": "No countries excluded. You get matching jobs from everywhere your tracks allow.",
     "countriesInvalid": "Use two-letter country codes, for example IN.",
+    "confidential": "Confidential search",
+    "confidentialBody": "Keep your current employer out of your search and hide details on your lock screen",
+    "excludedOrganizations": "Excluded employers",
+    "excludedOrganizationsBody": "Employers you list here are never recommended, applied to or contacted, and your profile is never shared with them. Use this for your current employer and related companies or recruiters.",
+    "excludedOrganizationsLabel": "Employer name",
+    "excludedOrganizationsHint": "A name also excludes longer names that contain it, for example Acme excludes Acme Bangladesh Ltd.",
+    "excludedOrganizationsAdd": "Add employer",
+    "excludedOrganizationsRemove": "Remove {value}",
+    "excludedOrganizationsEmpty": "No employers excluded",
+    "excludedOrganizationsInvalid": "Enter an employer name",
+    "excludedOrganizationsFull": "You have reached the limit of excluded employers",
+    "privateNotifications": "Private notifications",
+    "privateNotificationsBody": "Hide details on your lock screen. Push notifications only say you have something new; the details stay inside the app.",
     "trackSaveFailed": "We couldn't save this track. Try again.",
     "tracksBody": "Choose how many matches each track shows and how you apply.",
     "resultCount": "Matches shown per day",
@@ -824,6 +837,48 @@
       "bangladesh_onsite": "Bangladesh on-site",
       "bangladesh_government": "Bangladesh government",
       "custom": "Custom track"
+    },
+    "writing_kind": {
+      "cover_letter": "Cover letter",
+      "tailored_cv": "Tailored CV",
+      "essay": "Essay",
+      "statement": "Statement"
+    },
+    "draft_status": {
+      "ready": "Ready",
+      "needs_fixes": "Needs fixes"
+    },
+    "export_kind": {
+      "applications": "Applications",
+      "report": "Report",
+      "application": "Application",
+      "archive": "Archive"
+    },
+    "export_format": {
+      "csv": "Spreadsheet",
+      "pdf": "PDF",
+      "zip": "Archive"
+    },
+    "export_status": {
+      "queued": "Queued",
+      "running": "Running",
+      "ready": "Ready",
+      "failed": "Failed",
+      "expired": "Expired"
+    },
+    "deletion_status": {
+      "requested": "Requested",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    "notification_kind": {
+      "message": "Message",
+      "team_message": "Team message",
+      "application_submitted": "Application submitted",
+      "application_confirmed": "Application confirmed",
+      "application_reply": "Application reply",
+      "integration_attention": "Account needs attention",
+      "automation_attention": "Automation needs attention"
     },
     "user_account_status": {
       "registered": "Registered",
@@ -1154,7 +1209,8 @@
       "applications": "Applications",
       "settings": "Platform settings",
       "audit": "Audit log",
-      "admins": "Admins and roles"
+      "admins": "Admins and roles",
+      "messages": "Messages"
     },
     "signedInAs": "{name} · {role}",
     "search": "Search",
@@ -1168,6 +1224,10 @@
     "dashboard": {
       "title": "Dashboard",
       "generated": "Updated {date}",
+      "unreadMessages": "Unread messages",
+      "registered": "Awaiting password",
+      "deleted": "Deleted",
+      "openList": "Open the list behind {label}",
       "users": "Users",
       "totalUsers": "Total users",
       "newThisWeek": "New this week",
@@ -1245,6 +1305,12 @@
       "pauseAutomation": "Pause automation",
       "detailTitle": "User details",
       "contact": "Contact",
+      "noPhone": "No phone number added",
+      "contactsTitle": "Emails and phones",
+      "phone": "Phone",
+      "primaryContact": "Primary",
+      "verifiedContact": "Verified",
+      "unverifiedContact": "Not verified",
       "tracks": "Tracks",
       "recentApplications": "Recent applications",
       "signIns": "Sign-in activity",
@@ -1254,6 +1320,17 @@
       "suspendReason": "Suspended by an administrator",
       "confirmSuspend": "Suspend this user?",
       "confirmSuspendBody": "All automation for {name} stops and they can't sign in until reactivated. The user is notified."
+    },
+    "inbox": {
+      "title": "Messages from users",
+      "description": "Conversations with the team, newest first.",
+      "searchPlaceholder": "Search by name or message",
+      "empty": "No messages from users yet.",
+      "unread": "{count} unread",
+      "pick": "Choose a conversation to read and reply.",
+      "newMessage": "A user sent the team a new message.",
+      "tabTitle": "({count}) {title}",
+      "openUser": "Open user record"
     },
     "opportunities": {
       "title": "Opportunities",
@@ -1396,7 +1473,30 @@
         "activity": "Activity and sessions",
         "messages": "Messages",
         "connections": "Connections",
-        "files": "Files and contacts"
+        "files": "Files and contacts",
+        "overview": "Government, writing, exports, notifications"
+      },
+      "overview": {
+        "government": "Government job applications",
+        "governmentRow": "{status} · fee {fee} · {stages} stages",
+        "noGovernment": "No government job applications.",
+        "drafts": "Writing drafts",
+        "draftRow": "{kind} · version {version} · {words} words",
+        "noDrafts": "No writing drafts.",
+        "rules": "Automation rules",
+        "ruleRow": "{state} · daily limit {count}",
+        "noRules": "No automation rules.",
+        "ruleOn": "On",
+        "ruleOff": "Off",
+        "exports": "Exports",
+        "exportRow": "{kind} · {format} · requested {date}",
+        "noExports": "No export requests.",
+        "deletion": "Deletion request",
+        "deletionRow": "Requested {requested} · scheduled {scheduled}",
+        "noDeletion": "No deletion request.",
+        "notifications": "Notifications ({unread} unread)",
+        "noNotifications": "No notifications.",
+        "secretsHeld": "Secrets held: {kinds}"
       },
       "noJobs": "No jobs in this list.",
       "noApplications": "No applications yet.",
@@ -1682,6 +1782,7 @@
     "approvedByRule": "Approved by your automatic rule",
     "cancelledRuleInactive": "Cancelled because the rule is off or has ended",
     "cancelledDeadlinePassed": "Cancelled because the deadline passed before it could be sent",
+    "cancelledExcludedOrganization": "Cancelled because the employer is on your excluded list",
     "cancelledDeadlineWindow": "Skipped because the next sending window is too close to the deadline",
     "submitting": "Sending your application",
     "emailSent": "Email sent to {to} with {attachment}",
@@ -2152,6 +2253,10 @@
     }
   },
   "notifications": {
+    "private": {
+      "title": "CareerPilot",
+      "body": "You have a new notification. Open the app to see it."
+    },
     "application_submitted": {
       "title": "Application submitted",
       "body": "{title} at {organization}. Tap to see what was sent."
@@ -2578,6 +2683,11 @@
       "importAction": "Read page",
       "importHost": "Only pages on the configured Teletalk host can be read.",
       "importFailed": "Could not read that page.",
+      "importErrors": {
+        "host_not_allowed": "That link isn't on the Teletalk site we're allowed to read. Add the circular by hand instead.",
+        "no_content": "This page loads its content with a script, so it can't be read here. Add the circular by hand instead.",
+        "unreachable": "The site couldn't be reached. Try again, or add the circular by hand."
+      },
       "draftReady": "Draft filled. Review every field, then add the posts.",
       "edit": "Edit",
       "publish": "Publish",
@@ -2751,7 +2861,23 @@
     "outreach": {
       "subject": "Question about your research on {work}",
       "background": "I am currently {headline}.",
-      "body": "Dear Professor {supervisor},\n\nI read your work on {work} and would like to ask whether you are taking on students for research at {university}.\n\n{background}\n\nI can send my CV and transcripts if they would help. Thank you for your time.\n\nSincerely,\n{name}"
+      "body": "Dear Professor {supervisor},\n\nI read your work on {work} and would like to ask whether you are taking on students for research at {university}.\n\n{background}\n\nI can send my CV and transcripts if they would help. Thank you for your time.\n\nSincerely,\n{name}",
+      "draft": "Draft an email",
+      "draftHint": "Written from your profile and the supervisor's real work. You send it yourself.",
+      "limits": "Outreach limits",
+      "limitsHint": "Per day, per department and per university.",
+      "markSent": "I sent it",
+      "followUp": "I sent a follow-up",
+      "reply": "Record a reply",
+      "replyPositive": "Positive",
+      "replyCall": "Call requested",
+      "replyDocs": "Documents requested",
+      "replyNeutral": "Neutral",
+      "replyDeclined": "Declined",
+      "replyStop": "Do not contact",
+      "stopped": "Do not contact this professor again.",
+      "sentOn": "Sent {date}",
+      "bodyLabel": "Message"
     },
     "messages": {
       "acceptOffer": {
@@ -2776,7 +2902,625 @@
       "reminder": {
         "subject": "Reminder: recommendation letter for {program}",
         "body": "Dear {referee},\n\nA friendly reminder that the letter for my application to {program} at {university} is due on {deadline}.\n\nThank you again,\n{name}"
+      },
+      "add": "Add a referee",
+      "consent": "This referee agreed to be listed",
+      "consentHint": "Their details are not used until you confirm this.",
+      "noConsent": "Not confirmed",
+      "agreed": "Agreed on {date}",
+      "withdraw": "Withdraw consent",
+      "draftRequest": "Request draft",
+      "draftReminder": "Reminder draft",
+      "draftHint": "A draft only. You send it yourself.",
+      "markSubmitted": "Mark submitted",
+      "markConfirmed": "Institution confirmed",
+      "evidenceHint": "Needs evidence from the institution, or your own statement with a note."
+    },
+    "title": "Study and research",
+    "menuBody": "Programs, tests, referees and offers",
+    "subtitle": "Programs, scholarships, tests, referees, outreach and offers",
+    "loadError": "Could not load your study plan. Try again.",
+    "notAdvice": "Information only. This is not legal or immigration advice. Confirm every requirement on the official source.",
+    "neverSends": "CareerPilot never sends email, submits a portal form, pays a fee or accepts an offer for you. You do those steps yourself.",
+    "tabs": {
+      "programs": "Programs",
+      "tests": "Tests",
+      "credentials": "Credentials",
+      "referees": "Referees",
+      "outreach": "Supervisors"
+    },
+    "overview": {
+      "heading": "Needs attention",
+      "upcoming": "Coming up",
+      "warnings": "Warnings",
+      "nothing": "Nothing needs attention.",
+      "programs": "{count} programs tracked"
+    },
+    "attention": {
+      "outreach_reply": "A supervisor replied",
+      "deadline_soon": "Deadline soon",
+      "score_warning": "A test score may expire",
+      "portal_blocked": "Portal application is blocked"
+    },
+    "warnings": {
+      "score_expires_before_deadline": "Your score expires on {date}, before the deadline.",
+      "score_expires_before_start": "Your score expires on {date}, before the start.",
+      "no_valid_score": "No released score for this required test.",
+      "referee_without_consent": "A referee on this program has not confirmed agreement."
+    },
+    "common": {
+      "add": "Add",
+      "save": "Save",
+      "remove": "Remove",
+      "cancel": "Cancel",
+      "none": "Nothing here yet.",
+      "open": "Open",
+      "yes": "Yes",
+      "no": "No",
+      "confirm": "I confirm",
+      "date": "Date",
+      "note": "Note",
+      "status": "Status",
+      "removeConfirm": "Remove this?",
+      "saved": "Saved.",
+      "sourceLink": "Source link",
+      "back": "Back to study plan"
+    },
+    "fields": {
+      "kind": "Type",
+      "title": "Title",
+      "university": "University",
+      "department": "Department",
+      "degree": "Degree",
+      "field": "Field",
+      "countryCode": "Country code",
+      "supervisor": "Supervisor",
+      "researchArea": "Research area",
+      "term": "Intake term",
+      "year": "Intake year",
+      "startsOn": "Start date",
+      "durationMonths": "Duration in months",
+      "portalUrl": "Application portal link",
+      "notes": "Notes",
+      "deadlineKind": "Deadline type",
+      "deadlineOn": "Deadline date",
+      "exam": "Test",
+      "need": "Requirement",
+      "evidence": "How sure is this",
+      "minOverall": "Minimum overall score",
+      "policy": "Score policy",
+      "fundingStatus": "Funding",
+      "tuitionPerYear": "Tuition per year",
+      "livingCostPerYear": "Living cost per year",
+      "fundingPerYear": "Funding per year",
+      "currency": "Currency",
+      "feeAmount": "Application fee",
+      "feeSource": "Fee source",
+      "waiverNote": "Fee waiver",
+      "testStatus": "Status",
+      "registrationDeadline": "Registration deadline",
+      "testOn": "Test date",
+      "scoreReleaseOn": "Score release date",
+      "overall": "Overall score",
+      "validityMonths": "Validity in months",
+      "institution": "Institution",
+      "scale": "Grade scale",
+      "value": "Grade",
+      "outOf": "Out of",
+      "convertedValue": "Converted value (estimate)",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "relationship": "Relationship",
+      "supervisorName": "Supervisor name",
+      "supervisorEmail": "Supervisor email",
+      "researchReference": "The supervisor's real work (paper or topic)",
+      "subject": "Subject",
+      "body": "Message",
+      "refereeDeadline": "Referee deadline",
+      "method": "Submission method",
+      "agreement": "Referee agreement",
+      "requestedOn": "Requested on",
+      "evidenceNote": "Evidence note",
+      "evidenceKind": "Evidence",
+      "accountLabel": "Portal account (no password)",
+      "privacyNotice": "Privacy notice link",
+      "sectionName": "Section",
+      "documentName": "Document",
+      "pendingName": "Item the institution must receive",
+      "decisionKind": "Decision",
+      "acceptanceDeadline": "Acceptance deadline",
+      "depositAmount": "Deposit amount",
+      "depositDeadline": "Deposit deadline",
+      "conditionText": "Condition",
+      "checklistSource": "Official source link",
+      "checklistChecked": "Checked on",
+      "allowFollowUp": "Allow a follow-up",
+      "maxPerDay": "Most emails per day",
+      "maxPerDepartment": "Most per department",
+      "maxPerUniversity": "Most per university",
+      "followUpsAllowed": "Allow follow-ups",
+      "amount": "Amount",
+      "budgetKind": "Cost type",
+      "program": "Program",
+      "referee": "Referee"
+    },
+    "program": {
+      "add": "Add a program",
+      "from": "Track a discovered program",
+      "fromHint": "Choose a master's, PhD, scholarship or internship found for you.",
+      "created": "Program added.",
+      "detail": "Program details",
+      "requirements": "Requirements",
+      "requirementsHint": "Nothing is assumed. A missing test is not a waiver, and an advertised position is not guaranteed funding.",
+      "deadlines": "Deadlines",
+      "addDeadline": "Add a deadline",
+      "tests": "Tests required",
+      "addTest": "Add a test requirement",
+      "funding": "Funding and fees",
+      "plan": "Plan",
+      "planHint": "Worked backwards from the earliest application deadline.",
+      "budget": "Budget",
+      "budgetOfficial": "Official",
+      "budgetEstimate": "Your estimate",
+      "budgetTotal": "Total",
+      "addBudget": "Add a cost",
+      "blockers": "What blocks submission",
+      "noBlockers": "Nothing blocks submission.",
+      "portal": "University portal",
+      "portalHint": "You fill in and submit the portal yourself. Track your progress here. Never store the portal password here.",
+      "sections": "Sections",
+      "addSection": "Add a section",
+      "documents": "Documents",
+      "addDocument": "Add a document",
+      "fee": "Portal fee",
+      "submission": "Submission",
+      "pending": "Items the institution must still receive",
+      "addPending": "Add an item",
+      "recommendations": "Recommendation letters",
+      "addRecommendation": "Add a referee to this program",
+      "decision": "Decision",
+      "conditions": "Conditions",
+      "addCondition": "Add a condition",
+      "userSteps": "Your steps",
+      "userStepsHint": "Only you can accept an offer, pay a deposit or decline. CareerPilot records it after you confirm.",
+      "prepareMessage": "Prepare a message",
+      "checklist": "After admission",
+      "generateChecklist": "Create the checklist",
+      "checklistNeedsOffer": "Available once you have an accepted or conditional offer.",
+      "removeConfirm": "Remove this program?",
+      "linked": "Related programs",
+      "offers": "Compare offers",
+      "offersHint": "Only stated values are used. Totals are estimates.",
+      "totalCost": "Total cost",
+      "fundingTotal": "Funding",
+      "netCost": "Net cost",
+      "notStated": "Not stated",
+      "estimated": "Estimated",
+      "openProgram": "Open program",
+      "saveChanges": "Save changes",
+      "actionDone": "Recorded: {action} on {date}"
+    },
+    "tests": {
+      "add": "Add a test",
+      "expires": "Expires {date}",
+      "expiresUnknown": "Add a release or test date to see the expiry.",
+      "reports": "Official score reports",
+      "addReport": "Record a report sent",
+      "institutionCode": "Institution code",
+      "sentOn": "Sent on",
+      "received": "Institution confirmed receipt",
+      "reportHint": "Sending official scores and paying the fee are your steps.",
+      "noScoreHint": "Enter only scores you actually received."
+    },
+    "credentials": {
+      "add": "Add a credential",
+      "estimate": "Estimated conversion",
+      "official": "Official conversion",
+      "originalHint": "Grades stay in their original scale."
+    },
+    "errors": {
+      "generic": "Could not save. Try again.",
+      "referee_consent_required": "Confirm that this referee agreed to be listed first.",
+      "evidence_required": "Add evidence first. Confirmed needs the institution; your own statement needs a note.",
+      "research_reference_required": "Describe the supervisor's real work first (a paper or topic).",
+      "profile_name_required": "Add your name to your profile first.",
+      "outreach_limit": "You reached an outreach limit for today, this department or this university.",
+      "outreach_stopped": "This professor declined or asked not to be contacted.",
+      "outreach_generic": "The message must mention the supervisor's work and not be generic.",
+      "follow_up_not_allowed": "Follow-ups are not allowed for this message.",
+      "follow_up_too_soon": "It is too soon for a follow-up.",
+      "confirmation_required": "Confirm this step yourself first.",
+      "not_an_offer": "This needs an accepted or conditional offer.",
+      "unknown_program": "That program was not found.",
+      "not_a_study_opportunity": "This opportunity is not a study program.",
+      "already_sent": "Already recorded as sent.",
+      "not_sent": "Record that you sent it first.",
+      "unknown_section": "That score section is not used by this test.",
+      "too_many_items": "Too many items in a list.",
+      "limit_above_maximum": "That limit is above the maximum.",
+      "duplicate": "You already have this."
+    },
+    "enums": {
+      "StudyKind": {
+        "taught_masters": "Taught masters",
+        "research_masters": "Research masters",
+        "phd": "Phd",
+        "scholarship": "Scholarship",
+        "fellowship": "Fellowship",
+        "research_assistantship": "Research assistantship",
+        "teaching_assistantship": "Teaching assistantship",
+        "exchange": "Exchange",
+        "summer_school": "Summer school",
+        "postdoc": "Postdoc",
+        "internship": "Internship"
+      },
+      "IntakeTerm": {
+        "fall": "Fall",
+        "spring": "Spring",
+        "winter": "Winter",
+        "summer": "Summer"
+      },
+      "EvidenceStatus": {
+        "explicit": "Explicit",
+        "not_stated": "Not stated",
+        "unclear": "Unclear",
+        "conflicting": "Conflicting"
+      },
+      "NeedLevel": {
+        "required": "Required",
+        "optional": "Optional",
+        "not_required": "Not required",
+        "not_stated": "Not stated"
+      },
+      "ScorePolicy": {
+        "official_only": "Official only",
+        "self_reported": "Self reported",
+        "alternative": "Alternative",
+        "not_stated": "Not stated"
+      },
+      "ExamKind": {
+        "ielts": "IELTS",
+        "toefl": "TOEFL",
+        "pte": "PTE",
+        "duolingo": "Duolingo",
+        "gre": "GRE",
+        "gmat": "GMAT",
+        "sat": "SAT",
+        "act": "ACT",
+        "other": "Other"
+      },
+      "ExamStatus": {
+        "planned": "Planned",
+        "registered": "Registered",
+        "taken": "Taken",
+        "scores_released": "Scores released",
+        "cancelled": "Cancelled"
+      },
+      "DeadlineKind": {
+        "application": "Application",
+        "early_decision": "Early decision",
+        "priority": "Priority",
+        "scholarship_consideration": "Scholarship consideration",
+        "funding": "Funding",
+        "referee": "Referee",
+        "supervisor_contact": "Supervisor contact",
+        "decision_expected": "Decision expected",
+        "acceptance": "Acceptance",
+        "deposit": "Deposit",
+        "test_registration": "Test registration",
+        "test_date": "Test date",
+        "score_expiry": "Score expiry",
+        "condition": "Condition",
+        "checklist": "Checklist"
+      },
+      "FundingStatus": {
+        "stated": "Stated",
+        "not_stated": "Not stated",
+        "unclear": "Unclear",
+        "none": "None"
+      },
+      "AmountSource": {
+        "official": "Official",
+        "estimate": "Estimate"
+      },
+      "BudgetKind": {
+        "application_fee": "Application fee",
+        "test_fee": "Test fee",
+        "score_sending": "Score sending",
+        "evaluation": "Evaluation",
+        "translation": "Translation",
+        "courier": "Courier",
+        "visa_fee": "Visa fee",
+        "other": "Other"
+      },
+      "GradeScale": {
+        "cgpa_4": "CGPA out of 4",
+        "gpa_5": "GPA out of 5",
+        "percentage": "Percentage",
+        "division": "Division",
+        "other": "Other"
+      },
+      "CredentialKind": {
+        "degree_certificate": "Degree certificate",
+        "transcript": "Transcript",
+        "secondary_certificate": "Secondary certificate",
+        "other": "Other"
+      },
+      "CredentialNeed": {
+        "evaluation": "Evaluation",
+        "certified_copy": "Certified copy",
+        "translation": "Translation",
+        "notarization": "Notarization",
+        "sealed_transcript": "Sealed transcript"
+      },
+      "ItemProgress": {
+        "todo": "Todo",
+        "in_progress": "In progress",
+        "done": "Done"
+      },
+      "ConversionSource": {
+        "official": "Official",
+        "estimate": "Estimate"
+      },
+      "AgreementStatus": {
+        "not_asked": "Not asked",
+        "asked": "Asked",
+        "agreed": "Agreed",
+        "declined": "Declined"
+      },
+      "SubmissionMethod": {
+        "portal_invite": "Portal invite",
+        "email": "Email",
+        "postal": "Postal",
+        "institution_form": "Institution form",
+        "not_stated": "Not stated"
+      },
+      "RecommendationStatus": {
+        "planned": "Planned",
+        "requested": "Requested",
+        "submitted": "Submitted",
+        "confirmed": "Confirmed"
+      },
+      "ReceiptEvidence": {
+        "institution_confirmation": "Institution confirmation",
+        "user_statement": "User statement"
+      },
+      "DraftKind": {
+        "request": "Request",
+        "reminder": "Reminder"
+      },
+      "OutreachStatus": {
+        "draft": "Draft",
+        "sent": "Sent",
+        "replied_positive": "Replied positive",
+        "call_requested": "Call requested",
+        "documents_requested": "Documents requested",
+        "replied_neutral": "Replied neutral",
+        "declined": "Declined",
+        "stopped": "Stopped"
+      },
+      "ReplyOutcome": {
+        "positive": "Positive",
+        "call_requested": "Call requested",
+        "documents_requested": "Documents requested",
+        "neutral": "Neutral",
+        "declined": "Declined",
+        "do_not_contact": "Do not contact"
+      },
+      "ProgramStatus": {
+        "saved": "Saved",
+        "preparing": "Preparing",
+        "submitted": "Submitted",
+        "decided": "Decided",
+        "withdrawn": "Withdrawn"
+      },
+      "PortalSubmission": {
+        "not_started": "Not started",
+        "in_progress": "In progress",
+        "submitted_by_user": "Submitted by user",
+        "confirmed_by_institution": "Confirmed by institution"
+      },
+      "PortalFee": {
+        "not_required": "Not required",
+        "due": "Due",
+        "paid_by_user": "Paid by user"
+      },
+      "DecisionKind": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "conditionally_accepted": "Conditionally accepted",
+        "waitlisted": "Waitlisted",
+        "interview_invited": "Interview invited",
+        "rejected": "Rejected",
+        "deferred": "Deferred"
+      },
+      "UserAction": {
+        "accept_offer": "Accept offer",
+        "pay_deposit": "Pay deposit",
+        "decline_offer": "Decline offer"
+      },
+      "ChecklistStep": {
+        "admission_document": "Admission document",
+        "proof_of_funds": "Proof of funds",
+        "visa": "Visa",
+        "health_insurance": "Health insurance",
+        "accommodation": "Accommodation",
+        "tuition_payment": "Tuition payment",
+        "travel": "Travel",
+        "arrival_registration": "Arrival registration"
+      },
+      "PlanStepKind": {
+        "test_registration": "Test registration",
+        "take_test": "Take test",
+        "send_scores": "Send scores",
+        "prepare_documents": "Prepare documents",
+        "request_referees": "Request referees",
+        "contact_supervisor": "Contact supervisor",
+        "submit_application": "Submit application"
+      },
+      "WarningKind": {
+        "score_expires_before_deadline": "Score expires before deadline",
+        "score_expires_before_start": "Score expires before start",
+        "no_valid_score": "No valid score",
+        "referee_without_consent": "Referee without consent"
+      },
+      "AttentionKind": {
+        "outreach_reply": "Outreach reply",
+        "deadline_soon": "Deadline soon",
+        "score_warning": "Score warning",
+        "portal_blocked": "Portal blocked"
+      },
+      "PortalBlocker": {
+        "section_incomplete": "Section incomplete",
+        "document_missing": "Document missing",
+        "referee_not_consented": "Referee not consented",
+        "referee_not_invited": "Referee not invited",
+        "fee_due": "Fee due",
+        "institution_item_pending": "Institution item pending",
+        "credential_pending": "Credential pending"
       }
+    }
+  },
+  "fees": {
+    "title": "Fees and payments",
+    "menuBody": "Fees, deadlines, receipts and uncertain payments",
+    "subtitle": "CareerPilot keeps a record of fees and payments. It never pays for you and never stores card details. You pay on the official site, then record the result here.",
+    "noPayments": "Nothing recorded yet. Add a fee when an employer, portal or school asks for one.",
+    "reminders": "Reminders",
+    "noReminders": "No payment needs attention right now.",
+    "totals": "Totals by currency",
+    "totalDue": "To pay",
+    "totalUncertain": "Unconfirmed",
+    "totalPaid": "Paid",
+    "lines": "Fees and payments",
+    "addRule": "Add a fee",
+    "addPayment": "Record a payment",
+    "recordPayment": "Record a payment for this fee",
+    "openApplication": "Open application",
+    "openPayment": "Open payment",
+    "open": "Open",
+    "edit": "Edit",
+    "remove": "Remove",
+    "removeConfirm": "Remove this record? It disappears from your lists.",
+    "save": "Save",
+    "back": "Back to fees",
+    "loadFailed": "Fees could not be loaded.",
+    "notFound": "This payment could not be found.",
+    "officialNote": "Pay only on the official site named by the employer or authority. Never pay a person who asks you to pay in advance for a job.",
+    "dueOn": "Due {date}",
+    "noDeadline": "No deadline set",
+    "paidOn": "Paid {date}",
+    "form": {
+      "ruleTitle": "Fee details",
+      "paymentTitle": "Payment details",
+      "kind": "Applies to",
+      "title": "What is it for",
+      "organization": "Employer or authority",
+      "payee": "Payee",
+      "payeeVerified": "I checked this is the official payee",
+      "payeeVerifiedHint": "Compare the payee with the official notice or website.",
+      "amount": "Amount",
+      "currency": "Currency",
+      "purpose": "Purpose",
+      "sourceUrl": "Official source link",
+      "deadline": "Payment deadline",
+      "deadlineHint": "YYYY-MM-DD",
+      "deadlineInvalid": "Use the form YYYY-MM-DD",
+      "waiverNote": "Waiver or discount",
+      "note": "Note",
+      "method": "Payment method",
+      "transactionId": "Transaction ID",
+      "transactionHint": "From the confirmation message or receipt. Leave empty if you do not have it yet.",
+      "titleRequired": "Enter what the fee is for",
+      "amountRequired": "Enter the amount as a number"
+    },
+    "source": {
+      "fee_rule": "Fee",
+      "payment": "Payment",
+      "government": "Government application"
+    },
+    "kind": {
+      "job": "Job",
+      "internship": "Internship",
+      "government": "Government job",
+      "scholarship": "Scholarship",
+      "admission": "Admission",
+      "test": "Test or exam",
+      "other": "Other"
+    },
+    "status": {
+      "due": "To pay",
+      "paid": "Paid",
+      "uncertain": "Outcome unknown",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "waived": "Waived"
+    },
+    "urgency": {
+      "ok": "Deadline not close",
+      "due_soon": "Due soon",
+      "overdue": "Overdue"
+    },
+    "reminder": {
+      "due_soon": "Due soon",
+      "overdue": "Overdue",
+      "confirm_outcome": "Confirm the outcome"
+    },
+    "action": {
+      "confirm_paid": "Record as paid",
+      "confirm_not_paid": "It was not paid",
+      "mark_uncertain": "I am not sure it went through",
+      "mark_failed": "It failed",
+      "mark_refunded": "It was refunded",
+      "mark_waived": "The fee was waived"
+    },
+    "actions": {
+      "title": "What happened",
+      "uncertainTitle": "Did this payment go through?",
+      "uncertainBody": "CareerPilot will not assume. Check your confirmation message, the official portal or the payee, then tell us the result.",
+      "note": "Note",
+      "noteRequired": "Add a note, for example when the refund was promised.",
+      "evidenceNeeded": "Add a transaction ID or a receipt first. A payment cannot be recorded as paid without evidence.",
+      "evidenceTransaction": "Transaction ID",
+      "apply": "Apply"
+    },
+    "warning": {
+      "unverified_payee": "The payee is not marked as checked. Compare it with the official notice before paying.",
+      "amount_differs": "The amount differs from the fee you added.",
+      "possible_duplicate": "Two payments are recorded as paid for the same fee.",
+      "no_receipt": "No receipt is attached yet."
+    },
+    "guidance": {
+      "title": "What to do next",
+      "verify_with_payee": "Check with the payee or the official portal whether the payment arrived.",
+      "do_not_pay_again": "Do not pay again until you have checked the first attempt.",
+      "request_refund": "Ask the payee for a refund of the extra payment and keep the reply.",
+      "check_duplicate": "Compare the two payments and their transaction IDs.",
+      "retry_after_check": "Pay again only after you have confirmed the first attempt did not go through.",
+      "add_receipt": "Add the confirmation message, receipt number or statement line as a receipt."
+    },
+    "receipts": "Receipts",
+    "noReceipts": "No receipts yet.",
+    "addReceipt": "Add receipt",
+    "receiptKindLabel": "Receipt type",
+    "receiptReference": "Reference or message text",
+    "receiptNote": "Note",
+    "receiptRemove": "Remove receipt {reference}",
+    "receiptKind": {
+      "confirmation_message": "Confirmation message",
+      "receipt_number": "Receipt number",
+      "portal_confirmation": "Portal confirmation",
+      "bank_statement": "Bank statement line"
+    },
+    "history": "History",
+    "error": {
+      "evidence_required": "Add evidence first: a transaction ID or a receipt, or a note for refunds.",
+      "duplicate_transaction": "This transaction ID is already recorded on another payment.",
+      "unsupported_currency": "This currency is not supported.",
+      "invalid_transition": "That change is not possible from the current status.",
+      "too_many_items": "You have reached the limit.",
+      "generic": "That could not be saved. Try again."
     }
   },
   "select": {

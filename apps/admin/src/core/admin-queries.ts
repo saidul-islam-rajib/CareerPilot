@@ -11,6 +11,8 @@ export const adminKeys = {
   resource: (resource: string) => ['admin', resource] as const,
   user: (id: string) => ['admin', 'user', id] as const,
   userRecord: (id: string) => ['admin', 'user', id, 'record'] as const,
+  teamUnread: ['admin', 'messages', 'unread'] as const,
+  inbox: (search: string) => ['admin', 'messages', 'inbox', search] as const,
   settings: ['admin', 'settings'] as const,
   admins: ['admin', 'admins'] as const,
   link: (token: string) => ['admin', 'link', token] as const,

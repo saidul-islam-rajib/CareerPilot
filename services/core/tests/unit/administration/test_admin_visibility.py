@@ -5,6 +5,7 @@ from careerpilot.administration.context import AdminActor, PageRequest
 from careerpilot.administration.discovery_sync import live_opportunities
 from careerpilot.administration.models import AdminOpportunityRow
 from careerpilot.api.admin_app import create_admin_app
+from careerpilot.automation.models import AutomationRule
 from careerpilot.bootstrap import Container
 from careerpilot.candidate.models import Contact, UserSummary
 from careerpilot.candidate.ports import Account
@@ -197,3 +198,13 @@ def test_inbox_endpoints_answer_admins_only(container: Container) -> None:
     assert client.get("/admin/v1/messages/unread", headers=headers).json() == {"count": 0}
     assert client.get("/admin/v1/messages/inbox?q=x", headers=headers).json() == []
     assert client.get(f"/admin/v1/users/{DEMO_USER}/overview", headers=headers).status_code == 200
+
+
+def test_overview_includes_the_automation_rules_of_the_user(container: Container) -> None:
+    candidate = container.messaging._candidate  # pyright: ignore[reportPrivateUsage]
+    workspace = candidate.workspaces.get(DEMO_USER)
+    stamp = "2026-10-20T06:00:00Z"
+    workspace.preferences.automation.rules.append(AutomationRule(id="rule_test", name="Dhaka roles", created_at=stamp, updated_at=stamp))
+    candidate.workspaces.save(DEMO_USER, workspace)
+    overview = container.admin_overview.get(admin(container), DEMO_USER)
+    assert [rule.name for rule in overview.automation_rules] == ["Dhaka roles"]

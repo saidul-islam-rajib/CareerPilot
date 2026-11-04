@@ -208,3 +208,33 @@ describe('http admin api', () => {
     expect(String(calls[1]?.[1].body)).toContain(LINK_TOKEN);
   });
 });
+
+describe('admin visibility and inbox', () => {
+  it('lists team conversations newest first, searchable, with an unread count', async () => {
+    const api = await signedIn();
+    expect(await api.messages.inbox()).toEqual([]);
+    await api.users.sendTeamMessage('usr_demo', 'Your CV looks good');
+    const rows = await api.messages.inbox();
+    expect(rows.map((row) => row.otherMemberId)).toEqual(['usr_demo']);
+    expect(await api.messages.inbox('looks good')).toHaveLength(1);
+    expect(await api.messages.inbox('no such text')).toEqual([]);
+    expect((await api.messages.unread()).count).toBe(0);
+    expect((await api.dashboard.getDashboard()).unreadMessages).toBe(0);
+  });
+
+  it('filters users by segment and searches by phone', async () => {
+    const api = await signedIn();
+    const dashboard = await api.dashboard.getDashboard();
+    const query = { page: 1, pageSize: 500 };
+    expect((await api.users.listUsers({ ...query, segment: 'automatic' })).total).toBe(dashboard.users.automaticEnabled);
+    expect((await api.users.listUsers({ ...query, segment: 'incomplete' })).total).toBe(dashboard.users.incompleteProfiles);
+    expect((await api.users.listUsers({ ...query, segment: 'new' })).total).toBe(dashboard.users.newThisWeek);
+  });
+
+  it('answers the overview of a user and refuses an unknown one', async () => {
+    const api = await signedIn();
+    const overview = await api.users.overview('usr_demo');
+    expect(overview.governmentApplications).toEqual([]);
+    expect(await errorCode(api.users.overview('usr_missing'))).toBe(ApiErrorCode.NotFound);
+  });
+});

@@ -3,7 +3,7 @@
 import type { PropsWithChildren } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FileLock2, Landmark, Briefcase, Database, FileSearch, LayoutDashboard, LogOut, ScrollText, Settings, ShieldCheck, Users, type LucideIcon } from 'lucide-react';
+import { FileLock2, Landmark, Briefcase, Database, FileSearch, LayoutDashboard, LogOut, MessageCircle, ScrollText, Settings, ShieldCheck, Users, type LucideIcon } from 'lucide-react';
 import { can } from '@careerpilot/api-client';
 import { useEnumDisplay, useT } from '@careerpilot/client-core';
 import { AdminArea, EnumKey, PermissionAction } from '@careerpilot/domain-ui-logic';
@@ -11,17 +11,20 @@ import { BrandMark, Button, TeamSoberCredit, cn } from '@careerpilot/ui-web';
 import { useAdminSession } from '@/core/admin-session';
 import { teamSoberLogoSrc } from '@/core/brand-assets';
 import { AdminRoutes } from '@/core/routes';
+import { useTeamUnread } from '@/features/messages/use-team-unread';
 
 interface NavItem {
   href: string;
   area: AdminArea;
   icon: LucideIcon;
   label?: string;
+  badge?: boolean;
 }
 
 const NAV: NavItem[] = [
   { href: AdminRoutes.dashboard, area: AdminArea.Dashboard, icon: LayoutDashboard },
   { href: AdminRoutes.users, area: AdminArea.Users, icon: Users },
+  { href: AdminRoutes.messages, area: AdminArea.Users, icon: MessageCircle, label: 'admin.nav.messages', badge: true },
   { href: AdminRoutes.opportunities, area: AdminArea.Opportunities, icon: FileSearch },
   { href: AdminRoutes.sources, area: AdminArea.Sources, icon: Database },
   { href: AdminRoutes.government, area: AdminArea.Opportunities, icon: Landmark },
@@ -41,6 +44,7 @@ export function AdminShell({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const display = useEnumDisplay();
   const { admin, permissions, end } = useAdminSession();
+  const unread = useTeamUnread();
   const items = NAV.filter((item) => can(permissions, item.area, PermissionAction.Read));
   const links = (className: string) =>
     items.map((item) => (
@@ -52,6 +56,11 @@ export function AdminShell({ children }: PropsWithChildren) {
       >
         <item.icon className="size-5 shrink-0" aria-hidden />
         {t(item.label ?? `admin.nav.${item.area}`)}
+        {item.badge && unread > 0 ? (
+          <span className="ml-auto min-w-6 rounded-full bg-primary px-2 text-center text-xs font-semibold text-primary-foreground" aria-label={t('admin.inbox.unread', { count: unread })}>
+            {unread}
+          </span>
+        ) : null}
       </Link>
     ));
 

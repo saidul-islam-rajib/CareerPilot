@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
 from careerpilot.administration.context import AdminActor
-from careerpilot.candidate.ports import AccountRepository
+from careerpilot.automation.models import AutomationRule
+from careerpilot.candidate.ports import AccountRepository, WorkspaceRepository
 from careerpilot.government.models import GovApplication
 from careerpilot.government.ports import CircularRepository, GovApplicationRepository
 from careerpilot.messaging.ports import NotificationRepository
@@ -81,11 +82,13 @@ class AdminUserOverview(CamelModel):
     deletion: AdminDeletion | None = None
     notifications: list[AdminNotification]
     unread_notifications: int
+    automation_rules: list[AutomationRule]
 
 
 @dataclass(frozen=True)
 class UserOverviewParts:
     accounts: AccountRepository
+    workspaces: WorkspaceRepository
     gov_applications: GovApplicationRepository
     circulars: CircularRepository
     drafts: WritingRepository
@@ -116,6 +119,7 @@ class AdminUserOverviewService:
                 for n in parts.notifications.recent(user_id, NOTIFICATIONS_SHOWN)
             ],
             unread_notifications=parts.notifications.unread_count(user_id),
+            automation_rules=parts.workspaces.get(user_id).preferences.automation.active_rules(),
         )
 
     @staticmethod

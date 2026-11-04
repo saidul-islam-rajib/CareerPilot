@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Search } from 'lucide-react';
 import type { Page, PageQuery } from '@careerpilot/api-client';
 import { useEnumDisplay, useT } from '@careerpilot/client-core';
-import type { EnumKey } from '@careerpilot/domain-ui-logic';
+import type { EnumKey, UserSegment } from '@careerpilot/domain-ui-logic';
 import { DataTable, EmptyState, ErrorState, LoadingState, PageHeader, Pagination, type Column } from '@careerpilot/ui-web';
 import { usePagedList } from '@/core/admin-queries';
 import { useAdminServices } from '@/core/admin-services';
@@ -27,8 +27,15 @@ export function ListPage<T>({ title, description, resource, fetcher, columns, ro
   const { config } = useAdminServices();
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
+  const [segment, setSegment] = useState<UserSegment>();
   const [page, setPage] = useState(1);
-  const query: PageQuery = { search: search || undefined, status: status || undefined, page, pageSize: config.admin.pageSize };
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setSearch(params.get('search') ?? '');
+    setStatus(params.get('status') ?? '');
+    setSegment((params.get('segment') as UserSegment | null) ?? undefined);
+  }, []);
+  const query: PageQuery = { search: search || undefined, status: status || undefined, segment, page, pageSize: config.admin.pageSize };
   const list = usePagedList(resource, query, fetcher);
 
   return (

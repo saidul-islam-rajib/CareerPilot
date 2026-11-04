@@ -702,6 +702,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         admin_overview=AdminUserOverviewService(
             UserOverviewParts(
                 accounts=repos.accounts,
+                workspaces=repos.workspaces,
                 gov_applications=repos.gov_applications,
                 circulars=repos.circulars,
                 drafts=repos.writing_drafts,

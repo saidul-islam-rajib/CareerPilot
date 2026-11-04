@@ -30,6 +30,7 @@ export function UsersPage() {
             <a href={AdminRoutes.user(u.id)} className="flex flex-col">
               <span className="font-semibold text-foreground">{u.fullName}</span>
               <span className="text-xs text-muted">{u.email}</span>
+              <span className="text-xs text-muted">{u.phone ?? t('admin.users.noPhone')}</span>
             </a>
           ),
         },
