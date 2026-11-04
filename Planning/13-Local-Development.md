@@ -82,8 +82,7 @@ Installed by `make setup` (pre-commit framework):
 
 | Hook | Runs |
 |---|---|
-| pre-commit | Formatters, linters, type checks, secret scan, and unit tests for the changed packages |
-| pre-push | All unit tests, OpenAPI drift check |
+| pre-push | Linters, format checks, type checks, and all unit tests |
 | CI (required checks) | All unit tests with coverage, lint, types, and security scans |
 
 A commit is blocked if any check fails. Claude Code agents use the same commands, so they can't commit failing code either ([14-Testing-and-Quality.md](14-Testing-and-Quality.md)).

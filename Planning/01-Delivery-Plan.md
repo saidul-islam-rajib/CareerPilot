@@ -58,7 +58,7 @@ These phases map to the AIDLC phases: Requirements, Planning, and Design form **
 - No secrets in code or logs; security checklist done for sensitive areas.
 - API contract (OpenAPI) and generated clients are updated.
 - Requirement and planning docs are updated if behaviour changed.
-- All tests passed locally before every commit (git hooks) and in CI.
+- All tests passed locally before every push (pre-push hook) and in CI.
 - Accepted: automatically for non-sensitive work when all gates pass; by the Product Owner for sensitive changes and at the increment demo.
 
 ## 3. Release roadmap to version 1
