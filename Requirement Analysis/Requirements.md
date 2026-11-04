@@ -1060,7 +1060,7 @@ Information in the submission record must not be edited afterwards. User correct
 
 - **Daily application report**: Applications submitted, confirmed, failed, and waiting for user action that day, with links to each record, delivered with or alongside the daily digest.
 - **Weekly summary**: Totals by track, route, and status; responses received; upcoming deadlines, interviews, and exams.
-- Reports and individual records must be exportable (for example as PDF and spreadsheet), and printable.
+- Reports and individual records must be exportable (for example as PDF and spreadsheet), and printable. Version 1 offers CSV and PDF for the applications list, the daily and weekly reports and a single record, and a ZIP of everything (JSON and files) for the full personal data export (REQ 13, 46.2; `specs/E23-reports-exports-and-privacy`).
 
 ### 28.5 Presentation and design
 
@@ -1482,7 +1482,7 @@ For every change:
 
 - The user must be able to delete their whole account from the settings, after re-authentication (Section 41).
 - Before deletion, the product must offer a full data export (Section 13) and show what will be deleted, what cannot be deleted by the product (for example, applications already received by employers, and accounts on employer portals, which the user must close with each portal), and any grace period.
-- During an optional grace period (default to be decided), the user must be able to cancel the deletion. All automatic applications, emails, and payments must stop immediately when deletion is requested.
+- During a grace period (default 14 days, set by a Super Admin), the user must be able to cancel the deletion. All automatic applications, emails, and payments must stop immediately when deletion is requested.
 - On deletion, the product must revoke all connected-account access, delete stored portal credentials, irreversibly erase all personal data, documents, records, and archives (anonymized so they can never be linked back to the user; Section 15, record keeping), and send a final confirmation to the user's email.
 - Data kept after deletion because of legal obligations must be listed, kept only for the required period, and not used for any other purpose.
 

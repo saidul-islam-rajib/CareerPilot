@@ -23,6 +23,9 @@ export const Routes = {
   answers: '/settings/answers',
   sources: '/settings/sources',
   connectedAccounts: '/settings/connected-accounts',
+  government: '/government',
+  governmentCircular: (id: string) => `/government/${encodeURIComponent(id)}`,
+  governmentApplication: (id: string) => `/government/applications/${encodeURIComponent(id)}`,
   sourceJobs: (id: string) => `/settings/sources/${encodeURIComponent(id)}`,
   countries: '/settings/countries',
   changePassword: '/settings/password',
@@ -30,4 +33,7 @@ export const Routes = {
   about: '/settings/about',
   licences: '/settings/licences',
   deleteAccount: '/settings/delete-account',
+  reports: '/reports',
+  exports: '/settings/exports',
+  consents: '/settings/consents',
 } as const;

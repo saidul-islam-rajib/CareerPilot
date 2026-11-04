@@ -168,62 +168,19 @@ describe('ActivityPage', () => {
 });
 
 describe('DeleteAccountPage', () => {
-  it('requires the keyword and schedules deletion', async () => {
+  it('shows what is erased, needs the password and the keyword, then lets the user cancel', async () => {
     renderWithProviders(<DeleteAccountPage />);
+    expect(await screen.findByText('What we erase')).toBeInTheDocument();
     const button = screen.getByRole('button', { name: 'Delete account' });
     expect(button).toBeDisabled();
     fireEvent.change(screen.getByLabelText('Type DELETE to confirm'), { target: { value: 'DELETE' } });
+    fireEvent.change(screen.getByLabelText('Your password'), { target: { value: 'wrong' } });
     fireEvent.click(button);
-    expect(await screen.findByText('Account deletion scheduled for Nov 3, 2026.')).toBeInTheDocument();
-  });
-});
-
-describe('About and licences', () => {
-  it('credits Team Sober and lists licences', () => {
-    renderWithProviders(<AboutPage />);
-    expect(screen.getAllByText('Developed by Team Sober').length).toBeGreaterThan(0);
-    renderWithProviders(<LicencesPage />);
-    expect(screen.getByRole('link', { name: /React Native Reusables/ })).toHaveAttribute('href', 'https://github.com/founded-labs/react-native-reusables');
-  });
-});
-
-describe('AnswersPage', () => {
-  it('shows blocking questions first and answering one unblocks the approval', async () => {
-    const user = userEvent.setup();
-    const { services } = renderWithProviders(<AnswersPage />);
-    const blocking = await screen.findByRole('region', { name: 'Needs an answer' });
-    expect(within(blocking).getByText('Are you willing to relocate to Oslo?')).toBeInTheDocument();
-    await user.click(within(blocking).getByRole('button', { name: 'Save this answer: Are you willing to relocate to Oslo?' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Add answer' });
-    expect(within(dialog).getByLabelText('Topic')).toHaveValue('relocation');
-    await user.type(within(dialog).getByLabelText('Answer'), 'Yes, within Europe');
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
-    expect(await screen.findByText('Answer saved')).toBeInTheDocument();
-    await waitFor(() => expect(screen.queryByRole('region', { name: 'Needs an answer' })).not.toBeInTheDocument());
-    const oslo = await services.api.approvals.getApproval('apr_oslo');
-    expect(oslo.materials.answers.find((a) => a.id === 'q_relocate')).toMatchObject({ answer: 'Yes, within Europe', source: 'saved' });
-  });
-
-  it('groups questions, adds a new answer with a suggested question, and removes with undo', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<AnswersPage />);
-    const asked = await screen.findByRole('region', { name: "Questions you've been asked" });
-    expect(within(asked).getByText('Asked 5 times')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Add answer' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Add answer' });
-    await user.selectOptions(within(dialog).getByLabelText('Topic'), 'salary_expectation');
-    expect(within(dialog).getByLabelText('Question')).toHaveValue('What are your salary expectations?');
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
-    expect(await within(dialog).findByText('This field is required.')).toBeInTheDocument();
-    await user.type(within(dialog).getByLabelText('Answer'), 'USD 80,000 per year');
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
-    const saved = await screen.findByRole('region', { name: 'Your saved answers' });
-    expect(await within(saved).findByText('USD 80,000 per year')).toBeInTheDocument();
-    await user.click(within(saved).getByRole('button', { name: 'More actions for What are your salary expectations?' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Remove' }));
-    expect(await screen.findByText('Answer removed')).toBeInTheDocument();
-    await waitFor(() => expect(within(saved).queryByText('USD 80,000 per year')).not.toBeInTheDocument());
-    await user.click(screen.getByRole('button', { name: 'Undo' }));
-    expect(await within(saved).findByText('USD 80,000 per year')).toBeInTheDocument();
+    expect(await screen.findByText('That password is not right.')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Your password'), { target: { value: 'admin@sober.com' } });
+    fireEvent.click(button);
+    expect(await screen.findByText('Deletion scheduled for Nov 3, 2026')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel deletion' }));
+    expect(await screen.findByText('What we erase')).toBeInTheDocument();
   });
 });

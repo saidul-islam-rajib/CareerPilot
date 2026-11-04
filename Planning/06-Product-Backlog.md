@@ -16,14 +16,14 @@ Platforms: **B** = backend, **AI** = AI tasks, **W** = user web app, **M** = mob
 | E08 | Notifications: push, WhatsApp, email, quiet hours, fallback, actions from notifications | 11.3, 36 | B W M | 1–2 |
 | E09 | Approve-each applications: approval package, edits and reuse, approval expiry, cancel window, bulk approval | 10.1, 37 | B AI W M | 2 |
 | E10 | Application routes: email (Gmail/Graph), ATS adapters, portal accounts and credential vault, generic form mapping, guided manual | 10.2–10.6, 29, 30, 31 | B AI | 2 |
-| E11 | Records and reports: status model, submission records, Q&A transcripts, evidence, question bank, daily/weekly reports, exports | 11.2, 20, 28 | B W M | 2 |
+| E11 | Records and reports: status model, submission records, Q&A transcripts, evidence, question bank, daily/weekly reports, exports (reports and exports built as E23, `specs/E23-reports-exports-and-privacy`) | 11.2, 20, 28 | B W M | 2 |
 | E12 | Writing tools: cover letters, tailored CVs, essays, claim check, cross-contamination check | 10.7, 32.1, 32.3, 27.4 | B AI W M | 2–3 |
 | E13 | Automatic mode: rules, dry run, precedence, caps, submission windows, pause, emergency stop, deadline buffer, reconciliation, inactivity safety | 10.1, 10.8, 23, 27, 38, 39, 41, 47, 49, 52.3 | B W M A | 3 |
 | E14 | Bangladesh: government circulars, grades, age rules, stages, fees, applicant copies, Bangla profile data, local portals | 8.4, 35 | B AI W M | 4 |
 | E15 | Students and academics: programs, tests and scores, credentials, referees, supervisor outreach, university portals, decisions, after-admission checklist | 9, 33 | B AI W M | 4 |
 | E16 | After applying (Google inbox and calendar sync built as E21, `specs/E21-mail-and-calendar-sync`): inbox and calendar sync, assessments, interviews, offers, rejections, contacts, insights | 11.4, 11.5, 34 | B AI W M | 5 |
 | E17 | Admin application: dashboard, management areas, roles, view-as-user, platform settings (including theme selection with preview) and stop | 24, 53 | B A | 1 (basic), 5 (full) |
-| E18 | Privacy and account: data export, account deletion, confidentiality, consent, third-party data, minors | 13, 40, 46.2 | B W M A | 1 (basic), 5 (full) |
+| E18 | Privacy and account: data export, account deletion, confidentiality, consent, third-party data, minors (export, deletion and consent built as E23; confidentiality, third-party data and minors still open) | 13, 40, 46.2 | B W M A | 1 (basic), 5 (full) |
 | E19 | Fees and payments tracking: rules, records, receipts, uncertain payments | 10.10 | B W M | 5 |
 | E20 | Hardening and launch: security and accessibility (WCAG 2.2 AA) review, beta, Play Store release, acceptance evidence | 14, 15, 25, 43 | All | 5 |
 | E21 | Integrations and payment providers: integration hub, webhook gateway, payment provider plugins, partner API foundations | 10.10, 10.11 | B W M A | 5 |
