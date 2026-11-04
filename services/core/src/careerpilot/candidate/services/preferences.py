@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 
 from careerpilot.candidate.context import CandidateContext, ChangeListener, ignore_change
 from careerpilot.candidate.models import (
-    DeletionRequest,
     NotificationPreferences,
     PauseState,
     Preferences,
@@ -138,10 +137,3 @@ class PreferencesService:
 
     def sign_in_activity(self, user_id: str) -> list[SignInEvent]:
         return sorted(self._ctx.workspaces.get(user_id).sign_in_events, key=lambda e: e.at, reverse=True)
-
-    def request_account_deletion(self, user_id: str) -> DeletionRequest:
-        workspace = self._ctx.workspaces.get(user_id)
-        scheduled = iso(self._ctx.clock.now() + timedelta(days=self._ctx.settings.account.deletion_grace_days))
-        workspace.deletion_scheduled_for = scheduled
-        self._ctx.workspaces.save(user_id, workspace)
-        return DeletionRequest(scheduled_for=scheduled)

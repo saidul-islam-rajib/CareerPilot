@@ -245,6 +245,7 @@ def download(query: SignedQuery, request: Request, services: Services) -> Respon
     data = services.files.get(query.key)
     if data is None:
         raise not_found("file")
-    disposition = f"inline; filename*=UTF-8''{quote(query.name)}"
+    kind = "attachment" if query.key.startswith(services.settings.privacy.exports.storage_prefix + "/") else "inline"
+    disposition = f"{kind}; filename*=UTF-8''{quote(query.name)}"
     media_type = detect_content_type(data) or OCTET_STREAM
     return file_response(data, media_type, {CONTENT_DISPOSITION: disposition}, request.headers.get(RANGE_HEADER))

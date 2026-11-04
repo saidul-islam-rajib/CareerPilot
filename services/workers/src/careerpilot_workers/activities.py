@@ -8,6 +8,7 @@ from careerpilot_workers.workflows import (
     CONFIRM_SENT,
     DUE_APPLICATIONS,
     DUE_SOURCES,
+    RUN_PRIVACY_JOBS,
     SEND_DIGESTS,
     SUBMIT_APPLICATION,
     SYNC_INBOXES,
@@ -66,6 +67,16 @@ class DigestActivities:
     @activity.defn(name=SEND_DIGESTS)
     def send_digests(self) -> int:
         return self._container.digests.send_due()
+
+
+class PrivacyActivities:
+    def __init__(self, container: Container) -> None:
+        self._container = container
+
+    @activity.defn(name=RUN_PRIVACY_JOBS)
+    def run_privacy_jobs(self) -> int:
+        privacy = self._container.privacy
+        return privacy.exports.process_pending() + privacy.deletion.process_due()
 
 
 class IntegrationActivities:

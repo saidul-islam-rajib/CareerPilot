@@ -99,6 +99,19 @@ class DigestWorkflow:
         )
 
 
+RUN_PRIVACY_JOBS = "run_privacy_jobs"
+
+
+@workflow.defn(name="PrivacyWorkflow")
+class PrivacyWorkflow:
+    @workflow.run
+    async def run(self, plan: ActivityPlan) -> int:
+        timeout = timedelta(seconds=plan.activity_timeout_seconds)
+        return await workflow.execute_activity(
+            RUN_PRIVACY_JOBS, start_to_close_timeout=timeout, retry_policy=RetryPolicy(maximum_attempts=1), result_type=int
+        )
+
+
 SYNC_INBOXES = "sync_inboxes"
 
 

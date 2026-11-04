@@ -54,6 +54,10 @@ from careerpilot.discovery.ports import Fetcher
 from careerpilot.discovery.resolver import SourceResolver
 from careerpilot.discovery.safety import public_https_url
 from careerpilot.discovery.service import DiscoveryContext, DiscoveryService
+from careerpilot.government.circulars import CircularContext, CircularService
+from careerpilot.government.connector import TeletalkReader
+from careerpilot.government.tracking import GovernmentTracking, TrackingContext
+from careerpilot.government.workdays import WorkCalendar
 from careerpilot.integrations.admin import AdminIntegrations
 from careerpilot.integrations.calendar_sync import CalendarContext, CalendarSync
 from careerpilot.integrations.classifier import RuleBasedClassifier
@@ -102,6 +106,11 @@ from careerpilot.platform.one_time_codes import OneTimeCodes, random_token
 from careerpilot.platform.persistence import Database, create_database
 from careerpilot.platform.push import BackgroundPush, DirectPush, ExpoPushSender, NoPushSender, PushDispatcher, PushSender
 from careerpilot.platform.security import Argon2PasswordHasher, PasswordHasher, TokenService, token_secret_from_environment
+from careerpilot.privacy.assembly import PrivacyParts, PrivacyServices, build_privacy
+from careerpilot.privacy.enums import ReportPeriod
+from careerpilot.privacy.ports import JobRunner
+from careerpilot.privacy.reports import ReportService
+from careerpilot.privacy.runner import BackgroundRunner, DirectRunner
 from careerpilot.repositories import Repositories, RepositoryFactory, WorkspaceFactory, in_memory_repositories, sql_repositories
 
 EMPTY_PROFILE_COMPLETENESS = 0
@@ -115,6 +124,13 @@ class IntegrationServices:
     google: ConnectionService
     sync: SyncService
     admin: AdminIntegrations
+
+
+@dataclass(frozen=True)
+class GovernmentServices:
+    circulars: CircularService
+    tracking: GovernmentTracking
+    calendar: WorkCalendar
 
 
 @dataclass(frozen=True)
@@ -154,6 +170,8 @@ class Container:
     source_checks: SourceCheckRunner
     invite_owner: Callable[[], bool]
     integrations: IntegrationServices
+    privacy: PrivacyServices
+    government: GovernmentServices
 
 
 def default_tracks(settings: Settings) -> list[Track]:
@@ -222,6 +240,7 @@ class ContainerOverrides:
     page_fetcher: PageFetcher | None = None
     push_sender: PushSender | None = None
     google_gateway: GoogleGateway | None = None
+    job_runner: JobRunner | None = None
 
 
 def _redis_store(settings: Settings, url_env: str) -> KeyValueStore:
@@ -343,6 +362,13 @@ def _source_policy(
     )
 
 
+def job_runner_for(settings: Settings, options: ContainerOverrides) -> JobRunner:
+    if options.email_sender:
+        return DirectRunner()
+    exports = settings.privacy.exports
+    return BackgroundRunner(ThreadPoolExecutor(max_workers=exports.workers, thread_name_prefix=exports.thread_prefix))
+
+
 def push_dispatcher(settings: Settings, override: PushSender | None) -> PushDispatcher:
     if override is not None:
         return DirectPush(override)
@@ -443,6 +469,50 @@ def _integrations(parts: IntegrationParts, options: ContainerOverrides) -> Integ
     return IntegrationServices(connections, sync, AdminIntegrations(connections, parts.repos.accounts))
 
 
+@dataclass(frozen=True)
+class GovernmentParts:
+    candidate: CandidateContext
+    repos: Repositories
+    storage: FileStorage
+    links: FileLinkSigner
+    fetch_page: PageFetcher
+    secret: str
+
+
+def _government(parts: GovernmentParts) -> GovernmentServices:
+    candidate, repos, storage, links = parts.candidate, parts.repos, parts.storage, parts.links
+    cfg = candidate.settings
+    gov = cfg.government
+    calendar = WorkCalendar(gov, repos.holidays, candidate.ids)
+    circulars = CircularService(
+        CircularContext(
+            config=gov,
+            clock=candidate.clock,
+            ids=candidate.ids,
+            circulars=repos.circulars,
+            workspaces=repos.workspaces,
+            calendar=calendar,
+            reader=TeletalkReader(gov, parts.fetch_page),
+        )
+    )
+    tracking = GovernmentTracking(
+        TrackingContext(
+            config=gov,
+            clock=candidate.clock,
+            ids=candidate.ids,
+            circulars=repos.circulars,
+            applications=repos.gov_applications,
+            workspaces=repos.workspaces,
+            calendar=calendar,
+            cipher=FernetCipher(vault_secret(cfg.integrations.vault, parts.secret), gov.vault_context),
+            storage=storage,
+            links=links,
+            circular_service=circulars,
+        )
+    )
+    return GovernmentServices(circulars, tracking, calendar)
+
+
 def build_container(overrides: ContainerOverrides | None = None) -> Container:
     options = overrides or ContainerOverrides()
     cfg = options.settings or with_web_address(load_settings())
@@ -513,11 +583,15 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         discovery, repos.directory, cfg.discovery.failing_after_failures, recommendations.refresh_all, source_policy.healed
     )
     sender = options.email_sender or email_sender_for(cfg)
-    digests = DigestService(DigestContext(candidate=candidate, sender=sender))
+    reports = ReportService(candidate)
+    digests = DigestService(
+        DigestContext(candidate=candidate, sender=sender, weekly_report=lambda uid, on: reports.build(uid, ReportPeriod.WEEKLY, on))
+    )
     notifications, messaging, submissions = _messaging(candidate, repos, storage, sender, push_dispatcher(cfg, options.push_sender))
     courier = DirectCourier(options.email_sender) if options.email_sender else background_courier(cfg, account_sender_for(cfg, sender))
-    codes = OneTimeCodes(coord_store, keys, cfg.verification, secret)
-    verification = ContactVerificationService(VerificationContext(candidate=candidate, codes=codes, courier=courier))
+    verification = ContactVerificationService(
+        VerificationContext(candidate=candidate, codes=OneTimeCodes(coord_store, keys, cfg.verification, secret), courier=courier)
+    )
 
     def link_ttl_minutes() -> int:
         return effective_link_ttl_minutes(repos.platform.get(), cfg.account_links)
@@ -527,14 +601,17 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         AccountLinkContext(candidate=candidate, codes=link_codes, courier=courier, ttl_minutes=link_ttl_minutes)
     )
     admin_links = AdminLinkService(AdminLinkContext(admin=admin, codes=link_codes, courier=courier, ttl_minutes=link_ttl_minutes))
-    release = release_fingerprint(cfg.model_dump_json(), version(PACKAGE))
-    metadata = MetadataCache(cache_store, keys, cfg.coordination, release=release)
-    live = LivePlatformValues(
-        active_theme=lambda: repos.platform.get().active_theme,
-        link_ttl_minutes=link_ttl_minutes,
-        source_limit=lambda: effective_source_limit(repos.platform.get(), cfg.job_sources),
+    metadata = MetadataCache(cache_store, keys, cfg.coordination, release=release_fingerprint(cfg.model_dump_json(), version(PACKAGE)))
+    public_config = PublicConfigService(
+        cfg,
+        enum_value_documents(cfg.enum_values),
+        LivePlatformValues(
+            active_theme=lambda: repos.platform.get().active_theme,
+            link_ttl_minutes=link_ttl_minutes,
+            source_limit=lambda: effective_source_limit(repos.platform.get(), cfg.job_sources),
+        ),
+        metadata,
     )
-    public_config = PublicConfigService(cfg, enum_value_documents(cfg.enum_values), live, metadata)
     public_config.invalidate()
     admin_settings = PlatformSettingsService(admin, public_config.invalidate)
     preferences = PreferencesService(candidate, recommendations.rematch)
@@ -561,10 +638,33 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     )
     admin_catalog = AdminCatalogService(admin, source_checks, source_policy, recommendations.refresh_all)
     admin_catalog.track_real_applications(user_records)
+    integrations = _integrations(IntegrationParts(candidate, repos, notifications, tokens, coord_store, keys, secret), options)
+    privacy = build_privacy(
+        PrivacyParts(
+            candidate=candidate,
+            repos=repos,
+            storage=storage,
+            links=file_links,
+            courier=courier,
+            connections=integrations.google,
+            reports=reports,
+            empty_workspace=empty,
+            runner=options.job_runner or job_runner_for(cfg, options),
+            grace_days=lambda: repos.platform.get().deletion_grace_days,
+        )
+    )
     return Container(
         settings=cfg,
         database=database,
-        auth=AuthService(candidate, guard, account_links, user_records.presence),
+        auth=AuthService(
+            candidate,
+            guard,
+            account_links,
+            user_records.presence,
+            lambda user_id, registration, client: privacy.consents.registered(
+                user_id, registration.terms_version, registration.privacy_version, client
+            ),
+        ),
         presence=user_records.presence,
         public_config=public_config,
         opportunities=opportunity_service,
@@ -604,5 +704,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         ),
         user_sources=user_sources,
         invite_owner=lambda: invite_owner(admin, admin_links),
-        integrations=_integrations(IntegrationParts(candidate, repos, notifications, tokens, coord_store, keys, secret), options),
+        integrations=integrations,
+        privacy=privacy,
+        government=_government(GovernmentParts(candidate, repos, storage, file_links, fetch_page, secret)),
     )

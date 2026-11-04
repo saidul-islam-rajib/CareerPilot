@@ -5,7 +5,7 @@ from fastapi import APIRouter, FastAPI, Query, Request
 from fastapi.responses import JSONResponse, Response
 
 from careerpilot.administration.models import NewUserSource
-from careerpilot.api import integrations_routes, messaging_routes, profile_routes
+from careerpilot.api import government_routes, integrations_routes, messaging_routes, privacy_routes, profile_routes
 from careerpilot.api.common import bearer_token, client_info, configure, no_content, ok
 from careerpilot.api.dependencies import Credentials, CurrentUser, Services
 from careerpilot.api.instrumentation import instrument
@@ -362,11 +362,6 @@ def change_password(body: PasswordBody, user: CurrentUser, services: Services) -
     return no_content()
 
 
-@router.post("/account/deletion")
-def deletion(user: CurrentUser, services: Services) -> JSONResponse:
-    return ok(services.preferences.request_account_deletion(user.id))
-
-
 def create_user_app(container: Container) -> FastAPI:
     app = FastAPI(title=translate("app.name"), version=version(PACKAGE), openapi_url=f"{PREFIX}/openapi.json")
     app.state.container = container
@@ -375,5 +370,7 @@ def create_user_app(container: Container) -> FastAPI:
     app.include_router(profile_routes.router)
     app.include_router(messaging_routes.router)
     app.include_router(integrations_routes.router)
+    app.include_router(privacy_routes.router)
+    app.include_router(government_routes.router)
     instrument(app, container, container.settings.observability.user_api_service)
     return app

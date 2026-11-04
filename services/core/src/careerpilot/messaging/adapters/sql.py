@@ -210,6 +210,21 @@ class SqlMessageRepository:
             )
             return session.scalar(query) or 0
 
+    def erase_sender(self, sender_id: str, placeholder: str) -> list[str]:
+        keys: list[str] = []
+
+        def change(session: Session) -> None:
+            keys.clear()
+            for row in session.scalars(active(MessageRow).where(MessageRow.sender_id == sender_id)):
+                message = Message.model_validate(row.document)
+                if message.attachment is not None:
+                    keys.append(message.attachment.file.key)
+                erased = message.model_copy(update={"text": placeholder, "attachment": None, "sender_name": placeholder})
+                row.document = _json(erased)
+
+        self._db.write(change)
+        return keys
+
 
 class SqlPushDeviceRepository:
     def __init__(self, database: Database, clock: Clock) -> None:

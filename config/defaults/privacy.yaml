@@ -1,0 +1,67 @@
+# Reports, exports, account deletion and consent (Requirements 13, 28.4, 40, 46.2; specs/E23-reports-exports-and-privacy).
+privacy:
+  reports:
+    # ISO weekday numbers: 1 = Monday ... 7 = Sunday.
+    week_starts_on: 1
+    weekly_digest_weekday: 1
+    upcoming_days: 7
+    max_rows: 500
+    other_track: other
+    # Every submission status falls in one bucket; anything not listed counts as "other".
+    buckets:
+      - { bucket: submitted, statuses: [submitted_awaiting_confirmation] }
+      - { bucket: confirmed, statuses: [confirmed] }
+      - { bucket: failed, statuses: [failed, outcome_unknown] }
+      - { bucket: waiting, statuses: [awaiting_user_information, manual_action_required, awaiting_approval] }
+    response_outcomes:
+      [under_review, assessment, interview, offer_received, admitted, conditionally_admitted, waitlisted, deferred, rejected]
+  exports:
+    # Files are erased (overwritten empty) after this many hours; the request then shows as expired.
+    retention_hours: 24
+    storage_prefix: exports
+    # Requests that are queued, running or ready at the same time, and requests per rolling day.
+    max_open_per_user: 5
+    max_per_day: 10
+    workers: 2
+    thread_prefix: careerpilot-export
+    rules:
+      - { kind: applications, formats: [csv, pdf] }
+      - { kind: report, formats: [csv, pdf] }
+      - { kind: application, formats: [pdf] }
+      - { kind: archive, formats: [zip] }
+    application_columns:
+      - { key: title, label_key: reports.column.title }
+      - { key: organization, label_key: reports.column.organization }
+      - { key: location, label_key: reports.column.location }
+      - { key: track, label_key: reports.column.track }
+      - { key: route, label_key: reports.column.route }
+      - { key: appliedAt, label_key: reports.column.appliedAt }
+      - { key: submissionStatus, label_key: reports.column.submissionStatus }
+      - { key: outcomeStatus, label_key: reports.column.outcomeStatus }
+      - { key: matchScore, label_key: reports.column.matchScore }
+      - { key: deadline, label_key: reports.column.deadline }
+    archive_sections:
+      [profile, preferences, applications, approvals, saved_answers, sign_in_activity, consents, connections, deletion_history, files]
+    pdf_line_limit: 110
+    pdf_lines_per_page: 52
+  deletion:
+    anonymized_email_domain: deleted.invalid
+    anonymized_id_length: 12
+    final_email_enabled: true
+    erased:
+      [profile, documents, applications, answers, preferences, sign_in_history, connected_accounts, devices, messages]
+    # Placeholder periods until the legal review (REQ-46.2); records are kept only for this long.
+    retained:
+      - { record: audit_events, retention_days: 365, reason_key: privacy.retained.audit_events }
+      - { record: consent_records, retention_days: 1825, reason_key: privacy.retained.consent_records }
+      - { record: deletion_record, retention_days: 1825, reason_key: privacy.retained.deletion_record }
+    external: [employer_copies, portal_accounts]
+  consent:
+    kinds:
+      - { kind: terms, required: true }
+      - { kind: privacy, required: true }
+      - { kind: analytics, required: false }
+      - { kind: precise_location, required: false }
+      - { kind: marketing, required: false }
+      - { kind: ai_improvement, required: false }
+  admin_page_size: 50

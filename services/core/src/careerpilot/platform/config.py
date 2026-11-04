@@ -14,14 +14,21 @@ from careerpilot.platform.enums import (
     CompletenessKind,
     ConsistencyKind,
     DeliveryMode,
+    GuideActor,
+    GuideStepKind,
     OutcomeStatus,
     PauseDuration,
     ProfileFieldType,
     PushMode,
+    QuotaKind,
     ReplyKind,
+    ResultScale,
     SmtpSecurity,
+    SpecialStatus,
     ThemeKey,
+    Weekday,
 )
+from careerpilot.privacy.config import PrivacyConfig
 
 CONFIG_ROOT_ENV = "CAREERPILOT_CONFIG_ROOT"
 APP_ENV = "APP_ENV"
@@ -415,6 +422,9 @@ class WorkersConfig(Strict):
     inbox_sync_workflow_id: str
     inbox_sync_schedule_id: str
     inbox_sync_interval_minutes: int = Field(gt=0)
+    privacy_workflow_id: str
+    privacy_schedule_id: str
+    privacy_interval_minutes: int = Field(gt=0)
 
 
 class ProfileFieldConfig(Strict):
@@ -755,6 +765,116 @@ class IntegrationsConfig(Strict):
     dates: DatesConfig
 
 
+class GradeConfig(Strict):
+    grade: int = Field(gt=0)
+    pay_min: int = Field(ge=0)
+    pay_max: int = Field(ge=0)
+
+
+class GovProfileConfig(Strict):
+    identity_section: str
+    birth_date_field: str
+    citizenship_field: str
+    home_district_field: str
+    academic_section: str
+    exam_field: str
+    scale_field: str
+    result_field: str
+    subject_field: str
+    address_section: str
+    address_kind_field: str
+    address_district_field: str
+    status_section: str
+    status_field: str
+    verification_field: str
+    citizen_values: list[str]
+
+
+class RelaxationSuggestion(Strict):
+    status: SpecialStatus
+    max_years: int = Field(gt=0)
+
+
+class GovAgeConfig(Strict):
+    default_max_years: int = Field(gt=0)
+    relaxation_suggestions: list[RelaxationSuggestion]
+
+
+class QuotaStatusConfig(Strict):
+    quota: QuotaKind
+    statuses: list[SpecialStatus]
+
+
+class ResultRankConfig(Strict):
+    scale: ResultScale
+    order: list[str]
+
+
+class OfficeConfig(Strict):
+    start: str
+    end: str
+    working_days: list[Weekday]
+    weekend_days: list[Weekday]
+
+
+class RecurringHolidayConfig(Strict):
+    month: int = Field(ge=1, le=12)
+    day: int = Field(ge=1, le=31)
+    name: str
+
+
+class FeeRulesConfig(Strict):
+    due_soon_days: int = Field(ge=0)
+
+
+class GovLimitsConfig(Strict):
+    max_posts: int = Field(gt=0)
+    max_stages: int = Field(gt=0)
+    max_copies: int = Field(gt=0)
+    max_notices: int = Field(gt=0)
+    max_text_chars: int = Field(gt=0)
+    max_name_chars: int = Field(gt=0)
+    max_secret_chars: int = Field(gt=0)
+    copy_max_bytes: int = Field(gt=0)
+    copy_types: list[str]
+    upcoming_days: int = Field(gt=0)
+
+
+class TeletalkConnectorConfig(Strict):
+    allowed_hosts: list[str]
+    max_title_chars: int = Field(gt=0)
+    deadline_keywords: list[str]
+    fee_keywords: list[str]
+    date_formats: list[str]
+
+
+class GuideStepConfig(Strict):
+    kind: GuideStepKind
+    actor: GuideActor
+
+
+class GuideConfig(Strict):
+    steps: list[GuideStepConfig]
+
+
+class GovernmentConfig(Strict):
+    currency: str
+    time_zone: str
+    vault_context: str
+    grades: list[GradeConfig]
+    profile: GovProfileConfig
+    age: GovAgeConfig
+    quota_statuses: list[QuotaStatusConfig]
+    numeric_scales: list[ResultScale]
+    result_ranks: list[ResultRankConfig]
+    office: OfficeConfig
+    recurring_holidays: list[RecurringHolidayConfig]
+    fee: FeeRulesConfig
+    limits: GovLimitsConfig
+    connector: TeletalkConnectorConfig
+    guide: GuideConfig
+
+
 class Settings(Strict):
     account: AccountConfig
     legal: LegalConfig
@@ -787,6 +907,8 @@ class Settings(Strict):
     presence: PresenceConfig
     messaging: MessagingConfig
     integrations: IntegrationsConfig
+    privacy: PrivacyConfig
+    government: GovernmentConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

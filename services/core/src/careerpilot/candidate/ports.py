@@ -38,7 +38,6 @@ class CandidateWorkspace:
     sign_in_events: list[SignInEvent]
     last_checked_at: str
     decisions: dict[str, OpportunityDecision] = field(default_factory=dict[str, OpportunityDecision])
-    deletion_scheduled_for: str | None = None
     matches: dict[str, OpportunityMatch] = field(default_factory=dict[str, OpportunityMatch])
     last_digest_on: str | None = None
     saved_answers: list[SavedAnswer] = field(default_factory=list[SavedAnswer])

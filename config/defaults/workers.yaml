@@ -17,3 +17,6 @@ workers:
   inbox_sync_workflow_id: inbox-sync
   inbox_sync_schedule_id: inbox-sync-schedule
   inbox_sync_interval_minutes: 10
+  privacy_workflow_id: privacy-jobs
+  privacy_schedule_id: privacy-schedule
+  privacy_interval_minutes: 5

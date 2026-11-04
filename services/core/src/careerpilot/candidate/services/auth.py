@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 from typing import Protocol
 
@@ -32,6 +33,10 @@ class Registration:
     privacy_version: str
 
 
+def ignore_registration(_user_id: str, _registration: Registration, _client: ClientInfo) -> None:
+    return None
+
+
 class SessionLog(Protocol):
     def started(self, user_id: str, session_id: str, client: ClientInfo) -> None: ...
 
@@ -57,9 +62,15 @@ def sessions_revoked(account: Account, claims: TokenClaims) -> bool:
 
 class AuthService:
     def __init__(
-        self, context: CandidateContext, guard: SignInGuard, links: AccountLinkService, sessions: SessionLog | None = None
+        self,
+        context: CandidateContext,
+        guard: SignInGuard,
+        links: AccountLinkService,
+        sessions: SessionLog | None = None,
+        on_registered: Callable[[str, Registration, ClientInfo], object] | None = None,
     ) -> None:
         self._ctx = context
+        self._on_registered = on_registered or ignore_registration
         self._guard = guard
         self._links = links
         self._sessions = sessions or NoSessionLog()
@@ -101,6 +112,7 @@ class AuthService:
         else:
             account = replace(existing, user=existing.user.model_copy(update={"full_name": full_name}), **consent)
             self._ctx.accounts.save(account)
+        self._on_registered(account.user.id, registration, client)
         self._links.send(account, AccountEmail.SETUP)
 
     def request_password_reset(self, email: str, client: ClientInfo) -> None:

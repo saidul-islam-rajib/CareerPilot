@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -8,12 +9,14 @@ from careerpilot.platform.clock import parse_iso
 from careerpilot.platform.email_delivery import DeliveryError, DeliveryUncertainError, EmailSender, OutgoingEmail
 from careerpilot.platform.enums import ApprovalState, ContactKind, OpportunityDecision, SubmissionStatus
 from careerpilot.platform.messages import translate
+from careerpilot.privacy.models import ActivityReport
 
 DATE_FORMAT = "%d %b %Y"
 TIME_SEPARATOR = ":"
 LINE = "\n"
 BULLET = "• "
 LOOKBACK = timedelta(days=1)
+WEEK_DAYS = 7
 ATTENTION = frozenset(
     {
         SubmissionStatus.AWAITING_USER_INFORMATION,
@@ -35,6 +38,7 @@ class DigestSection:
 class DigestContext:
     candidate: CandidateContext
     sender: EmailSender
+    weekly_report: Callable[[str, str], ActivityReport] | None = None
 
 
 def local_now(workspace: CandidateWorkspace, now: datetime) -> datetime:
@@ -59,7 +63,9 @@ class DigestService:
         now = self._candidate.clock.now()
         since = self._since(workspace, now)
         builders = [self._matches, self._approvals, self._sent, self._attention, self._closing_soon]
-        return [section for build in builders if (section := build(workspace, since, now)).lines]
+        found = [section for build in builders if (section := build(workspace, since, now)).lines]
+        weekly = self._weekly(user_id, workspace, now)
+        return [*found, weekly] if weekly else found
 
     def send(self, user_id: str) -> bool:
         workspace = self._candidate.workspaces.get(user_id)
@@ -178,6 +184,20 @@ class DigestService:
                     translate("digest.deadlineLine", {"title": opportunity.title, "organization": opportunity.organization, "date": when})
                 )
         return self._limited("digest.closingSoon", lines)
+
+    def _weekly(self, user_id: str, workspace: CandidateWorkspace, now: datetime) -> DigestSection | None:
+        local = local_now(workspace, now)
+        if self._ctx.weekly_report is None or local.isoweekday() != self._candidate.settings.privacy.reports.weekly_digest_weekday:
+            return None
+        report = self._ctx.weekly_report(user_id, (local.date() - timedelta(days=WEEK_DAYS)).isoformat())
+        lines = [translate(f"reports.bucket.{b.bucket.value}") + f": {b.count}" for b in report.buckets if b.count]
+        if report.responses:
+            lines.append(translate("reports.responses", {"count": report.responses}))
+        lines += [
+            translate("reports.upcomingLine", {"when": u.due_at, "organization": u.organization, "title": u.task_title})
+            for u in report.upcoming
+        ]
+        return self._limited("digest.weekly", lines) if lines else None
 
     def _body(self, name: str, sections: list[DigestSection]) -> str:
         parts = [translate("digest.greeting", {"name": name}), ""]

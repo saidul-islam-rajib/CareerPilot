@@ -21,6 +21,13 @@ from careerpilot.candidate.ports import AccountRepository, CandidateWorkspace, O
 from careerpilot.discovery.adapters.in_memory import InMemoryListingCatalog
 from careerpilot.discovery.adapters.sql import SqlListingCatalog
 from careerpilot.discovery.ports import ListingCatalog
+from careerpilot.government.adapters.in_memory import (
+    InMemoryCircularRepository,
+    InMemoryGovApplicationRepository,
+    InMemoryHolidayRepository,
+)
+from careerpilot.government.adapters.sql import SqlCircularRepository, SqlGovApplicationRepository, SqlHolidayRepository
+from careerpilot.government.ports import CircularRepository, GovApplicationRepository, HolidayRepository
 from careerpilot.integrations.adapters.in_memory import (
     InMemoryCalendarEventRepository,
     InMemoryConnectionRepository,
@@ -44,6 +51,9 @@ from careerpilot.messaging.ports import ConversationRepository, MessageRepositor
 from careerpilot.platform.clock import SystemClock
 from careerpilot.platform.persistence import Database
 from careerpilot.platform.security import PasswordHasher
+from careerpilot.privacy.adapters.in_memory import InMemoryConsentRepository, InMemoryDeletionRepository, InMemoryExportRepository
+from careerpilot.privacy.adapters.sql import SqlConsentRepository, SqlDeletionRepository, SqlExportRepository
+from careerpilot.privacy.ports import ConsentRepository, DeletionRepository, ExportRepository
 
 WorkspaceFactory = Callable[[str], CandidateWorkspace]
 
@@ -65,6 +75,12 @@ class Repositories:
     connections: ConnectionRepository = field(default_factory=InMemoryConnectionRepository)
     synced_messages: SyncedMessageRepository = field(default_factory=InMemorySyncedMessageRepository)
     calendar_events: CalendarEventRepository = field(default_factory=InMemoryCalendarEventRepository)
+    circulars: CircularRepository = field(default_factory=InMemoryCircularRepository)
+    holidays: HolidayRepository = field(default_factory=InMemoryHolidayRepository)
+    gov_applications: GovApplicationRepository = field(default_factory=InMemoryGovApplicationRepository)
+    exports: ExportRepository = field(default_factory=InMemoryExportRepository)
+    deletions: DeletionRepository = field(default_factory=InMemoryDeletionRepository)
+    consents: ConsentRepository = field(default_factory=InMemoryConsentRepository)
 
 
 RepositoryFactory = Callable[[PasswordHasher, WorkspaceFactory, PlatformSettings], Repositories]
@@ -100,4 +116,10 @@ def sql_repositories(database: Database, empty: WorkspaceFactory, platform_defau
         connections=SqlConnectionRepository(database, SystemClock()),
         synced_messages=SqlSyncedMessageRepository(database),
         calendar_events=SqlCalendarEventRepository(database),
+        circulars=SqlCircularRepository(database, SystemClock()),
+        holidays=SqlHolidayRepository(database, SystemClock()),
+        gov_applications=SqlGovApplicationRepository(database, SystemClock()),
+        exports=SqlExportRepository(database),
+        deletions=SqlDeletionRepository(database),
+        consents=SqlConsentRepository(database),
     )

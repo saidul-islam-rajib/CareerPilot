@@ -133,7 +133,7 @@ def test_pause_durations_and_resume(container: Container) -> None:
     assert container.preferences.resume(DEMO_USER).pause is None
 
 
-def test_window_track_and_deletion(container: Container) -> None:
+def test_window_and_track(container: Container) -> None:
     window = SubmissionWindow(kind=SubmissionWindowKind.DAILY_WINDOW, start="23:30", end="01:00")
     assert container.preferences.update_submission_window(DEMO_USER, window).submission_window.start == "23:30"
     with pytest.raises(DomainError):
@@ -141,7 +141,6 @@ def test_window_track_and_deletion(container: Container) -> None:
     with pytest.raises(DomainError):
         container.preferences.update_track(DEMO_USER, "trk_remote", 0, None)
     assert container.preferences.update_track(DEMO_USER, "trk_remote", None, ApplicationMode.AUTOMATIC).mode is ApplicationMode.AUTOMATIC
-    assert container.preferences.request_account_deletion(DEMO_USER).scheduled_for == "2026-11-03T06:00:00.000Z"
 
 
 def test_public_config_reflects_admin_theme(container: Container) -> None:

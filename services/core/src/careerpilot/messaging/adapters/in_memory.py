@@ -78,6 +78,16 @@ class InMemoryMessageRepository:
     def count(self, conversation_id: str) -> int:
         return sum(1 for m in self._messages if m.conversation_id == conversation_id)
 
+    def erase_sender(self, sender_id: str, placeholder: str) -> list[str]:
+        keys: list[str] = []
+        for index, message in enumerate(self._messages):
+            if message.sender_id != sender_id:
+                continue
+            if message.attachment is not None:
+                keys.append(message.attachment.file.key)
+            self._messages[index] = message.model_copy(update={"text": placeholder, "attachment": None, "sender_name": placeholder})
+        return keys
+
 
 class InMemoryPushDeviceRepository:
     def __init__(self) -> None:
