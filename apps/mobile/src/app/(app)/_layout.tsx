@@ -44,6 +44,12 @@ export default function SignedInLayout() {
       <Stack.Screen name="settings/answers" options={{ title: t('answers.title') }} />
       <Stack.Screen name="settings/answer" options={{ title: t('answers.edit') }} />
       <Stack.Screen name="settings/sources" options={{ title: t('sources.title') }} />
+      <Stack.Screen name="government/index" options={{ title: t('government.title') }} />
+      <Stack.Screen name="government/[id]" options={{ title: t('government.title') }} />
+      <Stack.Screen name="government/application/[id]" options={{ title: t('government.application.title') }} />
+      <Stack.Screen name="settings/reports" options={{ title: t('reports.screenTitle') }} />
+      <Stack.Screen name="settings/exports" options={{ title: t('privacy.exports.title') }} />
+      <Stack.Screen name="settings/consents" options={{ title: t('privacy.consent.title') }} />
       <Stack.Screen name="settings/connected-accounts" options={{ title: t('integrations.page.title') }} />
       <Stack.Screen name="settings/countries" options={{ title: t('settings.countries') }} />
       <Stack.Screen name="settings/source" options={{ title: t('sources.addTitle') }} />

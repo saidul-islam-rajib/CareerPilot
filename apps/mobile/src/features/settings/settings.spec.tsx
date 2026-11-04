@@ -103,13 +103,16 @@ describe('ActivityScreen', () => {
 });
 
 describe('DeleteAccountScreen', () => {
-  it('requires typing DELETE and schedules deletion after the grace period', async () => {
+  it('needs the password and DELETE, schedules deletion and can cancel it', async () => {
     await renderWithProviders(<DeleteAccountScreen />);
     const button = await screen.findByTestId('delete-confirm');
     expect(button.props.accessibilityState.disabled).toBe(true);
     await fireEvent.changeText(screen.getByTestId('delete-confirm-input'), 'DELETE');
+    await fireEvent.changeText(screen.getByTestId('delete-password-input'), 'admin@sober.com');
     await fireEvent.press(screen.getByTestId('delete-confirm'));
-    expect(await screen.findByText('Account deletion scheduled for Nov 3, 2026.')).toBeTruthy();
+    expect(await screen.findByText('Deletion scheduled for Nov 3, 2026')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('delete-cancel'));
+    expect(await screen.findByTestId('delete-confirm')).toBeTruthy();
   });
 });
 
