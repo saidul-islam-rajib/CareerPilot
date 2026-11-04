@@ -978,6 +978,11 @@
       "roll_number": "Roll number",
       "transaction_id": "Transaction ID"
     },
+    "circular_status": {
+      "draft": "Draft",
+      "published": "Published",
+      "withdrawn": "Withdrawn"
+    },
     "deadline_subject": {
       "application_close": "Application closes",
       "fee_payment": "Fee payment due",
@@ -2417,6 +2422,9 @@
       "education": "Required exams",
       "addExam": "Add exam",
       "minResult": "Minimum result",
+    "scale": "Result scale",
+    "relaxationStatus": "Special status",
+    "exam": "Exam",
       "subjects": "Subject keywords (comma separated)",
       "quotas": "Quotas",
       "addQuota": "Add quota",

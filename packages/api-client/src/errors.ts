@@ -39,6 +39,11 @@ export const ApiErrorDetail = {
   ReplyTo: 'reply_to',
   VoiceTooLong: 'voice_too_long',
   ApplicationNotManual: 'application_not_manual',
+  EvidenceRequired: 'evidence_required',
+  AlreadyTracking: 'already_tracking',
+  HostNotAllowed: 'host_not_allowed',
+  NotPreparing: 'not_preparing',
+  NotSubmitted: 'not_submitted',
 } as const;
 export type ApiErrorDetail = (typeof ApiErrorDetail)[keyof typeof ApiErrorDetail];
 

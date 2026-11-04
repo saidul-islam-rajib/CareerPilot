@@ -1,0 +1,136 @@
+# Writing tools: cover letters, tailored CVs, essays and statements (Requirements 10.7, 27.4, 32.1, 32.3; specs/E24-writing-tools).
+writing:
+  # auto: use Claude when the key named below is set, otherwise the catalog-template writer. template: never use Claude.
+  mode: auto
+  api_key_env: ANTHROPIC_API_KEY
+  prompt_file: config/prompts/writing-v1.md
+  prompt_version: writing-v1
+  default_tone: professional
+  max_instruction_chars: 1000
+  max_text_chars: 20000
+  max_versions_per_document: 20
+  template:
+    entries: 2
+    skills: 6
+    min_word_length: 4
+    experience: { section: experience, title: title, organization: organization, ongoing: current, summary: summary }
+    education: { section: education, degree: degree, institution: institution }
+    cv_sections:
+      - { section: experience, heading: experience, title_fields: [title, organization], detail_fields: [start, end], body_field: summary, ongoing_field: current }
+      - { section: education, heading: education, title_fields: [degree, institution], detail_fields: [start_year, end_year], body_field: result }
+      - { section: certifications, heading: certifications, title_fields: [name, issuer], detail_fields: [issued_on] }
+      - { section: languages, heading: languages, title_fields: [language, proficiency] }
+  kinds:
+    - kind: cover_letter
+      model: claude-sonnet-5-5
+      effort: high
+      adaptive_thinking: true
+      max_tokens: 3000
+      default_words: 300
+      max_words: 450
+      ai_only: false
+      require_target_mention: true
+      guidance: A cover letter in plain paragraphs. Greet the employer by name, say which role it is for, connect two or three of the facts to what the opportunity asks for, and close politely. Sign with the person's full name.
+    - kind: tailored_cv
+      model: claude-sonnet-5-5
+      effort: medium
+      adaptive_thinking: true
+      max_tokens: 4000
+      default_words: 600
+      max_words: 900
+      ai_only: false
+      require_target_mention: false
+      guidance: A plain-text CV with standard headings (Summary, Skills, Experience, Education) and no tables or columns. Select and reorder the facts so the most relevant ones come first, and reword them. Never add a skill, employer, date, title, result or qualification that is not among the facts.
+    - kind: essay
+      model: claude-sonnet-5-5
+      effort: high
+      adaptive_thinking: true
+      max_tokens: 4000
+      default_words: 400
+      max_words: 800
+      ai_only: true
+      require_target_mention: false
+      guidance: An essay answer to the question given in the instructions, written in the first person from the facts only. Use short paragraphs and one concrete fact per point.
+    - kind: statement
+      model: claude-sonnet-5-5
+      effort: high
+      adaptive_thinking: true
+      max_tokens: 5000
+      default_words: 600
+      max_words: 1000
+      ai_only: true
+      require_target_mention: true
+      guidance: A statement of purpose, personal statement or motivation letter for the programme or role, in the first person, built only from the facts. Explain the motivation, the relevant background and the goal, and name the programme or organization.
+  checks:
+    min_name_length: 3
+    placeholder_patterns:
+      - '\[[^\]\n]{1,80}\]'
+      - '\{[^}\n]{1,80}\}'
+      - '<[^>\n]{1,80}>'
+      - '(?i)\blorem ipsum\b'
+      - '(?i)\b(todo|tbd|xxx)\b'
+      - '(?i)\byour (company|name|employer)\b'
+    first_person: [i, my, me, mine, myself, "i'm", "i've", "i'd", "i'll"]
+    claim_terms:
+      - phd
+      - doctorate
+      - doctoral
+      - masters
+      - master's
+      - mba
+      - bachelors
+      - bachelor's
+      - certified
+      - certification
+      - award
+      - awarded
+      - published
+      - patent
+      - promoted
+      - founded
+      - led
+      - managed
+      - mentored
+      - increased
+      - reduced
+      - improved
+      - saved
+      - doubled
+      - tripled
+      - scholarship
+      - fellowship
+      - citizen
+      - citizenship
+    neutral_words:
+      - hiring
+      - manager
+      - team
+      - committee
+      - admissions
+      - recruitment
+      - department
+      - sincerely
+      - regards
+      - dear
+      - english
+      - bangla
+      - bengali
+      - monday
+      - tuesday
+      - wednesday
+      - thursday
+      - friday
+      - saturday
+      - sunday
+      - january
+      - february
+      - march
+      - april
+      - may
+      - june
+      - july
+      - august
+      - september
+      - october
+      - november
+      - december
