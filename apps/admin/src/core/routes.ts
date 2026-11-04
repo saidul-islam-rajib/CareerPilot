@@ -7,8 +7,10 @@ export const AdminRoutes = {
   user: (id: string) => `/users/${encodeURIComponent(id)}`,
   opportunities: '/opportunities',
   sources: '/sources',
+  government: '/government',
   applications: '/applications',
   settings: '/settings',
   audit: '/audit',
+  privacy: '/privacy',
   admins: '/admins',
 } as const;

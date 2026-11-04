@@ -3,7 +3,7 @@
 import type { PropsWithChildren } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Briefcase, Database, FileSearch, LayoutDashboard, LogOut, ScrollText, Settings, ShieldCheck, Users, type LucideIcon } from 'lucide-react';
+import { FileLock2, Landmark, Briefcase, Database, FileSearch, LayoutDashboard, LogOut, ScrollText, Settings, ShieldCheck, Users, type LucideIcon } from 'lucide-react';
 import { can } from '@careerpilot/api-client';
 import { useEnumDisplay, useT } from '@careerpilot/client-core';
 import { AdminArea, EnumKey, PermissionAction } from '@careerpilot/domain-ui-logic';
@@ -16,6 +16,7 @@ interface NavItem {
   href: string;
   area: AdminArea;
   icon: LucideIcon;
+  label?: string;
 }
 
 const NAV: NavItem[] = [
@@ -23,8 +24,10 @@ const NAV: NavItem[] = [
   { href: AdminRoutes.users, area: AdminArea.Users, icon: Users },
   { href: AdminRoutes.opportunities, area: AdminArea.Opportunities, icon: FileSearch },
   { href: AdminRoutes.sources, area: AdminArea.Sources, icon: Database },
+  { href: AdminRoutes.government, area: AdminArea.Opportunities, icon: Landmark },
   { href: AdminRoutes.applications, area: AdminArea.Applications, icon: Briefcase },
   { href: AdminRoutes.settings, area: AdminArea.Settings, icon: Settings },
+  { href: AdminRoutes.privacy, area: AdminArea.Users, icon: FileLock2, label: 'privacy.admin.title' },
   { href: AdminRoutes.audit, area: AdminArea.Audit, icon: ScrollText },
   { href: AdminRoutes.admins, area: AdminArea.Admins, icon: ShieldCheck },
 ];
@@ -48,7 +51,7 @@ export function AdminShell({ children }: PropsWithChildren) {
         className={cn(className, isActive(pathname, item.href) ? 'bg-primary-subtle text-primary' : 'text-foreground hover:bg-surface')}
       >
         <item.icon className="size-5 shrink-0" aria-hidden />
-        {t(`admin.nav.${item.area}`)}
+        {t(item.label ?? `admin.nav.${item.area}`)}
       </Link>
     ));
 

@@ -24,6 +24,7 @@ import { useAdminApi } from '@/core/admin-services';
 import { useCan } from '@/core/admin-session';
 import { ProfileDetails } from './profile-details';
 import { ConnectedAccountsCard } from './connected-accounts-card';
+import { ConsentHistoryCard } from './consent-history-card';
 import { ConnectionsPanel, FilesPanel, TeamMessagesPanel } from './user-messages';
 
 const TAB = {
@@ -564,6 +565,7 @@ export function UserRecordTabs({ userId }: { userId: string }) {
       <Tabs.Content value={TAB.Connections}>
         <div className="flex flex-col gap-6">
           <ConnectedAccountsCard userId={userId} />
+          <ConsentHistoryCard userId={userId} />
           <ConnectionsPanel userId={userId} />
         </div>
       </Tabs.Content>
