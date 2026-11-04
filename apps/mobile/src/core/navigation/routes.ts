@@ -14,6 +14,7 @@ export const Routes = {
   inbox: '/inbox',
   opportunity: (id: string) => ({ pathname: '/opportunity/[id]', params: { id } }) as const,
   addJobByLink: '/opportunity/add',
+  writing: (opportunityId: string) => ({ pathname: '/writing/[opportunityId]', params: { opportunityId } }) as const,
   approval: (id: string) => ({ pathname: '/approval/[id]', params: { id } }) as const,
   application: (id: string) => ({ pathname: '/application/[id]', params: { id } }) as const,
   followUp: (applicationId: string, taskId?: string, suggested = false) =>
@@ -35,6 +36,7 @@ export const Routes = {
   answers: '/settings/answers',
   sources: '/settings/sources',
   connectedAccounts: '/settings/connected-accounts',
+  automation: '/automation',
   reports: '/settings/reports',
   exports: '/settings/exports',
   consents: '/settings/consents',

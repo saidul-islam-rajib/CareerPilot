@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Bell, BriefcaseBusiness, CheckCheck, MessageCircle, Plug, type LucideIcon } from 'lucide-react';
+import { Bell, BriefcaseBusiness, CheckCheck, MessageCircle, Plug, Zap, type LucideIcon } from 'lucide-react';
 import type { AppNotification } from '@careerpilot/api-client';
 import { useFormat, useNotifications, useReadNotifications, useT } from '@careerpilot/client-core';
 import { NotificationTarget } from '@careerpilot/domain-ui-logic';
@@ -12,12 +12,14 @@ const HREFS: Record<NotificationTarget, (id: string) => string> = {
   [NotificationTarget.Conversation]: Routes.conversation,
   [NotificationTarget.Application]: Routes.application,
   [NotificationTarget.Integration]: () => Routes.connectedAccounts,
+  [NotificationTarget.Automation]: () => Routes.automation,
 };
 
 const GLYPHS: Record<NotificationTarget, LucideIcon> = {
   [NotificationTarget.Conversation]: MessageCircle,
   [NotificationTarget.Application]: BriefcaseBusiness,
   [NotificationTarget.Integration]: Plug,
+  [NotificationTarget.Automation]: Zap,
 };
 
 export function notificationHref(notification: AppNotification): string {

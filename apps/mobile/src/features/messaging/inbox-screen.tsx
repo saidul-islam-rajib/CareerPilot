@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import type { AppNotification } from '@careerpilot/api-client';
 import { useFormat, useNewNotifications, useNotifications, useReadNotifications, useT } from '@careerpilot/client-core';
 import { NotificationTarget } from '@careerpilot/domain-ui-logic';
-import { BriefcaseBusiness, CheckCheck, MessageCircle, Plug, type LucideIcon } from '@/ui/icons';
+import { BriefcaseBusiness, CheckCheck, MessageCircle, Plug, Zap, type LucideIcon } from '@/ui/icons';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { Button, ButtonVariant, EmptyState, ErrorState, Icon, LoadingState, Text, TextTone, TextVariant, useSnackbar } from '@/ui';
@@ -13,12 +13,14 @@ const ROUTES = {
   [NotificationTarget.Conversation]: Routes.chat,
   [NotificationTarget.Application]: Routes.application,
   [NotificationTarget.Integration]: () => Routes.connectedAccounts,
+  [NotificationTarget.Automation]: () => Routes.automation,
 } as const;
 
 const GLYPHS: Record<NotificationTarget, LucideIcon> = {
   [NotificationTarget.Conversation]: MessageCircle,
   [NotificationTarget.Application]: BriefcaseBusiness,
   [NotificationTarget.Integration]: Plug,
+  [NotificationTarget.Automation]: Zap,
 };
 
 export function notificationRoute(notification: Pick<AppNotification, 'target' | 'targetId'>) {

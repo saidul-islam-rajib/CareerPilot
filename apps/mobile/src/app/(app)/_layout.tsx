@@ -25,6 +25,7 @@ export default function SignedInLayout() {
       <Stack.Screen name="inbox" options={{ title: t('notifications.title') }} />
       <Stack.Screen name="opportunity/add" options={{ title: t('jobLink.title') }} />
       <Stack.Screen name="approval/[id]" options={{ title: t('approvals.title') }} />
+      <Stack.Screen name="writing/[opportunityId]" options={{ title: t('writing.title') }} />
       <Stack.Screen name="application/[id]" options={{ title: t('applications.record') }} />
       <Stack.Screen name="follow-up" options={{ title: t('applications.followUps') }} />
       <Stack.Screen name="outcome" options={{ title: t('applications.updateOutcome') }} />
@@ -47,6 +48,7 @@ export default function SignedInLayout() {
       <Stack.Screen name="government/index" options={{ title: t('government.title') }} />
       <Stack.Screen name="government/[id]" options={{ title: t('government.title') }} />
       <Stack.Screen name="government/application/[id]" options={{ title: t('government.application.title') }} />
+      <Stack.Screen name="automation" options={{ title: t('automation.title') }} />
       <Stack.Screen name="settings/reports" options={{ title: t('reports.screenTitle') }} />
       <Stack.Screen name="settings/exports" options={{ title: t('privacy.exports.title') }} />
       <Stack.Screen name="settings/consents" options={{ title: t('privacy.consent.title') }} />

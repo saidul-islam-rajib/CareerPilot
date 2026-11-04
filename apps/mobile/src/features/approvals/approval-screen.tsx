@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { useApproval, useApprovalActions, useFormat, useT } from '@careerpilot/client-core';
+import { sourceLabel, useApproval, useApprovalActions, useFormat, useT } from '@careerpilot/client-core';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View } from 'react-native';
-import { CheckCircle2, FileText, ShieldCheck, XCircle } from '@/ui/icons';
-import { ApprovalState, EnumKey, StatusTone } from '@careerpilot/domain-ui-logic';
+import { CheckCircle2, FileText, PenLine, ShieldCheck, XCircle } from '@/ui/icons';
+import { ApprovalState, EnumKey, StatusTone, WritingKind } from '@careerpilot/domain-ui-logic';
 import { useTheme } from '@/core/theme/theme';
 import { OpportunityCard } from '@/features/opportunities/opportunity-card';
 import { Routes } from '@/core/navigation/routes';
-import { Banner, Button, ButtonVariant, Card, Divider, EnumBadge, ErrorState, ListRow, LoadingState, Row, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
+import { Badge, Banner, Button, ButtonVariant, Card, Divider, EnumBadge, ErrorState, ListRow, LoadingState, Row, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
 import { AnswerEditor } from './answer-editor';
 
 export function ApprovalScreen() {
@@ -29,6 +29,8 @@ export function ApprovalScreen() {
   const a = approval.data;
   const pending = a.state === ApprovalState.Pending;
   const unanswered = a.materials.answers.some((item) => !item.answer.trim());
+  const coverLetterDraft = a.materials.writing.find((item) => item.kind === WritingKind.CoverLetter);
+  const extraWriting = a.materials.writing.filter((item) => item.kind !== WritingKind.CoverLetter);
   const windowLabel = a.submissionWindowLabel ?? t('approvals.sendWindowNow');
 
   const footer = pending ? (
@@ -72,14 +74,27 @@ export function ApprovalScreen() {
         <Card>
           <ListRow icon={FileText} title={t('approvals.cv')} subtitle={`${a.materials.cv.name} · ${t('profile.version', { version: a.materials.cv.version })}`} />
           <ListRow title={t('opportunity.route')} trailing={<EnumBadge enumKey={EnumKey.ApplicationRoute} value={a.route} />} />
+          {pending ? <ListRow icon={PenLine} title={t('writing.open')} subtitle={t('writing.openHint')} onPress={() => router.push(Routes.writing(a.opportunity.id))} /> : null}
         </Card>
       </Section>
 
       <Section title={t('approvals.coverLetter')}>
         <Card>
+          {coverLetterDraft ? (
+            <Badge label={t('writing.approvalVersion', { kind: t(`writing.kinds.${coverLetterDraft.kind}`), version: coverLetterDraft.version, source: sourceLabel(t, coverLetterDraft) })} tone={StatusTone.Info} />
+          ) : null}
           <Text selectable>{a.materials.coverLetter}</Text>
         </Card>
       </Section>
+
+      {extraWriting.map((item) => (
+        <Section key={item.draftId} title={t(`writing.kinds.${item.kind}`)}>
+          <Card>
+            <Badge label={t('writing.approvalVersion', { kind: t(`writing.kinds.${item.kind}`), version: item.version, source: sourceLabel(t, item) })} tone={StatusTone.Info} />
+            <Text selectable>{item.text}</Text>
+          </Card>
+        </Section>
+      ))}
 
       {a.materials.answers.length > 0 ? (
         <Section title={t('approvals.answers')}>

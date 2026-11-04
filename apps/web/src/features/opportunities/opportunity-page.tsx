@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { AlertTriangle, Archive, Bookmark, Check, CircleHelp, Minus, Plus, Send, X, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, Archive, Bookmark, Check, CircleHelp, Minus, PenLine, Plus, Send, X, type LucideIcon } from 'lucide-react';
 import { useDecide, useFormat, useOpportunity, usePrepareApplication, usePublicConfig, useT } from '@careerpilot/client-core';
 import { EnumKey, OpportunityDecision, RequirementCheck, StatusTone } from '@careerpilot/domain-ui-logic';
 import { Badge, Banner, Button, Card, EnumBadge, ErrorState, ListRow, LoadingState, Section, buttonVariants } from '@careerpilot/ui-web';
@@ -107,6 +107,10 @@ export function OpportunityPage() {
             {t('opportunity.prepareApplication')}
           </Button>
         )}
+        <Link href={Routes.writing(o.id)} className={buttonVariants({ variant: 'outline', fullWidth: true })}>
+          <PenLine className="size-5" aria-hidden />
+          {t('writing.open')}
+        </Link>
         <div className="grid grid-cols-2 gap-2">
           <Button variant="outline" icon={Bookmark} disabled={saved} onClick={() => decide.mutate(OpportunityDecision.Saved)}>
             {saved ? t('common.saved') : t('opportunity.save')}

@@ -1,7 +1,7 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useDecide, useFormat, useOpportunity, usePrepareApplication, usePublicConfig, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
-import { AlertTriangle, Archive, Bookmark, Check, CircleHelp, Minus, Plus, Send, X, type LucideIcon } from '@/ui/icons';
+import { AlertTriangle, Archive, Bookmark, Check, CircleHelp, Minus, PenLine, Plus, Send, X, type LucideIcon } from '@/ui/icons';
 import { EnumKey, OpportunityDecision, RequirementCheck, StatusTone } from '@careerpilot/domain-ui-logic';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
@@ -53,6 +53,7 @@ export function OpportunityScreen() {
             ) : (
               <Button label={t('opportunity.prepareApplication')} icon={Send} fullWidth onPress={() => prepare.mutate()} loading={prepare.isPending} testID="prepare-application" />
             )}
+            <Button label={t('writing.open')} icon={PenLine} variant={ButtonVariant.Outline} fullWidth onPress={() => router.push(Routes.writing(o.id))} testID="open-writing" />
             <Row>
               <Button
                 label={saved ? t('common.saved') : t('opportunity.save')}

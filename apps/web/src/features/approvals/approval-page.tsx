@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { AlertTriangle, CheckCircle2, FileText, ShieldCheck, XCircle } from 'lucide-react';
-import { useApproval, useApprovalActions, useFormat, useT } from '@careerpilot/client-core';
-import { ApprovalState, EnumKey, StatusTone } from '@careerpilot/domain-ui-logic';
-import { Banner, Button, Card, ConfirmDialog, EnumBadge, ErrorState, ListRow, LoadingState, PageHeader, Section, buttonVariants } from '@careerpilot/ui-web';
+import { AlertTriangle, CheckCircle2, FileText, PenLine, ShieldCheck, XCircle } from 'lucide-react';
+import { sourceLabel, useApproval, useApprovalActions, useFormat, useT } from '@careerpilot/client-core';
+import { ApprovalState, EnumKey, StatusTone, WritingKind } from '@careerpilot/domain-ui-logic';
+import { Badge, Banner, Button, Card, ConfirmDialog, EnumBadge, ErrorState, ListRow, LoadingState, PageHeader, Section, buttonVariants } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
 import { OpportunityCard } from '@/features/opportunities/opportunity-card';
 import { AnswerEditor } from './answer-editor';
@@ -26,6 +26,8 @@ export function ApprovalPage() {
   const a = approval.data;
   const pending = a.state === ApprovalState.Pending;
   const unanswered = a.materials.answers.some((item) => !item.answer.trim());
+  const coverLetterDraft = a.materials.writing.find((item) => item.kind === WritingKind.CoverLetter);
+  const extraWriting = a.materials.writing.filter((item) => item.kind !== WritingKind.CoverLetter);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
@@ -47,9 +49,23 @@ export function ApprovalPage() {
         <OpportunityCard opportunity={a.opportunity} />
         <Section title={t('approvals.coverLetter')}>
           <Card>
+            {coverLetterDraft ? (
+              <Badge label={t('writing.approvalVersion', { kind: t(`writing.kinds.${coverLetterDraft.kind}`), version: coverLetterDraft.version, source: sourceLabel(t, coverLetterDraft) })} tone={StatusTone.Info} />
+            ) : null}
             <p className="whitespace-pre-wrap">{a.materials.coverLetter}</p>
           </Card>
         </Section>
+        {extraWriting.map((item) => (
+          <Section key={item.draftId} title={t(`writing.kinds.${item.kind}`)}>
+            <Card>
+              <Badge label={t('writing.approvalVersion', { kind: t(`writing.kinds.${item.kind}`), version: item.version, source: sourceLabel(t, item) })} tone={StatusTone.Info} />
+              <details>
+                <summary className="cursor-pointer font-medium">{t('writing.approvalShow')}</summary>
+                <p className="mt-2 whitespace-pre-wrap">{item.text}</p>
+              </details>
+            </Card>
+          </Section>
+        ))}
         {a.materials.answers.length > 0 ? (
           <Section title={t('approvals.answers')}>
             <Card className="divide-y divide-border py-1">
@@ -65,6 +81,7 @@ export function ApprovalPage() {
           <h2 className="font-semibold">{t('approvals.materials')}</h2>
           <ListRow icon={FileText} title={t('approvals.cv')} subtitle={`${a.materials.cv.name} · ${t('profile.version', { version: a.materials.cv.version })}`} />
           <ListRow title={t('opportunity.route')} trailing={<EnumBadge enumKey={EnumKey.ApplicationRoute} value={a.route} />} />
+          {pending ? <ListRow icon={PenLine} title={t('writing.open')} subtitle={t('writing.openHint')} href={Routes.writing(a.opportunity.id)} /> : null}
         </Card>
         {pending ? (
           <>

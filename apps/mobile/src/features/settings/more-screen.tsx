@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useDiscoverable, usePublicConfig, useSession, useSettings, useT } from '@careerpilot/client-core';
-import { FileText, Landmark, Bell, Clock, Globe, Info, MapPinOff, KeyRound, Plug, ListOrdered, LogOut, MessageSquareText, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2 } from '@/ui/icons';
+import { FileText, Landmark, Bell, Clock, Globe, Info, MapPinOff, KeyRound, Plug, ListOrdered, LogOut, MessageSquareText, Palette, PauseCircle, ScrollText, ShieldCheck, Trash2, Zap } from '@/ui/icons';
 import { Routes } from '@/core/navigation/routes';
 import { ServerLink } from '@/features/settings/server-screen';
 import { Card, Divider, ListRow, Screen, TeamSoberCredit, Text, TextTone, TextVariant } from '@/ui';
@@ -49,6 +49,7 @@ export function MoreScreen() {
         <Divider />
         <ListRow icon={Globe} title={t('sources.title')} subtitle={t('sources.menuBody')} onPress={() => router.push(Routes.sources)} />
         <Divider />
+        <ListRow icon={Zap} title={t('automation.title')} subtitle={t('automation.menuBody')} onPress={() => router.push(Routes.automation)} />
         <ListRow icon={Landmark} title={t('government.title')} subtitle={t('government.menuBody')} onPress={() => router.push(Routes.government)} />
         <ListRow icon={Plug} title={t('integrations.page.title')} subtitle={t('integrations.page.menuBody')} onPress={() => router.push(Routes.connectedAccounts)} />
         <Divider />
