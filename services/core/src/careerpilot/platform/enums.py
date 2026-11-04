@@ -322,6 +322,12 @@ class SubmissionHold(StrEnum):
     PAUSED = "paused"
     OUTSIDE_WINDOW = "outside_window"
     DAILY_LIMIT = "daily_limit"
+    WEEKLY_LIMIT = "weekly_limit"
+    RULE_LIMIT = "rule_limit"
+    RULE_INACTIVE = "rule_inactive"
+    INACTIVE = "inactive"
+    DEADLINE_AT_RISK = "deadline_at_risk"
+    DEADLINE_SKIPPED = "deadline_skipped"
 
 
 class ThemeKey(StrEnum):
@@ -337,12 +343,14 @@ class NotificationKind(StrEnum):
     APPLICATION_CONFIRMED = "application_confirmed"
     APPLICATION_REPLY = "application_reply"
     INTEGRATION_ATTENTION = "integration_attention"
+    AUTOMATION_ATTENTION = "automation_attention"
 
 
 class NotificationTarget(StrEnum):
     CONVERSATION = "conversation"
     APPLICATION = "application"
     INTEGRATION = "integration"
+    AUTOMATION = "automation"
 
 
 class ConversationKind(StrEnum):

@@ -156,7 +156,10 @@ def test_missing_cv_needs_the_user(service: Container) -> None:
     assert service.submissions.submit(DEMO_USER, application_id).status is SubmissionStatus.AWAITING_USER_INFORMATION
 
 
-@pytest.mark.parametrize("hold", list(SubmissionHold))
+BASIC_HOLDS = [SubmissionHold.EMERGENCY_STOP, SubmissionHold.PAUSED, SubmissionHold.OUTSIDE_WINDOW, SubmissionHold.DAILY_LIMIT]
+
+
+@pytest.mark.parametrize("hold", BASIC_HOLDS)
 def test_holds_keep_applications_queued(service: Container, sender: InMemoryEmailSender, clock: FixedClock, hold: SubmissionHold) -> None:
     application_id = approve(service, EMAIL_OPPORTUNITY)
     admin = service.admin_auth.authenticate(service.admin_auth.sign_in("admin@sober.com", "admin@sober.com", CLIENT.ip).access_token)

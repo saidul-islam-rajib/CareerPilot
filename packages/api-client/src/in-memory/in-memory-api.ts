@@ -32,7 +32,9 @@ import { createAccountLinks } from './account-links';
 import { createAnswers, hasBlankAnswers } from './answers';
 import { createFollowUps } from './follow-ups';
 import { createInMemoryGovernment } from '../government/in-memory';
+import { createInMemoryAutomation } from '../automation/in-memory';
 import { createInMemoryPrivacy } from '../privacy/in-memory';
+import { createInMemoryWriting } from '../writing/in-memory';
 import { createInMemoryIntegrations } from './integrations';
 import { createJobSources } from './job-sources';
 import { createInMemoryMessaging, messagingSeed } from './messaging';
@@ -145,6 +147,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     }
   };
 
+  const originalLetters = new Map(state.approvals.map((a) => [a.id, a.materials.coverLetter]));
   const integrations = createInMemoryIntegrations({ clock, respond });
   const government = createInMemoryGovernment({ clock, ids, respond, fail: failWith }).user;
   const followUps = createFollowUps({ applications: state.applications, config, clock, ids, respond, reject: failWith });
@@ -279,6 +282,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
             cv: { name: state.profile.documents[0]?.name ?? state.profile.fullName, version: state.profile.documents[0]?.version ?? 1 },
             coverLetter: `Dear ${detail.organization} team,\n\nI would like to apply for the ${detail.title} role.\n\n${state.profile.fullName}`,
             answers: [],
+            writing: [],
           },
           submissionWindowLabel: windowLabel(state.settings),
         };
@@ -368,6 +372,40 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     messaging,
     integrations,
     government,
+    writing: createInMemoryWriting({
+      clock,
+      ids,
+      respond,
+      fail: failWith,
+      profile: () => state.profile,
+      approvals: () => state.approvals,
+      opportunity: (id) => state.opportunities.find((o) => o.id === id),
+      opportunities: () => state.opportunities,
+      defaultCoverLetter: (approval) => originalLetters.get(approval.id) ?? approval.materials.coverLetter,
+    }),
+    automation: createInMemoryAutomation({
+      clock,
+      ids,
+      respond,
+      fail,
+      candidates: () => {
+        const applied = new Set(state.applications.map((a) => a.opportunity.id));
+        return Object.entries(state.trackOpportunities).flatMap(([trackId, opportunityIds]) =>
+          opportunityIds
+            .filter((id) => !applied.has(id))
+            .map(findOpportunity)
+            .map((o) => ({
+              id: o.id,
+              title: o.title,
+              organization: o.organization,
+              trackId,
+              matchScore: o.matchScore,
+              route: o.route,
+              countryCode: o.countryCode,
+            })),
+        );
+      },
+    }),
     privacy: createInMemoryPrivacy({
       clock,
       ids,

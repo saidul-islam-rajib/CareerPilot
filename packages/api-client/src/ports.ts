@@ -178,7 +178,9 @@ export interface SettingsApi {
 }
 
 import type { GovernmentApi } from './government/ports';
+import type { AutomationApi } from './automation/ports';
 import type { PrivacyApi } from './privacy/ports';
+import type { WritingApi } from './writing/ports';
 
 export interface CareerPilotApi {
   auth: AuthApi;
@@ -195,6 +197,8 @@ export interface CareerPilotApi {
   integrations: IntegrationsApi;
   government: GovernmentApi;
   privacy: PrivacyApi;
+  automation: AutomationApi;
+  writing: WritingApi;
 }
 
 export interface Clock {

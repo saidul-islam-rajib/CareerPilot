@@ -17,7 +17,7 @@ Platforms: **B** = backend, **AI** = AI tasks, **W** = user web app, **M** = mob
 | E09 | Approve-each applications: approval package, edits and reuse, approval expiry, cancel window, bulk approval | 10.1, 37 | B AI W M | 2 |
 | E10 | Application routes: email (Gmail/Graph), ATS adapters, portal accounts and credential vault, generic form mapping, guided manual | 10.2–10.6, 29, 30, 31 | B AI | 2 |
 | E11 | Records and reports: status model, submission records, Q&A transcripts, evidence, question bank, daily/weekly reports, exports (reports and exports built as E23, `specs/E23-reports-exports-and-privacy`) | 11.2, 20, 28 | B W M | 2 |
-| E12 | Writing tools: cover letters, tailored CVs, essays, claim check, cross-contamination check | 10.7, 32.1, 32.3, 27.4 | B AI W M | 2–3 |
+| E12 | Writing tools: cover letters, tailored CVs, essays, claim check, cross-contamination check (spec E24) | 10.7, 32.1, 32.3, 27.4 | B AI W M | 2–3 |
 | E13 | Automatic mode: rules, dry run, precedence, caps, submission windows, pause, emergency stop, deadline buffer, reconciliation, inactivity safety | 10.1, 10.8, 23, 27, 38, 39, 41, 47, 49, 52.3 | B W M A | 3 |
 | E14 | Bangladesh: government circulars, grades, age rules, stages, fees, applicant copies, Bangla profile data, local portals | 8.4, 35 | B AI W M | 4 |
 | E15 | Students and academics: programs, tests and scores, credentials, referees, supervisor outreach, university portals, decisions, after-admission checklist | 9, 33 | B AI W M | 4 |

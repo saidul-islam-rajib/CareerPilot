@@ -2,6 +2,7 @@ import re
 from dataclasses import dataclass
 from datetime import timedelta
 
+from careerpilot.automation.models import AutomationRule
 from careerpilot.candidate.answer_rules import detect_topic, fill_blank_answers, has_blank_answers
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import (
@@ -95,15 +96,31 @@ class ApprovalService:
         workspace = self._ctx.workspaces.get(user_id)
         return self._find(workspace, approval_id).model_copy(update={"submission_window_label": window_label(workspace)})
 
-    def prepare(self, user_id: str, opportunity_id: str) -> ApprovalSummary:
+    def preview(self, user_id: str, opportunity_id: str, cv_document_id: str | None = None) -> ApprovalMaterials:
+        workspace = self._ctx.workspaces.get(user_id)
+        return self._materials(workspace, self._opportunities.detail(user_id, opportunity_id), cv_document_id)
+
+    def _materials(self, workspace: CandidateWorkspace, detail: OpportunityDetail, cv_document_id: str | None) -> ApprovalMaterials:
+        documents = workspace.profile.active_documents()
+        chosen = next((d for d in documents if d.id == cv_document_id), None)
+        document = chosen or next((d for d in documents if d.kind is DocumentKind.CV), documents[0] if documents else None)
+        return ApprovalMaterials(
+            cv=CvRef(
+                name=document.name if document else workspace.profile.full_name,
+                version=document.current.version if document else FIRST_CV_VERSION,
+                document_id=document.id if document else None,
+            ),
+            cover_letter=cover_letter(workspace.profile, detail, self._ctx.settings.submission.cover_letter_skills),
+            answers=[],
+        )
+
+    def prepare(self, user_id: str, opportunity_id: str, cv_document_id: str | None = None) -> ApprovalSummary:
         workspace = self._ctx.workspaces.get(user_id)
         existing = next((a for a in workspace.approvals if a.opportunity.id == opportunity_id and a.state is ApprovalState.PENDING), None)
         if existing is not None:
             return existing.summary()
         detail = self._opportunities.detail(user_id, opportunity_id)
         workspace.decisions[opportunity_id] = OpportunityDecision.INTERESTED
-        documents = workspace.profile.active_documents()
-        document = next((d for d in documents if d.kind is DocumentKind.CV), documents[0] if documents else None)
         now = self._ctx.clock.now()
         approval = ApprovalDetail(
             id=self._ctx.ids.next("apr"),
@@ -112,15 +129,7 @@ class ApprovalService:
             created_at=iso(now),
             expires_at=iso(now + timedelta(days=self._ctx.settings.account.approval_validity_days)),
             route=detail.route,
-            materials=ApprovalMaterials(
-                cv=CvRef(
-                    name=document.name if document else workspace.profile.full_name,
-                    version=document.current.version if document else FIRST_CV_VERSION,
-                    document_id=document.id if document else None,
-                ),
-                cover_letter=cover_letter(workspace.profile, detail, self._ctx.settings.submission.cover_letter_skills),
-                answers=[],
-            ),
+            materials=self._materials(workspace, detail, cv_document_id),
         )
         workspace.approvals.insert(0, approval)
         self._ctx.workspaces.save(user_id, workspace)
@@ -152,8 +161,8 @@ class ApprovalService:
         self._ctx.workspaces.save(user_id, workspace)
         return approval.model_copy(update={"submission_window_label": window_label(workspace)})
 
-    def approve_by_rule(self, user_id: str, opportunity_id: str) -> None:
-        approval_id = self.prepare(user_id, opportunity_id).id
+    def approve_by_rule(self, user_id: str, opportunity_id: str, rule: AutomationRule | None = None) -> None:
+        approval_id = self.prepare(user_id, opportunity_id, rule.materials.cv_document_id if rule else None).id
         workspace = self._ctx.workspaces.get(user_id)
         fill_blank_answers(workspace, self._ctx.settings.answers.keywords())
         approval = self._find(workspace, approval_id)
@@ -161,7 +170,10 @@ class ApprovalService:
             self._ctx.workspaces.save(user_id, workspace)
             return
         approval.state = ApprovalState.APPROVED
-        workspace.applications.insert(0, self._queued_application(workspace, approval, Approver(TimelineActor.SYSTEM, APPROVED_BY_RULE)))
+        queued = self._queued_application(workspace, approval, Approver(TimelineActor.SYSTEM, APPROVED_BY_RULE))
+        queued.automatic = True
+        queued.rule_id = rule.id if rule else None
+        workspace.applications.insert(0, queued)
         self._ctx.workspaces.save(user_id, workspace)
 
     def reject(self, user_id: str, approval_id: str) -> ApprovalDetail:

@@ -1,9 +1,13 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from careerpilot.administration.models import PlatformSettings
+from careerpilot.automation.enums import DeadlineAction, SkipReason
+from careerpilot.automation.models import AutomationRule
+from careerpilot.automation.policy import AutomationPolicy, Situation, emergency_stopped, global_schedule, is_paused, rule_unusable
+from careerpilot.automation.timing import schedule_open
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import ApplicationRecord, Evidence, ProfileDocument, SentEmail, SentFile, TimelineEntry
 from careerpilot.candidate.ports import CandidateWorkspace
@@ -12,17 +16,17 @@ from careerpilot.platform.clock import iso, parse_iso
 from careerpilot.platform.email_delivery import Attachment, DeliveryError, DeliveryUncertainError, EmailSender, OutgoingEmail
 from careerpilot.platform.enums import (
     ContactKind,
-    EmergencyStopScope,
-    PauseScope,
     SubmissionHold,
     SubmissionStatus,
-    SubmissionWindowKind,
     TimelineActor,
 )
 from careerpilot.platform.files import PDF, FileStorage
 from careerpilot.platform.messages import translate
 
-TIME_SEPARATOR = ":"
+CAP_HOLDS = {
+    SkipReason.WEEKLY_CAP: SubmissionHold.WEEKLY_LIMIT,
+    SkipReason.RULE_CAP: SubmissionHold.RULE_LIMIT,
+}
 
 
 @dataclass(frozen=True)
@@ -43,25 +47,12 @@ class SubmissionContext:
     platform: Callable[[], PlatformSettings]
     sender: EmailSender
     storage: FileStorage
+    policy: AutomationPolicy
     on_status: Callable[[str, ApplicationRecord], None] = lambda _user_id, _application: None
 
 
-def _parse_time(value: str | None) -> time | None:
-    if not value:
-        return None
-    hours, minutes = value.split(TIME_SEPARATOR, 1)
-    return time(int(hours), int(minutes))
-
-
 def within_window(workspace: CandidateWorkspace, now: datetime) -> bool:
-    window = workspace.preferences.submission_window
-    if window.kind is SubmissionWindowKind.AS_SOON_AS_READY:
-        return True
-    start, end = _parse_time(window.start), _parse_time(window.end)
-    if start is None or end is None:
-        return True
-    local = now.astimezone(ZoneInfo(workspace.preferences.time_zone)).time()
-    return start <= local < end if start <= end else local >= start or local < end
+    return schedule_open(global_schedule(workspace), ZoneInfo(workspace.preferences.time_zone), now)
 
 
 class SubmissionService:
@@ -130,22 +121,52 @@ class SubmissionService:
         return changed
 
     def _hold(self, user_id: str, workspace: CandidateWorkspace, application: ApplicationRecord) -> SubmissionHold | None:
-        now = self._candidate.clock.now()
-        settings = self._ctx.platform()
-        stop = settings.emergency_stop
-        stopped = stop.active and (
-            stop.scope in (None, EmergencyStopScope.ALL_USERS)
-            or (stop.scope is EmergencyStopScope.ROUTE and stop.target == application.route)
-        )
-        pause = workspace.preferences.pause
-        paused = pause is not None and pause.scope is PauseScope.ALL and (pause.until is None or parse_iso(pause.until) > now)
-        checks = [
-            (stopped, SubmissionHold.EMERGENCY_STOP),
-            (paused, SubmissionHold.PAUSED),
-            (not within_window(workspace, now), SubmissionHold.OUTSIDE_WINDOW),
-            (self._submitted_today(workspace, now) >= settings.daily_application_cap, SubmissionHold.DAILY_LIMIT),
-        ]
-        return next((hold for blocked, hold in checks if blocked), None)
+        situation = Situation(workspace, self._ctx.platform(), self._candidate.clock.now())
+        if emergency_stopped(situation.platform.emergency_stop, application.route):
+            return SubmissionHold.EMERGENCY_STOP
+        if is_paused(workspace, situation.now):
+            return SubmissionHold.PAUSED
+        timing = self._automatic_hold(user_id, situation, application) if application.automatic else self._manual_hold(situation)
+        if timing is not None:
+            return timing
+        if self._submitted_today(workspace, situation.now) >= situation.platform.daily_application_cap:
+            return SubmissionHold.DAILY_LIMIT
+        return None
+
+    @staticmethod
+    def _manual_hold(situation: Situation) -> SubmissionHold | None:
+        return None if within_window(situation.workspace, situation.now) else SubmissionHold.OUTSIDE_WINDOW
+
+    def _automatic_hold(self, user_id: str, situation: Situation, application: ApplicationRecord) -> SubmissionHold | None:
+        policy = self._ctx.policy
+        rule = policy.rule_of(situation.workspace, application)
+        if application.rule_id is not None and rule_unusable(rule, situation):
+            return SubmissionHold.RULE_INACTIVE
+        if SkipReason.INACTIVE in policy.account_holds(situation):
+            return SubmissionHold.INACTIVE
+        cap = policy.cap_reason(situation, rule)
+        capped = CAP_HOLDS.get(cap) if cap else None
+        if capped is not None:
+            return capped
+        if policy.schedule_open(situation, rule):
+            return None
+        return self._closed_window_hold(user_id, situation, application, rule)
+
+    def _closed_window_hold(
+        self, user_id: str, situation: Situation, application: ApplicationRecord, rule: AutomationRule | None
+    ) -> SubmissionHold | None:
+        policy = self._ctx.policy
+        opportunity = self._candidate.opportunities.get(application.opportunity.id)
+        if not policy.timing_risk(situation, rule, opportunity.deadline if opportunity else None):
+            return SubmissionHold.OUTSIDE_WINDOW
+        action = policy.action(situation)
+        if action is DeadlineAction.SUBMIT_EARLIEST:
+            return None
+        if action is DeadlineAction.NOTIFY_AND_ASK:
+            return SubmissionHold.DEADLINE_AT_RISK
+        self._move(application, SubmissionStatus.CANCELLED, translate("timeline.cancelledDeadlineWindow"))
+        self._candidate.workspaces.save(user_id, situation.workspace)
+        return SubmissionHold.DEADLINE_SKIPPED
 
     def _submitted_today(self, workspace: CandidateWorkspace, now: datetime) -> int:
         zone = ZoneInfo(workspace.preferences.time_zone)

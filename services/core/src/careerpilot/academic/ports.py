@@ -1,0 +1,13 @@
+from typing import Protocol
+
+from careerpilot.academic.enums import RecordKind
+
+
+class AcademicRecordRepository(Protocol):
+    def get(self, user_id: str, kind: RecordKind, record_id: str) -> dict[str, object] | None: ...
+
+    def for_user(self, user_id: str, kind: RecordKind) -> list[dict[str, object]]: ...
+
+    def save(self, user_id: str, kind: RecordKind, record_id: str, document: dict[str, object]) -> None: ...
+
+    def remove(self, user_id: str, kind: RecordKind, record_id: str, reason: str) -> None: ...

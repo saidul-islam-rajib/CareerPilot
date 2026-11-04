@@ -44,6 +44,16 @@ export const ApiErrorDetail = {
   HostNotAllowed: 'host_not_allowed',
   NotPreparing: 'not_preparing',
   NotSubmitted: 'not_submitted',
+  AiNotConfigured: 'ai_not_configured',
+  AiUnavailable: 'ai_unavailable',
+  AiRefused: 'ai_refused',
+  HasIssues: 'has_issues',
+  ApprovalClosed: 'approval_closed',
+  OpportunityMismatch: 'opportunity_mismatch',
+  VersionLimit: 'version_limit',
+  NothingToWrite: 'nothing_to_write',
+  WritingText: 'text',
+  WritingInstructions: 'instructions',
 } as const;
 export type ApiErrorDetail = (typeof ApiErrorDetail)[keyof typeof ApiErrorDetail];
 

@@ -446,6 +446,7 @@ export const NotificationKind = {
   ApplicationConfirmed: 'application_confirmed',
   ApplicationReply: 'application_reply',
   IntegrationAttention: 'integration_attention',
+  AutomationAttention: 'automation_attention',
 } as const;
 export type NotificationKind = (typeof NotificationKind)[keyof typeof NotificationKind];
 
@@ -453,8 +454,70 @@ export const NotificationTarget = {
   Conversation: 'conversation',
   Application: 'application',
   Integration: 'integration',
+  Automation: 'automation',
 } as const;
 export type NotificationTarget = (typeof NotificationTarget)[keyof typeof NotificationTarget];
+
+export const DeadlineAction = {
+  NotifyAndAsk: 'notify_and_ask',
+  SubmitEarliest: 'submit_earliest',
+  Skip: 'skip',
+} as const;
+export type DeadlineAction = (typeof DeadlineAction)[keyof typeof DeadlineAction];
+
+export const DryRunOutcome = {
+  WouldApply: 'would_apply',
+  Deferred: 'deferred',
+  Skipped: 'skipped',
+} as const;
+export type DryRunOutcome = (typeof DryRunOutcome)[keyof typeof DryRunOutcome];
+
+export const SkipReason = {
+  EmergencyStop: 'emergency_stop',
+  Paused: 'paused',
+  Inactive: 'inactive',
+  TrackNotAutomatic: 'track_not_automatic',
+  HardRequirementFailed: 'hard_requirement_failed',
+  UnknownRequirement: 'unknown_requirement',
+  ExcludedCountry: 'excluded_country',
+  NoMatchingRule: 'no_matching_rule',
+  BelowScore: 'below_score',
+  CountryNotAllowed: 'country_not_allowed',
+  RouteNotAllowed: 'route_not_allowed',
+  ExcludedEmployer: 'excluded_employer',
+  ExcludedKeyword: 'excluded_keyword',
+  RuleExpired: 'rule_expired',
+  UserOnlyStep: 'user_only_step',
+  CvMissing: 'cv_missing',
+  DeadlineAtRisk: 'deadline_at_risk',
+  DeadlinePassed: 'deadline_passed',
+  DailyCap: 'daily_cap',
+  WeeklyCap: 'weekly_cap',
+  RuleCap: 'rule_cap',
+  OutsideWindow: 'outside_window',
+} as const;
+export type SkipReason = (typeof SkipReason)[keyof typeof SkipReason];
+
+export const SkipStage = {
+  Rule: 'rule',
+  Safeguard: 'safeguard',
+  Schedule: 'schedule',
+} as const;
+export type SkipStage = (typeof SkipStage)[keyof typeof SkipStage];
+
+export const SubmissionHold = {
+  EmergencyStop: 'emergency_stop',
+  Paused: 'paused',
+  OutsideWindow: 'outside_window',
+  DailyLimit: 'daily_limit',
+  WeeklyLimit: 'weekly_limit',
+  RuleLimit: 'rule_limit',
+  RuleInactive: 'rule_inactive',
+  Inactive: 'inactive',
+  DeadlineAtRisk: 'deadline_at_risk',
+  DeadlineSkipped: 'deadline_skipped',
+} as const;
+export type SubmissionHold = (typeof SubmissionHold)[keyof typeof SubmissionHold];
 
 export function isEnumValue<T extends Record<string, string>>(enumObject: T, value: unknown): value is T[keyof T] {
   return typeof value === 'string' && (Object.values(enumObject) as string[]).includes(value);
@@ -766,3 +829,374 @@ export const SecretKind = {
   TransactionId: 'transaction_id',
 } as const;
 export type SecretKind = (typeof SecretKind)[keyof typeof SecretKind];
+
+export const WritingKind = {
+  CoverLetter: 'cover_letter',
+  TailoredCv: 'tailored_cv',
+  Essay: 'essay',
+  Statement: 'statement',
+} as const;
+export type WritingKind = (typeof WritingKind)[keyof typeof WritingKind];
+
+export const DraftSource = {
+  Template: 'template',
+  Ai: 'ai',
+  User: 'user',
+} as const;
+export type DraftSource = (typeof DraftSource)[keyof typeof DraftSource];
+
+export const WritingTone = {
+  Professional: 'professional',
+  Friendly: 'friendly',
+  Concise: 'concise',
+} as const;
+export type WritingTone = (typeof WritingTone)[keyof typeof WritingTone];
+
+export const IssueKind = {
+  UnsupportedClaim: 'unsupported_claim',
+  OtherEmployer: 'other_employer',
+  Placeholder: 'placeholder',
+  MissingTarget: 'missing_target',
+  OverLimit: 'over_limit',
+  Empty: 'empty',
+} as const;
+export type IssueKind = (typeof IssueKind)[keyof typeof IssueKind];
+
+export const DraftStatus = {
+  Ready: 'ready',
+  NeedsFixes: 'needs_fixes',
+} as const;
+export type DraftStatus = (typeof DraftStatus)[keyof typeof DraftStatus];
+
+export const WritingProvider = {
+  Template: 'template',
+  Ai: 'ai',
+} as const;
+export type WritingProvider = (typeof WritingProvider)[keyof typeof WritingProvider];
+
+export const StudyKind = {
+  TaughtMasters: 'taught_masters',
+  ResearchMasters: 'research_masters',
+  Phd: 'phd',
+  Scholarship: 'scholarship',
+  Fellowship: 'fellowship',
+  ResearchAssistantship: 'research_assistantship',
+  TeachingAssistantship: 'teaching_assistantship',
+  Exchange: 'exchange',
+  SummerSchool: 'summer_school',
+  Postdoc: 'postdoc',
+  Internship: 'internship',
+} as const;
+export type StudyKind = (typeof StudyKind)[keyof typeof StudyKind];
+
+export const IntakeTerm = {
+  Fall: 'fall',
+  Spring: 'spring',
+  Winter: 'winter',
+  Summer: 'summer',
+} as const;
+export type IntakeTerm = (typeof IntakeTerm)[keyof typeof IntakeTerm];
+
+export const EvidenceStatus = {
+  Explicit: 'explicit',
+  NotStated: 'not_stated',
+  Unclear: 'unclear',
+  Conflicting: 'conflicting',
+} as const;
+export type EvidenceStatus = (typeof EvidenceStatus)[keyof typeof EvidenceStatus];
+
+export const NeedLevel = {
+  Required: 'required',
+  Optional: 'optional',
+  NotRequired: 'not_required',
+  NotStated: 'not_stated',
+} as const;
+export type NeedLevel = (typeof NeedLevel)[keyof typeof NeedLevel];
+
+export const ScorePolicy = {
+  OfficialOnly: 'official_only',
+  SelfReported: 'self_reported',
+  Alternative: 'alternative',
+  NotStated: 'not_stated',
+} as const;
+export type ScorePolicy = (typeof ScorePolicy)[keyof typeof ScorePolicy];
+
+export const ExamKind = {
+  Ielts: 'ielts',
+  Toefl: 'toefl',
+  Pte: 'pte',
+  Duolingo: 'duolingo',
+  Gre: 'gre',
+  Gmat: 'gmat',
+  Sat: 'sat',
+  Act: 'act',
+  Other: 'other',
+} as const;
+export type ExamKind = (typeof ExamKind)[keyof typeof ExamKind];
+
+export const ExamStatus = {
+  Planned: 'planned',
+  Registered: 'registered',
+  Taken: 'taken',
+  ScoresReleased: 'scores_released',
+  Cancelled: 'cancelled',
+} as const;
+export type ExamStatus = (typeof ExamStatus)[keyof typeof ExamStatus];
+
+export const DeadlineKind = {
+  Application: 'application',
+  EarlyDecision: 'early_decision',
+  Priority: 'priority',
+  ScholarshipConsideration: 'scholarship_consideration',
+  Funding: 'funding',
+  Referee: 'referee',
+  SupervisorContact: 'supervisor_contact',
+  DecisionExpected: 'decision_expected',
+  Acceptance: 'acceptance',
+  Deposit: 'deposit',
+  TestRegistration: 'test_registration',
+  TestDate: 'test_date',
+  ScoreExpiry: 'score_expiry',
+  Condition: 'condition',
+  Checklist: 'checklist',
+} as const;
+export type DeadlineKind = (typeof DeadlineKind)[keyof typeof DeadlineKind];
+
+export const FundingStatus = {
+  Stated: 'stated',
+  NotStated: 'not_stated',
+  Unclear: 'unclear',
+  None: 'none',
+} as const;
+export type FundingStatus = (typeof FundingStatus)[keyof typeof FundingStatus];
+
+export const AmountSource = {
+  Official: 'official',
+  Estimate: 'estimate',
+} as const;
+export type AmountSource = (typeof AmountSource)[keyof typeof AmountSource];
+
+export const BudgetKind = {
+  ApplicationFee: 'application_fee',
+  TestFee: 'test_fee',
+  ScoreSending: 'score_sending',
+  Evaluation: 'evaluation',
+  Translation: 'translation',
+  Courier: 'courier',
+  VisaFee: 'visa_fee',
+  Other: 'other',
+} as const;
+export type BudgetKind = (typeof BudgetKind)[keyof typeof BudgetKind];
+
+export const GradeScale = {
+  Cgpa4: 'cgpa_4',
+  Gpa5: 'gpa_5',
+  Percentage: 'percentage',
+  Division: 'division',
+  Other: 'other',
+} as const;
+export type GradeScale = (typeof GradeScale)[keyof typeof GradeScale];
+
+export const CredentialKind = {
+  DegreeCertificate: 'degree_certificate',
+  Transcript: 'transcript',
+  SecondaryCertificate: 'secondary_certificate',
+  Other: 'other',
+} as const;
+export type CredentialKind = (typeof CredentialKind)[keyof typeof CredentialKind];
+
+export const CredentialNeed = {
+  Evaluation: 'evaluation',
+  CertifiedCopy: 'certified_copy',
+  Translation: 'translation',
+  Notarization: 'notarization',
+  SealedTranscript: 'sealed_transcript',
+} as const;
+export type CredentialNeed = (typeof CredentialNeed)[keyof typeof CredentialNeed];
+
+export const ItemProgress = {
+  Todo: 'todo',
+  InProgress: 'in_progress',
+  Done: 'done',
+} as const;
+export type ItemProgress = (typeof ItemProgress)[keyof typeof ItemProgress];
+
+export const ConversionSource = {
+  Official: 'official',
+  Estimate: 'estimate',
+} as const;
+export type ConversionSource = (typeof ConversionSource)[keyof typeof ConversionSource];
+
+export const AgreementStatus = {
+  NotAsked: 'not_asked',
+  Asked: 'asked',
+  Agreed: 'agreed',
+  Declined: 'declined',
+} as const;
+export type AgreementStatus = (typeof AgreementStatus)[keyof typeof AgreementStatus];
+
+export const SubmissionMethod = {
+  PortalInvite: 'portal_invite',
+  Email: 'email',
+  Postal: 'postal',
+  InstitutionForm: 'institution_form',
+  NotStated: 'not_stated',
+} as const;
+export type SubmissionMethod = (typeof SubmissionMethod)[keyof typeof SubmissionMethod];
+
+export const RecommendationStatus = {
+  Planned: 'planned',
+  Requested: 'requested',
+  Submitted: 'submitted',
+  Confirmed: 'confirmed',
+} as const;
+export type RecommendationStatus = (typeof RecommendationStatus)[keyof typeof RecommendationStatus];
+
+export const ReceiptEvidence = {
+  InstitutionConfirmation: 'institution_confirmation',
+  UserStatement: 'user_statement',
+} as const;
+export type ReceiptEvidence = (typeof ReceiptEvidence)[keyof typeof ReceiptEvidence];
+
+export const DraftKind = {
+  Request: 'request',
+  Reminder: 'reminder',
+} as const;
+export type DraftKind = (typeof DraftKind)[keyof typeof DraftKind];
+
+export const OutreachStatus = {
+  Draft: 'draft',
+  Sent: 'sent',
+  RepliedPositive: 'replied_positive',
+  CallRequested: 'call_requested',
+  DocumentsRequested: 'documents_requested',
+  RepliedNeutral: 'replied_neutral',
+  Declined: 'declined',
+  Stopped: 'stopped',
+} as const;
+export type OutreachStatus = (typeof OutreachStatus)[keyof typeof OutreachStatus];
+
+export const ReplyOutcome = {
+  Positive: 'positive',
+  CallRequested: 'call_requested',
+  DocumentsRequested: 'documents_requested',
+  Neutral: 'neutral',
+  Declined: 'declined',
+  DoNotContact: 'do_not_contact',
+} as const;
+export type ReplyOutcome = (typeof ReplyOutcome)[keyof typeof ReplyOutcome];
+
+export const ProgramStatus = {
+  Saved: 'saved',
+  Preparing: 'preparing',
+  Submitted: 'submitted',
+  Decided: 'decided',
+  Withdrawn: 'withdrawn',
+} as const;
+export type ProgramStatus = (typeof ProgramStatus)[keyof typeof ProgramStatus];
+
+export const PortalSubmission = {
+  NotStarted: 'not_started',
+  InProgress: 'in_progress',
+  SubmittedByUser: 'submitted_by_user',
+  ConfirmedByInstitution: 'confirmed_by_institution',
+} as const;
+export type PortalSubmission = (typeof PortalSubmission)[keyof typeof PortalSubmission];
+
+export const PortalFee = {
+  NotRequired: 'not_required',
+  Due: 'due',
+  PaidByUser: 'paid_by_user',
+} as const;
+export type PortalFee = (typeof PortalFee)[keyof typeof PortalFee];
+
+export const DecisionKind = {
+  Pending: 'pending',
+  Accepted: 'accepted',
+  ConditionallyAccepted: 'conditionally_accepted',
+  Waitlisted: 'waitlisted',
+  InterviewInvited: 'interview_invited',
+  Rejected: 'rejected',
+  Deferred: 'deferred',
+} as const;
+export type DecisionKind = (typeof DecisionKind)[keyof typeof DecisionKind];
+
+export const UserAction = {
+  AcceptOffer: 'accept_offer',
+  PayDeposit: 'pay_deposit',
+  DeclineOffer: 'decline_offer',
+} as const;
+export type UserAction = (typeof UserAction)[keyof typeof UserAction];
+
+export const ChecklistStep = {
+  AdmissionDocument: 'admission_document',
+  ProofOfFunds: 'proof_of_funds',
+  Visa: 'visa',
+  HealthInsurance: 'health_insurance',
+  Accommodation: 'accommodation',
+  TuitionPayment: 'tuition_payment',
+  Travel: 'travel',
+  ArrivalRegistration: 'arrival_registration',
+} as const;
+export type ChecklistStep = (typeof ChecklistStep)[keyof typeof ChecklistStep];
+
+export const PlanStepKind = {
+  TestRegistration: 'test_registration',
+  TakeTest: 'take_test',
+  SendScores: 'send_scores',
+  PrepareDocuments: 'prepare_documents',
+  RequestReferees: 'request_referees',
+  ContactSupervisor: 'contact_supervisor',
+  SubmitApplication: 'submit_application',
+} as const;
+export type PlanStepKind = (typeof PlanStepKind)[keyof typeof PlanStepKind];
+
+export const WarningKind = {
+  ScoreExpiresBeforeDeadline: 'score_expires_before_deadline',
+  ScoreExpiresBeforeStart: 'score_expires_before_start',
+  NoValidScore: 'no_valid_score',
+  RefereeWithoutConsent: 'referee_without_consent',
+} as const;
+export type WarningKind = (typeof WarningKind)[keyof typeof WarningKind];
+
+export const AttentionKind = {
+  OutreachReply: 'outreach_reply',
+  DeadlineSoon: 'deadline_soon',
+  ScoreWarning: 'score_warning',
+  PortalBlocked: 'portal_blocked',
+} as const;
+export type AttentionKind = (typeof AttentionKind)[keyof typeof AttentionKind];
+
+export const PortalBlocker = {
+  SectionIncomplete: 'section_incomplete',
+  DocumentMissing: 'document_missing',
+  RefereeNotConsented: 'referee_not_consented',
+  RefereeNotInvited: 'referee_not_invited',
+  FeeDue: 'fee_due',
+  InstitutionItemPending: 'institution_item_pending',
+  CredentialPending: 'credential_pending',
+} as const;
+export type PortalBlocker = (typeof PortalBlocker)[keyof typeof PortalBlocker];
+
+export const AcademicFailure = {
+  RefereeConsentRequired: 'referee_consent_required',
+  EvidenceRequired: 'evidence_required',
+  ResearchReferenceRequired: 'research_reference_required',
+  ProfileNameRequired: 'profile_name_required',
+  OutreachLimit: 'outreach_limit',
+  OutreachStopped: 'outreach_stopped',
+  OutreachGeneric: 'outreach_generic',
+  FollowUpNotAllowed: 'follow_up_not_allowed',
+  FollowUpTooSoon: 'follow_up_too_soon',
+  ConfirmationRequired: 'confirmation_required',
+  NotAnOffer: 'not_an_offer',
+  UnknownProgram: 'unknown_program',
+  NotAStudyOpportunity: 'not_a_study_opportunity',
+  AlreadySent: 'already_sent',
+  NotSent: 'not_sent',
+  UnknownSection: 'unknown_section',
+  TooManyItems: 'too_many_items',
+  LimitAboveMaximum: 'limit_above_maximum',
+  Duplicate: 'duplicate',
+} as const;
+export type AcademicFailure = (typeof AcademicFailure)[keyof typeof AcademicFailure];

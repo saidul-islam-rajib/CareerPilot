@@ -93,7 +93,7 @@ Fill in (the file lists every variable; secrets exist only here, never in git):
 | `CAREERPILOT_OWNER_EMAIL` | your email; you become the first Super Admin |
 | `POSTGRES_PASSWORD`, `CAREERPILOT_APP_DB_PASSWORD` | two different long random passwords |
 | `CAREERPILOT_TOKEN_SECRET` | a long random string (at least 32 characters) |
-| `ANTHROPIC_API_KEY` | your Claude API key (matching and AI features) |
+| `ANTHROPIC_API_KEY` | your Claude API key (matching and writing tools) |
 | `CAREERPILOT_MAIL_USER`, `CAREERPILOT_MAIL_PASSWORD` | Gmail account and App Password, see [email-setup.md](email-setup.md); without them, registration links stay in the server's mail sandbox and nobody receives them |
 | `CAREERPILOT_GOOGLE_CLIENT_ID`, `CAREERPILOT_GOOGLE_CLIENT_SECRET`, `CAREERPILOT_VAULT_KEY` | for Gmail and Calendar sync, see section 6; leave empty if you do not use it |
 

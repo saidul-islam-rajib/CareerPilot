@@ -3,6 +3,7 @@ from typing import Any, cast
 
 from pydantic import Field, model_validator
 
+from careerpilot.automation.models import AutomationSettings
 from careerpilot.platform.enums import (
     AnswerSource,
     AnswerTopic,
@@ -21,6 +22,7 @@ from careerpilot.platform.enums import (
 )
 from careerpilot.platform.files import PDF, SAMPLE_PREFIX
 from careerpilot.platform.model import CamelModel
+from careerpilot.writing.enums import DraftSource, WritingKind
 
 
 class UserSummary(CamelModel):
@@ -156,10 +158,19 @@ class CvRef(CamelModel):
     document_id: str | None = None
 
 
+class ApprovalWriting(CamelModel):
+    kind: WritingKind
+    draft_id: str
+    version: int
+    source: DraftSource
+    text: str
+
+
 class ApprovalMaterials(CamelModel):
     cv: CvRef
     cover_letter: str
     answers: list[QuestionAnswer]
+    writing: list[ApprovalWriting] = Field(default_factory=list[ApprovalWriting])
 
 
 class ApprovalSummary(CamelModel):
@@ -239,6 +250,8 @@ class ApplicationRecord(ApplicationSummary):
     attempts: int = 0
     tasks: list[FollowUpTask] = Field(default_factory=list[FollowUpTask])
     archived_at: str | None = None
+    automatic: bool = False
+    rule_id: str | None = None
 
     def summary(self) -> ApplicationSummary:
         return ApplicationSummary.model_validate(self.model_dump(include=set(ApplicationSummary.model_fields)))
@@ -443,6 +456,7 @@ class Preferences(CamelModel):
     blocked_users: list[str] = Field(default_factory=list[str])
     discoverable: bool = True
     home_country: str = ""
+    automation: AutomationSettings = Field(default_factory=AutomationSettings)
 
 
 class SignInEvent(CamelModel):

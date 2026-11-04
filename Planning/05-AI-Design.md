@@ -25,6 +25,8 @@ How CareerPilot uses AI (Claude) and machine learning, and the guardrails that k
 | Refusal handling | Always check `stop_reason` before reading output; server-side `fallbacks` enabled; a refused item becomes "needs manual review", never a guess |
 | Streaming | Used for long generations (cover letters, SOPs) so requests don't time out |
 
+Writing tasks (8 and 9) default to **Claude Sonnet 5.5** (`claude-sonnet-5-5`), chosen per document kind in `config/defaults/writing.yaml`, with adaptive thinking and streaming. Without `ANTHROPIC_API_KEY` a deterministic template writer builds cover letters and tailored CVs from profile facts, essays and statements are unavailable, and the apps say "AI is not configured".
+
 Using a cheaper model (for example Claude Haiku 5.5 or Claude Sonnet 5.5) for high-volume tasks such as nightly extraction is a cost decision for the Product Owner. It is listed in [09-Risks-and-Decisions.md](09-Risks-and-Decisions.md) and must be backed by quality comparisons on recorded samples before switching.
 
 ## 3. AI tasks
@@ -40,7 +42,7 @@ Using a cheaper model (for example Claude Haiku 5.5 or Claude Sonnet 5.5) for hi
 | 7 | Form field mapping (generic sites) | Page structure | Field → profile fact / answer mapping for code to fill | 10.5, 30 |
 | 8 | Cover letters, emails, essays, SOPs | Verified facts, approved materials, posting, user style | Draft text + list of facts used | 10.7, 32.3, 33.5 |
 | 9 | Résumé tailoring | Verified CV content + posting | Reordered/reworded CV using only existing facts | 32.1 |
-| 10 | Claim check | Generated text + facts used + profile | Any unsupported claim, wrong employer name, placeholder → fail | 27.4, 32.3 |
+| 10 | Claim check | Generated text + facts used + profile | Any unsupported claim, wrong employer name, placeholder → fail. In version 1 this is a deterministic code check that runs on every draft whichever writer produced it (`specs/E24-writing-tools`) | 27.4, 32.3 |
 | 11 | Reply classification | Incoming emails on application threads | Confirmation / interview / assessment / rejection / offer / question / other | 11.4, 34 |
 | 12 | Supervisor matching | Faculty pages, publications, user interests | Match evidence for review | 33.5 |
 | 13 | Admin assistance (later in v1) | Source failures, incidents | Summaries for admins | 24, 53 |

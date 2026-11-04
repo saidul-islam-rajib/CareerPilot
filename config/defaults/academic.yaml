@@ -1,0 +1,40 @@
+# Student and academic journey: tests, plan lead times, outreach limits, checklist steps (Requirements 9, 33, 40.3; specs/E26-students-and-academics).
+academic:
+  max_text_length: 4000
+  max_items_per_list: 60
+  upcoming_days: 45
+  currency: USD
+  exams:
+    - {kind: ielts, validity_months: 24, sections: [listening, reading, writing, speaking], registration_lead_days: 21, score_release_days: 13}
+    - {kind: toefl, validity_months: 24, sections: [reading, listening, speaking, writing], registration_lead_days: 14, score_release_days: 6}
+    - {kind: pte, validity_months: 24, sections: [speaking_writing, reading, listening], registration_lead_days: 7, score_release_days: 5}
+    - {kind: duolingo, validity_months: 24, sections: [literacy, comprehension, conversation, production], registration_lead_days: 1, score_release_days: 2}
+    - {kind: gre, validity_months: 60, sections: [verbal, quantitative, analytical_writing], registration_lead_days: 21, score_release_days: 10}
+    - {kind: gmat, validity_months: 60, sections: [quantitative, verbal, data_insights], registration_lead_days: 21, score_release_days: 1}
+    - {kind: sat, validity_months: 60, sections: [reading_writing, math], registration_lead_days: 30, score_release_days: 14}
+    - {kind: act, validity_months: 60, sections: [english, math, reading, science], registration_lead_days: 30, score_release_days: 14}
+    - {kind: other, validity_months: 24, sections: [], registration_lead_days: 14, score_release_days: 14}
+  plan:
+    submit_buffer_days: 3
+    documents_lead_days: 30
+    referee_request_lead_days: 28
+    score_sending_lead_days: 21
+    supervisor_contact_lead_days: 60
+  outreach:
+    max_per_day: 5
+    max_per_department: 3
+    max_per_university: 6
+    follow_ups_allowed: false
+    follow_up_gap_days: 10
+    min_research_reference_length: 12
+    bad_phrases: ["dear sir/madam", "to whom it may concern", "dear professor,"]
+  checklist_steps:
+    - {step: admission_document, lead_days_before_start: 120}
+    - {step: proof_of_funds, lead_days_before_start: 110}
+    - {step: visa, lead_days_before_start: 90}
+    - {step: health_insurance, lead_days_before_start: 45}
+    - {step: accommodation, lead_days_before_start: 60}
+    - {step: tuition_payment, lead_days_before_start: 30}
+    - {step: travel, lead_days_before_start: 14}
+    - {step: arrival_registration, lead_days_before_start: -7}
+  attention_order: [outreach_reply, portal_blocked, score_warning, deadline_soon]

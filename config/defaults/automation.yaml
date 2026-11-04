@@ -1,0 +1,27 @@
+# Automatic mode: rules, dry run, caps, deadline buffer, inactivity safety (Requirements 27.2, 38, 47, 49; specs/E25-automatic-mode).
+automation:
+  max_rules: 10
+  max_list_items: 50
+  max_item_length: 80
+  max_skip_records: 200
+  dry_run_limit: 50
+  window_lookahead_days: 8
+  default_min_match_score: 70
+  default_deadline_buffer_hours: 24
+  max_deadline_buffer_hours: 336
+  default_deadline_action: notify_and_ask
+  default_inactivity_days: 30
+  min_inactivity_days: 7
+  max_inactivity_days: 365
+  default_weekly_cap: 35
+  max_weekly_cap: 200
+  max_daily_cap: 50
+  max_total_cap: 1000
+  user_only_steps:
+    - captcha_or_human_check
+    - assessments_and_tests
+    - interviews_and_video
+    - legal_declarations
+    - payments_outside_rule
+    - offer_decisions
+    - sources_prohibiting_automation

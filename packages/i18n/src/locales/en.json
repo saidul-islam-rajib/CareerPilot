@@ -1489,10 +1489,200 @@
       "open": "Open"
     }
   },
+  "automation": {
+    "title": "Automatic mode",
+    "intro": "Choose what CareerPilot may apply to for you, how many, and when. You can pause or stop everything at any time.",
+    "menuBody": "Rules, limits, windows and a safe preview",
+    "statusTitle": "Right now",
+    "statusRunning": "Automatic applications are running under your rules.",
+    "statusHeld": "Automatic applications are on hold.",
+    "today": "Sent today",
+    "thisWeek": "Sent this week",
+    "capsLine": "Daily limit {daily}, weekly limit {weekly}",
+    "rulesTitle": "Rules",
+    "rulesEmpty": "No rules yet. Tracks in automatic mode apply to every match that passes the safety checks. Add a rule to choose more carefully.",
+    "rulesHint": "Rules at the top are checked first. A block in any rule always wins.",
+    "addRule": "Add a rule",
+    "editRule": "Edit rule",
+    "deleteRule": "Delete rule",
+    "deleteConfirm": "Delete \"{name}\"? Applications already sent are not affected.",
+    "moveUp": "Move {name} up",
+    "moveDown": "Move {name} down",
+    "dragHandle": "Drag to reorder {name}",
+    "enabled": "On",
+    "disabled": "Off",
+    "allTracks": "All tracks",
+    "ruleSummary": "{tracks} · from {score}% match",
+    "wizard": {
+      "title": "Rule",
+      "step": "Step {current} of {total}",
+      "back": "Back",
+      "next": "Next",
+      "save": "Save rule",
+      "cancel": "Cancel",
+      "scope": "Scope",
+      "filters": "Filters",
+      "materials": "Materials",
+      "limits": "Limits",
+      "schedule": "Schedule",
+      "review": "Review",
+      "name": "Rule name",
+      "namePlaceholder": "Remote jobs I am happy to apply to",
+      "tracks": "Tracks this rule covers",
+      "tracksHint": "Leave all unchecked to cover every track. Tracks set to approve each application never apply automatically.",
+      "minScore": "Lowest match score",
+      "countries": "Only these countries",
+      "countriesHint": "Two-letter codes such as BD or NO. Leave empty for any country.",
+      "routes": "Only these application routes",
+      "routesHint": "Automatic sending only works by email. Other routes are prepared for you to submit yourself.",
+      "excludedEmployers": "Never apply to these employers",
+      "excludedKeywords": "Never apply when the posting mentions",
+      "listHint": "Separate items with commas.",
+      "allowUnknown": "Apply even when a requirement is unknown",
+      "allowUnknownHint": "Off by default. A requirement known to fail is never applied to.",
+      "cv": "CV to send",
+      "cvDefault": "My default CV",
+      "materialsNote": "The cover letter is written for each employer from your profile. Nothing is invented.",
+      "dailyCap": "Most per day",
+      "weeklyCap": "Most per week",
+      "totalCap": "Most in total",
+      "capNone": "No limit",
+      "expiresOn": "Rule ends on",
+      "expiresHint": "Date as YYYY-MM-DD. Leave empty to keep it running.",
+      "windowKind": "When may it send",
+      "windowAny": "Whenever your global window allows",
+      "windowDaily": "Only between two times",
+      "windowStart": "From",
+      "windowEnd": "Until",
+      "days": "Only on these days",
+      "daysHint": "Leave all unchecked for every day.",
+      "enabled": "Rule is on",
+      "reviewIntro": "Check the rule, then run a preview to see what it would do without sending anything.",
+      "reviewNone": "Not set"
+    },
+    "weekday": {
+      "monday": "Mon",
+      "tuesday": "Tue",
+      "wednesday": "Wed",
+      "thursday": "Thu",
+      "friday": "Fri",
+      "saturday": "Sat",
+      "sunday": "Sun"
+    },
+    "routeLabel": {
+      "email": "Email",
+      "ats_portal": "Employer tracking system",
+      "employer_portal": "Employer portal",
+      "government_portal": "Government portal",
+      "guided_manual": "Guided, by you"
+    },
+    "settingsTitle": "Safety settings",
+    "deadlineBuffer": "Deadline buffer (hours)",
+    "deadlineBufferHint": "Applications should go out at least this long before a deadline.",
+    "deadlineAction": "If the next window is too late",
+    "weeklyCap": "Weekly limit",
+    "inactivity": "Pause when I have been away (days)",
+    "inactivityHint": "Automatic applications stop until you come back, and you are told.",
+    "saveSettings": "Save settings",
+    "saved": "Saved",
+    "action": {
+      "notify_and_ask": "Ask me",
+      "submit_earliest": "Send at the earliest time before the deadline",
+      "skip": "Skip and tell me"
+    },
+    "dryRun": {
+      "title": "Preview",
+      "run": "Preview what would be applied",
+      "runRule": "Preview this rule",
+      "running": "Checking current opportunities...",
+      "safe": "Nothing is sent, saved or paid for in a preview.",
+      "summary": "{apply} would be applied, {deferred} would wait, {skipped} would be skipped.",
+      "empty": "No open opportunities to check right now.",
+      "materials": "Would send",
+      "cv": "CV: {name} (version {version})",
+      "coverLetter": "Cover letter",
+      "earliest": "Earliest: {at}",
+      "bypass": "Goes out before the window because the deadline is close.",
+      "rule": "Rule: {name}",
+      "noRule": "Track default (no rule)",
+      "match": "{score}% match",
+      "heldBy": "On hold now",
+      "close": "Close preview"
+    },
+    "outcome": {
+      "would_apply": "Would apply",
+      "deferred": "Would wait",
+      "skipped": "Would skip"
+    },
+    "reason": {
+      "emergency_stop": "Emergency stop is on",
+      "paused": "You paused applications",
+      "inactive": "You have been away for a while",
+      "track_not_automatic": "This track asks you to approve each application",
+      "hard_requirement_failed": "A required condition is not met",
+      "unknown_requirement": "A required condition is unknown",
+      "excluded_country": "Country is on your excluded list",
+      "no_matching_rule": "No rule covers this opportunity",
+      "below_score": "Match score is below the rule",
+      "country_not_allowed": "Country is not allowed by the rule",
+      "route_not_allowed": "Application route is not allowed by the rule",
+      "excluded_employer": "Employer is blocked by a rule",
+      "excluded_keyword": "A blocked word appears in the posting",
+      "rule_expired": "The rule has ended",
+      "user_only_step": "Prepared for you, you submit it yourself",
+      "cv_missing": "No CV is available",
+      "deadline_at_risk": "Deadline is too close for the allowed window",
+      "deadline_passed": "The deadline has passed",
+      "daily_cap": "Daily limit reached",
+      "weekly_cap": "Weekly limit reached",
+      "rule_cap": "The rule's limit is reached",
+      "outside_window": "Waits for the next sending window"
+    },
+    "hold": {
+      "emergency_stop": "Emergency stop",
+      "paused": "Paused",
+      "outside_window": "Waiting for the sending window",
+      "daily_limit": "Daily limit reached",
+      "weekly_limit": "Weekly limit reached",
+      "rule_limit": "Rule limit reached",
+      "rule_inactive": "Rule is off or has ended",
+      "inactive": "Paused because you have been away",
+      "deadline_at_risk": "Waiting for you: deadline is close",
+      "deadline_skipped": "Skipped: deadline is close"
+    },
+    "skippedTitle": "Why some jobs were not applied to",
+    "skippedEmpty": "Nothing has been skipped.",
+    "userOnlyTitle": "Always left to you",
+    "userOnlyBody": "Automation never does these, whatever your rules say.",
+    "userOnly": {
+      "captcha_or_human_check": "CAPTCHAs, MFA and identity checks",
+      "assessments_and_tests": "Tests, assessments and exams",
+      "interviews_and_video": "Interviews and live or recorded video",
+      "legal_declarations": "Signing declarations, contracts and offers",
+      "payments_outside_rule": "Payments outside a payment rule",
+      "offer_decisions": "Accepting or declining offers",
+      "sources_prohibiting_automation": "Sites that do not allow automation"
+    },
+    "errors": {
+      "load": "Couldn't load automatic mode.",
+      "save": "Couldn't save. Check the highlighted fields.",
+      "dryRun": "Couldn't run the preview.",
+      "limit": "You have reached the number of rules allowed."
+    },
+    "notifications": {
+      "deadlineTitle": "A deadline is close and the window is closed",
+      "deadlineBody": "{title} at {organization} is waiting. Open it to send now, or leave it.",
+      "inactiveTitle": "Automatic applications are paused",
+      "inactiveBody": "You have not opened CareerPilot for {days} days. Open it to resume automatic applications."
+    }
+  },
   "timeline": {
     "packagePrepared": "Application package prepared",
     "youApproved": "You approved the application",
     "approvedByRule": "Approved by your automatic rule",
+    "cancelledRuleInactive": "Cancelled because the rule is off or has ended",
+    "cancelledDeadlinePassed": "Cancelled because the deadline passed before it could be sent",
+    "cancelledDeadlineWindow": "Skipped because the next sending window is too close to the deadline",
     "submitting": "Sending your application",
     "emailSent": "Email sent to {to} with {attachment}",
     "emailConfirmed": "No bounce received within {hours} hours – confirmed",
@@ -2445,6 +2635,148 @@
       "homeDistrict": "Home district",
       "permanentAddress": "Permanent address",
       "presentAddress": "Present address"
+    }
+  },
+  "writing": {
+    "title": "Writing tools",
+    "intro": "Cover letters, tailored CVs, essays and statements, written only from the facts in your profile.",
+    "opportunityHeading": "Writing for {title} at {organization}",
+    "open": "Write or tailor materials",
+    "openHint": "Draft a cover letter or CV for this application.",
+    "aiNotConfigured": "AI is not configured on this server. Cover letters and CVs are assembled from your profile facts with templates; essays and statements need AI.",
+    "aiConfigured": "AI is on. Drafts are written by {model} from your profile facts.",
+    "needsAi": "Needs AI",
+    "aiOnlyUnavailable": "This kind of writing needs AI, which is not configured.",
+    "kindLabel": "What to write",
+    "kinds": {
+      "cover_letter": "Cover letter",
+      "tailored_cv": "Tailored CV",
+      "essay": "Essay answer",
+      "statement": "Statement"
+    },
+    "toneLabel": "Tone",
+    "tones": {
+      "professional": "Professional",
+      "friendly": "Friendly",
+      "concise": "Concise"
+    },
+    "wordsLabel": "Word limit",
+    "instructionsLabel": "Instructions (optional)",
+    "instructionsHint": "For an essay, paste the question here. For anything else, add what to stress.",
+    "generate": "Write a draft",
+    "generating": "Writing...",
+    "sourceLabel": "Written by",
+    "sources": {
+      "template": "Template from your profile facts",
+      "ai": "AI ({model})",
+      "user": "You"
+    },
+    "draftsHeading": "Drafts",
+    "noDrafts": "No drafts yet for this application.",
+    "version": "Version {version}",
+    "versionsHeading": "Versions",
+    "wordCount": "{count} words",
+    "textLabel": "Text",
+    "saveVersion": "Save as new version",
+    "saving": "Saving...",
+    "attach": "Add to application",
+    "attached": "In the application for approval",
+    "detach": "Remove from application",
+    "remove": "Delete this version",
+    "removeConfirm": "Delete this version? It stays out of reach but is not shown again.",
+    "removeFlagged": "Remove flagged sentences",
+    "recheck": "Check again",
+    "checksHeading": "Checks",
+    "checksPassed": "No unsupported claims, other employers or placeholders found.",
+    "checksFailed": "Fix these before adding the text to an application.",
+    "issues": {
+      "unsupported_claim": "Not supported by your profile ({terms}): {text}",
+      "other_employer": "Mentions another employer ({terms}): {text}",
+      "placeholder": "Placeholder left in the text: {terms}",
+      "missing_target": "Does not mention {terms}",
+      "over_limit": "{terms} words (limit {limit})",
+      "empty": "The text is empty"
+    },
+    "factsHeading": "Profile facts used",
+    "noFacts": "No profile facts were recognised in this text.",
+    "approvalSection": "Added writing",
+    "approvalNone": "No written materials added yet.",
+    "approvalShow": "Show the full text",
+    "approvalVersion": "{kind}, version {version} ({source})",
+    "pickApplication": "Add to which application",
+    "noPendingApplication": "Prepare an application for this opportunity first.",
+    "errors": {
+      "ai_not_configured": "AI is not configured, so this cannot be written yet.",
+      "ai_unavailable": "The AI service could not be reached. Try again in a moment.",
+      "ai_refused": "The AI service declined to write this. Change the instructions and try again.",
+      "has_issues": "This text still has issues. Fix or remove the flagged parts first.",
+      "approval_closed": "That application is no longer waiting for approval.",
+      "opportunity_mismatch": "That application is for a different opportunity.",
+      "version_limit": "Too many versions. Delete some you no longer need.",
+      "nothing_to_write": "Your profile has no facts to write from yet. Add some and try again.",
+      "text": "Enter some text.",
+      "instructions": "The instructions are too long.",
+    "generic": "Something went wrong. Try again."
+    },
+    "headings": {
+      "summary": "Summary",
+      "skills": "Skills",
+      "experience": "Experience",
+      "education": "Education",
+      "certifications": "Certifications",
+      "languages": "Languages"
+    },
+    "templates": {
+      "present": "present",
+      "greeting": {
+        "professional": "Dear {organization} hiring team,",
+        "friendly": "Hello {organization} team,",
+        "concise": "Dear {organization} team,"
+      },
+      "opening": "I am writing to apply for the {title} position at {organization}.",
+      "headline": "My profile in short: {headline}",
+      "currentRole": "I currently work as {title} at {organization}.",
+      "pastRole": "I worked as {title} at {organization}.",
+      "education": "I hold a {degree} from {institution}.",
+      "skills": "My skills include {skills}.",
+      "closing": "I would welcome the chance to discuss my application for the {title} role at {organization}.",
+      "signOff": {
+        "professional": "Sincerely,",
+        "friendly": "Warm regards,",
+        "concise": "Regards,"
+      }
+    }
+  },
+  "academic": {
+    "outreach": {
+      "subject": "Question about your research on {work}",
+      "background": "I am currently {headline}.",
+      "body": "Dear Professor {supervisor},\n\nI read your work on {work} and would like to ask whether you are taking on students for research at {university}.\n\n{background}\n\nI can send my CV and transcripts if they would help. Thank you for your time.\n\nSincerely,\n{name}"
+    },
+    "messages": {
+      "acceptOffer": {
+        "subject": "Accepting the offer for {program}",
+        "body": "Dear Admissions Office,\n\nI am pleased to accept the offer for {program} at {university}. Please tell me the next steps.\n\nSincerely,\n{name}"
+      },
+      "payDeposit": {
+        "subject": "Deposit for {program}",
+        "body": "Dear Admissions Office,\n\nI have paid the deposit for {program} at {university}. Please confirm that you received it.\n\nSincerely,\n{name}"
+      },
+      "declineOffer": {
+        "subject": "Declining the offer for {program}",
+        "body": "Dear Admissions Office,\n\nThank you for the offer for {program} at {university}. I have decided to decline it.\n\nSincerely,\n{name}"
+      }
+    },
+    "referees": {
+      "noDeadline": "no deadline stated",
+      "request": {
+        "subject": "Recommendation letter for {program}",
+        "body": "Dear {referee},\n\nThank you for agreeing to support my application to {program} at {university}. The deadline for your letter is {deadline}.\n\nPlease tell me if you need anything from me.\n\nSincerely,\n{name}"
+      },
+      "reminder": {
+        "subject": "Reminder: recommendation letter for {program}",
+        "body": "Dear {referee},\n\nA friendly reminder that the letter for my application to {program} at {university} is due on {deadline}.\n\nThank you again,\n{name}"
+      }
     }
   },
   "select": {

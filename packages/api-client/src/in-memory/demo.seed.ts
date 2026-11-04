@@ -324,6 +324,7 @@ export function buildDemoSeed(now: Date): DemoState {
           { id: 'q_salary', question: 'What are your salary expectations (USD per year)?', answer: '80,000', source: AnswerSource.Profile },
           { id: 'q_why', question: 'Why do you want to join Northwind Labs?', answer: 'I want to work on a product used by thousands of teams every day, and your public accessibility commitments match my own work on design systems.', source: AnswerSource.Ai },
         ],
+        writing: [],
       },
     },
     {
@@ -341,6 +342,7 @@ export function buildDemoSeed(now: Date): DemoState {
           { id: 'q_start', question: 'Earliest start date', answer: 'Within 3 months of an offer', source: AnswerSource.User },
           { id: 'q_relocate', question: 'Are you willing to relocate to Oslo?', answer: '', source: AnswerSource.User },
         ],
+        writing: [],
       },
     },
   ];

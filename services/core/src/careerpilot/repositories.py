@@ -1,6 +1,9 @@
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
+from careerpilot.academic.adapters.in_memory import InMemoryAcademicRecords
+from careerpilot.academic.adapters.sql import SqlAcademicRecords
+from careerpilot.academic.ports import AcademicRecordRepository
 from careerpilot.administration.adapters.in_memory import (
     InMemoryAdminAccountRepository,
     InMemoryAuditLog,
@@ -54,6 +57,9 @@ from careerpilot.platform.security import PasswordHasher
 from careerpilot.privacy.adapters.in_memory import InMemoryConsentRepository, InMemoryDeletionRepository, InMemoryExportRepository
 from careerpilot.privacy.adapters.sql import SqlConsentRepository, SqlDeletionRepository, SqlExportRepository
 from careerpilot.privacy.ports import ConsentRepository, DeletionRepository, ExportRepository
+from careerpilot.writing.adapters.in_memory import InMemoryWritingRepository
+from careerpilot.writing.adapters.sql import SqlWritingRepository
+from careerpilot.writing.ports import WritingRepository
 
 WorkspaceFactory = Callable[[str], CandidateWorkspace]
 
@@ -81,6 +87,8 @@ class Repositories:
     exports: ExportRepository = field(default_factory=InMemoryExportRepository)
     deletions: DeletionRepository = field(default_factory=InMemoryDeletionRepository)
     consents: ConsentRepository = field(default_factory=InMemoryConsentRepository)
+    writing_drafts: WritingRepository = field(default_factory=InMemoryWritingRepository)
+    academic_records: AcademicRecordRepository = field(default_factory=InMemoryAcademicRecords)
 
 
 RepositoryFactory = Callable[[PasswordHasher, WorkspaceFactory, PlatformSettings], Repositories]
@@ -122,4 +130,6 @@ def sql_repositories(database: Database, empty: WorkspaceFactory, platform_defau
         exports=SqlExportRepository(database),
         deletions=SqlDeletionRepository(database),
         consents=SqlConsentRepository(database),
+        writing_drafts=SqlWritingRepository(database, SystemClock()),
+        academic_records=SqlAcademicRecords(database, SystemClock()),
     )

@@ -40,6 +40,7 @@ import type {
 import type { EntryValue, FormLimits, SectionDefinition } from '@careerpilot/dynamic-forms';
 import type { ThemeKey } from '@careerpilot/ui-tokens';
 import type { ValidationPolicy } from '@careerpilot/validation';
+import type { ApprovalWriting } from './writing/types';
 
 export type IsoDateTime = string;
 
@@ -261,6 +262,7 @@ export interface ApprovalDetail extends ApprovalSummary {
     cv: { name: string; version: number; documentId?: string };
     coverLetter: string;
     answers: QuestionAnswer[];
+    writing: ApprovalWriting[];
   };
   submissionWindowLabel?: string;
 }

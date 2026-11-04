@@ -1,7 +1,9 @@
 import type { CareerPilotApi } from '../ports';
 import type { UploadSource } from '../types';
 import { createHttpGovernment } from '../government/http';
+import { createHttpAutomation } from '../automation/http';
 import { createHttpPrivacy } from '../privacy/http';
+import { createHttpWriting } from '../writing/http';
 import { HttpMethod, RequestPace, type HttpClient } from './http-client';
 
 const enc = encodeURIComponent;
@@ -85,6 +87,8 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
     },
     government: createHttpGovernment(http),
     privacy: createHttpPrivacy(http),
+    automation: createHttpAutomation(http),
+    writing: createHttpWriting(http),
     integrations: {
       googleStatus: () => get('/v1/integrations/google'),
       googleAuthorizeUrl: () => get('/v1/integrations/google/authorize-url'),

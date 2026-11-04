@@ -7,6 +7,8 @@ from pathlib import Path
 
 import anthropic
 
+from careerpilot.academic.context import AcademicContext
+from careerpilot.academic.service import AcademicServices, build_academic
 from careerpilot.administration.account_links import AdminLinkContext, AdminLinkService, invite_owner
 from careerpilot.administration.context import AdminContext
 from careerpilot.administration.discovery_sync import SourceCheckRunner, discover_when_empty
@@ -27,6 +29,8 @@ from careerpilot.administration.services import (
 from careerpilot.administration.sources import SourcePolicy, directory_definitions, is_link_source, listing_visibility
 from careerpilot.administration.user_records import AdminUserRecords, UserRecordsContext
 from careerpilot.administration.user_sources import UserSourceContext, UserSourceService
+from careerpilot.automation.assembly import automation_policy, automation_service
+from careerpilot.automation.service import AutomationService
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.models import Preferences, Profile, SubmissionWindow, Track
 from careerpilot.candidate.ports import CandidateWorkspace
@@ -112,6 +116,9 @@ from careerpilot.privacy.ports import JobRunner
 from careerpilot.privacy.reports import ReportService
 from careerpilot.privacy.runner import BackgroundRunner, DirectRunner
 from careerpilot.repositories import Repositories, RepositoryFactory, WorkspaceFactory, in_memory_repositories, sql_repositories
+from careerpilot.writing.assembly import build_writing
+from careerpilot.writing.ports import DraftGenerator
+from careerpilot.writing.service import WritingService
 
 EMPTY_PROFILE_COMPLETENESS = 0
 PACKAGE = "careerpilot-core"
@@ -161,6 +168,7 @@ class Container:
     files: FileStorage
     file_links: FileLinkSigner
     submissions: SubmissionService
+    automation: AutomationService
     digests: DigestService
     verification: ContactVerificationService
     answers: AnswerService
@@ -172,6 +180,8 @@ class Container:
     integrations: IntegrationServices
     privacy: PrivacyServices
     government: GovernmentServices
+    writing: WritingService
+    academic: AcademicServices
 
 
 def default_tracks(settings: Settings) -> list[Track]:
@@ -241,6 +251,7 @@ class ContainerOverrides:
     push_sender: PushSender | None = None
     google_gateway: GoogleGateway | None = None
     job_runner: JobRunner | None = None
+    ai_writer: DraftGenerator | None = None
 
 
 def _redis_store(settings: Settings, url_env: str) -> KeyValueStore:
@@ -378,7 +389,11 @@ def push_dispatcher(settings: Settings, override: PushSender | None) -> PushDisp
 
 
 def _messaging(
-    candidate: CandidateContext, repos: Repositories, storage: FileStorage, sender: EmailSender, push: PushDispatcher
+    candidate: CandidateContext,
+    repos: Repositories,
+    storage: FileStorage,
+    sender: EmailSender,
+    push: PushDispatcher,
 ) -> tuple[NotificationService, MessagingService, SubmissionService]:
     notifications = NotificationService(
         NotificationContext(
@@ -407,6 +422,7 @@ def _messaging(
             platform=repos.platform.get,
             sender=sender,
             storage=storage,
+            policy=automation_policy(candidate.settings),
             on_status=notifications.application_changed,
         )
     )
@@ -563,6 +579,9 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     source_policy = _source_policy(cfg, options, fetch_page, frozenset(registry.keys()), json_jobs)
     opportunity_service = OpportunityService(candidate)
     approvals = ApprovalService(candidate, opportunity_service)
+    sender = options.email_sender or email_sender_for(cfg)
+    notifications, messaging, submissions = _messaging(candidate, repos, storage, sender, push_dispatcher(cfg, options.push_sender))
+    automation = automation_service(candidate, repos.platform.get, approvals, notifications.notify_once)
     recommendations = RecommendationService(
         RecommendationContext(
             config=cfg.matching,
@@ -572,7 +591,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
             accounts=repos.accounts,
             opportunities=repos.opportunities,
             workspaces=repos.workspaces,
-            apply_by_rule=approvals.approve_by_rule,
+            apply_by_rule=automation.apply,
             clock=clk,
             defaults=UserDefaults(country_code=cfg.account.default_country_code, lead_kinds=cfg.tracks.lead_kinds),
         )
@@ -582,12 +601,10 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     source_checks = SourceCheckRunner(
         discovery, repos.directory, cfg.discovery.failing_after_failures, recommendations.refresh_all, source_policy.healed
     )
-    sender = options.email_sender or email_sender_for(cfg)
     reports = ReportService(candidate)
     digests = DigestService(
         DigestContext(candidate=candidate, sender=sender, weekly_report=lambda uid, on: reports.build(uid, ReportPeriod.WEEKLY, on))
     )
-    notifications, messaging, submissions = _messaging(candidate, repos, storage, sender, push_dispatcher(cfg, options.push_sender))
     courier = DirectCourier(options.email_sender) if options.email_sender else background_courier(cfg, account_sender_for(cfg, sender))
     verification = ContactVerificationService(
         VerificationContext(candidate=candidate, codes=OneTimeCodes(coord_store, keys, cfg.verification, secret), courier=courier)
@@ -601,7 +618,6 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         AccountLinkContext(candidate=candidate, codes=link_codes, courier=courier, ttl_minutes=link_ttl_minutes)
     )
     admin_links = AdminLinkService(AdminLinkContext(admin=admin, codes=link_codes, courier=courier, ttl_minutes=link_ttl_minutes))
-    metadata = MetadataCache(cache_store, keys, cfg.coordination, release=release_fingerprint(cfg.model_dump_json(), version(PACKAGE)))
     public_config = PublicConfigService(
         cfg,
         enum_value_documents(cfg.enum_values),
@@ -610,7 +626,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
             link_ttl_minutes=link_ttl_minutes,
             source_limit=lambda: effective_source_limit(repos.platform.get(), cfg.job_sources),
         ),
-        metadata,
+        MetadataCache(cache_store, keys, cfg.coordination, release=release_fingerprint(cfg.model_dump_json(), version(PACKAGE))),
     )
     public_config.invalidate()
     admin_settings = PlatformSettingsService(admin, public_config.invalidate)
@@ -690,6 +706,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         files=storage,
         file_links=file_links,
         submissions=submissions,
+        automation=automation,
         digests=digests,
         verification=verification,
         answers=AnswerService(candidate),
@@ -706,5 +723,16 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         invite_owner=lambda: invite_owner(admin, admin_links),
         integrations=integrations,
         privacy=privacy,
+        writing=build_writing(candidate, repos, opportunity_service, options.ai_writer),
+        academic=build_academic(
+            AcademicContext(
+                config=cfg.academic,
+                clock=candidate.clock,
+                ids=candidate.ids,
+                records=repos.academic_records,
+                workspaces=repos.workspaces,
+                opportunities=opportunity_service,
+            )
+        ),
         government=_government(GovernmentParts(candidate, repos, storage, file_links, fetch_page, secret)),
     )

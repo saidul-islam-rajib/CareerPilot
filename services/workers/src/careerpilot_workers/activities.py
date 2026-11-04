@@ -57,7 +57,7 @@ class SubmissionActivities:
 
     @activity.defn(name=CONFIRM_SENT)
     def confirm_sent(self) -> int:
-        return self._container.submissions.confirm_sent()
+        return self._container.submissions.confirm_sent() + self._container.automation.reconcile()
 
 
 class DigestActivities:

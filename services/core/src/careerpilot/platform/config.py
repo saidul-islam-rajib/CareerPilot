@@ -8,6 +8,8 @@ from urllib.parse import urlsplit, urlunsplit
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
+from careerpilot.academic.config import AcademicConfig
+from careerpilot.automation.config import AutomationConfig
 from careerpilot.platform.enums import (
     AnswerTopic,
     ApplicationRoute,
@@ -29,6 +31,7 @@ from careerpilot.platform.enums import (
     Weekday,
 )
 from careerpilot.privacy.config import PrivacyConfig
+from careerpilot.writing.config import WritingConfig
 
 CONFIG_ROOT_ENV = "CAREERPILOT_CONFIG_ROOT"
 APP_ENV = "APP_ENV"
@@ -909,6 +912,9 @@ class Settings(Strict):
     integrations: IntegrationsConfig
     privacy: PrivacyConfig
     government: GovernmentConfig
+    writing: WritingConfig
+    automation: AutomationConfig
+    academic: AcademicConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

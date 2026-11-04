@@ -1142,6 +1142,7 @@ Cover letters, statements of purpose, personal statements, research statements, 
 - Pass the cross-contamination and language-quality checks (Section 27.4).
 - Avoid copying text from other people's work; quotations from sources must be attributed.
 - Follow the user's chosen tone, length, and language.
+- Show which writer produced each draft (template, AI, or the user). Where AI is not configured, cover letters and tailored résumés are assembled from profile facts with templates, kinds that need AI are shown as unavailable, and the claim and cross-contamination checks still run on every draft before it can be added to an application.
 
 ## 33. Student and academic journey
 
