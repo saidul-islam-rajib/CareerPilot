@@ -106,3 +106,4 @@ export { default as XCircle } from 'lucide-react-native/icons/circle-x';
 export { default as Zap } from 'lucide-react-native/icons/zap';
 export { default as ZoomIn } from 'lucide-react-native/icons/zoom-in';
 export { default as ZoomOut } from 'lucide-react-native/icons/zoom-out';
+export { default as Landmark } from 'lucide-react-native/icons/landmark';
