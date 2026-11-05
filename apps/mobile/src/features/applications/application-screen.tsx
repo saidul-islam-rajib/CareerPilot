@@ -8,6 +8,7 @@ import { EnumKey, StatusTone, SubmissionStatus, TimelineActor } from '@careerpil
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { Banner, Button, ButtonVariant, Card, Divider, EmptyState, EnumBadge, ErrorState, ListRow, LoadingState, Row, Screen, Section, Text, TextTone, TextVariant, useSnackbar } from '@/ui';
+import { AttemptPanel } from '@/features/portal/attempt-panel';
 import { FollowUpsCard } from './follow-up-screens';
 
 const KILOBYTE = 1024;
@@ -47,6 +48,7 @@ export function ApplicationScreen() {
             {a.opportunity.organization} · {a.opportunity.location}
           </Text>
         </View>
+        <AttemptPanel applicationId={a.id} />
         {a.submissionStatus === SubmissionStatus.ManualActionRequired ? (
           <Banner
             tone={StatusTone.Warning}

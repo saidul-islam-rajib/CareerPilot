@@ -6,6 +6,7 @@ import {
   EyeOff,
   Landmark,
   Receipt,
+  Bot,
   Bell,
   Clock,
   Globe,
@@ -79,6 +80,8 @@ export function MoreScreen() {
         <ListRow icon={Zap} title={t('automation.title')} subtitle={t('automation.menuBody')} onPress={() => router.push(Routes.automation)} />
         <ListRow icon={Landmark} title={t('government.title')} subtitle={t('government.menuBody')} onPress={() => router.push(Routes.government)} />
         <ListRow icon={Receipt} title={t('fees.title')} subtitle={t('fees.menuBody')} onPress={() => router.push(Routes.fees)} />
+        <ListRow icon={Bot} title={t('portal.autopilot.title')} subtitle={t('portal.menu.autopilotBody')} onPress={() => router.push(Routes.autopilot)} />
+        <ListRow icon={KeyRound} title={t('portal.accounts.title')} subtitle={t('portal.menu.accountsBody')} onPress={() => router.push(Routes.portalAccounts)} />
         <ListRow icon={GraduationCap} title={t('academic.title')} subtitle={t('academic.menuBody')} onPress={() => router.push(Routes.students)} />
         <ListRow
           icon={Plug}

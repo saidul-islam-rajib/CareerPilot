@@ -57,6 +57,8 @@ export default function SignedInLayout() {
       <Stack.Screen name="settings/connected-accounts" options={{ title: t('integrations.page.title') }} />
       <Stack.Screen name="settings/countries" options={{ title: t('settings.countries') }} />
       <Stack.Screen name="settings/confidential" options={{ title: t('settings.confidential') }} />
+      <Stack.Screen name="settings/autopilot" options={{ title: t('portal.autopilot.title') }} />
+      <Stack.Screen name="settings/portal-accounts" options={{ title: t('portal.accounts.title') }} />
       <Stack.Screen name="fees/overview" options={{ title: t('fees.title') }} />
       <Stack.Screen name="fees/[id]" options={{ title: t('fees.title') }} />
       <Stack.Screen name="settings/source" options={{ title: t('sources.addTitle') }} />

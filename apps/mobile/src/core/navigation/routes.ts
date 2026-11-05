@@ -48,6 +48,8 @@ export const Routes = {
   server: '/server',
   countries: '/settings/countries',
   confidential: '/settings/confidential',
+  autopilot: '/settings/autopilot',
+  portalAccounts: '/settings/portal-accounts',
   fees: '/fees/overview',
   feesPayment: (id: string) => ({ pathname: '/fees/[id]', params: { id } }) as const,
   addSource: '/settings/source',
