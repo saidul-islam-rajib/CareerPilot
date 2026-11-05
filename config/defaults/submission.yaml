@@ -11,3 +11,8 @@ submission:
   automatable_routes: [email]
   cover_letter_skills: 5
   stuck_after_minutes: 30
+  real_applications: false
+  real_applications_env: CAREERPILOT_REAL_APPLICATIONS
+  real_applications_true_values: ["true", "1", "yes", "on"]
+  real_applications_blocked_markers: [CI, PYTEST_CURRENT_TEST, GITHUB_ACTIONS]
+  real_applications_blocked_environments: [test, ci]

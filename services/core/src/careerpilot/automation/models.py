@@ -3,6 +3,7 @@ from pydantic import Field
 from careerpilot.automation.enums import DeadlineAction, DryRunOutcome, SkipReason, SkipStage
 from careerpilot.platform.enums import SubmissionWindowKind, Weekday
 from careerpilot.platform.model import CamelModel
+from careerpilot.portal.models import RulePermissions
 
 
 class RuleFilters(CamelModel):
@@ -41,6 +42,7 @@ class AutomationRule(CamelModel):
     materials: RuleMaterials = Field(default_factory=RuleMaterials)
     limits: RuleLimits = Field(default_factory=RuleLimits)
     schedule: RuleSchedule = Field(default_factory=RuleSchedule)
+    portal: RulePermissions = Field(default_factory=RulePermissions)
     position: int = 0
     created_at: str
     updated_at: str
@@ -55,6 +57,7 @@ class RuleInput(CamelModel):
     materials: RuleMaterials = Field(default_factory=RuleMaterials)
     limits: RuleLimits = Field(default_factory=RuleLimits)
     schedule: RuleSchedule = Field(default_factory=RuleSchedule)
+    portal: RulePermissions = Field(default_factory=RulePermissions)
 
 
 class SkippedRecord(CamelModel):

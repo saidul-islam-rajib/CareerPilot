@@ -15,6 +15,7 @@ from temporalio.worker import Worker
 
 from careerpilot.bootstrap import build_container
 from careerpilot.platform.config import WorkersConfig
+from careerpilot.portal.config import PortalsConfig
 from careerpilot.platform.telemetry import configure_telemetry
 from careerpilot_workers.activities import (
     DigestActivities,
@@ -28,6 +29,7 @@ from careerpilot_workers.workflows import (
     DigestWorkflow,
     DiscoveryWorkflow,
     InboxSyncWorkflow,
+    PortalWorkflow,
     PrivacyWorkflow,
     SubmissionWorkflow,
 )
@@ -85,6 +87,14 @@ def privacy_schedule(config: WorkersConfig) -> Schedule:
     )
 
 
+def portal_schedule(config: WorkersConfig, portals: PortalsConfig) -> Schedule:
+    plan = ActivityPlan(activity_timeout_seconds=portals.activity_timeout_seconds, activity_max_attempts=config.activity_max_attempts)
+    return Schedule(
+        action=ScheduleActionStartWorkflow(PortalWorkflow.run, plan, id=portals.workflow_id, task_queue=portals.task_queue),
+        spec=ScheduleSpec(intervals=[ScheduleIntervalSpec(every=timedelta(minutes=portals.interval_minutes))]),
+    )
+
+
 async def ensure_schedule(client: Client, schedule_id: str, schedule: Schedule) -> None:
     try:
         await client.create_schedule(schedule_id, schedule)
@@ -106,6 +116,7 @@ async def serve() -> None:
     await ensure_schedule(client, workers.digest_schedule_id, digest_schedule(workers))
     await ensure_schedule(client, workers.inbox_sync_schedule_id, inbox_sync_schedule(workers))
     await ensure_schedule(client, workers.privacy_schedule_id, privacy_schedule(workers))
+    await ensure_schedule(client, settings.portals.schedule_id, portal_schedule(workers, settings.portals))
     privacy = PrivacyActivities(container)
     discovery = DiscoveryActivities(container)
     submission = SubmissionActivities(container)

@@ -13,6 +13,7 @@ from careerpilot.integrations.models import (
     ConnectionRecord,
     ConnectionView,
     IntegrationStatus,
+    MailMessage,
     TokenSet,
 )
 from careerpilot.integrations.ports import ConnectionRepository, GoogleError, GoogleGateway, TokenCipher
@@ -162,6 +163,15 @@ class ConnectionService:
     def views(self, user_id: str) -> list[ConnectionView]:
         record = self._ctx.connections.active(user_id, IntegrationProvider.GOOGLE)
         return [view_of(record)] if record else []
+
+    def recent_mail(self, user_id: str, query: str, limit: int) -> list[MailMessage] | None:
+        record = self._ctx.connections.active(user_id, IntegrationProvider.GOOGLE)
+        if record is None or record.status is not ConnectionStatus.CONNECTED or self._google.mail_scope not in record.scopes:
+            return None
+        _, token = self._keeper.access(record)
+        gateway = self._ctx.gateway
+        found = gateway.find_messages(token, query, limit)
+        return [message for message in (gateway.read_message(token, item) for item in found) if message is not None]
 
     def disconnect(self, user_id: str) -> None:
         record = self._ctx.connections.active(user_id, IntegrationProvider.GOOGLE)

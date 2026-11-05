@@ -61,6 +61,11 @@ from careerpilot.discovery.resolver import SourceResolver
 from careerpilot.discovery.safety import public_https_url
 from careerpilot.discovery.service import DiscoveryContext, DiscoveryService
 from careerpilot.fees.context import FeesContext
+from careerpilot.portal.assembly import PortalParts, PortalServices, build_portal
+from careerpilot.portal.driver import BrowserSession
+from careerpilot.portal.live import real_applications_enabled
+from careerpilot.portal.playwright_driver import chromium_session
+from careerpilot.portal.handoff import autopilot_handles
 from careerpilot.fees.service import FeesServices, build_fees
 from careerpilot.government.circulars import CircularContext, CircularService
 from careerpilot.government.connector import TeletalkReader
@@ -188,6 +193,7 @@ class Container:
     writing: WritingService
     academic: AcademicServices
     fees: FeesServices
+    portal: PortalServices
 
 
 def default_tracks(settings: Settings) -> list[Track]:
@@ -258,6 +264,8 @@ class ContainerOverrides:
     google_gateway: GoogleGateway | None = None
     job_runner: JobRunner | None = None
     ai_writer: DraftGenerator | None = None
+    browser: BrowserSession | None = None
+    real_applications: bool | None = None
 
 
 def _redis_store(settings: Settings, url_env: str) -> KeyValueStore:
@@ -311,7 +319,7 @@ def email_sender_for(settings: Settings) -> EmailSender:
         host=os.environ.get(config.smtp_host_env, config.smtp_default_host),
         port=config.smtp_port,
         timeout_seconds=config.smtp_timeout_seconds,
-        mode=config.delivery_mode,
+        mode=DeliveryMode.LIVE if real_applications_enabled(config) else DeliveryMode.SANDBOX,
         sandbox_hosts=frozenset(config.sandbox_hosts),
     )
     return SmtpEmailSender(smtp)
@@ -431,6 +439,7 @@ def _messaging(
             storage=storage,
             policy=automation_policy(candidate.settings),
             on_status=notifications.application_changed,
+            handled_elsewhere=autopilot_handles(repos.portal_records, candidate.settings.portals),
         )
     )
     return notifications, messaging, submissions
@@ -697,6 +706,8 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
             grace_days=lambda: repos.platform.get().deletion_grace_days,
         )
     )
+    answers = AnswerService(candidate)
+    applications = ApplicationService(candidate, notifications.application_changed)
     return Container(
         settings=cfg,
         database=database,
@@ -713,7 +724,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         public_config=public_config,
         opportunities=opportunity_service,
         approvals=approvals,
-        applications=ApplicationService(candidate, notifications.application_changed),
+        applications=applications,
         notifications=notifications,
         messaging=messaging,
         admin_messages=AdminMessages(messaging, repos.accounts, repos.workspaces),
@@ -749,7 +760,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         automation=automation,
         digests=digests,
         verification=verification,
-        answers=AnswerService(candidate),
+        answers=answers,
         job_links=JobLinkService(
             JobLinkContext(
                 check_address=options.address_check or public_https_url,
@@ -776,4 +787,19 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         ),
         government=_government(GovernmentParts(candidate, repos, storage, file_links, fetch_page, secret)),
         fees=_fees(cfg, GovernmentParts(candidate, repos, storage, file_links, fetch_page, secret)),
+        portal=build_portal(
+            PortalParts(
+                candidate=candidate,
+                repos=repos,
+                storage=storage,
+                notifications=notifications,
+                submissions=submissions,
+                connections=integrations.google,
+                answers=answers,
+                applications=applications,
+                browser=options.browser or (lambda: chromium_session(cfg.portals.browser)),
+                live=(lambda: options.real_applications) if options.real_applications is not None else (lambda: real_applications_enabled(cfg.submission)),
+                vault=FernetCipher(vault_secret(cfg.integrations.vault, secret), cfg.portals.vault_context),
+            )
+        ),
     )

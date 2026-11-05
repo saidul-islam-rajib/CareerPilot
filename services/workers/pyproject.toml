@@ -7,6 +7,7 @@ dependencies = ["careerpilot-core", "temporalio>=1.9"]
 
 [project.scripts]
 careerpilot-workers = "careerpilot_workers.main:main"
+careerpilot-portal-worker = "careerpilot_workers.portal_main:main"
 
 [build-system]
 requires = ["setuptools>=75"]

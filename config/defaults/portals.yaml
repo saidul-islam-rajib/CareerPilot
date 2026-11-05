@@ -1,0 +1,197 @@
+# Portal autopilot: browser runner, host policy, adapters and field mapping (Requirements 10, 27.3, 29, 30; specs/E29-portal-autopilot).
+# Every host is review until an admin approves it; blocked hosts are never opened beyond the read-only check.
+portals:
+  routes: [ats_portal, employer_portal]
+  task_queue: portal
+  workflow_id: portal-queue
+  schedule_id: portal-schedule
+  interval_minutes: 10
+  activity_timeout_seconds: 900
+  readiness_batch: 3
+  evidence_prefix: portal-evidence
+  vault_context: careerpilot.portal.accounts
+  summary_version: 1
+  limits:
+    max_pages: 8
+    max_fields_per_page: 80
+    max_text_chars: 12000
+    max_label_chars: 240
+    max_evidence_chars: 500
+    max_login_attempts: 1
+    max_list_items: 200
+  browser:
+    navigation_timeout_seconds: 30
+    action_timeout_seconds: 10
+    settle_seconds: 1.5
+    viewport_width: 1280
+    viewport_height: 900
+    headless: true
+  throttle:
+    min_interval_seconds: 20
+    max_concurrent_per_host: 1
+    max_concurrent_total: 2
+  password:
+    length: 20
+    lowercase: abcdefghijkmnopqrstuvwxyz
+    uppercase: ABCDEFGHJKLMNPQRSTUVWXYZ
+    digits: "23456789"
+    symbols: "!@#$%^&*-_=+"
+  verification:
+    recent_minutes: 15
+    max_polls: 6
+    poll_interval_seconds: 10
+    max_messages: 5
+    code_pattern: '\b(\d{4,8})\b'
+    link_pattern: 'https?://[^\s<>"'']+'
+    link_words: [verify, confirm, activate, validation]
+    query_template: "after:{after} ({senders})"
+    sender_template: "from:{domain}"
+    any_separator: " OR "
+  buttons:
+    apply: [apply now, apply for this job, apply for this position, apply, easy apply, submit application online]
+    sign_in: [sign in, log in, login]
+    create_account: [create account, create an account, register, sign up]
+    next: [next, continue, save and continue, save & continue]
+    submit: [submit application, submit, send application, finish application]
+    verify: [verify, confirm, submit code, continue]
+  captcha_selectors:
+    - iframe[src*="recaptcha"]
+    - iframe[src*="hcaptcha"]
+    - iframe[src*="challenges.cloudflare.com"]
+    - .g-recaptcha
+    - .h-captcha
+    - .cf-turnstile
+    - "#cf-challenge-running"
+  positive_answers: ["yes", "true", "i do", "i am"]
+  negative_answers: ["no", "false", "i do not", "i am not"]
+  declined_answers: [prefer not to say, decline to answer, i do not wish to answer, decline to self identify]
+  pages:
+    - kind: closed
+      terms: [no longer accepting, position has been filled, job is closed, job has expired, application deadline is over, this job is no longer available, posting has closed, vacancy is closed]
+    - kind: already_applied
+      terms: [already applied, you have applied for this, application already submitted, duplicate application]
+    - kind: captcha
+      terms: [verify you are human, are you a robot, i'm not a robot, complete the captcha, security check to continue, checking your browser]
+    - kind: mfa
+      terms: [two-factor, two factor, 2-step verification, authenticator app, one-time passcode sent to your phone, enter the code sent to your phone]
+    - kind: identity
+      terms: [verify your identity, upload your id, national id verification, identity verification, passport scan required]
+    - kind: assessment
+      terms: [take the assessment, online assessment, coding test, aptitude test, psychometric, complete the test before]
+    - kind: video
+      terms: [record a video, video interview, one-way video, record your answer]
+    - kind: payment
+      terms: [application fee, pay now, payment details, card number, proceed to payment, pay the fee]
+    - kind: confirmation
+      terms: [thank you for applying, application submitted, application has been submitted, application was received, we have received your application, successfully applied, application complete]
+    - kind: verification
+      terms: [verify your email, check your inbox, verification code, confirm your email, we sent you an email]
+    - kind: account_exists
+      terms: [already registered, already exists, account already, email is taken, email has already been used]
+    - kind: sign_in_failed
+      terms: [invalid email or password, incorrect password, invalid credentials, wrong password, account is locked, too many attempts]
+    - kind: register
+      terms: [create your account, create an account, register now, sign up to apply]
+    - kind: sign_in
+      terms: [sign in to apply, log in to apply, sign in to continue, please sign in, log in to your account]
+  intents:
+    - intent: demographic
+      terms: [gender, sex, ethnicity, race, disability, veteran, religion, marital status, sexual orientation, pronouns, date of birth, age group, nationality, caste]
+    - intent: attestation
+      terms: [true and correct, certify, i declare, truthful, accurate and complete, information provided is, i attest, under penalty]
+    - intent: consent
+      terms: [terms, privacy, data processing, consent, gdpr, i agree, i accept, talent pool, data protection]
+    - intent: privacy
+      terms: [privacy, data processing, data protection, gdpr, talent pool]
+    - intent: terms
+      terms: [terms, conditions]
+    - intent: cover_letter
+      terms: [cover letter, covering letter, motivation letter]
+    - intent: resume
+      terms: [resume, résumé, curriculum vitae, cv]
+    - intent: experience
+      terms: [years of experience, years of relevant experience, total experience, work experience in years]
+    - intent: work_authorization
+      terms: [authorized to work, authorised to work, work authorization, right to work, work permit, legally allowed to work]
+    - intent: sponsorship
+      terms: [sponsorship, visa sponsorship, require sponsorship]
+    - intent: notice_period
+      terms: [notice period, how soon can you join, joining time]
+    - intent: start_date
+      terms: [start date, available from, availability date, earliest start]
+    - intent: salary_expectation
+      terms: [expected salary, salary expectation, desired salary, expected compensation, current salary]
+    - intent: relocation
+      terms: [relocate, relocation, willing to move]
+    - intent: eligibility
+      terms: [18 years, legal age, eligible to apply, minimum age]
+  facts:
+    - {fact: full_name, autocomplete: [name], names: [name, fullname, full_name, applicant_name], labels: [full name, your name, name, applicant name]}
+    - {fact: first_name, autocomplete: [given-name], names: [first_name, firstname, fname, given_name], labels: [first name, given name, forename]}
+    - {fact: last_name, autocomplete: [family-name], names: [last_name, lastname, lname, surname, family_name], labels: [last name, surname, family name]}
+    - {fact: email, autocomplete: [email], names: [email, email_address, e-mail], labels: [email, email address, e-mail, your email]}
+    - {fact: phone, autocomplete: [tel, tel-national], names: [phone, mobile, telephone, phone_number, contact_number], labels: [phone, phone number, mobile, mobile number, contact number, telephone]}
+    - {fact: location, autocomplete: [address-level2, street-address], names: [location, city, address, current_location], labels: [location, current location, city, address, current address, city of residence]}
+    - {fact: country, autocomplete: [country, country-name], names: [country], labels: [country, country of residence]}
+    - {fact: headline, autocomplete: [organization-title], names: [headline, current_title, job_title], labels: [headline, current job title, current title, professional headline]}
+    - {fact: summary, autocomplete: [], names: [summary, about], labels: [professional summary, about you, summary]}
+  adapters:
+    - key: easy_jobs
+      hosts: [easy.jobs]
+      selectors:
+        apply: ["a:has-text('Apply')", "button:has-text('Apply')"]
+        submit: ["button:has-text('Submit')", "button[type=submit]"]
+    - key: hrythmic
+      hosts: [hrythmic.com, hrythmic.io]
+      selectors:
+        apply: ["a:has-text('Apply')", "button:has-text('Apply')"]
+    - key: greenhouse
+      hosts: [greenhouse.io, boards.greenhouse.io, job-boards.greenhouse.io]
+      selectors:
+        apply: ["#apply_button", "a:has-text('Apply')"]
+        submit: ["button[type=submit]", "#submit_app"]
+        confirmation: ["#application_confirmation", ".flash-success"]
+        captcha: ["iframe[src*=recaptcha]"]
+    - key: lever
+      hosts: [lever.co, jobs.lever.co]
+      selectors:
+        apply: ["a.postings-btn", "a:has-text('Apply for this job')"]
+        submit: ["button#btn-submit", "button[type=submit]"]
+        confirmation: [".application-confirmation"]
+        captcha: ["iframe[src*=hcaptcha]"]
+    - key: workable
+      hosts: [workable.com, apply.workable.com]
+      selectors:
+        apply: ["a[data-ui=overview-apply]", "a:has-text('Apply for this job')"]
+        submit: ["button[data-ui=apply-button]", "button[type=submit]"]
+    - key: ashby
+      hosts: [ashbyhq.com, jobs.ashbyhq.com]
+      selectors:
+        apply: ["a:has-text('Apply')", "button:has-text('Apply')"]
+        submit: ["button[type=submit]"]
+    - key: smartrecruiters
+      hosts: [smartrecruiters.com, jobs.smartrecruiters.com]
+      selectors:
+        apply: ["a:has-text('I\\'m interested')", "a:has-text('Apply')"]
+        submit: ["button[type=submit]"]
+    - key: trakstar
+      hosts: [hire.trakstar.com]
+      selectors:
+        apply: ["a:has-text('Apply')", "button:has-text('Apply')"]
+    - key: successfactors
+      hosts: [successfactors.com, successfactors.eu, sapsf.com, sapsf.eu, careers.optimizely.com]
+      selectors:
+        apply: ["a:has-text('Apply now')", "button:has-text('Apply now')"]
+  hosts:
+    - {host: easy.jobs, policy: review, note: "Terms allow one personal non-commercial copy of content; nothing found on automated applying (2026-11-05)."}
+    - {host: hire.trakstar.com, policy: review, note: "Trakstar Hire hosted board; automation terms not found (2026-11-05)."}
+    - {host: career.cefalo.com, policy: review, note: "In-house applicant system; no public terms on automation found (2026-11-05)."}
+    - {host: careers.optimizely.com, policy: review, note: "SAP SuccessFactors; sign-in wall; terms not found (2026-11-05)."}
+    - {host: greenhouse.io, policy: review, note: "Public application forms; terms not reviewed."}
+    - {host: lever.co, policy: review, note: "Public application forms; terms not reviewed."}
+    - {host: workable.com, policy: review, note: "Public application forms; terms not reviewed."}
+    - {host: ashbyhq.com, policy: review, note: "Public application forms; terms not reviewed."}
+    - {host: smartrecruiters.com, policy: review, note: "Public application forms; terms not reviewed."}
+    - {host: hrythmic.com, policy: review, note: "Terms not reviewed."}
+  placeholder_markers: ["{{", "}}", "[company", "[your", "<company", "<employer", lorem ipsum]
+  user_only_steps: [captcha_mfa_identity, assessments, interviews_and_video, legal_declarations, payments, offers]

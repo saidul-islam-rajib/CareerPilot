@@ -7,11 +7,15 @@ from careerpilot_workers.workflows import (
     CHECK_SOURCE,
     CONFIRM_SENT,
     DUE_APPLICATIONS,
+    DUE_PORTAL_APPLICATIONS,
+    PROCESS_READINESS,
+    RUN_PORTAL_APPLICATION,
     DUE_SOURCES,
     RUN_PRIVACY_JOBS,
     SEND_DIGESTS,
     SUBMIT_APPLICATION,
     SYNC_INBOXES,
+    PortalReport,
     QueuedItem,
     SourceCheckResult,
     SubmissionReport,
@@ -87,3 +91,23 @@ class IntegrationActivities:
     def sync_inboxes(self) -> int:
         summary = self._container.integrations.sync.sync_all()
         return summary.messages + summary.events
+
+
+class PortalActivities:
+    def __init__(self, container: Container) -> None:
+        self._container = container
+
+    @activity.defn(name=DUE_PORTAL_APPLICATIONS)
+    def due_portal_applications(self) -> list[QueuedItem]:
+        return [QueuedItem(user_id=user_id, application_id=application_id) for user_id, application_id in self._container.portal.runner.due()]
+
+    @activity.defn(name=RUN_PORTAL_APPLICATION)
+    def run_portal_application(self, item: QueuedItem) -> PortalReport:
+        report = self._container.portal.runner.run(item.user_id, item.application_id)
+        return PortalReport(
+            application_id=item.application_id, status=report.status.value, stop=report.stop.value if report.stop else None
+        )
+
+    @activity.defn(name=PROCESS_READINESS)
+    def process_readiness(self) -> int:
+        return self._container.portal.readiness.process_pending()

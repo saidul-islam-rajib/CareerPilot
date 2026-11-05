@@ -9,6 +9,7 @@ from careerpilot.api import (
     academic_routes,
     automation_routes,
     fees_routes,
+    portal_routes,
     government_routes,
     integrations_routes,
     messaging_routes,
@@ -404,5 +405,6 @@ def create_user_app(container: Container) -> FastAPI:
     app.include_router(automation_routes.router)
     app.include_router(academic_routes.router)
     app.include_router(fees_routes.router)
+    app.include_router(portal_routes.router)
     instrument(app, container, container.settings.observability.user_api_service)
     return app

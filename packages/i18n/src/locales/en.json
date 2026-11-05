@@ -3527,5 +3527,173 @@
   "select": {
     "search": "Search",
     "noMatches": "No matches"
+  },
+  "portal": {
+    "stop": {
+      "captcha": "The site asked for a CAPTCHA or bot check. Only you can complete it on the official site.",
+      "mfa": "The site asked for a second sign-in step (MFA). Only you can complete it.",
+      "identity": "The site asked to verify your identity. Only you can do that.",
+      "attestation": "The form has a declaration or truthfulness statement that only you can confirm.",
+      "unknown_question": "A required question has no approved answer yet.",
+      "no_exact_choice": "Your approved answer is not one of the choices on the form.",
+      "demographic": "A voluntary or demographic question has no explicit answer from you.",
+      "assessment": "The employer asks for an online assessment or test, which only you can take.",
+      "video": "The employer asks for a video step, which only you can record.",
+      "payment": "The site asks for a payment, which is outside your Autopilot rule.",
+      "closed": "The job is closed or no longer accepting applications.",
+      "already_applied": "The site says you have already applied. Nothing was sent again.",
+      "host_blocked": "An admin blocked automation on this employer site.",
+      "host_review": "This employer site is waiting for admin approval before Autopilot may use it.",
+      "autopilot_off": "Autopilot is off, so this application needs to be finished on the employer's site.",
+      "live_switch_off": "Real applications are switched off on this server. Autopilot checked the page and sent nothing.",
+      "account_creation_not_allowed": "The site needs an account and your rule does not allow creating one.",
+      "account_exists": "An account with this email already exists on the site. Add its sign-in details or reset the password there.",
+      "login_failed": "Sign-in failed. Autopilot did not try again to avoid locking the account.",
+      "account_needs_attention": "The saved portal account needs your attention before Autopilot signs in again.",
+      "verification_needed": "The site sent an email verification that Autopilot may not read. Verify it yourself.",
+      "site_changed": "The page did not look as expected, so Autopilot stopped.",
+      "no_form": "No application form was found on the page.",
+      "missing_cv": "No CV is attached to this application.",
+      "terms_not_allowed": "The form asks for terms or privacy consent that your rule does not cover.",
+      "unsupported_upload": "The form asks for a file Autopilot cannot provide.",
+      "page_limit": "The form has more steps than Autopilot allows.",
+      "navigation_failed": "The employer site could not be opened.",
+      "wall_unverified": "The form is behind a sign-in wall, so its fields cannot be checked without writing to the site.",
+      "check_failed": "A pre-submission check failed, so nothing was submitted."
+    },
+    "timeline": {
+      "started": "Autopilot opened {host}.",
+      "confirmed": "Application submitted and confirmed on {host}.",
+      "uncertain": "Submit was clicked on {host} but no confirmation was seen. It will not be sent again.",
+      "stopped": "Autopilot stopped: {reason}",
+      "resumed": "You resumed this application for Autopilot."
+    },
+    "evidence": {
+      "confirmed": "Confirmation page: {text}",
+      "uncertain": "Submit was clicked but the confirmation could not be seen."
+    },
+    "notifications": {
+      "stoppedTitle": "Autopilot needs you",
+      "stoppedBody": "{title} at {organization}: {reason}"
+    },
+    "hostPolicy": {
+      "allowed": "Allowed",
+      "blocked": "Blocked",
+      "review": "Waiting for review"
+    },
+    "verdict": {
+      "can_auto_apply": "Can auto-apply",
+      "will_stop": "Will stop"
+    },
+    "wall": {
+      "none": "No sign-in wall",
+      "sign_in": "Sign-in wall",
+      "register": "Registration wall"
+    },
+    "accountStatus": {
+      "active": "Active",
+      "needs_attention": "Needs attention"
+    },
+    "userOnlyStep": {
+      "captcha_mfa_identity": "CAPTCHA, MFA and identity checks",
+      "assessments": "Online assessments and tests",
+      "interviews_and_video": "Interviews and recording video",
+      "legal_declarations": "Legal declarations and attestations",
+      "payments": "Payments outside a payment rule",
+      "offers": "Accepting or declining offers"
+    },
+    "autopilot": {
+      "title": "Autopilot for employer sites",
+      "intro": "Autopilot opens the employer's career page, signs in or creates an account when you allow it, fills the form from your approved profile, uploads your CV, submits and keeps the proof.",
+      "off": "Autopilot is off. Portal jobs stop at Finish on the employer's site.",
+      "on": "Autopilot is on. You will not be asked per job.",
+      "summaryTitle": "What Autopilot may do",
+      "summaryRoutes": "Sites it may use",
+      "summaryRules": "Your rules",
+      "summaryNoRules": "No automatic rules yet. Approved applications still use Autopilot.",
+      "summaryDocuments": "Documents it may upload",
+      "summaryNoDocuments": "No documents yet.",
+      "stillYours": "Always stays with you",
+      "allowAccountCreation": "Create portal accounts for me",
+      "accountEmail": "Email to use for portal accounts",
+      "acceptTerms": "Accept terms and conditions checkboxes",
+      "acceptPrivacy": "Accept privacy and data processing checkboxes",
+      "allowEmailVerification": "Read verification emails from my connected Gmail",
+      "mailNotConnected": "Gmail is not connected, so verification emails will be left to you.",
+      "acknowledge": "I have read what Autopilot may submit and what stays with me.",
+      "turnOn": "Turn on Autopilot",
+      "turnOff": "Turn off Autopilot",
+      "liveOff": "Real applications are switched off on this server. Autopilot only checks pages and reports; nothing is sent.",
+      "liveOn": "Real applications are switched on.",
+      "saveFailed": "We couldn't save Autopilot. Try again.",
+      "approvedHosts": "Each employer site must also be approved by an admin before Autopilot uses it."
+    },
+    "accounts": {
+      "title": "Portal accounts",
+      "intro": "Accounts CareerPilot created or uses on employer sites. Passwords are generated, unique and stored encrypted.",
+      "empty": "No portal accounts yet.",
+      "portal": "Portal",
+      "employer": "Employer",
+      "email": "Email used",
+      "created": "Created",
+      "status": "Status",
+      "view": "Show password",
+      "hide": "Hide password",
+      "password": "Password",
+      "export": "Export all",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this saved portal account? The account on the site stays; only the saved sign-in is removed.",
+      "addTitle": "Save an existing sign-in",
+      "host": "Site address (for example jobs.example.com)",
+      "employerName": "Employer",
+      "emailField": "Email",
+      "passwordField": "Password",
+      "save": "Save sign-in",
+      "loadFailed": "We couldn't load your portal accounts.",
+      "saveFailed": "We couldn't save this sign-in.",
+      "exportFailed": "We couldn't export your portal accounts.",
+      "manage": "Open site"
+    },
+    "attempt": {
+      "title": "Why Autopilot stopped",
+      "openOfficial": "Open the official page",
+      "prepared": "Prepared answers",
+      "pending": "Needs your answer",
+      "answer": "Your answer",
+      "resume": "Save answers and resume Autopilot",
+      "resumeOnly": "Resume Autopilot",
+      "markDone": "I finished it on the site",
+      "alreadySent": "Submit was already clicked, so Autopilot will not send this again. Check the site and record the result yourself.",
+      "noAnswers": "Nothing to answer here. Finish the step yourself on the official page.",
+      "failed": "We couldn't update this application."
+    },
+    "readiness": {
+      "title": "Readiness check",
+      "intro": "Opens a job page read-only and reports what Autopilot would do. It never types into the site.",
+      "url": "Job link",
+      "run": "Check readiness",
+      "pending": "Checking...",
+      "wall": "Sign-in wall",
+      "captcha": "CAPTCHA seen",
+      "yes": "Yes",
+      "no": "No",
+      "mapped": "Fields mapped",
+      "unknown": "Fields unknown",
+      "verdict": "Verdict",
+      "reasons": "Will stop because",
+      "fields": "Fields",
+      "failed": "We couldn't run the check."
+    },
+    "hosts": {
+      "title": "Portals",
+      "intro": "Employer sites Autopilot may use. New sites start as waiting for review.",
+      "host": "Site",
+      "policy": "Status",
+      "note": "Reasoning",
+      "save": "Save",
+      "loadFailed": "We couldn't load portals.",
+      "saveFailed": "We couldn't save this portal.",
+      "empty": "No portals yet."
+    }
   }
 }

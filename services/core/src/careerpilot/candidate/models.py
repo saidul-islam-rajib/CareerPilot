@@ -214,6 +214,8 @@ class SentFile(CamelModel):
 class Evidence(CamelModel):
     text: str
     at: str
+    url: str | None = None
+    screenshot_key: str | None = None
 
 
 class FollowUpTask(CamelModel):

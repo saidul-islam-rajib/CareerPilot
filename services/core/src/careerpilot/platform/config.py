@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 from careerpilot.academic.config import AcademicConfig
 from careerpilot.automation.config import AutomationConfig
 from careerpilot.fees.config import FeesConfig
+from careerpilot.portal.config import PortalsConfig
 from careerpilot.platform.enums import (
     AnswerTopic,
     ApplicationRoute,
@@ -543,6 +544,11 @@ class SubmissionConfig(Strict):
     automatable_routes: list[ApplicationRoute]
     cover_letter_skills: int = Field(gt=0)
     stuck_after_minutes: int = Field(gt=0)
+    real_applications: bool
+    real_applications_env: EnvName
+    real_applications_true_values: list[str]
+    real_applications_blocked_markers: list[str]
+    real_applications_blocked_environments: list[str]
 
 
 TIME_OF_DAY_PATTERN = r"^([01]\d|2[0-3]):[0-5]\d$"
@@ -918,6 +924,7 @@ class Settings(Strict):
     automation: AutomationConfig
     academic: AcademicConfig
     fees: FeesConfig
+    portals: PortalsConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

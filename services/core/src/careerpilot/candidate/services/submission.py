@@ -50,6 +50,7 @@ class SubmissionContext:
     storage: FileStorage
     policy: AutomationPolicy
     on_status: Callable[[str, ApplicationRecord], None] = lambda _user_id, _application: None
+    handled_elsewhere: Callable[[str, ApplicationRecord], bool] = lambda _user_id, _application: False
 
 
 def within_window(workspace: CandidateWorkspace, now: datetime) -> bool:
@@ -62,12 +63,18 @@ class SubmissionService:
         self._candidate = context.candidate
         self._config = context.candidate.settings.submission
 
+    @property
+    def policy(self) -> AutomationPolicy:
+        return self._ctx.policy
+
     def due(self) -> list[QueuedApplication]:
         return [
             QueuedApplication(user_id, application.id)
             for user_id in self._candidate.accounts.active_ids()
             for application in self._candidate.workspaces.get(user_id).applications
-            if application.submission_status is SubmissionStatus.APPROVED_QUEUED and application.archived_at is None
+            if application.submission_status is SubmissionStatus.APPROVED_QUEUED
+            and application.archived_at is None
+            and not self._ctx.handled_elsewhere(user_id, application)
         ]
 
     def submit(self, user_id: str, application_id: str) -> SubmissionResult:
@@ -90,6 +97,11 @@ class SubmissionService:
         if application.submission_status is not before:
             self._ctx.on_status(user_id, application)
         return SubmissionResult(application.submission_status)
+
+    def hold_of(self, user_id: str, application_id: str) -> SubmissionHold | None:
+        workspace = self._candidate.workspaces.get(user_id)
+        application = next((a for a in workspace.applications if a.id == application_id), None)
+        return self._hold(user_id, workspace, application) if application else None
 
     def _cancel_excluded(self, user_id: str, workspace: CandidateWorkspace, application: ApplicationRecord) -> SubmissionResult:
         self._move(application, SubmissionStatus.CANCELLED, translate("timeline.cancelledExcludedOrganization"))

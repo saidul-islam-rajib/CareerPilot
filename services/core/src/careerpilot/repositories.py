@@ -54,9 +54,12 @@ from careerpilot.messaging.adapters.sql import (
     SqlPushDeviceRepository,
 )
 from careerpilot.messaging.ports import ConversationRepository, MessageRepository, NotificationRepository, PushDeviceRepository
-from careerpilot.platform.clock import SystemClock
+from careerpilot.platform.clock import SystemClock, UuidIdGenerator
 from careerpilot.platform.persistence import Database
 from careerpilot.platform.security import PasswordHasher
+from careerpilot.portal.adapters.in_memory import InMemoryPortalRecords
+from careerpilot.portal.adapters.sql import SqlPortalRecords
+from careerpilot.portal.ports import PortalRecordRepository
 from careerpilot.privacy.adapters.in_memory import InMemoryConsentRepository, InMemoryDeletionRepository, InMemoryExportRepository
 from careerpilot.privacy.adapters.sql import SqlConsentRepository, SqlDeletionRepository, SqlExportRepository
 from careerpilot.privacy.ports import ConsentRepository, DeletionRepository, ExportRepository
@@ -93,6 +96,7 @@ class Repositories:
     writing_drafts: WritingRepository = field(default_factory=InMemoryWritingRepository)
     academic_records: AcademicRecordRepository = field(default_factory=InMemoryAcademicRecords)
     fee_records: FeeRecordRepository = field(default_factory=InMemoryFeeRecords)
+    portal_records: PortalRecordRepository = field(default_factory=InMemoryPortalRecords)
 
 
 RepositoryFactory = Callable[[PasswordHasher, WorkspaceFactory, PlatformSettings], Repositories]
@@ -137,4 +141,5 @@ def sql_repositories(database: Database, empty: WorkspaceFactory, platform_defau
         writing_drafts=SqlWritingRepository(database, SystemClock()),
         academic_records=SqlAcademicRecords(database, SystemClock()),
         fee_records=SqlFeeRecords(database, SystemClock()),
+        portal_records=SqlPortalRecords(database, SystemClock(), UuidIdGenerator()),
     )

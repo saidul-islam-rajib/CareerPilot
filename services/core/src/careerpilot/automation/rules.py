@@ -73,6 +73,7 @@ class RuleValidator:
             materials=body.materials,
             limits=body.limits,
             schedule=self._schedule(body.schedule),
+            portal=body.portal,
             created_at="",
             updated_at="",
         )

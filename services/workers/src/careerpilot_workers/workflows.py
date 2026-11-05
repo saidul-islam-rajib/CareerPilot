@@ -123,3 +123,42 @@ class InboxSyncWorkflow:
         return await workflow.execute_activity(
             SYNC_INBOXES, start_to_close_timeout=timeout, retry_policy=RetryPolicy(maximum_attempts=1), result_type=int
         )
+
+
+DUE_PORTAL_APPLICATIONS = "due_portal_applications"
+RUN_PORTAL_APPLICATION = "run_portal_application"
+PROCESS_READINESS = "process_readiness"
+
+
+@dataclass(frozen=True)
+class PortalReport:
+    application_id: str
+    status: str
+    stop: str | None
+
+
+@dataclass(frozen=True)
+class PortalRun:
+    reports: list[PortalReport]
+    readiness: int
+
+
+@workflow.defn(name="PortalWorkflow")
+class PortalWorkflow:
+    @workflow.run
+    async def run(self, plan: ActivityPlan) -> PortalRun:
+        timeout = timedelta(seconds=plan.activity_timeout_seconds)
+        once = RetryPolicy(maximum_attempts=1)
+        queued: list[QueuedItem] = await workflow.execute_activity(
+            DUE_PORTAL_APPLICATIONS, start_to_close_timeout=timeout, retry_policy=once, result_type=list[QueuedItem]
+        )
+        reports: list[PortalReport] = []
+        for item in queued:
+            report: PortalReport = await workflow.execute_activity(
+                RUN_PORTAL_APPLICATION, item, start_to_close_timeout=timeout, retry_policy=once, result_type=PortalReport
+            )
+            reports.append(report)
+        readiness: int = await workflow.execute_activity(
+            PROCESS_READINESS, start_to_close_timeout=timeout, retry_policy=once, result_type=int
+        )
+        return PortalRun(reports=reports, readiness=readiness)
