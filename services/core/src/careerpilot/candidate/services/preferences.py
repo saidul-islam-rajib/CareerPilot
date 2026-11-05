@@ -1,8 +1,11 @@
 import re
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from careerpilot.candidate.context import CandidateContext, ChangeListener, ignore_change
 from careerpilot.candidate.models import (
+    CompensationReference,
+    CompensationRule,
     NotificationPreferences,
     PauseState,
     Preferences,
@@ -26,6 +29,16 @@ def add_months(moment: datetime, months: int) -> datetime:
     year = moment.year + month_index // MONTHS_PER_YEAR
     month = month_index % MONTHS_PER_YEAR + FIRST_MONTH
     return moment.replace(year=year, month=month)
+
+
+@dataclass(frozen=True)
+class NotificationChanges:
+    digest_enabled: bool | None = None
+    digest_time: str | None = None
+    quiet_hours_enabled: bool | None = None
+    quiet_start: str | None = None
+    quiet_end: str | None = None
+    urgent_overrides_quiet: bool | None = None
 
 
 def pause_until(now: datetime, duration: PauseDuration, amount: int | None) -> datetime | None:
@@ -59,8 +72,15 @@ class PreferencesService:
 
     def _view(self, preferences: Preferences) -> Preferences:
         notifications = preferences.notifications
-        effective = notifications.digest_time or self._ctx.settings.notifications.default_digest_time
-        return preferences.model_copy(update={"notifications": notifications.model_copy(update={"digest_time": effective})})
+        quiet = self._ctx.settings.reminders.quiet_hours
+        effective = notifications.model_copy(
+            update={
+                "digest_time": notifications.digest_time or self._ctx.settings.notifications.default_digest_time,
+                "quiet_start": notifications.quiet_start or quiet.default_start,
+                "quiet_end": notifications.quiet_end or quiet.default_end,
+            }
+        )
+        return preferences.model_copy(update={"notifications": effective})
 
     def update_favorite_companies(self, user_id: str, companies: list[str]) -> Preferences:
         names: list[str] = []
@@ -105,12 +125,18 @@ class PreferencesService:
         self._ctx.workspaces.save(user_id, workspace)
         return self._view_of(user_id)
 
-    def update_notifications(self, user_id: str, digest_enabled: bool | None, digest_time: str | None) -> Preferences:
+    def update_notifications(self, user_id: str, changes: NotificationChanges) -> Preferences:
         workspace = self._ctx.workspaces.get(user_id)
         current = workspace.preferences.notifications
+        enabled = changes.quiet_hours_enabled
+        override = changes.urgent_overrides_quiet
         workspace.preferences.notifications = NotificationPreferences(
-            digest_enabled=current.digest_enabled if digest_enabled is None else digest_enabled,
-            digest_time=current.digest_time if digest_time is None else require_time(digest_time),
+            digest_enabled=current.digest_enabled if changes.digest_enabled is None else changes.digest_enabled,
+            digest_time=current.digest_time if changes.digest_time is None else require_time(changes.digest_time),
+            quiet_hours_enabled=current.quiet_hours_enabled if enabled is None else enabled,
+            quiet_start=current.quiet_start if changes.quiet_start is None else require_time(changes.quiet_start),
+            quiet_end=current.quiet_end if changes.quiet_end is None else require_time(changes.quiet_end),
+            urgent_overrides_quiet=current.urgent_overrides_quiet if override is None else override,
         )
         self._ctx.workspaces.save(user_id, workspace)
         return self._view_of(user_id)
@@ -145,6 +171,25 @@ class PreferencesService:
             raise validation_error("excluded_organization_limit")
         workspace = self._ctx.workspaces.get(user_id)
         workspace.preferences.excluded_organizations = names
+        self._ctx.workspaces.save(user_id, workspace)
+        self._on_change(user_id)
+        return self._view_of(user_id)
+
+    def compensation_reference(self) -> CompensationReference:
+        return CompensationReference(currencies=self._ctx.settings.matching.compensation.currencies)
+
+    def update_compensation(self, user_id: str, rule: CompensationRule) -> Preferences:
+        config = self._ctx.settings.matching.compensation
+        minimum = rule.minimum
+        if minimum is not None:
+            currency = minimum.currency.strip().upper()
+            if currency not in config.currencies:
+                raise validation_error("currency")
+            if not 0 < minimum.amount_minor <= config.max_amount_minor:
+                raise validation_error("amount")
+            rule = rule.model_copy(update={"minimum": minimum.model_copy(update={"currency": currency})})
+        workspace = self._ctx.workspaces.get(user_id)
+        workspace.preferences.compensation = rule
         self._ctx.workspaces.save(user_id, workspace)
         self._on_change(user_id)
         return self._view_of(user_id)

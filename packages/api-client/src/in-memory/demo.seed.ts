@@ -7,7 +7,11 @@ import {
   DocumentKind,
   LanguageProficiency,
   OpportunityType,
+  CompensationMode,
   OutcomeStatus,
+  PayPeriod,
+  RangeBasis,
+  UnstatedPolicy,
   RequirementCheck,
   SponsorshipEvidence,
   SubmissionStatus,
@@ -37,6 +41,8 @@ import { demoPhotoUri, demoSignatureUri } from './demo-media.seed';
 import { samplePdfDataUri } from './sample-pdf';
 
 const PDF_MEDIA_TYPE = 'application/pdf';
+
+export const DEMO_COMPENSATION_CURRENCIES = ['BDT', 'USD', 'EUR', 'GBP'];
 
 export interface DemoAccount {
   user: UserSummary;
@@ -281,6 +287,7 @@ export function buildDemoSeed(now: Date): DemoState {
     homeCountry: 'BD',
     discoverable: true,
     blockedUsers: [],
+    compensation: { period: PayPeriod.Monthly, mode: CompensationMode.Preference, unstated: UnstatedPolicy.RecommendOnly, basis: RangeBasis.Top },
     submissionWindow: { kind: SubmissionWindowKind.DailyWindow, start: '00:00', end: '01:00' },
     notifications: { digestEnabled: true, digestTime: '08:00' },
     tracks: [

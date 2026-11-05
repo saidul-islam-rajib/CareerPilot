@@ -3,11 +3,11 @@ from collections import Counter
 import pytest
 
 from careerpilot.bootstrap import Container, ContainerOverrides, build_container
-from careerpilot.candidate.models import OpportunityMatch, Profile, Track
+from careerpilot.candidate.models import CompensationRule, Money, OpportunityMatch, Profile, Track
 from careerpilot.discovery.models import Listing
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator, iso
 from careerpilot.platform.email_delivery import InMemoryEmailSender
-from careerpilot.platform.enums import ApplicationMode, OpportunityDecision
+from careerpilot.platform.enums import ApplicationMode, OpportunityDecision, UnstatedPolicy
 from careerpilot.platform.errors import DomainError
 from careerpilot.platform.files import InMemoryFileStorage
 from careerpilot.testing import load_sample_data, sample_repositories, sample_settings
@@ -145,3 +145,11 @@ def test_jobs_from_excluded_organizations_leave_the_lists(app: Container) -> Non
     assert PYTHON_LISTING not in placements(app)[REMOTE_TRACK]
     app.preferences.update_excluded_organizations(DEMO_USER, [])
     assert PYTHON_LISTING in placements(app)[REMOTE_TRACK]
+
+
+def test_a_rule_excluding_unstated_pay_keeps_listings_without_pay_off_the_lists(app: Container) -> None:
+    add_skill(app, "Python")
+    assert PYTHON_LISTING in placements(app)[REMOTE_TRACK]
+    rule = CompensationRule(minimum=Money(amount_minor=100_000, currency="USD"), unstated=UnstatedPolicy.EXCLUDE)
+    app.preferences.update_compensation(DEMO_USER, rule)
+    assert PYTHON_LISTING not in placements(app)[REMOTE_TRACK]

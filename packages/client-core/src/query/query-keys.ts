@@ -11,6 +11,7 @@ export const queryKeys = {
   application: (id: string) => ['application', id] as const,
   profile: ['profile'] as const,
   settings: ['settings'] as const,
+  compensationReference: ['settings', 'compensation-reference'] as const,
   signInActivity: ['sign-in-activity'] as const,
   questionBank: ['question-bank'] as const,
   jobSources: ['job-sources'] as const,

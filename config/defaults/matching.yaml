@@ -72,3 +72,27 @@ matching:
       - visa sponsorship
       - sponsorship available
       - will sponsor
+  compensation:
+    currencies: [BDT, USD, EUR, GBP, CAD, AUD, AED, SAR, MYR, SGD]
+    max_amount_minor: 100000000000
+    hours_per_month: 160
+    months_per_year: 12
+    period_window_chars: 40
+    minor_units: 100
+    preference_bonus: 10
+    preference_penalty: 10
+    currency_phrases:
+      BDT: [bdt, tk, taka, "৳"]
+      USD: [usd, "$"]
+      EUR: [eur, "€"]
+      GBP: [gbp, "£"]
+      CAD: [cad]
+      AUD: [aud]
+      AED: [aed]
+      SAR: [sar]
+      MYR: [myr]
+      SGD: [sgd]
+    period_phrases:
+      hourly: [per hour, an hour, hourly, /hour, /hr, per hr]
+      monthly: [per month, a month, monthly, /month, /mo, per mo]
+      yearly: [per year, a year, annual, annually, per annum, yearly, /year, /yr, p.a.]

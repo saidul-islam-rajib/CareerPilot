@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Banknote,
   BarChart3,
   GraduationCap,
   FileDown,
@@ -80,6 +81,8 @@ export function SettingsPage() {
           <ListRow icon={Zap} title={t('automation.title')} subtitle={t('automation.menuBody')} href={Routes.automation} />
           <Separator />
           <ListRow icon={Plug} title={t('integrations.page.title')} subtitle={t('integrations.page.menuBody')} href={Routes.connectedAccounts} />
+          <Separator />
+          <ListRow icon={Banknote} title={t('settings.pay.title')} subtitle={t('settings.pay.menuBody')} href={Routes.pay} />
           <Separator />
           <ListRow icon={Globe2} title={t('settings.countries')} subtitle={t('settings.countriesMenuBody')} href={Routes.countries} />
           <Separator />

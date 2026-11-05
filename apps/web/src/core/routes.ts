@@ -32,6 +32,7 @@ export const Routes = {
   governmentApplication: (id: string) => `/government/applications/${encodeURIComponent(id)}`,
   sourceJobs: (id: string) => `/settings/sources/${encodeURIComponent(id)}`,
   countries: '/settings/countries',
+  pay: '/settings/pay',
   confidential: '/settings/confidential',
   autopilot: '/settings/autopilot',
   portalAccounts: '/settings/portal-accounts',

@@ -141,6 +141,8 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       pause: (option) => post('/v1/settings/pause', option),
       resume: () => post('/v1/settings/resume'),
       updateSubmissionWindow: (window) => put('/v1/settings/submission-window', window),
+      compensationReference: () => get('/v1/settings/compensation/reference'),
+      updateCompensation: (rule) => put('/v1/settings/compensation', rule),
       updateExcludedCountries: (countries) => put('/v1/settings/excluded-countries', { countries }),
       updateExcludedOrganizations: (organizations) => put('/v1/settings/excluded-organizations', { organizations }),
       updatePrivateNotifications: (enabled) => put('/v1/settings/private-notifications', { enabled }),

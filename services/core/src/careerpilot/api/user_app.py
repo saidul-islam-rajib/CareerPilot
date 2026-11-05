@@ -21,10 +21,11 @@ from careerpilot.api.common import bearer_token, client_info, configure, no_cont
 from careerpilot.api.dependencies import Credentials, CurrentUser, Services
 from careerpilot.api.instrumentation import instrument
 from careerpilot.bootstrap import Container
-from careerpilot.candidate.models import SubmissionWindow
+from careerpilot.candidate.models import CompensationRule, SubmissionWindow
 from careerpilot.candidate.services.answers import AnswerDraft
 from careerpilot.candidate.services.applications import TaskDraft
 from careerpilot.candidate.services.auth import Registration
+from careerpilot.candidate.services.preferences import NotificationChanges
 from careerpilot.platform.enums import (
     AnswerTopic,
     ApplicationFilter,
@@ -134,6 +135,10 @@ class TaskStatusBody(CamelModel):
 class NotificationsBody(CamelModel):
     digest_enabled: bool | None = None
     digest_time: str | None = None
+    quiet_hours_enabled: bool | None = None
+    quiet_start: str | None = None
+    quiet_end: str | None = None
+    urgent_overrides_quiet: bool | None = None
 
 
 class PasswordBody(CamelModel):
@@ -350,9 +355,15 @@ def resume(user: CurrentUser, services: Services) -> JSONResponse:
     return ok(services.preferences.resume(user.id))
 
 
+@router.post("/profile/confirm")
+def confirm_profile(user: CurrentUser, services: Services) -> Response:
+    services.reminders.confirm_profile(user.id)
+    return no_content()
+
+
 @router.patch("/settings/notifications")
 def update_notifications(body: NotificationsBody, user: CurrentUser, services: Services) -> JSONResponse:
-    return ok(services.preferences.update_notifications(user.id, body.digest_enabled, body.digest_time))
+    return ok(services.preferences.update_notifications(user.id, NotificationChanges(**body.model_dump())))
 
 
 @router.put("/settings/submission-window")
@@ -373,6 +384,16 @@ def excluded_countries(body: ExcludedCountriesBody, user: CurrentUser, services:
 @router.put("/settings/excluded-organizations")
 def excluded_organizations(body: ExcludedOrganizationsBody, user: CurrentUser, services: Services) -> JSONResponse:
     return ok(services.preferences.update_excluded_organizations(user.id, body.organizations))
+
+
+@router.get("/settings/compensation/reference")
+def compensation_reference(_: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.preferences.compensation_reference())
+
+
+@router.put("/settings/compensation")
+def compensation(body: CompensationRule, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.preferences.update_compensation(user.id, body))
 
 
 @router.put("/settings/private-notifications")

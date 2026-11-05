@@ -8,6 +8,7 @@ from sqlalchemy.orm import Mapped, Session, mapped_column
 from careerpilot.candidate.models import (
     ApplicationRecord,
     ApprovalDetail,
+    HeldPush,
     OpportunityDetail,
     OpportunityMatch,
     Preferences,
@@ -173,6 +174,9 @@ def workspace_to_document(workspace: CandidateWorkspace) -> dict[str, object]:
         "matches": {k: v.to_json() for k, v in workspace.matches.items()},
         "lastDigestOn": workspace.last_digest_on,
         "savedAnswers": [a.to_json() for a in workspace.saved_answers],
+        "heldPushes": [h.to_json() for h in workspace.held_pushes],
+        "remindersSent": workspace.reminders_sent,
+        "profileConfirmedAt": workspace.profile_confirmed_at,
     }
 
 
@@ -189,6 +193,9 @@ def workspace_from_document(document: dict[str, Any]) -> CandidateWorkspace:
         matches={k: OpportunityMatch.model_validate(v) for k, v in document.get("matches", {}).items()},
         last_digest_on=document.get("lastDigestOn"),
         saved_answers=[SavedAnswer.model_validate(a) for a in document.get("savedAnswers", [])],
+        held_pushes=[HeldPush.model_validate(h) for h in document.get("heldPushes", [])],
+        reminders_sent=list(document.get("remindersSent", [])),
+        profile_confirmed_at=document.get("profileConfirmedAt"),
     )
 
 

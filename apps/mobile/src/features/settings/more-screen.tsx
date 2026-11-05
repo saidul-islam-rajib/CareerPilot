@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useDiscoverable, usePublicConfig, useSession, useSettings, useT } from '@careerpilot/client-core';
 import {
+  Banknote,
   FileText,
   GraduationCap,
   EyeOff,
@@ -89,6 +90,8 @@ export function MoreScreen() {
           subtitle={t('integrations.page.menuBody')}
           onPress={() => router.push(Routes.connectedAccounts)}
         />
+        <Divider />
+        <ListRow icon={Banknote} title={t('settings.pay.title')} subtitle={t('settings.pay.menuBody')} onPress={() => router.push(Routes.pay)} />
         <Divider />
         <ListRow
           icon={MapPinOff}

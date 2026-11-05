@@ -14,7 +14,16 @@ from careerpilot.candidate.ports import CandidateWorkspace
 from careerpilot.candidate.submission_checks import EMAIL_CHECKS, FAILURE_STATUS, SubmissionCase, first_failure
 from careerpilot.candidate.tracks import is_excluded
 from careerpilot.platform.clock import iso, parse_iso
-from careerpilot.platform.email_delivery import Attachment, DeliveryError, DeliveryUncertainError, EmailSender, OutgoingEmail
+from careerpilot.platform.email_delivery import (
+    Attachment,
+    DeliveryError,
+    DeliveryUncertainError,
+    EmailSender,
+    MailboxSender,
+    MailboxUnavailableError,
+    OutgoingEmail,
+    SentReceipt,
+)
 from careerpilot.platform.enums import (
     ContactKind,
     SubmissionHold,
@@ -51,6 +60,8 @@ class SubmissionContext:
     policy: AutomationPolicy
     on_status: Callable[[str, ApplicationRecord], None] = lambda _user_id, _application: None
     handled_elsewhere: Callable[[str, ApplicationRecord], bool] = lambda _user_id, _application: False
+    mailbox: MailboxSender | None = None
+    live: Callable[[], bool] = lambda: False
 
 
 def within_window(workspace: CandidateWorkspace, now: datetime) -> bool:
@@ -165,6 +176,8 @@ class SubmissionService:
             return SubmissionHold.RULE_INACTIVE
         if SkipReason.INACTIVE in policy.account_holds(situation):
             return SubmissionHold.INACTIVE
+        if SkipReason.PROFILE_STALE in policy.account_holds(situation):
+            return SubmissionHold.PROFILE_STALE
         cap = policy.cap_reason(situation, rule)
         capped = CAP_HOLDS.get(cap) if cap else None
         if capped is not None:
@@ -223,12 +236,20 @@ class SubmissionService:
             return
         self._move(application, SubmissionStatus.SUBMITTING, translate("timeline.submitting"))
         self._candidate.workspaces.save(user_id, workspace)
-        self._deliver(application, self._email(workspace, application, recipient, document, cv), document)
+        self._deliver(user_id, application, self._email(workspace, application, recipient, document, cv), document)
 
-    def _deliver(self, application: ApplicationRecord, email: OutgoingEmail, document: ProfileDocument) -> None:
+    def _transmit(self, user_id: str, email: OutgoingEmail) -> SentReceipt:
+        if self._ctx.live() and self._ctx.mailbox is not None:
+            return self._ctx.mailbox.send_as(user_id, email)
+        return self._ctx.sender.send(email)
+
+    def _deliver(self, user_id: str, application: ApplicationRecord, email: OutgoingEmail, document: ProfileDocument) -> None:
         now = iso(self._candidate.clock.now())
         try:
-            receipt = self._ctx.sender.send(email)
+            receipt = self._transmit(user_id, email)
+        except MailboxUnavailableError:
+            self._prepared_for_manual(application, email)
+            return
         except DeliveryError as error:
             application.attempts += 1
             if error.retryable and application.attempts < self._config.max_attempts:
@@ -247,6 +268,10 @@ class SubmissionService:
         application.evidence.append(Evidence(text=translate("submission.evidenceAccepted", {"messageId": receipt.message_id}), at=now))
         sent = translate("timeline.emailSent", {"to": email.to, "attachment": attachment.name})
         self._move(application, SubmissionStatus.SUBMITTED_AWAITING_CONFIRMATION, sent)
+
+    def _prepared_for_manual(self, application: ApplicationRecord, email: OutgoingEmail) -> None:
+        text = translate("timeline.mailboxMissing", {"to": email.to, "subject": email.subject})
+        self._move(application, SubmissionStatus.MANUAL_ACTION_REQUIRED, text)
 
     def _email(
         self, workspace: CandidateWorkspace, application: ApplicationRecord, to: str, document: ProfileDocument, cv: bytes

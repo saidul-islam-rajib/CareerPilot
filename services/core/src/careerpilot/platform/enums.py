@@ -332,6 +332,7 @@ class SubmissionHold(StrEnum):
     RULE_LIMIT = "rule_limit"
     RULE_INACTIVE = "rule_inactive"
     INACTIVE = "inactive"
+    PROFILE_STALE = "profile_stale"
     DEADLINE_AT_RISK = "deadline_at_risk"
     DEADLINE_SKIPPED = "deadline_skipped"
 
@@ -350,6 +351,11 @@ class NotificationKind(StrEnum):
     APPLICATION_REPLY = "application_reply"
     INTEGRATION_ATTENTION = "integration_attention"
     AUTOMATION_ATTENTION = "automation_attention"
+    APPROVAL_EXPIRING = "approval_expiring"
+    GOVERNMENT_DEADLINE = "government_deadline"
+    FEE_DEADLINE = "fee_deadline"
+    SUPERVISOR_REPLY = "supervisor_reply"
+    PROFILE_CONFIRMATION = "profile_confirmation"
 
 
 class NotificationTarget(StrEnum):
@@ -357,6 +363,11 @@ class NotificationTarget(StrEnum):
     APPLICATION = "application"
     INTEGRATION = "integration"
     AUTOMATION = "automation"
+    APPROVAL = "approval"
+    GOVERNMENT_APPLICATION = "government_application"
+    FEE = "fee"
+    PROGRAM = "program"
+    PROFILE = "profile"
 
 
 class ConversationKind(StrEnum):
@@ -660,3 +671,43 @@ class SecretKind(StrEnum):
     PASSWORD = "password"
     ROLL_NUMBER = "roll_number"
     TRANSACTION_ID = "transaction_id"
+
+
+class CompensationMode(StrEnum):
+    HARD_FILTER = "hard_filter"
+    PREFERENCE = "preference"
+
+
+class UnstatedPolicy(StrEnum):
+    INCLUDE = "include"
+    EXCLUDE = "exclude"
+    RECOMMEND_ONLY = "recommend_only"
+
+
+class RangeBasis(StrEnum):
+    TOP = "top"
+    BOTTOM = "bottom"
+
+
+class PayPeriod(StrEnum):
+    HOURLY = "hourly"
+    MONTHLY = "monthly"
+    YEARLY = "yearly"
+
+
+class CompensationFit(StrEnum):
+    MEETS = "meets"
+    BELOW = "below"
+    UNSTATED = "unstated"
+
+
+class ServiceHealth(StrEnum):
+    UP = "up"
+    DEGRADED = "degraded"
+    DOWN = "down"
+
+
+class HealthTarget(StrEnum):
+    DATABASE = "database"
+    CACHE = "cache"
+    COORDINATION = "coordination"

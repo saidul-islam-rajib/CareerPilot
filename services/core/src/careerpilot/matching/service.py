@@ -5,6 +5,7 @@ from careerpilot.candidate.models import ArchivedCircular, OpportunityDetail, Op
 from careerpilot.candidate.ports import AccountRepository, CandidateWorkspace, OpportunityRepository, WorkspaceRepository
 from careerpilot.candidate.tracks import CompanyQuota, UserScope, is_excluded, ordered_tracks, role_key, user_scope
 from careerpilot.discovery.models import Listing
+from careerpilot.matching.compensation import extract_compensation, fit_of, is_filtered_out, with_compensation
 from careerpilot.matching.ports import Matcher
 from careerpilot.matching.rules import is_eligible, sponsorship_evidence
 from careerpilot.platform.clock import Clock
@@ -93,7 +94,18 @@ class RecommendationService:
             and not is_excluded(item.organization, scope.excluded_organizations)
             and role_key(item.organization, item.title) not in scope.recent_roles
             and is_eligible(item, track, self._ctx.config, scope.home_country)
+            and not self._compensation_blocks(item, scope)
         )
+
+    def _compensation_blocks(self, item: Listing, scope: UserScope) -> bool:
+        config = self._ctx.config.compensation
+        offer = extract_compensation(item.description, config)
+        return is_filtered_out(fit_of(offer, scope.compensation, config), scope.compensation)
+
+    def _score(self, workspace: CandidateWorkspace, track: Track, listing: Listing) -> OpportunityMatch:
+        match = self._ctx.matcher.assess(workspace.profile, track, listing)
+        config = self._ctx.config.compensation
+        return with_compensation(match, extract_compensation(listing.description, config), workspace.preferences.compensation, config)
 
     def _state(self, workspace: CandidateWorkspace, listings: list[Listing]) -> RematchState:
         return RematchState(
@@ -115,7 +127,7 @@ class RecommendationService:
         return len(over)
 
     def _assess(self, workspace: CandidateWorkspace, track: Track, candidates: list[Listing]) -> list[Assessed]:
-        assessed = [(item, self._ctx.matcher.assess(workspace.profile, track, item)) for item in candidates]
+        assessed = [(item, self._score(workspace, track, item)) for item in candidates]
         for item, match in assessed:
             workspace.matches[item.id] = match
         return sorted(
@@ -182,7 +194,7 @@ class RecommendationService:
             tracks = self._tracks(workspace)
             home = self._scope(workspace).home_country
             eligible = [track for track in tracks if is_eligible(listing, track, self._ctx.config, home)] or tracks[:1]
-            assessed = [(track, self._ctx.matcher.assess(workspace.profile, track, listing)) for track in eligible]
+            assessed = [(track, self._score(workspace, track, listing)) for track in eligible]
             if not assessed:
                 return listing.id
             track, match = max(assessed, key=lambda pair: pair[1].score)
@@ -260,6 +272,7 @@ def opportunity_from_listing(
         deadline=listing.deadline,
         sponsorship=sponsorship_evidence(listing, config).value,
         has_hard_failure=match.has_hard_failure,
+        compensation=extract_compensation(listing.description, config.compensation),
         description=listing.description,
         match_factors=match.factors,
         requirements=match.requirements,

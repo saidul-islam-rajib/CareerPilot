@@ -47,6 +47,7 @@ export const Routes = {
   governmentApplication: (id: string) => ({ pathname: '/government/application/[id]', params: { id } }) as const,
   server: '/server',
   countries: '/settings/countries',
+  pay: '/settings/pay',
   confidential: '/settings/confidential',
   autopilot: '/settings/autopilot',
   portalAccounts: '/settings/portal-accounts',

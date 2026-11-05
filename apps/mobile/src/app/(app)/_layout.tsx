@@ -55,6 +55,7 @@ export default function SignedInLayout() {
       <Stack.Screen name="settings/exports" options={{ title: t('privacy.exports.title') }} />
       <Stack.Screen name="settings/consents" options={{ title: t('privacy.consent.title') }} />
       <Stack.Screen name="settings/connected-accounts" options={{ title: t('integrations.page.title') }} />
+      <Stack.Screen name="settings/pay" options={{ title: t('settings.pay.title') }} />
       <Stack.Screen name="settings/countries" options={{ title: t('settings.countries') }} />
       <Stack.Screen name="settings/confidential" options={{ title: t('settings.confidential') }} />
       <Stack.Screen name="settings/autopilot" options={{ title: t('portal.autopilot.title') }} />

@@ -25,6 +25,10 @@ import type {
   SubmissionWindowKind,
   TaskKind,
   TaskStatus,
+  PayPeriod,
+  RangeBasis,
+  CompensationMode,
+  UnstatedPolicy,
   TimelineActor,
   TrackKind,
   WorkArrangement,
@@ -531,6 +535,18 @@ export interface NotificationPreferences {
   digestTime?: string;
 }
 
+export interface CompensationRule {
+  minimum?: Money;
+  period: PayPeriod;
+  mode: CompensationMode;
+  unstated: UnstatedPolicy;
+  basis: RangeBasis;
+}
+
+export interface CompensationReference {
+  currencies: string[];
+}
+
 export interface Settings {
   tracks: Track[];
   submissionWindow: SubmissionWindow;
@@ -544,6 +560,7 @@ export interface Settings {
   homeCountry: string;
   discoverable: boolean;
   blockedUsers: string[];
+  compensation: CompensationRule;
 }
 
 export interface TrackUpdate {

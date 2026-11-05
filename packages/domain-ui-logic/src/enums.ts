@@ -483,6 +483,7 @@ export const SkipReason = {
   EmergencyStop: 'emergency_stop',
   Paused: 'paused',
   Inactive: 'inactive',
+  ProfileStale: 'profile_stale',
   TrackNotAutomatic: 'track_not_automatic',
   HardRequirementFailed: 'hard_requirement_failed',
   UnknownRequirement: 'unknown_requirement',
@@ -521,6 +522,7 @@ export const SubmissionHold = {
   RuleLimit: 'rule_limit',
   RuleInactive: 'rule_inactive',
   Inactive: 'inactive',
+  ProfileStale: 'profile_stale',
   DeadlineAtRisk: 'deadline_at_risk',
   DeadlineSkipped: 'deadline_skipped',
 } as const;
@@ -1207,3 +1209,29 @@ export const AcademicFailure = {
   Duplicate: 'duplicate',
 } as const;
 export type AcademicFailure = (typeof AcademicFailure)[keyof typeof AcademicFailure];
+
+export const CompensationMode = {
+  HardFilter: 'hard_filter',
+  Preference: 'preference',
+} as const;
+export type CompensationMode = (typeof CompensationMode)[keyof typeof CompensationMode];
+
+export const UnstatedPolicy = {
+  Include: 'include',
+  Exclude: 'exclude',
+  RecommendOnly: 'recommend_only',
+} as const;
+export type UnstatedPolicy = (typeof UnstatedPolicy)[keyof typeof UnstatedPolicy];
+
+export const RangeBasis = {
+  Top: 'top',
+  Bottom: 'bottom',
+} as const;
+export type RangeBasis = (typeof RangeBasis)[keyof typeof RangeBasis];
+
+export const PayPeriod = {
+  Hourly: 'hourly',
+  Monthly: 'monthly',
+  Yearly: 'yearly',
+} as const;
+export type PayPeriod = (typeof PayPeriod)[keyof typeof PayPeriod];

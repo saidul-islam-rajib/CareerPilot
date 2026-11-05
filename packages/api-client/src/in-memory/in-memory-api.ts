@@ -27,7 +27,7 @@ import {
   type PublicConfig,
   type Settings,
 } from '../types';
-import type { DemoState } from './demo.seed';
+import { DEMO_COMPENSATION_CURRENCIES, type DemoState } from './demo.seed';
 import { createAccountLinks } from './account-links';
 import { createAnswers, hasBlankAnswers } from './answers';
 import { createFollowUps } from './follow-ups';
@@ -479,6 +479,15 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
       async updateFavoriteCompanies(companies) {
         const names = companies.map((c) => c.trim()).filter(Boolean);
         state.settings.favoriteCompanies = names.filter((name, index) => names.findIndex((other) => other.toLowerCase() === name.toLowerCase()) === index);
+        return respond(state.settings);
+      },
+      compensationReference: async () => respond({ currencies: DEMO_COMPENSATION_CURRENCIES }),
+      async updateCompensation(rule) {
+        const minimum = rule.minimum;
+        if (minimum && (!DEMO_COMPENSATION_CURRENCIES.includes(minimum.currency) || minimum.amountMinor <= 0)) {
+          return fail(ApiErrorCode.Validation);
+        }
+        state.settings.compensation = rule;
         return respond(state.settings);
       },
       async updateExcludedCountries(countries) {

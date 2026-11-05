@@ -9,16 +9,22 @@ from careerpilot.platform.enums import (
     AnswerTopic,
     ApplicationMode,
     ApprovalState,
+    CompensationMode,
     ContactKind,
     DocumentKind,
+    NotificationKind,
+    NotificationTarget,
     OpportunityDecision,
     OutcomeStatus,
     PauseScope,
+    PayPeriod,
+    RangeBasis,
     SubmissionStatus,
     SubmissionWindowKind,
     TaskKind,
     TaskStatus,
     TimelineActor,
+    UnstatedPolicy,
 )
 from careerpilot.platform.files import PDF, SAMPLE_PREFIX
 from careerpilot.platform.model import CamelModel
@@ -445,6 +451,31 @@ class PauseState(CamelModel):
 class NotificationPreferences(CamelModel):
     digest_enabled: bool = True
     digest_time: str | None = None
+    quiet_hours_enabled: bool = False
+    quiet_start: str | None = None
+    quiet_end: str | None = None
+    urgent_overrides_quiet: bool = False
+
+
+class HeldPush(CamelModel):
+    kind: NotificationKind
+    title: str
+    body: str
+    target: NotificationTarget
+    target_id: str
+    held_at: str
+
+
+class CompensationRule(CamelModel):
+    minimum: Money | None = None
+    period: PayPeriod = PayPeriod.MONTHLY
+    mode: CompensationMode = CompensationMode.PREFERENCE
+    unstated: UnstatedPolicy = UnstatedPolicy.RECOMMEND_ONLY
+    basis: RangeBasis = RangeBasis.TOP
+
+
+class CompensationReference(CamelModel):
+    currencies: list[str]
 
 
 class Preferences(CamelModel):
@@ -461,6 +492,7 @@ class Preferences(CamelModel):
     discoverable: bool = True
     home_country: str = ""
     automation: AutomationSettings = Field(default_factory=AutomationSettings)
+    compensation: CompensationRule = Field(default_factory=CompensationRule)
 
 
 class SignInEvent(CamelModel):

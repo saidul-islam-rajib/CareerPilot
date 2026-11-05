@@ -82,6 +82,7 @@ export { default as Play } from 'lucide-react-native/icons/play';
 export { default as PlayCircle } from 'lucide-react-native/icons/circle-play';
 export { default as Plus } from 'lucide-react-native/icons/plus';
 export { default as Bot } from 'lucide-react-native/icons/bot';
+export { default as Banknote } from 'lucide-react-native/icons/banknote';
 export { default as Receipt } from 'lucide-react-native/icons/receipt';
 export { default as Eraser } from 'lucide-react-native/icons/eraser';
 export { default as FilePlus } from 'lucide-react-native/icons/file-plus';

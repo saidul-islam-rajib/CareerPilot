@@ -33,6 +33,7 @@ from careerpilot.platform.enums import (
 )
 from careerpilot.portal.config import PortalsConfig
 from careerpilot.privacy.config import PrivacyConfig
+from careerpilot.reminders.config import RemindersConfig
 from careerpilot.writing.config import WritingConfig
 
 CONFIG_ROOT_ENV = "CAREERPILOT_CONFIG_ROOT"
@@ -389,6 +390,19 @@ class SkillGapConfig(Strict):
     vocabulary: dict[str, list[str]]
 
 
+class CompensationConfig(Strict):
+    currencies: list[str]
+    max_amount_minor: int = Field(gt=0)
+    hours_per_month: int = Field(gt=0)
+    months_per_year: int = Field(gt=0)
+    period_window_chars: int = Field(gt=0)
+    minor_units: int = Field(gt=0)
+    preference_bonus: int = Field(ge=0)
+    preference_penalty: int = Field(ge=0)
+    currency_phrases: dict[str, list[str]]
+    period_phrases: dict[str, list[str]]
+
+
 class MatchingConfig(Strict):
     mode: MatchingMode
     model: str
@@ -407,6 +421,7 @@ class MatchingConfig(Strict):
     weights: MatchWeights
     track_rules: dict[str, TrackRule]
     sponsorship: SponsorshipPhrases
+    compensation: CompensationConfig
 
 
 class WorkersConfig(Strict):
@@ -431,6 +446,9 @@ class WorkersConfig(Strict):
     privacy_workflow_id: str
     privacy_schedule_id: str
     privacy_interval_minutes: int = Field(gt=0)
+    reminder_workflow_id: str
+    reminder_schedule_id: str
+    reminder_interval_minutes: int = Field(gt=0)
 
 
 class ProfileFieldConfig(Strict):
@@ -565,6 +583,7 @@ class NotificationsConfig(Strict):
     web_base_url: str
     web_base_url_env: EnvName
     max_items_per_section: int = Field(gt=0)
+    application_path: str
 
 
 class VerificationConfig(Strict):
@@ -697,6 +716,8 @@ class GoogleConfig(Strict):
     scopes: list[str]
     mail_scope: str
     calendar_scope: str
+    send_scope: str
+    send_path: str = Field(pattern=r"^/")
     state_audience: str
     state_ttl_minutes: int = Field(gt=0)
     pkce_verifier_bytes: int = Field(ge=32, le=96)
@@ -924,6 +945,7 @@ class Settings(Strict):
     automation: AutomationConfig
     academic: AcademicConfig
     fees: FeesConfig
+    reminders: RemindersConfig
     portals: PortalsConfig
 
 

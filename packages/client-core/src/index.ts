@@ -28,6 +28,8 @@ export * from './hooks/use-opportunity';
 export * from './hooks/use-messaging';
 export * from './hooks/use-profile';
 export * from './hooks/use-settings';
+export * from './hooks/compensation-form';
+export * from './hooks/use-compensation';
 export * from './i18n/i18n';
 export * from './query/query-client';
 export * from './query/query-keys';

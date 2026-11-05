@@ -3,7 +3,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
-from careerpilot.candidate.models import ApplicationRecord, Track
+from careerpilot.candidate.models import ApplicationRecord, CompensationRule, Track
 from careerpilot.candidate.ports import CandidateWorkspace
 from careerpilot.discovery.text import normalized
 from careerpilot.platform.clock import parse_iso
@@ -17,6 +17,7 @@ class UserScope:
     excluded_countries: frozenset[str]
     excluded_organizations: frozenset[str]
     recent_roles: frozenset[str]
+    compensation: CompensationRule
 
 
 def home_country(workspace: CandidateWorkspace, default: str) -> str:
@@ -73,4 +74,5 @@ def user_scope(workspace: CandidateWorkspace, default_country: str, now: datetim
         excluded_countries=frozenset(workspace.preferences.excluded_countries),
         excluded_organizations=frozenset(workspace.preferences.excluded_organizations),
         recent_roles=recent_roles(workspace, now, cooldown_days),
+        compensation=workspace.preferences.compensation,
     )

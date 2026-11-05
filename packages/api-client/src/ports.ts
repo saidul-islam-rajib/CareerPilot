@@ -9,6 +9,8 @@ import type {
   ApprovalSummary,
   BasicsChanges,
   CompleteAccountLinkRequest,
+  CompensationReference,
+  CompensationRule,
   ContactChanges,
   ContactInput,
   DashboardSummary,
@@ -177,6 +179,8 @@ export interface SettingsApi {
   listSignInActivity(): Promise<SignInEvent[]>;
   changePassword(change: PasswordChange): Promise<void>;
   updateNotifications(changes: Partial<NotificationPreferences>): Promise<Settings>;
+  compensationReference(): Promise<CompensationReference>;
+  updateCompensation(rule: CompensationRule): Promise<Settings>;
 }
 
 import type { GovernmentApi } from './government/ports';
