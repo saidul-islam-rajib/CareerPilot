@@ -12,7 +12,7 @@ CareerPilot sends account email (registration links, password-reset links, verif
 - `CAREERPILOT_MAIL_USER` and `CAREERPILOT_MAIL_PASSWORD` set → account email goes to real inboxes, in any environment.
 - Either one empty → account email goes to Mailpit (http://localhost:8025), as before.
 - Mail to `@sober.com` and reserved example domains (`example.com`, `.org`, `.net`) always stays in Mailpit.
-- Job-application email and daily digests never leave Mailpit outside production.
+- Job-application email and daily digests stay in Mailpit unless the owner sets `CAREERPILOT_REAL_APPLICATIONS=true` in their own `.env` (see portal-autopilot.md); then application email is sent for real.
 - Settings that are not secret (sender address, SMTP host, port, security) live in `config/defaults/mail.yaml`.
 
 ## Already done on team-sober.com (checked 2026-10-26)

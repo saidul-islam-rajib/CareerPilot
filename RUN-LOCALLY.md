@@ -1,6 +1,6 @@
 # Run CareerPilot locally
 
-Everything runs on your own machine. Nothing here sends real applications, emails, or payments.
+Everything runs on your own machine. Nothing here sends real applications, emails, or payments unless you set `CAREERPILOT_REAL_APPLICATIONS=true` in your own `.env` (see docs/runbooks/portal-autopilot.md).
 
 ## What you need
 

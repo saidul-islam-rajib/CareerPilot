@@ -330,6 +330,7 @@ Scholarships that are independent of a specific program (for example, government
 - The system must never fabricate qualifications, test scores, work history, answers, or documents to complete an application.
 - Unknown or conflicting facts, ambiguous or novel questions, required legal declarations, signatures/attestations, sensitive questions without an explicit approved answer, payment not expressly allowed by the rule, unsupported workflows, and required CAPTCHA/MFA/human verification must stop automatic submission and request user action.
 - Automatic rules must apply only where the source permits the action and the user's connected account grants the necessary access. They must not bypass source terms, rate limits, access controls, CAPTCHA, MFA, or other verification. If a source does not permit or support automation, the system must provide manual-action guidance instead.
+- Portal autopilot (online forms, Sections 10.3, 29, 30) and the email route may act on real employers only when the owner has switched real applications on in the server environment (`CAREERPILOT_REAL_APPLICATIONS`, off by default and always off under test or CI, failing closed when missing); with it off the system only opens pages and reports what it would do, and application email stays in the sandbox. Each employer site must also be approved by an admin before automation uses it. Details: `specs/E29-portal-autopilot`, `docs/runbooks/portal-autopilot.md`.
 
 ### 10.2 Email applications
 
