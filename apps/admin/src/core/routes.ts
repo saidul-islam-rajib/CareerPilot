@@ -8,6 +8,7 @@ export const AdminRoutes = {
   opportunities: '/opportunities',
   sources: '/sources',
   government: '/government',
+  portals: '/portals',
   applications: '/applications',
   settings: '/settings',
   audit: '/audit',

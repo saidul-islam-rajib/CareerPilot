@@ -177,7 +177,9 @@ export function createInMemoryPortal(options: InMemoryPortalOptions): InMemoryPo
       if (!host) {
         await fail(ApiErrorCode.Validation, PortalFailure.InvalidUrl);
       }
-      const policy = hosts.get(host)?.policy ?? HostPolicy.Review;
+      const known = hosts.get(host) ?? { host, policy: HostPolicy.Review, note: '', configured: false };
+      hosts.set(host, known);
+      const policy = known.policy;
       const blocked = policy !== HostPolicy.Allowed;
       const report: ReadinessReport = {
         id: ids.next('prr'),

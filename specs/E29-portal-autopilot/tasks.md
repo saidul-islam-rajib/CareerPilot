@@ -11,8 +11,8 @@
 - [x] Submission and worker integration, rule extension
 - [x] Readiness report and CLI
 - [x] Docker portal-worker
-- [ ] api-client, client-core, i18n
-- [ ] Web, mobile, admin screens
+- [x] api-client, client-core, i18n
+- [x] Web, mobile, admin screens
 - [x] Runbook and document updates
 - [x] Unit tests and fixture e2e (scratchpad e2e passes against real Chromium)
 - [!] api-client, client-core hooks, web, mobile and admin Portals screens: handed to another agent. Drafts (types, ports, http, in-memory, hooks, web/mobile/admin screens) are in the session scratchpad `ts/` folder; i18n keys under `portal.*` are already in en.json.
