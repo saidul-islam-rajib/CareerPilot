@@ -83,3 +83,10 @@ With the live switch on, application email goes through the Gmail API as the use
 ## Readiness verdicts after the second pass (2026-11-05, read-only)
 
 See the end of this file for the latest run; Trakstar and Cefalo use invisible reCAPTCHA (`grecaptcha.execute`, `size: invisible`), so they no longer stop on a challenge by themselves. Hosts remain `review`, so an admin approval is still required.
+
+| Employer | Verdict (no profile attached) |
+|---|---|
+| Therap (Trakstar) | Will stop: host review and an unmapped question; no challenge seen (invisible reCAPTCHA). With an approved host and a profile with the needed answers it can proceed to submit; confirmation text is not known, so an unconfirmed submit is Outcome unknown. |
+| Cefalo open application | Will stop only for host review; form opens without a wall or visible challenge. Three-step flow uses Next and Submit labels. |
+| Optimizely (SuccessFactors) | Will stop: host review and no form; Apply leads to the career55.sapsf.eu sign-in and create-account pages, not inspectable read-only. |
+| Brain Station 23 (easy.jobs) | Will stop: candidate single sign-on in a frame is a sign-in wall; the SSO page cannot be inspected read-only. |
