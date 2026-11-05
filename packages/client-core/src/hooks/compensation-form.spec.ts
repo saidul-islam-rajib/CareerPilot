@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { CompensationMode, PayPeriod } from '@careerpilot/domain-ui-logic';
 import {
   COMPENSATION_AMOUNT_INVALID,
