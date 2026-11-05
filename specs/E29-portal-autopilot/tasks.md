@@ -1,17 +1,21 @@
 # E29 Portal autopilot — Tasks
 
 - [x] Spec
-- [ ] Config, enums, live switch
-- [ ] Page driver port, fake driver, Playwright driver
-- [ ] Detection and field mapping
-- [ ] Portal accounts and vault
-- [ ] Gmail verification
-- [ ] Flow, runner, throttle
-- [ ] Records, migration, service, routes
-- [ ] Submission and worker integration, rule extension
-- [ ] Readiness report and CLI
-- [ ] Docker portal-worker
+- [x] Config, enums, live switch
+- [x] Page driver port, fake driver, Playwright driver
+- [x] Detection and field mapping
+- [x] Portal accounts and vault
+- [x] Gmail verification
+- [x] Flow, runner, throttle
+- [x] Records, migration, service, routes
+- [x] Submission and worker integration, rule extension
+- [x] Readiness report and CLI
+- [x] Docker portal-worker
 - [ ] api-client, client-core, i18n
 - [ ] Web, mobile, admin screens
-- [ ] Runbook and document updates
-- [ ] Unit tests and fixture e2e
+- [x] Runbook and document updates
+- [x] Unit tests and fixture e2e (scratchpad e2e passes against real Chromium)
+- [!] api-client, client-core hooks, web, mobile and admin Portals screens: handed to another agent. Drafts (types, ports, http, in-memory, hooks, web/mobile/admin screens) are in the session scratchpad `ts/` folder; i18n keys under `portal.*` are already in en.json.
+- [!] Live switch default: literal reading of "on only in production.yaml" conflicts with "fail closed when missing"; built fail-closed everywhere. Owner decides.
+- [!] Forms inside cross-origin frames are read only as a wall; any reCAPTCHA frame is treated as a challenge (conservative).
+- [!] CAREERPILOT_SMTP_HOST is fixed to mailpit in compose; for real application email the owner must point it at the real SMTP host.

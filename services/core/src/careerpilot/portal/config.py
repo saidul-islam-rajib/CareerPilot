@@ -79,6 +79,8 @@ class BrowserConfig(PortalBase):
     navigation_timeout_seconds: float = Field(gt=0)
     action_timeout_seconds: float = Field(gt=0)
     settle_seconds: float = Field(ge=0)
+    idle_timeout_seconds: float = Field(ge=0)
+    new_tab_wait_seconds: float = Field(ge=0)
     viewport_width: int = Field(gt=0)
     viewport_height: int = Field(gt=0)
     headless: bool
@@ -129,6 +131,8 @@ class PortalsConfig(PortalBase):
     negative_answers: list[str]
     declined_answers: list[str]
     placeholder_markers: list[str]
+    frame_wall_markers: list[str]
+    min_required_fields: int = Field(gt=0)
     user_only_steps: list[str]
     summary_version: int = Field(gt=0)
 

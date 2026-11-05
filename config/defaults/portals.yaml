@@ -23,6 +23,8 @@ portals:
     navigation_timeout_seconds: 30
     action_timeout_seconds: 10
     settle_seconds: 1.5
+    idle_timeout_seconds: 6
+    new_tab_wait_seconds: 1
     viewport_width: 1280
     viewport_height: 900
     headless: true
@@ -193,5 +195,7 @@ portals:
     - {host: ashbyhq.com, policy: review, note: "Public application forms; terms not reviewed."}
     - {host: smartrecruiters.com, policy: review, note: "Public application forms; terms not reviewed."}
     - {host: hrythmic.com, policy: review, note: "Terms not reviewed."}
+  frame_wall_markers: [/auth/, /sso/, /login, /signin, /sign-in]
+  min_required_fields: 2
   placeholder_markers: ["{{", "}}", "[company", "[your", "<company", "<employer", lorem ipsum]
   user_only_steps: [captcha_mfa_identity, assessments, interviews_and_video, legal_declarations, payments, offers]

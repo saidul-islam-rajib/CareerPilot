@@ -28,6 +28,7 @@ class PageSnapshot:
     title: str
     text: str
     present: frozenset[str] = field(default_factory=frozenset[str])
+    frames: tuple[str, ...] = ()
 
 
 class PageDriver(Protocol):

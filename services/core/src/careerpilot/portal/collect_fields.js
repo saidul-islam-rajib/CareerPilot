@@ -15,7 +15,7 @@
   };
   const out = []; const groups = {}; let n = 0;
   document.querySelectorAll('input,select,textarea').forEach((el) => {
-    const type = (el.getAttribute('type') || el.tagName).toLowerCase();
+    const type = (el.getAttribute('type') || (el.tagName === 'INPUT' ? 'text' : el.tagName)).toLowerCase();
     if (['hidden', 'submit', 'button', 'image', 'reset'].includes(type)) return;
     if (type !== 'file' && !visible(el)) return;
     if (type === 'radio') {

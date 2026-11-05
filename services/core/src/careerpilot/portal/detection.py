@@ -92,6 +92,16 @@ class PageClassifier:
             return PageKind.REGISTER
         if count:
             return PageKind.SIGN_IN
-        if any(f.kind is not FieldKind.OTHER for f in fields) and not job_stage:
+        if not fields and self._framed_wall(snapshot):
+            return PageKind.SIGN_IN
+        if not job_stage and self._looks_like_form(fields):
             return PageKind.FORM
         return PageKind.JOB
+
+    def _framed_wall(self, snapshot: PageSnapshot) -> bool:
+        markers = self._config.frame_wall_markers
+        return any(marker in url.lower() for url in snapshot.frames for marker in markers)
+
+    def _looks_like_form(self, fields: list[FormField]) -> bool:
+        required = sum(1 for f in fields if f.required and f.kind is not FieldKind.OTHER)
+        return any(f.kind is FieldKind.FILE for f in fields) or required >= self._config.min_required_fields

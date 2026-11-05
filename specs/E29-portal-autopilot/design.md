@@ -51,3 +51,26 @@ Nothing is `allowed` by default because automation cannot be shown permitted fro
 ## Hard stops
 
 Each is a `StopReason` with a message key, official link, prepared answers and a notification. Stops only the user can clear (captcha, MFA, identity, assessment, video, payment, attestation) are resumed by recording the user's own completion; stops answerable in the app (unknown question, no exact choice, demographic, verification) are resumed by saving the answer.
+
+## Readiness findings on real public pages (2026-11-05, read-only, no profile attached)
+
+| Employer | Page | Finding |
+|---|---|---|
+| Brain Station 23 (easy.jobs) | company page lists open jobs such as `/oqwvmsgpnk-aspnet-developer`; each Apply Now goes to `/apply` | The apply page is a candidate single sign-on (`app.easy.jobs/auth/sso/candidate`) loaded in a cross-origin frame. Sign-in wall, form not visible without an account. Host is review. |
+| Therap (Trakstar Hire) | `https://therap.hire.trakstar.com/jobs/fk0hw8r/` (Software Engineer) | Public form on the job page: first/last name, email, phone, university, major, CGPA, GitHub, years of experience, current company, LinkedIn, resume. reCAPTCHA frames are present, so Autopilot stops for the user. Host is review. |
+| Cefalo | `career.cefalo.com/job/...` pages listed are past their deadline (closed); `/open-application` is a three-step form (upload CV, details, review) with reCAPTCHA | Closed jobs stop with Closed; the open application stops at reCAPTCHA. Host is review. |
+| Optimizely (SAP SuccessFactors) | `careers.optimizely.com/job/Dhaka-Software-Engineer-II-1212-BD/1363501155/` | The job page shows no Apply control without signing in at `career55.sapsf.eu`; sign-in wall, form not inspectable read-only. Host is review. |
+
+Every host is also `review`, so a live run would stop at Host review until an admin approves it.
+
+## Known gaps
+
+- Forms inside cross-origin frames are not read; they are reported as a wall.
+- Any reCAPTCHA frame is treated as a challenge, including invisible v3 (conservative).
+
+## Readiness verdicts after driver fixes (2026-11-05, no profile attached, all hosts review)
+
+- Brain Station 23 (easy.jobs): Apply opens a new tab to a candidate single sign-on; sign-in wall; will stop (host review, wall unverified).
+- Therap (Trakstar): reCAPTCHA present; will stop (host review, CAPTCHA).
+- Cefalo: listed jobs are closed (past deadline); open application has reCAPTCHA; will stop.
+- Optimizely (SuccessFactors): no Apply control without signing in; will stop (no form).

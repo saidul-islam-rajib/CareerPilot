@@ -208,5 +208,34 @@ def test_readiness_stops_at_a_wall_without_creating_accounts(config: PortalsConf
 def test_the_page_budget_stops_endless_forms(config: PortalsConfig, accounts: PortalAccounts) -> None:
     driver = application_site()
     driver.pages["step1"].buttons = {"Next": "step1"}
-    driver.pages["step1"].fields = [driver.pages["step1"].fields[0]]
+    driver.pages["step1"].fields = driver.pages["step1"].fields[:2]
     assert run_flow(driver, config, accounts, job_input(), CODE).stop is StopReason.PAGE_LIMIT
+
+
+def test_a_cross_origin_login_frame_is_a_sign_in_wall(config: PortalsConfig, accounts: PortalAccounts) -> None:
+    driver = application_site()
+    driver.pages["job"] = FakePage(text="Apply", buttons={"Apply now": "framed"})
+    driver.pages["framed"] = FakePage(text="", frames=("https://app.vendor.test/auth/sso/candidate?x=1",))
+    result = run_flow(driver, config, accounts, job_input(RunMode.READINESS))
+    assert result.wall is WallKind.SIGN_IN
+    assert result.stop is StopReason.WALL_UNVERIFIED
+
+
+def test_a_job_page_with_only_search_fields_is_not_a_form(config: PortalsConfig, accounts: PortalAccounts) -> None:
+    driver = application_site()
+    driver.pages["job"] = FakePage(
+        text="Software Engineer",
+        fields=[
+            field("q", "Search by keyword", required=False),
+            field("l", "Search by location", required=False),
+            field("a", "Alert", FieldKind.NUMBER),
+        ],
+    )
+    assert run_flow(driver, config, accounts, job_input(RunMode.READINESS)).stop is StopReason.NO_FORM
+
+
+def test_a_single_file_field_is_enough_to_be_a_form(config: PortalsConfig, accounts: PortalAccounts) -> None:
+    driver = application_site()
+    driver.pages["job"] = FakePage(text="Software Engineer", fields=[field("cv", "Resume", FieldKind.FILE)])
+    result = run_flow(driver, config, accounts, job_input(RunMode.READINESS))
+    assert result.outcome is FlowOutcome.READY

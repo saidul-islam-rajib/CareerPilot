@@ -9,4 +9,4 @@
 - [x] Docker: SMTP to Mailpit; end-to-end check: discovery → match → rule approval → email with CV in Mailpit
 - [ ] Inbound bounce processing (move "Confirmed" to "Failed" on a late bounce)
 - [ ] Portal routes with browser automation where permitted (ATS adapters)
-- [ ] Rule simulation (dry run) and deadline buffer settings (§27.2)
+- [x] Rule simulation (dry run) and deadline buffer settings (§27.2)

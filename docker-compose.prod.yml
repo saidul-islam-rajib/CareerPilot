@@ -24,6 +24,7 @@ x-api-env: &api-env
   CAREERPILOT_GOOGLE_CLIENT_ID: ${CAREERPILOT_GOOGLE_CLIENT_ID:-}
   CAREERPILOT_GOOGLE_CLIENT_SECRET: ${CAREERPILOT_GOOGLE_CLIENT_SECRET:-}
   CAREERPILOT_VAULT_KEY: ${CAREERPILOT_VAULT_KEY:-}
+  CAREERPILOT_REAL_APPLICATIONS: ${CAREERPILOT_REAL_APPLICATIONS:-}
   OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4318
 
 x-api-build: &api-build
@@ -153,6 +154,25 @@ services:
     restart: unless-stopped
     logging: *logging
     command: ["careerpilot-workers"]
+    environment:
+      <<: *api-env
+      CAREERPILOT_TEMPORAL_ADDRESS: temporal:7233
+    volumes:
+      - profile-files:/data/files
+    networks: [backend]
+    depends_on:
+      <<: *api-deps
+      temporal:
+        condition: service_healthy
+
+  portal-worker:
+    build:
+      context: .
+      dockerfile: infra/docker/portal.Dockerfile
+    restart: unless-stopped
+    logging: *logging
+    shm_size: "1gb"
+    command: ["careerpilot-portal-worker"]
     environment:
       <<: *api-env
       CAREERPILOT_TEMPORAL_ADDRESS: temporal:7233

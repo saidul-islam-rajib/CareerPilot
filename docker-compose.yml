@@ -73,6 +73,7 @@ services:
       CAREERPILOT_GOOGLE_CLIENT_ID: ${CAREERPILOT_GOOGLE_CLIENT_ID:-}
       CAREERPILOT_GOOGLE_CLIENT_SECRET: ${CAREERPILOT_GOOGLE_CLIENT_SECRET:-}
       CAREERPILOT_VAULT_KEY: ${CAREERPILOT_VAULT_KEY:-}
+      CAREERPILOT_REAL_APPLICATIONS: ${CAREERPILOT_REAL_APPLICATIONS:-}
     volumes:
       - profile-files:/data/files
     ports:
@@ -126,6 +127,28 @@ services:
       dockerfile: infra/docker/api.Dockerfile
     command: ["careerpilot-workers"]
     restart: on-failure
+    environment:
+      <<: *api-env
+      CAREERPILOT_TEMPORAL_ADDRESS: temporal:7233
+    volumes:
+      - profile-files:/data/files
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis-cache:
+        condition: service_started
+      redis-coord:
+        condition: service_started
+      temporal:
+        condition: service_started
+
+  portal-worker:
+    build:
+      context: .
+      dockerfile: infra/docker/portal.Dockerfile
+    command: ["careerpilot-portal-worker"]
+    restart: on-failure
+    shm_size: "1gb"
     environment:
       <<: *api-env
       CAREERPILOT_TEMPORAL_ADDRESS: temporal:7233

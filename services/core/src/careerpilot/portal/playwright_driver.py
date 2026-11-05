@@ -3,8 +3,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, cast
 
+from playwright.sync_api import BrowserContext, Page, sync_playwright
 from playwright.sync_api import Error as PlaywrightError
-from playwright.sync_api import Page, sync_playwright
 
 from careerpilot.portal.config import BrowserConfig
 from careerpilot.portal.driver import DriverError, FormField, PageDriver, PageSnapshot
@@ -27,7 +27,8 @@ def wrapped(error: PlaywrightError) -> DriverError:
 
 
 class PlaywrightDriver:
-    def __init__(self, page: Page, config: BrowserConfig) -> None:
+    def __init__(self, context: BrowserContext, page: Page, config: BrowserConfig) -> None:
+        self._context = context
         self._page = page
         self._config = config
 
@@ -40,11 +41,19 @@ class PlaywrightDriver:
     def snapshot(self, selectors: Sequence[str]) -> PageSnapshot:
         try:
             self._page.wait_for_load_state("domcontentloaded", timeout=self._config.navigation_timeout_seconds * MILLISECONDS)
+            self._wait_idle()
             text = self._page.inner_text("body")[:MAX_BODY_CHARS]
             present = frozenset(s for s in selectors if self._count(s) > 0)
-            return PageSnapshot(url=self._page.url, title=self._page.title(), text=text, present=present)
+            frames = tuple(frame.url for frame in self._page.frames[1:])
+            return PageSnapshot(url=self._page.url, title=self._page.title(), text=text, present=present, frames=frames)
         except PlaywrightError as error:
             raise wrapped(error) from error
+
+    def _wait_idle(self) -> None:
+        try:
+            self._page.wait_for_load_state("networkidle", timeout=self._config.idle_timeout_seconds * MILLISECONDS)
+        except PlaywrightError:
+            return
 
     def fields(self) -> list[FormField]:
         try:
@@ -158,7 +167,14 @@ class PlaywrightDriver:
 
     def _click(self, target: Any) -> bool:
         self._act(lambda: target.click(timeout=self._timeout()))
+        self._adopt_new_tab()
         return True
+
+    def _adopt_new_tab(self) -> None:
+        self._act(lambda: self._page.wait_for_timeout(self._config.new_tab_wait_seconds * MILLISECONDS))
+        newest = self._context.pages[-1]
+        if newest is not self._page:
+            self._page = newest
 
     def _act(self, action: Any) -> None:
         try:
@@ -177,6 +193,6 @@ def chromium_session(config: BrowserConfig) -> Generator[PageDriver]:
                 accept_downloads=False,
             )
             page = context.new_page()
-            yield PlaywrightDriver(page, config)
+            yield PlaywrightDriver(context, page, config)
         finally:
             browser.close()

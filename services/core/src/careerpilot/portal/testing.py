@@ -12,6 +12,7 @@ class FakePage:
     present: frozenset[str] = field(default_factory=frozenset[str])
     buttons: dict[str, str | Callable[["FakeDriver"], str]] = field(default_factory=dict[str, str | Callable[["FakeDriver"], str]])
     selectors: dict[str, str] = field(default_factory=dict[str, str])
+    frames: tuple[str, ...] = ()
 
 
 @dataclass
@@ -46,6 +47,7 @@ class FakeDriver:
             title=page.title,
             text=page.text,
             present=frozenset(s for s in selectors if s in page.present),
+            frames=page.frames,
         )
 
     def fields(self) -> list[FormField]:

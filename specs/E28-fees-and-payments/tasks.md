@@ -4,10 +4,10 @@
 - [x] Backend: enums, config, models, repository, migration, services, routes
 - [x] Backend unit tests
 - [x] Excluded employers (matching, automation, submission) and private push text, with tests
-- [ ] API client: types, ports, HTTP, in-memory
-- [ ] client-core hooks, i18n catalog
-- [ ] Web screens (fees, settings)
-- [ ] Mobile screens (fees, settings)
+- [x] API client: types, ports, HTTP, in-memory
+- [x] client-core hooks, i18n catalog
+- [x] Web screens (fees, settings)
+- [x] Mobile screens (fees, settings)
 - [!] Payment providers and webhooks (REQ-10.11): v1 records only. Option A (chosen): no gateway, the user pays on the official site and records the outcome. Option B: add a payment-provider interface with signed-webhook confirmation. Recommendation: A until a provider and the payment rule limits are approved by the owner.
 - [!] Payment rules with limits (REQ-10.10 maximum per application and in total): nothing is paid by CareerPilot, so no spending limits are enforced; automatic rules keep "fees allowed: none" (E25). Option A (chosen): record only. Option B: warn when recorded fees exceed a rule's limit. Recommendation: B when payments are automated.
 - [!] Receipt files: receipts are text references. Option A (chosen): references. Option B: upload and store a receipt image or PDF like government applicant copies. Recommendation: B in a follow-up.
