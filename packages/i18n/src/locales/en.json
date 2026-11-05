@@ -2722,9 +2722,9 @@
       "education": "Required exams",
       "addExam": "Add exam",
       "minResult": "Minimum result",
-    "scale": "Result scale",
-    "relaxationStatus": "Special status",
-    "exam": "Exam",
+      "scale": "Result scale",
+      "relaxationStatus": "Special status",
+      "exam": "Exam",
       "subjects": "Subject keywords (comma separated)",
       "quotas": "Quotas",
       "addQuota": "Add quota",
@@ -2826,7 +2826,7 @@
       "nothing_to_write": "Your profile has no facts to write from yet. Add some and try again.",
       "text": "Enter some text.",
       "instructions": "The instructions are too long.",
-    "generic": "Something went wrong. Try again."
+      "generic": "Something went wrong. Try again."
     },
     "headings": {
       "summary": "Summary",
@@ -3665,7 +3665,16 @@
       "markDone": "I finished it on the site",
       "alreadySent": "Submit was already clicked, so Autopilot will not send this again. Check the site and record the result yourself.",
       "noAnswers": "Nothing to answer here. Finish the step yourself on the official page.",
-      "failed": "We couldn't update this application."
+      "failed": "We couldn't update this application.",
+      "status": "Autopilot status",
+      "proof": "Proof of submission",
+      "confirmationText": "Confirmation",
+      "finalUrl": "Final page",
+      "screenshot": "Screenshot saved",
+      "reason": "Reason",
+      "checklist": "Finish this on the site",
+      "none": "Autopilot has not tried this application yet.",
+      "answerPlaceholder": "Type your answer"
     },
     "readiness": {
       "title": "Readiness check",
@@ -3693,7 +3702,37 @@
       "save": "Save",
       "loadFailed": "We couldn't load portals.",
       "saveFailed": "We couldn't save this portal.",
-      "empty": "No portals yet."
+      "empty": "No portals yet.",
+      "allow": "Allow",
+      "block": "Block",
+      "review": "Mark for review",
+      "readinessSite": "Run readiness on a job link",
+      "readinessHint": "Read-only. Nothing is typed into the site."
+    },
+    "attemptState": {
+      "stopped": "Needs you",
+      "confirmed": "Submitted and confirmed",
+      "uncertain": "Outcome unknown",
+      "failed": "Failed",
+      "readiness_only": "Checked only"
+    },
+    "error": {
+      "autopilot_not_enabled": "Turn on Autopilot first.",
+      "summary_not_acknowledged": "Read and acknowledge what Autopilot may do first.",
+      "attempt_not_resumable": "This application can no longer be resumed.",
+      "already_submitted": "Submit was already clicked, so it cannot be sent again.",
+      "duplicate_account": "A sign-in for this site and email is already saved.",
+      "invalid_host": "Enter a valid site address.",
+      "invalid_url": "Enter a valid job link.",
+      "unknown_host": "This site is not known yet.",
+      "portal_not_found": "That item was not found."
+    },
+    "menu": {
+      "autopilot": "Autopilot",
+      "autopilotBody": "Let CareerPilot finish applications on employer sites",
+      "accountsBody": "Sign-ins CareerPilot created or saved for employer sites",
+      "statusOn": "On",
+      "statusOff": "Off"
     }
   }
 }
