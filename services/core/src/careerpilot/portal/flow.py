@@ -346,7 +346,8 @@ class PortalFlow:
         if after.kind is PageKind.CONFIRMATION:
             self._result.confirmation_text = self._evidence_text(after)
             raise Finished(outcome=FlowOutcome.CONFIRMED)
-        raise Finished(outcome=FlowOutcome.UNCERTAIN)
+        stop = StopReason.CAPTCHA if after.kind is PageKind.CAPTCHA else None
+        raise Finished(stop, FlowOutcome.UNCERTAIN)
 
     def _evidence_text(self, observation: Observation) -> str:
         limit = self._cfg.limits.max_evidence_chars

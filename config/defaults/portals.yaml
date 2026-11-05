@@ -57,12 +57,12 @@ portals:
     submit: [submit application, submit, send application, finish application]
     verify: [verify, confirm, submit code, continue]
   captcha_selectors:
-    - iframe[src*="recaptcha"]
-    - iframe[src*="hcaptcha"]
+    - iframe[src*="recaptcha/api2/anchor"][src*="size=normal"]
+    - iframe[src*="recaptcha/api2/anchor"][src*="size=compact"]
+    - iframe[src*="recaptcha/api2/bframe"]
+    - iframe[src*="hcaptcha.com"][src*="frame=checkbox"]
+    - iframe[src*="hcaptcha.com"][src*="frame=challenge"]
     - iframe[src*="challenges.cloudflare.com"]
-    - .g-recaptcha
-    - .h-captcha
-    - .cf-turnstile
     - "#cf-challenge-running"
   positive_answers: ["yes", "true", "i do", "i am"]
   negative_answers: ["no", "false", "i do not", "i am not"]
@@ -153,14 +153,12 @@ portals:
         apply: ["#apply_button", "a:has-text('Apply')"]
         submit: ["button[type=submit]", "#submit_app"]
         confirmation: ["#application_confirmation", ".flash-success"]
-        captcha: ["iframe[src*=recaptcha]"]
     - key: lever
       hosts: [lever.co, jobs.lever.co]
       selectors:
         apply: ["a.postings-btn", "a:has-text('Apply for this job')"]
         submit: ["button#btn-submit", "button[type=submit]"]
         confirmation: [".application-confirmation"]
-        captcha: ["iframe[src*=hcaptcha]"]
     - key: workable
       hosts: [workable.com, apply.workable.com]
       selectors:

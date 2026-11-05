@@ -239,3 +239,19 @@ def test_a_single_file_field_is_enough_to_be_a_form(config: PortalsConfig, accou
     driver.pages["job"] = FakePage(text="Software Engineer", fields=[field("cv", "Resume", FieldKind.FILE)])
     result = run_flow(driver, config, accounts, job_input(RunMode.READINESS))
     assert result.outcome is FlowOutcome.READY
+
+
+def test_a_challenge_after_submit_stops_and_is_never_resubmitted(config: PortalsConfig, accounts: PortalAccounts) -> None:
+    driver = application_site()
+    driver.pages["done"] = FakePage(text="Almost there", present=frozenset(config.captcha_selectors[:1]))
+    result = run_flow(driver, config, accounts, job_input(), CODE)
+    assert result.outcome is FlowOutcome.UNCERTAIN
+    assert result.stop is StopReason.CAPTCHA
+    assert driver.clicks.count("Submit application") == 1
+
+
+def test_only_visible_challenge_widgets_are_watched(config: PortalsConfig) -> None:
+    joined = " ".join(config.captcha_selectors)
+    assert "size=normal" in joined and "bframe" in joined and "frame=checkbox" in joined
+    assert ".g-recaptcha" not in config.captcha_selectors
+    assert 'iframe[src*="recaptcha"]' not in config.captcha_selectors

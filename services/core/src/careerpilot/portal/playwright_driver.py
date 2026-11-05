@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, cast
 
-from playwright.sync_api import BrowserContext, Page, sync_playwright
+from playwright.sync_api import BrowserContext, Frame, Page, sync_playwright
 from playwright.sync_api import Error as PlaywrightError
 
 from careerpilot.portal.config import BrowserConfig
@@ -15,6 +15,7 @@ HANDLE_ATTRIBUTE = "data-cp"
 GROUP_PREFIX = "group:"
 CONTENT_TYPE = "application/pdf"
 MAX_BODY_CHARS = 20000
+MAX_CANDIDATES = 5
 
 COLLECT_FIELDS = (Path(__file__).parent / "collect_fields.js").read_text(encoding="utf-8")
 
@@ -31,8 +32,10 @@ class PlaywrightDriver:
         self._context = context
         self._page = page
         self._config = config
+        self._scope: Page | Frame = page
 
     def open(self, url: str) -> None:
+        self._scope = self._page
         try:
             self._page.goto(url, wait_until="domcontentloaded", timeout=self._config.navigation_timeout_seconds * MILLISECONDS)
         except PlaywrightError as error:
@@ -43,7 +46,7 @@ class PlaywrightDriver:
             self._page.wait_for_load_state("domcontentloaded", timeout=self._config.navigation_timeout_seconds * MILLISECONDS)
             self._wait_idle()
             text = self._page.inner_text("body")[:MAX_BODY_CHARS]
-            present = frozenset(s for s in selectors if self._count(s) > 0)
+            present = frozenset(s for s in selectors if self._visible_count(s) > 0)
             frames = tuple(frame.url for frame in self._page.frames[1:])
             return PageSnapshot(url=self._page.url, title=self._page.title(), text=text, present=present, frames=frames)
         except PlaywrightError as error:
@@ -56,11 +59,25 @@ class PlaywrightDriver:
             return
 
     def fields(self) -> list[FormField]:
+        self._scope = self._page
         try:
-            raw = cast("list[dict[str, Any]]", self._page.evaluate(COLLECT_FIELDS))
+            raw = self._collect(self._page)
+            for frame in self._page.frames[1:]:
+                if raw:
+                    break
+                raw = self._collect(frame)
         except PlaywrightError as error:
             raise wrapped(error) from error
         return [self._field(item) for item in raw]
+
+    def _collect(self, scope: Page | Frame) -> list[dict[str, Any]]:
+        try:
+            raw = cast("list[dict[str, Any]]", scope.evaluate(COLLECT_FIELDS))
+        except PlaywrightError:
+            return []
+        if raw:
+            self._scope = scope
+        return raw
 
     @staticmethod
     def _field(item: dict[str, Any]) -> FormField:
@@ -122,26 +139,27 @@ class PlaywrightDriver:
         return self._config.action_timeout_seconds * MILLISECONDS
 
     def _element(self, handle: str) -> Any:
-        return self._page.locator(f'[{HANDLE_ATTRIBUTE}="{handle}"]')
+        return self._scope.locator(f'[{HANDLE_ATTRIBUTE}="{handle}"]')
 
     def _radio(self, name: str, option: str) -> None:
-        for radio in self._page.locator(f'input[type=radio][name="{name}"]').all():
+        for radio in self._scope.locator(f'input[type=radio][name="{name}"]').all():
             label = radio.evaluate(RADIO_LABEL)
             if str(label).strip() == option:
                 radio.check(timeout=self._timeout())
                 return
         raise DriverError("radio_option_missing")
 
-    def _count(self, selector: str) -> int:
+    def _visible_count(self, selector: str) -> int:
         try:
-            return self._page.locator(selector).count()
+            matches = self._page.locator(selector)
+            return sum(1 for index in range(min(matches.count(), MAX_CANDIDATES)) if matches.nth(index).is_visible())
         except PlaywrightError:
             return 0
 
     def _visible_first(self, selector: str) -> Any | None:
         try:
-            matches = self._page.locator(selector)
-            for index in range(min(matches.count(), 5)):
+            matches = self._scope.locator(selector)
+            for index in range(min(matches.count(), MAX_CANDIDATES)):
                 candidate = matches.nth(index)
                 if candidate.is_visible():
                     return candidate
@@ -150,7 +168,7 @@ class PlaywrightDriver:
         return None
 
     def _labelled(self, label: str) -> Any | None:
-        page = self._page
+        page = self._scope
         candidates = (
             page.get_by_role("button", name=label),
             page.get_by_role("link", name=label),
@@ -158,7 +176,7 @@ class PlaywrightDriver:
         )
         for candidate in candidates:
             try:
-                for index in range(min(candidate.count(), 5)):
+                for index in range(min(candidate.count(), MAX_CANDIDATES)):
                     if candidate.nth(index).is_visible():
                         return candidate.nth(index)
             except PlaywrightError:
@@ -175,6 +193,7 @@ class PlaywrightDriver:
         newest = self._context.pages[-1]
         if newest is not self._page:
             self._page = newest
+            self._scope = newest
 
     def _act(self, action: Any) -> None:
         try:
