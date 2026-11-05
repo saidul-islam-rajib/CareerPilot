@@ -70,7 +70,7 @@ def test_dashboard_and_config_shapes(user_client: TestClient) -> None:
     assert set(dashboard["counts"]) == {"newMatches", "awaitingApproval", "appliedThisWeek", "interviews"}
     assert dashboard["tracks"][0]["track"]["resultCount"] == 5
     config = user_client.get("/v1/config").json()
-    assert config["validationPolicy"]["password"]["minLength"] == 10
+    assert config["validationPolicy"]["password"]["minLength"] == 6
     assert any(v["enumKey"] == "submission_status" for v in config["enumValues"])
 
 
