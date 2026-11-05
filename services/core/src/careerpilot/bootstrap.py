@@ -95,6 +95,7 @@ from careerpilot.platform.config import (
 )
 from careerpilot.platform.coordination import KeySpace, MetadataCache, SignInGuard, release_fingerprint
 from careerpilot.platform.email_delivery import (
+    LateMailbox,
     BackgroundCourier,
     Courier,
     DirectCourier,
@@ -402,12 +403,25 @@ def push_dispatcher(settings: Settings, override: PushSender | None) -> PushDisp
     return BackgroundPush(sender, ThreadPoolExecutor(max_workers=push.workers, thread_name_prefix=PUSH_THREAD_PREFIX))
 
 
+@dataclass(frozen=True)
+class MailRoute:
+    sender: EmailSender
+    push: PushDispatcher
+    mailbox: LateMailbox
+    live: Callable[[], bool]
+
+
+def mail_route(cfg: Settings, options: ContainerOverrides, sender: EmailSender) -> MailRoute:
+    forced = options.real_applications
+    live = (lambda: forced) if forced is not None else (lambda: real_applications_enabled(cfg.submission))
+    return MailRoute(sender, push_dispatcher(cfg, options.push_sender), LateMailbox(), live)
+
+
 def _messaging(
     candidate: CandidateContext,
     repos: Repositories,
     storage: FileStorage,
-    sender: EmailSender,
-    push: PushDispatcher,
+    routes: MailRoute,
 ) -> tuple[NotificationService, MessagingService, SubmissionService]:
     notifications = NotificationService(
         NotificationContext(
@@ -418,7 +432,7 @@ def _messaging(
             ids=candidate.ids,
             config=candidate.settings.messaging,
             devices=repos.push_devices,
-            push=push,
+            push=routes.push,
             private_lookup=lambda user_id: repos.workspaces.get(user_id).preferences.private_notifications,
         )
     )
@@ -435,11 +449,13 @@ def _messaging(
         SubmissionContext(
             candidate=candidate,
             platform=repos.platform.get,
-            sender=sender,
+            sender=routes.sender,
             storage=storage,
             policy=automation_policy(candidate.settings),
             on_status=notifications.application_changed,
             handled_elsewhere=autopilot_handles(repos.portal_records, candidate.settings.portals),
+            mailbox=routes.mailbox,
+            live=routes.live,
         )
     )
     return notifications, messaging, submissions
@@ -454,6 +470,7 @@ class IntegrationParts:
     store: KeyValueStore
     keys: KeySpace
     secret: str
+    mailbox: LateMailbox
 
 
 def _integrations(parts: IntegrationParts, options: ContainerOverrides) -> IntegrationServices:
@@ -473,6 +490,7 @@ def _integrations(parts: IntegrationParts, options: ContainerOverrides) -> Integ
         keys=parts.keys,
     )
     connections = ConnectionService(context)
+    parts.mailbox.attach(connections)
     calendar = CalendarSync(
         CalendarContext(
             config=settings.calendar,
@@ -647,7 +665,8 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     opportunity_service = OpportunityService(candidate)
     approvals = ApprovalService(candidate, opportunity_service)
     sender = options.email_sender or email_sender_for(cfg)
-    notifications, messaging, submissions = _messaging(candidate, repos, storage, sender, push_dispatcher(cfg, options.push_sender))
+    route = mail_route(cfg, options, sender)
+    notifications, messaging, submissions = _messaging(candidate, repos, storage, route)
     automation = automation_service(candidate, repos.platform.get, approvals, notifications.notify_once)
     recommendations = RecommendationService(
         RecommendationContext(
@@ -721,7 +740,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     )
     admin_catalog = AdminCatalogService(admin, source_checks, source_policy, recommendations.refresh_all)
     live_figures = _live_figures(admin_catalog, user_records, repos)
-    integrations = _integrations(IntegrationParts(candidate, repos, notifications, tokens, coord_store, keys, secret), options)
+    integrations = _integrations(IntegrationParts(candidate, repos, notifications, tokens, coord_store, keys, secret, route.mailbox), options)
     privacy = build_privacy(
         PrivacyParts(
             candidate=candidate,

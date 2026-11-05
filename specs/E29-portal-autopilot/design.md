@@ -63,10 +63,15 @@ Each is a `StopReason` with a message key, official link, prepared answers and a
 
 Every host is also `review`, so a live run would stop at Host review until an admin approves it.
 
-## Known gaps
+## Challenge and frame handling
 
-- Forms inside cross-origin frames are not read; they are reported as a wall.
-- Any reCAPTCHA frame is treated as a challenge, including invisible v3 (conservative).
+- A challenge stops the run only when visible: reCAPTCHA v2 anchor frames with `size=normal` or `compact`, the visible challenge frame (`bframe`), an hCaptcha checkbox or challenge frame, a Turnstile widget. Invisible or badge-only variants (v3, `size=invisible`, `grecaptcha.execute`) do not stop on their own. Selectors live in `config/defaults/portals.yaml` and are matched on visibility.
+- A challenge at or after submit stops with CAPTCHA and the outcome stays Outcome unknown; the application is never resubmitted. Nothing solves, relays or evades a challenge.
+- When the page has no form fields and a child frame does, the driver operates on that frame.
+
+## Email route
+
+With the live switch on, application email goes through the Gmail API as the user's own mailbox (`gmail.send`, requested only when the user enables the email route; the status reports `sendAccess`). With no connection or no send scope the application goes to Manual action required with the prepared email. With the switch off, mail goes to Mailpit as before.
 
 ## Readiness verdicts after driver fixes (2026-11-05, no profile attached, all hosts review)
 
@@ -74,3 +79,7 @@ Every host is also `review`, so a live run would stop at Host review until an ad
 - Therap (Trakstar): reCAPTCHA present; will stop (host review, CAPTCHA).
 - Cefalo: listed jobs are closed (past deadline); open application has reCAPTCHA; will stop.
 - Optimizely (SuccessFactors): no Apply control without signing in; will stop (no form).
+
+## Readiness verdicts after the second pass (2026-11-05, read-only)
+
+See the end of this file for the latest run; Trakstar and Cefalo use invisible reCAPTCHA (`grecaptcha.execute`, `size: invisible`), so they no longer stop on a challenge by themselves. Hosts remain `review`, so an admin approval is still required.

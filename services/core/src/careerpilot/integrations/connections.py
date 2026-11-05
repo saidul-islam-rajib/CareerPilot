@@ -4,7 +4,7 @@ import os
 import secrets
 from collections.abc import Callable, Mapping
 from contextlib import suppress
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import timedelta
 from urllib.parse import urlencode
 
@@ -21,6 +21,14 @@ from careerpilot.integrations.vault import seal_tokens, unseal_tokens
 from careerpilot.platform.clock import Clock, IdGenerator, iso, parse_iso
 from careerpilot.platform.config import GoogleConfig, IntegrationsConfig, web_base_url
 from careerpilot.platform.coordination import KeyNamespace, KeySpace
+from careerpilot.platform.email_delivery import (
+    MESSAGE_ID,
+    DeliveryError,
+    MailboxUnavailableError,
+    OutgoingEmail,
+    SentReceipt,
+    build_message,
+)
 from careerpilot.platform.enums import ConnectFailure, ConnectionStatus, IntegrationProvider, SyncFailure
 from careerpilot.platform.errors import DomainError, ErrorCode, validation_error
 from careerpilot.platform.keyvalue import KeyValueStore
@@ -113,7 +121,7 @@ class ConnectionService:
             raise validation_error(self._google.redirect_base_url_env) from error
         return f"{base}{self._google.callback_path}"
 
-    def authorize_url(self, user_id: str) -> AuthorizeUrl:
+    def authorize_url(self, user_id: str, email_route: bool = False) -> AuthorizeUrl:
         if not self.configured():
             raise DomainError(ErrorCode.SERVICE_UNAVAILABLE, ConnectFailure.NOT_CONFIGURED.value)
         verifier = secrets.token_urlsafe(self._google.pkce_verifier_bytes)
@@ -126,7 +134,7 @@ class ConnectionService:
                 "client_id": self._credentials()[0],
                 "redirect_uri": self.redirect_uri(),
                 "response_type": "code",
-                "scope": " ".join(self._google.scopes),
+                "scope": " ".join(self._requested_scopes(email_route)),
                 "state": state,
                 "code_challenge": challenge_for(verifier),
                 "code_challenge_method": "S256",
@@ -136,6 +144,10 @@ class ConnectionService:
             }
         )
         return AuthorizeUrl(url=f"{self._google.authorize_endpoint}?{query}")
+
+    def _requested_scopes(self, email_route: bool) -> list[str]:
+        extra = [self._google.send_scope] if email_route else []
+        return [*self._google.scopes, *extra]
 
     def complete(self, state: str, code: str | None, denied: str | None) -> str:
         failure = self._finish(state, code, denied)
@@ -158,6 +170,7 @@ class ConnectionService:
             connection=view_of(record),
             mail_access=self._google.mail_scope in record.scopes,
             calendar_access=self._google.calendar_scope in record.scopes,
+            send_access=self._google.send_scope in record.scopes,
         )
 
     def views(self, user_id: str) -> list[ConnectionView]:
@@ -172,6 +185,24 @@ class ConnectionService:
         gateway = self._ctx.gateway
         found = gateway.find_messages(token, query, limit)
         return [message for message in (gateway.read_message(token, item) for item in found) if message is not None]
+
+    def send_as(self, user_id: str, email: OutgoingEmail) -> SentReceipt:
+        record = self._ctx.connections.active(user_id, IntegrationProvider.GOOGLE)
+        if record is None or record.status is not ConnectionStatus.CONNECTED or self._google.send_scope not in record.scopes:
+            raise MailboxUnavailableError
+        try:
+            _, token = self._keeper.access(record)
+            message = build_message(replace(email, sender_address=record.email))
+            self._ctx.gateway.send_message(token, bytes(message))
+        except GoogleError as error:
+            raise self._delivery_error(error) from error
+        return SentReceipt(message_id=str(message[MESSAGE_ID]))
+
+    @staticmethod
+    def _delivery_error(error: GoogleError) -> DeliveryError | MailboxUnavailableError:
+        if error.failure is SyncFailure.TOKEN_REVOKED:
+            return MailboxUnavailableError()
+        return DeliveryError(error.failure.value, retryable=error.failure is SyncFailure.GOOGLE_UNAVAILABLE)
 
     def disconnect(self, user_id: str) -> None:
         record = self._ctx.connections.active(user_id, IntegrationProvider.GOOGLE)

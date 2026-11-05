@@ -54,8 +54,29 @@ class DeliveryUncertainError(Exception):
     pass
 
 
+class MailboxUnavailableError(Exception):
+    pass
+
+
 class EmailSender(Protocol):
     def send(self, email: OutgoingEmail) -> SentReceipt: ...
+
+
+class MailboxSender(Protocol):
+    def send_as(self, user_id: str, email: OutgoingEmail) -> SentReceipt: ...
+
+
+class LateMailbox:
+    def __init__(self) -> None:
+        self._target: MailboxSender | None = None
+
+    def attach(self, target: MailboxSender) -> None:
+        self._target = target
+
+    def send_as(self, user_id: str, email: OutgoingEmail) -> SentReceipt:
+        if self._target is None:
+            raise MailboxUnavailableError
+        return self._target.send_as(user_id, email)
 
 
 def build_message(email: OutgoingEmail) -> EmailMessage:

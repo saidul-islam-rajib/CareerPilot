@@ -17,6 +17,8 @@ class FakeGoogleGateway:
     queries: list[str] = field(default_factory=list[str])
     reads: list[str] = field(default_factory=list[str])
     event_saves: int = 0
+    sent: list[bytes] = field(default_factory=list[bytes])
+    send_failure: SyncFailure | None = None
     exchange_failure: SyncFailure | None = None
     refresh_failure: SyncFailure | None = None
     revoke_failure: SyncFailure | None = None
@@ -56,6 +58,12 @@ class FakeGoogleGateway:
     def save_event(self, access_token: str, event_id: str, draft: CalendarEventDraft) -> None:
         self.event_saves += 1
         self.events[event_id] = draft
+
+    def send_message(self, access_token: str, raw_message: bytes) -> str:
+        if self.send_failure is not None:
+            raise GoogleError(self.send_failure)
+        self.sent.append(raw_message)
+        return f"sent-{len(self.sent)}"
 
     def cancel_event(self, access_token: str, event_id: str) -> None:
         self.events.pop(event_id, None)

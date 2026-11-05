@@ -147,3 +147,16 @@ def test_the_account_email_comes_from_the_profile() -> None:
 def test_senders_are_parsed_with_or_without_a_name() -> None:
     assert parse_sender("Name <A@B.com>") == ("a@b.com", "Name")
     assert parse_sender("a@b.com") == ("a@b.com", "")
+
+
+def test_a_message_is_sent_as_base64_raw_with_the_bearer_token() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json={"id": "m1"})
+
+    assert gateway(handler).send_message("tok", b"Subject: hi\r\n\r\nbody") == "m1"
+    assert seen[0].url.path.endswith("/messages/send")
+    assert seen[0].headers["authorization"] == "Bearer tok"
+    assert base64.urlsafe_b64decode(json.loads(seen[0].content)["raw"]) == b"Subject: hi\r\n\r\nbody"

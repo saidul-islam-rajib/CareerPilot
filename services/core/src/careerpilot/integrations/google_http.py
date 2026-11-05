@@ -109,6 +109,12 @@ class HttpGoogleGateway:
         if not created:
             self._send("PUT", f"{base}/{event_id}", token=access_token, json=document)
 
+    def send_message(self, access_token: str, raw_message: bytes) -> str:
+        url = f"{self._config.gmail_base_url}{self._config.send_path}"
+        raw = base64.urlsafe_b64encode(raw_message).decode()
+        body = self._send("POST", url, token=access_token, json={"raw": raw})
+        return str(body.get("id", ""))
+
     def cancel_event(self, access_token: str, event_id: str) -> None:
         url = f"{self._config.calendar_base_url}/events/{event_id}"
         self._send("DELETE", url, token=access_token, allow=frozenset({HTTPStatus.NOT_FOUND, HTTPStatus.GONE}))

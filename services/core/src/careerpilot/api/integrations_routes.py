@@ -10,8 +10,8 @@ admin_router = APIRouter(prefix="/admin/v1")
 
 
 @router.get("/authorize-url")
-def authorize_url(user: CurrentUser, services: Services) -> JSONResponse:
-    return ok(services.integrations.google.authorize_url(user.id))
+def authorize_url(user: CurrentUser, services: Services, email_route: bool = False) -> JSONResponse:
+    return ok(services.integrations.google.authorize_url(user.id, email_route))
 
 
 @router.get("/callback")

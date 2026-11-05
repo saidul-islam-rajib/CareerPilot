@@ -17,5 +17,9 @@
 - [x] Unit tests and fixture e2e (scratchpad e2e passes against real Chromium)
 - [!] api-client, client-core hooks, web, mobile and admin Portals screens: handed to another agent. Drafts (types, ports, http, in-memory, hooks, web/mobile/admin screens) are in the session scratchpad `ts/` folder; i18n keys under `portal.*` are already in en.json.
 - [!] Live switch default: literal reading of "on only in production.yaml" conflicts with "fail closed when missing"; built fail-closed everywhere. Owner decides.
-- [!] Forms inside cross-origin frames are read only as a wall; any reCAPTCHA frame is treated as a challenge (conservative).
-- [!] CAREERPILOT_SMTP_HOST is fixed to mailpit in compose; for real application email the owner must point it at the real SMTP host.
+- [x] Forms inside cross-origin frames are operated on the frame; challenges stop only when visible (v2 checkbox, bframe, hCaptcha checkbox, Turnstile widget); a challenge at or after submit stops and the outcome stays uncertain.
+- [x] Gmail API send adapter for the email route (`gmail.send` requested only with `?email_route=true`; status `sendAccess`; no connection or scope goes to Manual action required with the prepared email).
+- [x] Adapter selectors for easy.jobs, Trakstar, SAP SuccessFactors and Cefalo from read-only public pages.
+- [x] Live application email no longer needs the SMTP host: with the live switch on it goes through the connected Gmail account; with it off it stays in Mailpit.
+- [!] Client: the Portals/connected-accounts screens must call `authorize-url?emailRoute=true` when the user enables the email route and show reconnect needed when `sendAccess` is false (client agent).
+- [!] The local fixture career site lives only in the scratchpad; register and write paths for the easy.jobs, SuccessFactors and Cefalo structures are covered with FakeDriver unit tests, not extended in a browser fixture.

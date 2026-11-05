@@ -43,6 +43,7 @@ class IntegrationStatus(CamelModel):
     connection: ConnectionView | None = None
     mail_access: bool = False
     calendar_access: bool = False
+    send_access: bool = False
 
 
 class AuthorizeUrl(CamelModel):

@@ -21,6 +21,8 @@ integrations:
       - https://www.googleapis.com/auth/gmail.readonly
       - https://www.googleapis.com/auth/calendar.events
     mail_scope: https://www.googleapis.com/auth/gmail.readonly
+    send_scope: https://www.googleapis.com/auth/gmail.send
+    send_path: /messages/send
     calendar_scope: https://www.googleapis.com/auth/calendar.events
     state_audience: google-oauth
     state_ttl_minutes: 10
