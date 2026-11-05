@@ -142,7 +142,10 @@ portals:
       hosts: [easy.jobs]
       selectors:
         apply: ["a:has-text('Apply')", "button:has-text('Apply')"]
+        sign_in_link: ["a:has-text('Sign in')", "a:has-text('Log in')"]
+        register_link: ["a:has-text('Sign up')", "a:has-text('Create an account')", "a:has-text('Register')"]
         submit: ["button:has-text('Submit')", "button[type=submit]"]
+        next: ["button:has-text('Next')", "button:has-text('Continue')"]
     - key: hrythmic
       hosts: [hrythmic.com, hrythmic.io]
       selectors:
@@ -178,10 +181,21 @@ portals:
       hosts: [hire.trakstar.com]
       selectors:
         apply: ["a:has-text('Apply')", "button:has-text('Apply')"]
+        submit: ["#input_application_form_submit", "input[type=submit][value*='Submit Application']"]
     - key: successfactors
       hosts: [successfactors.com, successfactors.eu, sapsf.com, sapsf.eu, careers.optimizely.com]
       selectors:
-        apply: ["a:has-text('Apply now')", "button:has-text('Apply now')"]
+        apply: ["a.dialogApplyBtn", "a:has-text('Apply now')", "button:has-text('Apply now')"]
+        sign_in_link: ["a[title='Sign in']"]
+        register_link: ["a:has-text('Create an account')", "a:has-text('Create account')", "a:has-text('Register')"]
+        submit: ["button:has-text('Submit')", "button[type=submit]"]
+        next: ["button:has-text('Next')", "button:has-text('Continue')"]
+    - key: cefalo
+      hosts: [career.cefalo.com]
+      selectors:
+        apply: ["a:has-text('Apply')", "button:has-text('Apply')"]
+        next: ["button:has-text('Next')", "button:has-text('Continue')"]
+        submit: ["button:has-text('Submit')", "button[type=submit]"]
   hosts:
     - {host: easy.jobs, policy: review, note: "Terms allow one personal non-commercial copy of content; nothing found on automated applying (2026-11-05)."}
     - {host: hire.trakstar.com, policy: review, note: "Trakstar Hire hosted board; automation terms not found (2026-11-05)."}
