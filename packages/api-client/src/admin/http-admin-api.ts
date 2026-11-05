@@ -4,6 +4,7 @@ import type { CareerPilotAdminApi } from './admin-ports';
 import type { PageQuery } from './admin-types';
 import { uploadForm } from '../http/http-api';
 import { createHttpGovernmentAdmin } from '../government/http';
+import { createHttpPortalAdmin } from '../portal/http';
 import { createHttpPrivacyAdmin } from '../privacy/http';
 
 const enc = encodeURIComponent;
@@ -31,6 +32,7 @@ export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
 
   return {
     government: createHttpGovernmentAdmin(http),
+    portals: createHttpPortalAdmin(http),
     privacy: createHttpPrivacyAdmin(http),
     auth: {
       signIn: (request) => post('/admin/v1/auth/sign-in', request),

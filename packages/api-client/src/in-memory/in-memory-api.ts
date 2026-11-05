@@ -32,6 +32,7 @@ import { createAccountLinks } from './account-links';
 import { createAnswers, hasBlankAnswers } from './answers';
 import { createFollowUps } from './follow-ups';
 import { createInMemoryGovernment } from '../government/in-memory';
+import { createInMemoryPortal } from '../portal/in-memory';
 import { createInMemoryAutomation } from '../automation/in-memory';
 import { createInMemoryPrivacy } from '../privacy/in-memory';
 import { createInMemoryWriting } from '../writing/in-memory';
@@ -191,7 +192,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     return application;
   };
 
-  return {
+  const api: CareerPilotApi = {
     auth: {
       async signIn(request) {
         const account = state.accounts.find(
@@ -374,6 +375,14 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     messaging,
     integrations,
     government,
+    portal: createInMemoryPortal({
+      clock,
+      ids,
+      respond,
+      fail: failWith,
+      userId: () => signedInId ?? state.accounts[0]?.user.id ?? '',
+      applications: () => ({ submitted: (id) => api.applications.recordSubmitted(id) }),
+    }).user,
     fees: createInMemoryFees({
       clock,
       ids,
@@ -513,4 +522,5 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
       },
     },
   };
+  return api;
 }

@@ -185,6 +185,7 @@ import type { PrivacyApi } from './privacy/ports';
 import type { WritingApi } from './writing/ports';
 import type { AcademicApi } from './academic/ports';
 import type { FeesApi } from './fees/ports';
+import type { PortalApi } from './portal/ports';
 
 export interface CareerPilotApi {
   auth: AuthApi;
@@ -205,6 +206,7 @@ export interface CareerPilotApi {
   writing: WritingApi;
   academic: AcademicApi;
   fees: FeesApi;
+  portal: PortalApi;
 }
 
 export interface Clock {

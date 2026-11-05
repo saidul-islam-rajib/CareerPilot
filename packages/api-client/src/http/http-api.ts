@@ -6,6 +6,7 @@ import { createHttpPrivacy } from '../privacy/http';
 import { createHttpWriting } from '../writing/http';
 import { createHttpAcademic } from '../academic/http';
 import { createHttpFees } from '../fees/http';
+import { createHttpPortal } from '../portal/http';
 import { HttpMethod, RequestPace, type HttpClient } from './http-client';
 
 const enc = encodeURIComponent;
@@ -93,6 +94,7 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
     writing: createHttpWriting(http),
     academic: createHttpAcademic(http),
     fees: createHttpFees(http),
+    portal: createHttpPortal(http),
     integrations: {
       googleStatus: () => get('/v1/integrations/google'),
       googleAuthorizeUrl: () => get('/v1/integrations/google/authorize-url'),

@@ -109,6 +109,7 @@ export interface AdminAccountsApi {
 }
 
 import type { GovernmentAdminApi } from '../government/ports';
+import type { PortalAdminApi } from '../portal/ports';
 import type { AdminPrivacyApi } from '../privacy/ports';
 
 export interface CareerPilotAdminApi {
@@ -123,5 +124,6 @@ export interface CareerPilotAdminApi {
   audit: AdminAuditApi;
   admins: AdminAccountsApi;
   government: GovernmentAdminApi;
+  portals: PortalAdminApi;
   privacy: AdminPrivacyApi;
 }

@@ -1,4 +1,5 @@
 import { createInMemoryGovernment } from '../government/in-memory';
+import { createInMemoryPortal } from '../portal/in-memory';
 import type { AdminPrivacyApi } from '../privacy/ports';
 import {
   ActorType,
@@ -236,6 +237,14 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
   };
 
   const government = createInMemoryGovernment({ clock, ids, respond, fail }).admin;
+  const portals = createInMemoryPortal({
+    clock,
+    ids,
+    respond,
+    fail,
+    userId: () => currentAdmin?.id ?? '',
+    applications: () => ({ submitted: () => fail(ApiErrorCode.NotFound) }),
+  }).admin;
 
   const privacy: AdminPrivacyApi = {
     exports: () => respond([]),
@@ -245,6 +254,7 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
 
   return {
     government,
+    portals,
     privacy,
     auth: {
       async signIn(request) {
