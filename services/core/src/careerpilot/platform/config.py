@@ -11,7 +11,6 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 from careerpilot.academic.config import AcademicConfig
 from careerpilot.automation.config import AutomationConfig
 from careerpilot.fees.config import FeesConfig
-from careerpilot.portal.config import PortalsConfig
 from careerpilot.platform.enums import (
     AnswerTopic,
     ApplicationRoute,
@@ -32,6 +31,7 @@ from careerpilot.platform.enums import (
     ThemeKey,
     Weekday,
 )
+from careerpilot.portal.config import PortalsConfig
 from careerpilot.privacy.config import PrivacyConfig
 from careerpilot.writing.config import WritingConfig
 

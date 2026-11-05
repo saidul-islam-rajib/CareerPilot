@@ -1,9 +1,8 @@
 import threading
 import time
 from collections import defaultdict
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
-from collections.abc import Iterator
 
 from careerpilot.portal.config import ThrottleConfig
 
@@ -24,7 +23,7 @@ class HostThrottle:
         self._total = threading.BoundedSemaphore(config.max_concurrent_total)
 
     @contextmanager
-    def slot(self, host: str) -> Iterator[None]:
+    def slot(self, host: str) -> Generator[None]:
         with self._total, self._host_semaphore(host):
             self._pace(host)
             try:

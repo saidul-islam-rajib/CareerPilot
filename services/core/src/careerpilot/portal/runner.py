@@ -67,6 +67,17 @@ class RunnerContext:
     on_status: Callable[[str, ApplicationRecord], None]
 
 
+@dataclass
+class Run:
+    user_id: str
+    workspace: CandidateWorkspace
+    application: ApplicationRecord
+    settings: PortalSettings
+    live: bool = False
+    attempt: AttemptView | None = None
+    opportunity: OpportunityDetail | None = None
+
+
 class PortalRunner:
     def __init__(self, context: RunnerContext) -> None:
         self._ctx = context
@@ -84,7 +95,10 @@ class PortalRunner:
         return found
 
     def is_portal_job(self, application: ApplicationRecord) -> bool:
-        return application.route in {route.value for route in self._cfg.routes} and application.submission_status is SubmissionStatus.APPROVED_QUEUED
+        return (
+            application.route in {route.value for route in self._cfg.routes}
+            and application.submission_status is SubmissionStatus.APPROVED_QUEUED
+        )
 
     def run(self, user_id: str, application_id: str) -> RunReport:
         workspace = self._ctx.workspaces.get(user_id)
@@ -92,58 +106,47 @@ class PortalRunner:
         if application is None or not self.is_portal_job(application):
             return RunReport(application_id, application.submission_status if application else SubmissionStatus.CANCELLED)
         settings = self._settings.get(user_id, SETTINGS_KEY) or PortalSettings()
-        previous = self._attempts.get(user_id, application_id)
-        if previous is not None and previous.submit_clicked:
-            return self._finish_uncertain(user_id, workspace, application, previous)
+        run = Run(user_id, workspace, application, settings, attempt=self._attempts.get(user_id, application_id))
+        if run.attempt is not None and run.attempt.submit_clicked:
+            return self._finish_uncertain(run, run.attempt)
         if not settings.enabled:
-            return self._stop(user_id, workspace, application, StopReason.AUTOPILOT_OFF)
+            return self._stop(run, StopReason.AUTOPILOT_OFF)
         hold = self._ctx.hold_of(user_id, application_id)
         if hold is not None:
             return RunReport(application_id, application.submission_status, hold=hold)
-        return self._attempt(user_id, workspace, application, settings, previous)
+        return self._attempt(run)
 
-    def _attempt(
-        self, user_id: str, workspace: CandidateWorkspace, application: ApplicationRecord, settings: PortalSettings, previous: AttemptView | None
-    ) -> RunReport:
-        opportunity = self._ctx.opportunities.get(application.opportunity.id)
-        if opportunity is None:
-            return self._stop(user_id, workspace, application, StopReason.CLOSED)
-        url = opportunity.source.url
+    def _attempt(self, run: Run) -> RunReport:
+        run.opportunity = self._ctx.opportunities.get(run.application.opportunity.id)
+        if run.opportunity is None:
+            return self._stop(run, StopReason.CLOSED)
+        url = run.opportunity.source.url
         host = host_of(url)
         blocked = HOST_STOPS.get(self._ctx.hosts.observe(host).policy)
         if blocked is not None:
-            return self._stop(user_id, workspace, application, blocked, url)
-        live = self._ctx.live()
-        attempt = self._begin(user_id, workspace, application, previous, url, host, live)
-        result = self._execute(user_id, workspace, application, settings, opportunity, attempt, live)
-        return self._finish(user_id, workspace, application, attempt, result, live)
+            self._remember_stop(run, blocked, url)
+            return self._stop(run, blocked)
+        run.live = self._ctx.live()
+        attempt = self._begin(run, url, host)
+        result = self._execute(run, attempt)
+        return self._finish(run, attempt, result)
 
-    def _begin(
-        self, user_id: str, workspace: CandidateWorkspace, application: ApplicationRecord, previous: AttemptView | None, url: str, host: str, live: bool
-    ) -> AttemptView:
-        attempt = previous or AttemptView(application_id=application.id, state=AttemptState.STOPPED, official_url=url, host=host)
+    def _begin(self, run: Run, url: str, host: str) -> AttemptView:
+        previous = run.attempt
+        attempt = previous or AttemptView(application_id=run.application.id, state=AttemptState.STOPPED, official_url=url, host=host)
         attempt = attempt.model_copy(update={"runs": attempt.runs + 1, "official_url": url, "updated_at": iso(self._ctx.clock.now())})
-        self._attempts.save(user_id, application.id, attempt)
-        if live:
-            self._move(application, SubmissionStatus.SUBMITTING, translate("portal.timeline.started", {"host": host}))
-            self._ctx.workspaces.save(user_id, workspace)
+        self._attempts.save(run.user_id, run.application.id, attempt)
+        if run.live:
+            self._move(run.application, SubmissionStatus.SUBMITTING, translate("portal.timeline.started", {"host": host}))
+            self._ctx.workspaces.save(run.user_id, run.workspace)
         return attempt
 
-    def _execute(
-        self,
-        user_id: str,
-        workspace: CandidateWorkspace,
-        application: ApplicationRecord,
-        settings: PortalSettings,
-        opportunity: OpportunityDetail,
-        attempt: AttemptView,
-        live: bool,
-    ) -> FlowResult:
-        job = self._job(user_id, workspace, application, settings, opportunity, attempt, live)
+    def _execute(self, run: Run, attempt: AttemptView) -> FlowResult:
+        job = self._job(run, attempt)
         adapter = self._cfg.adapter_for(attempt.host)
 
         def mark_submitting() -> None:
-            self._attempts.save(user_id, application.id, attempt.model_copy(update={"submit_clicked": True}))
+            self._attempts.save(run.user_id, run.application.id, attempt.model_copy(update={"submit_clicked": True}))
 
         with self._ctx.throttle.slot(attempt.host), self._ctx.browser() as driver:
             deps = FlowDeps(
@@ -151,34 +154,25 @@ class PortalRunner:
                 config=self._cfg,
                 adapter=adapter,
                 accounts=self._ctx.accounts,
-                fetch_verification=lambda: self._ctx.verifier.wait_for(user_id, attempt.host, adapter),
+                fetch_verification=lambda: self._ctx.verifier.wait_for(run.user_id, attempt.host, adapter),
                 before_submit=mark_submitting,
             )
             return PortalFlow(deps, job).run()
 
-    def _job(
-        self,
-        user_id: str,
-        workspace: CandidateWorkspace,
-        application: ApplicationRecord,
-        settings: PortalSettings,
-        opportunity: OpportunityDetail,
-        attempt: AttemptView,
-        live: bool,
-    ) -> FlowInput:
-        rule = self._ctx.policy.rule_of(workspace, application)
-        materials = application.materials
+    def _job(self, run: Run, attempt: AttemptView) -> FlowInput:
+        rule = self._ctx.policy.rule_of(run.workspace, run.application)
+        materials = run.application.materials
         return FlowInput(
-            user_id=user_id,
+            user_id=run.user_id,
             job_url=attempt.official_url,
             host=attempt.host,
-            employer=opportunity.organization,
-            mode=RunMode.LIVE if live else RunMode.READINESS,
-            facts=profile_facts(workspace.profile),
-            saved_answers=workspace.saved_answers,
-            permissions=effective_permissions(settings, rule),
+            employer=run.opportunity.organization if run.opportunity else "",
+            mode=RunMode.LIVE if run.live else RunMode.READINESS,
+            facts=profile_facts(run.workspace.profile),
+            saved_answers=run.workspace.saved_answers,
+            permissions=effective_permissions(run.settings, rule),
             cover_letter=materials.cover_letter if materials else "",
-            cv=self._cv(workspace, application),
+            cv=self._cv(run.workspace, run.application),
         )
 
     def _cv(self, workspace: CandidateWorkspace, application: ApplicationRecord) -> CvFile | None:
@@ -186,19 +180,21 @@ class PortalRunner:
             return None
         cv = application.materials.cv
         documents = workspace.profile.active_documents()
-        document = next((d for d in documents if d.id == cv.document_id), None) if cv.document_id else next((d for d in documents if d.name == cv.name), None)
+        document = (
+            next((d for d in documents if d.id == cv.document_id), None)
+            if cv.document_id
+            else next((d for d in documents if d.name == cv.name), None)
+        )
         content = self._ctx.storage.get(document.current.key) if document else None
         return CvFile(document.current.file_name, content) if document and content else None
 
-    def _finish(
-        self, user_id: str, workspace: CandidateWorkspace, application: ApplicationRecord, attempt: AttemptView, result: FlowResult, live: bool
-    ) -> RunReport:
+    def _finish(self, run: Run, attempt: AttemptView, result: FlowResult) -> RunReport:
         outcome = result.outcome
-        stop = self._reported_stop(result, live)
-        key = self._save_evidence(user_id, application.id, attempt.runs, result.screenshot)
+        stop = self._reported_stop(result, run.live)
+        key = self._save_evidence(run, attempt.runs, result.screenshot)
         updated = attempt.model_copy(
             update={
-                "state": STATE_OF_OUTCOME[outcome] if live else AttemptState.READINESS_ONLY,
+                "state": STATE_OF_OUTCOME[outcome] if run.live else AttemptState.READINESS_ONLY,
                 "stop": stop,
                 "detail": result.detail,
                 "pending": result.pending,
@@ -210,10 +206,10 @@ class PortalRunner:
                 "updated_at": iso(self._ctx.clock.now()),
             }
         )
-        self._attempts.save(user_id, application.id, updated)
-        if live and outcome in {FlowOutcome.CONFIRMED, FlowOutcome.UNCERTAIN}:
-            return self._record_result(user_id, workspace, application, updated, outcome)
-        return self._stop(user_id, workspace, application, stop or StopReason.LIVE_SWITCH_OFF, attempt.official_url, saved=True)
+        self._attempts.save(run.user_id, run.application.id, updated)
+        if run.live and outcome in {FlowOutcome.CONFIRMED, FlowOutcome.UNCERTAIN}:
+            return self._record_result(run, updated, outcome)
+        return self._stop(run, stop or StopReason.LIVE_SWITCH_OFF)
 
     @staticmethod
     def _reported_stop(result: FlowResult, live: bool) -> StopReason | None:
@@ -221,41 +217,38 @@ class PortalRunner:
             return result.stop
         return StopReason.LIVE_SWITCH_OFF
 
-    def _record_result(
-        self, user_id: str, workspace: CandidateWorkspace, application: ApplicationRecord, attempt: AttemptView, outcome: FlowOutcome
-    ) -> RunReport:
+    def _record_result(self, run: Run, attempt: AttemptView, outcome: FlowOutcome) -> RunReport:
+        application = run.application
         now = iso(self._ctx.clock.now())
         status = STATUS_OF_OUTCOME[outcome]
+        key = attempt.evidence_key or None
         if outcome is FlowOutcome.CONFIRMED:
             application.applied_at = application.applied_at or now
             text = translate("portal.evidence.confirmed", {"text": attempt.confirmation_text})
-            application.evidence.append(Evidence(text=text, at=now, url=attempt.final_url, screenshot_key=attempt.evidence_key or None))
             note = translate("portal.timeline.confirmed", {"host": attempt.host})
         else:
-            application.evidence.append(Evidence(text=translate("portal.evidence.uncertain"), at=now, url=attempt.final_url, screenshot_key=attempt.evidence_key or None))
+            text = translate("portal.evidence.uncertain")
             note = translate("portal.timeline.uncertain", {"host": attempt.host})
+        application.evidence.append(Evidence(text=text, at=now, url=attempt.final_url, screenshot_key=key))
         self._move(application, status, note)
-        self._ctx.workspaces.save(user_id, workspace)
-        self._ctx.on_status(user_id, application)
+        self._ctx.workspaces.save(run.user_id, run.workspace)
+        self._ctx.on_status(run.user_id, application)
         return RunReport(application.id, status)
 
-    def _finish_uncertain(self, user_id: str, workspace: CandidateWorkspace, application: ApplicationRecord, attempt: AttemptView) -> RunReport:
-        self._move(application, SubmissionStatus.OUTCOME_UNKNOWN, translate("portal.timeline.uncertain", {"host": attempt.host}))
-        self._ctx.workspaces.save(user_id, workspace)
-        self._ctx.on_status(user_id, application)
-        return RunReport(application.id, application.submission_status)
+    def _finish_uncertain(self, run: Run, attempt: AttemptView) -> RunReport:
+        self._move(run.application, SubmissionStatus.OUTCOME_UNKNOWN, translate("portal.timeline.uncertain", {"host": attempt.host}))
+        self._ctx.workspaces.save(run.user_id, run.workspace)
+        self._ctx.on_status(run.user_id, run.application)
+        return RunReport(run.application.id, run.application.submission_status)
 
-    def _stop(
-        self, user_id: str, workspace: CandidateWorkspace, application: ApplicationRecord, reason: StopReason, url: str = "", saved: bool = False
-    ) -> RunReport:
-        if not saved:
-            self._remember_stop(user_id, application, reason, url)
+    def _stop(self, run: Run, reason: StopReason) -> RunReport:
+        application = run.application
         names = {"title": application.opportunity.title, "organization": application.opportunity.organization}
         text = translate(f"portal.stop.{reason.value}")
         self._move(application, SubmissionStatus.MANUAL_ACTION_REQUIRED, translate("portal.timeline.stopped", {"reason": text}))
-        self._ctx.workspaces.save(user_id, workspace)
+        self._ctx.workspaces.save(run.user_id, run.workspace)
         self._ctx.notify(
-            user_id,
+            run.user_id,
             NotificationKind.AUTOMATION_ATTENTION,
             translate("portal.notifications.stoppedTitle"),
             translate("portal.notifications.stoppedBody", {**names, "reason": text}),
@@ -263,15 +256,16 @@ class PortalRunner:
         )
         return RunReport(application.id, application.submission_status, stop=reason)
 
-    def _remember_stop(self, user_id: str, application: ApplicationRecord, reason: StopReason, url: str) -> None:
-        current = self._attempts.get(user_id, application.id)
-        base = current or AttemptView(application_id=application.id, state=AttemptState.STOPPED, official_url=url, host=host_of(url) if url else "")
-        self._attempts.save(user_id, application.id, base.model_copy(update={"state": AttemptState.STOPPED, "stop": reason, "updated_at": iso(self._ctx.clock.now())}))
+    def _remember_stop(self, run: Run, reason: StopReason, url: str) -> None:
+        application = run.application
+        base = run.attempt or AttemptView(application_id=application.id, state=AttemptState.STOPPED, official_url=url, host=host_of(url))
+        update = {"state": AttemptState.STOPPED, "stop": reason, "updated_at": iso(self._ctx.clock.now())}
+        self._attempts.save(run.user_id, application.id, base.model_copy(update=update))
 
-    def _save_evidence(self, user_id: str, application_id: str, run: int, image: bytes | None) -> str:
+    def _save_evidence(self, run: Run, number: int, image: bytes | None) -> str:
         if not image:
             return ""
-        key = f"{self._cfg.evidence_prefix}/{user_id}/{application_id}-{run}.png".lower()
+        key = f"{self._cfg.evidence_prefix}/{run.user_id}/{run.application.id}-{number}.png".lower()
         self._ctx.storage.put(key, image)
         return key
 

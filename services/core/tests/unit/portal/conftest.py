@@ -135,6 +135,7 @@ def run_flow(
     accounts: PortalAccounts,
     job: FlowInput,
     hit: VerificationHit | None = None,
+    *,
     before_submit: object = NOOP,
 ) -> FlowResult:
     deps = FlowDeps(

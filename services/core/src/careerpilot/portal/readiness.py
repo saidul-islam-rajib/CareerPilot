@@ -77,14 +77,18 @@ class ReadinessChecker:
         try:
             result = self._run(user_id, base)
         except Exception as error:
-            return base.model_copy(update={"state": ReadinessState.FAILED, "error": type(error).__name__, "finished_at": iso(self._ctx.clock.now())})
+            return base.model_copy(
+                update={"state": ReadinessState.FAILED, "error": type(error).__name__, "finished_at": iso(self._ctx.clock.now())}
+            )
         return self._done(base, result)
 
     def _run(self, user_id: str | None, report: ReadinessReport) -> FlowResult:
         job = self._job(user_id, report)
         adapter = self._ctx.config.adapter_for(report.host)
         with self._ctx.throttle.slot(report.host), self._ctx.browser() as driver:
-            deps = FlowDeps(driver=driver, config=self._ctx.config, adapter=adapter, accounts=self._ctx.accounts, fetch_verification=lambda: None)
+            deps = FlowDeps(
+                driver=driver, config=self._ctx.config, adapter=adapter, accounts=self._ctx.accounts, fetch_verification=lambda: None
+            )
             return PortalFlow(deps, job).run()
 
     def _job(self, user_id: str | None, report: ReadinessReport) -> FlowInput:

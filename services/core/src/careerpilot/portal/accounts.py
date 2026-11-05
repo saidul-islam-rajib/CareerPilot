@@ -39,6 +39,17 @@ def view_of(account: PortalAccount) -> AccountView:
 
 
 @dataclass(frozen=True)
+class NewAccount:
+    user_id: str
+    host: str
+    employer: str
+    email: str
+    password: str
+    origin: AccountOrigin
+    site_url: str
+
+
+@dataclass(frozen=True)
 class AccountsContext:
     config: PortalsConfig
     clock: Clock
@@ -60,14 +71,15 @@ class PortalAccounts:
 
     def create(self, user_id: str, host: str, employer: str, email: str, site_url: str) -> tuple[PortalAccount, str]:
         password = generate_password(self._ctx.config.password)
-        account = self._new(user_id, host, employer, email, password, AccountOrigin.CREATED, site_url)
+        account = self._new(NewAccount(user_id, host, employer, email, password, AccountOrigin.CREATED, site_url))
         return account, password
 
     def import_credential(self, user_id: str, body: AccountInput) -> AccountView:
         existing = self.find(user_id, body.host)
         if existing is not None:
             self._store.remove(user_id, existing.id, REPLACED)
-        account = self._new(user_id, body.host, body.employer, body.email, body.password, AccountOrigin.IMPORTED, body.site_url)
+        draft = NewAccount(user_id, body.host, body.employer, body.email, body.password, AccountOrigin.IMPORTED, body.site_url)
+        account = self._new(draft)
         return view_of(account)
 
     def password_of(self, account: PortalAccount) -> str:
@@ -100,20 +112,20 @@ class PortalAccounts:
     def mark_needs_attention(self, user_id: str, account: PortalAccount) -> None:
         self._store.save(user_id, account.id, account.model_copy(update={"status": AccountStatus.NEEDS_ATTENTION}))
 
-    def _new(self, user_id: str, host: str, employer: str, email: str, password: str, origin: AccountOrigin, site_url: str) -> PortalAccount:
-        if not host.strip() or not email.strip() or not password:
+    def _new(self, draft: NewAccount) -> PortalAccount:
+        if not draft.host.strip() or not draft.email.strip() or not draft.password:
             raise validation_error(Failure.INVALID_HOST.value)
         account = PortalAccount(
             id=self._ctx.ids.next(ACCOUNT_PREFIX),
-            host=host.strip().lower(),
-            employer=employer.strip(),
-            email=email.strip(),
-            sealed_password=self._ctx.cipher.seal(password),
-            origin=origin,
-            site_url=site_url,
+            host=draft.host.strip().lower(),
+            employer=draft.employer.strip(),
+            email=draft.email.strip(),
+            sealed_password=self._ctx.cipher.seal(draft.password),
+            origin=draft.origin,
+            site_url=draft.site_url,
             created_at=iso(self._ctx.clock.now()),
         )
-        return self._store.save(user_id, account.id, account)
+        return self._store.save(draft.user_id, account.id, account)
 
     def _require(self, user_id: str, account_id: str) -> PortalAccount:
         account = self._store.get(user_id, account_id)

@@ -15,8 +15,8 @@ from temporalio.worker import Worker
 
 from careerpilot.bootstrap import build_container
 from careerpilot.platform.config import WorkersConfig
-from careerpilot.portal.config import PortalsConfig
 from careerpilot.platform.telemetry import configure_telemetry
+from careerpilot.portal.config import PortalsConfig
 from careerpilot_workers.activities import (
     DigestActivities,
     DiscoveryActivities,

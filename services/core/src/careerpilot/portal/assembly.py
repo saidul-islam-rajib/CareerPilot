@@ -91,4 +91,11 @@ def build_portal(parts: PortalParts) -> PortalServices:
             mail_connected=lambda user_id: parts.connections.status(user_id).mail_access,
         )
     )
-    return PortalServices(service, runner, readiness, hosts, accounts, lambda email: account.id if (account := parts.repos.accounts.find_by_email(email)) else None)
+    return PortalServices(
+        service,
+        runner,
+        readiness,
+        hosts,
+        accounts,
+        lambda email: account.user.id if (account := parts.repos.accounts.find_by_email(email)) else None,
+    )

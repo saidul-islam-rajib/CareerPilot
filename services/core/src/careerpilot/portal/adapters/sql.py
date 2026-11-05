@@ -5,7 +5,6 @@ from careerpilot.platform.clock import Clock, IdGenerator
 from careerpilot.platform.persistence import ID_LENGTH, SHORT_TEXT, Audited, Base, Database, active
 from careerpilot.portal.enums import RecordKind
 
-
 ROW_PREFIX = "por"
 
 

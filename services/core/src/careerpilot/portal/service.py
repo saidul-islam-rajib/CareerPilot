@@ -128,7 +128,9 @@ class PortalService:
             raise validation_error(Failure.NOT_RESUMABLE.value)
         for answer in body.answers:
             self._ctx.answers.save(user_id, AnswerDraft(topic=AnswerTopic.OTHER, question=answer.label, answer=answer.answer))
-        self._attempts.save(user_id, application_id, attempt.model_copy(update={"pending": [], "stop": None, "state": AttemptState.STOPPED}))
+        self._attempts.save(
+            user_id, application_id, attempt.model_copy(update={"pending": [], "stop": None, "state": AttemptState.STOPPED})
+        )
         return self._requeue(user_id, application_id)
 
     def complete(self, user_id: str, application_id: str) -> ApplicationRecord:
@@ -151,7 +153,9 @@ class PortalService:
         application.submission_status = SubmissionStatus.APPROVED_QUEUED
         application.updated_at = now
         application.timeline.append(
-            TimelineEntry(at=now, actor=TimelineActor.USER, text=translate("portal.timeline.resumed"), status=SubmissionStatus.APPROVED_QUEUED)
+            TimelineEntry(
+                at=now, actor=TimelineActor.USER, text=translate("portal.timeline.resumed"), status=SubmissionStatus.APPROVED_QUEUED
+            )
         )
         self._ctx.workspaces.save(user_id, workspace)
         return application

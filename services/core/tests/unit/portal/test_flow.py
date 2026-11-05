@@ -14,7 +14,7 @@ CODE = VerificationHit(code="482913")
 def test_full_flow_creates_account_verifies_fills_and_confirms(config: PortalsConfig, accounts: PortalAccounts) -> None:
     driver = application_site()
     submitted: list[bool] = []
-    result = run_flow(driver, config, accounts, job_input(), CODE, lambda: submitted.append(True))
+    result = run_flow(driver, config, accounts, job_input(), CODE, before_submit=lambda: submitted.append(True))
     assert result.outcome is FlowOutcome.CONFIRMED
     assert submitted == [True]
     assert result.submit_clicked

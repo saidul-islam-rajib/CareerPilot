@@ -8,9 +8,9 @@ from careerpilot_workers.workflows import (
     CONFIRM_SENT,
     DUE_APPLICATIONS,
     DUE_PORTAL_APPLICATIONS,
+    DUE_SOURCES,
     PROCESS_READINESS,
     RUN_PORTAL_APPLICATION,
-    DUE_SOURCES,
     RUN_PRIVACY_JOBS,
     SEND_DIGESTS,
     SUBMIT_APPLICATION,
@@ -99,14 +99,14 @@ class PortalActivities:
 
     @activity.defn(name=DUE_PORTAL_APPLICATIONS)
     def due_portal_applications(self) -> list[QueuedItem]:
-        return [QueuedItem(user_id=user_id, application_id=application_id) for user_id, application_id in self._container.portal.runner.due()]
+        return [
+            QueuedItem(user_id=user_id, application_id=application_id) for user_id, application_id in self._container.portal.runner.due()
+        ]
 
     @activity.defn(name=RUN_PORTAL_APPLICATION)
     def run_portal_application(self, item: QueuedItem) -> PortalReport:
         report = self._container.portal.runner.run(item.user_id, item.application_id)
-        return PortalReport(
-            application_id=item.application_id, status=report.status.value, stop=report.stop.value if report.stop else None
-        )
+        return PortalReport(application_id=item.application_id, status=report.status.value, stop=report.stop.value if report.stop else None)
 
     @activity.defn(name=PROCESS_READINESS)
     def process_readiness(self) -> int:

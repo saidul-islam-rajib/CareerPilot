@@ -161,7 +161,9 @@ class PortalFlow:
         self._d.sleep(self._cfg.browser.settle_seconds)
 
     def _job_page(self, observation: Observation) -> None:
-        if not self._d.driver.click_selector(self._adapter_selectors().apply) and not self._d.driver.click_labelled(self._cfg.buttons.apply):
+        if not self._d.driver.click_selector(self._adapter_selectors().apply) and not self._d.driver.click_labelled(
+            self._cfg.buttons.apply
+        ):
             raise Finished(StopReason.NO_FORM)
         self._settle()
 
@@ -199,7 +201,9 @@ class PortalFlow:
         if not blocked:
             return
         self._result.pending = [PendingQuestion(label=p.label, reason=p.stop) for p in blocked if p.stop is not None]
-        self._result.prepared = [PreparedAnswer(label=p.label, value=p.value, source=p.source) for p in self._result.plans if p.stop is None and p.value]
+        self._result.prepared = [
+            PreparedAnswer(label=p.label, value=p.value, source=p.source) for p in self._result.plans if p.stop is None and p.value
+        ]
         raise Finished(blocked[0].stop)
 
     def _wall(self, kind: PageKind) -> None:

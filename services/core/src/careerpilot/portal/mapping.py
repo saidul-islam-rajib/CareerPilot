@@ -10,7 +10,9 @@ from careerpilot.portal.models import FieldPlan, Permissions
 
 NON_WORD = re.compile(r"[^\w\s]", re.UNICODE)
 SPACES = re.compile(r"\s+")
-TEXT_KINDS = frozenset({FieldKind.TEXT, FieldKind.EMAIL, FieldKind.TEL, FieldKind.TEXTAREA, FieldKind.NUMBER, FieldKind.DATE, FieldKind.OTHER})
+TEXT_KINDS = frozenset(
+    {FieldKind.TEXT, FieldKind.EMAIL, FieldKind.TEL, FieldKind.TEXTAREA, FieldKind.NUMBER, FieldKind.DATE, FieldKind.OTHER}
+)
 CHOICE_KINDS = frozenset({FieldKind.SELECT, FieldKind.RADIO})
 TOPIC_OF_INTENT = {
     Intent.EXPERIENCE: AnswerTopic.EXPERIENCE,

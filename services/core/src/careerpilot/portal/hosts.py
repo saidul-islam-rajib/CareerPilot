@@ -54,9 +54,7 @@ class HostPolicies:
         clean = host.strip().lower()
         if not clean or "/" in clean:
             raise validation_error(Failure.INVALID_HOST.value)
-        record = HostRecord(
-            host=clean, policy=body.policy, note=body.note, configured=False, decided_at=iso(self._ctx.clock.now())
-        )
+        record = HostRecord(host=clean, policy=body.policy, note=body.note, configured=False, decided_at=iso(self._ctx.clock.now()))
         return self._store.save(SYSTEM_OWNER, clean, record)
 
     def records(self) -> list[HostRecord]:

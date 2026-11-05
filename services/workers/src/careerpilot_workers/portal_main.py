@@ -1,7 +1,6 @@
 import asyncio
 import os
 from concurrent.futures import ThreadPoolExecutor
-from datetime import timedelta
 
 from temporalio.client import Client
 from temporalio.worker import Worker

@@ -61,11 +61,6 @@ from careerpilot.discovery.resolver import SourceResolver
 from careerpilot.discovery.safety import public_https_url
 from careerpilot.discovery.service import DiscoveryContext, DiscoveryService
 from careerpilot.fees.context import FeesContext
-from careerpilot.portal.assembly import PortalParts, PortalServices, build_portal
-from careerpilot.portal.driver import BrowserSession
-from careerpilot.portal.live import real_applications_enabled
-from careerpilot.portal.playwright_driver import chromium_session
-from careerpilot.portal.handoff import autopilot_handles
 from careerpilot.fees.service import FeesServices, build_fees
 from careerpilot.government.circulars import CircularContext, CircularService
 from careerpilot.government.connector import TeletalkReader
@@ -119,6 +114,11 @@ from careerpilot.platform.one_time_codes import OneTimeCodes, random_token
 from careerpilot.platform.persistence import Database, create_database
 from careerpilot.platform.push import BackgroundPush, DirectPush, ExpoPushSender, NoPushSender, PushDispatcher, PushSender
 from careerpilot.platform.security import Argon2PasswordHasher, PasswordHasher, TokenService, token_secret_from_environment
+from careerpilot.portal.assembly import PortalParts, PortalServices, build_portal
+from careerpilot.portal.driver import BrowserSession
+from careerpilot.portal.handoff import autopilot_handles
+from careerpilot.portal.live import real_applications_enabled
+from careerpilot.portal.playwright_driver import chromium_session
 from careerpilot.privacy.assembly import PrivacyParts, PrivacyServices, build_privacy
 from careerpilot.privacy.enums import ReportPeriod
 from careerpilot.privacy.ports import JobRunner
@@ -566,6 +566,36 @@ def _fees(cfg: Settings, parts: GovernmentParts) -> FeesServices:
     )
 
 
+@dataclass(frozen=True)
+class PortalWiring:
+    candidate: CandidateContext
+    repos: Repositories
+    storage: FileStorage
+    notifications: NotificationService
+    submissions: SubmissionService
+    connections: ConnectionService
+    secret: str
+
+
+def _portal(cfg: Settings, options: ContainerOverrides, wiring: PortalWiring) -> PortalServices:
+    forced = options.real_applications
+    return build_portal(
+        PortalParts(
+            candidate=wiring.candidate,
+            repos=wiring.repos,
+            storage=wiring.storage,
+            notifications=wiring.notifications,
+            submissions=wiring.submissions,
+            connections=wiring.connections,
+            answers=AnswerService(wiring.candidate),
+            applications=ApplicationService(wiring.candidate, wiring.notifications.application_changed),
+            browser=options.browser or (lambda: chromium_session(cfg.portals.browser)),
+            live=(lambda: forced) if forced is not None else (lambda: real_applications_enabled(cfg.submission)),
+            vault=FernetCipher(vault_secret(cfg.integrations.vault, wiring.secret), cfg.portals.vault_context),
+        )
+    )
+
+
 def build_container(overrides: ContainerOverrides | None = None) -> Container:
     options = overrides or ContainerOverrides()
     cfg = options.settings or with_web_address(load_settings())
@@ -706,8 +736,6 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
             grace_days=lambda: repos.platform.get().deletion_grace_days,
         )
     )
-    answers = AnswerService(candidate)
-    applications = ApplicationService(candidate, notifications.application_changed)
     return Container(
         settings=cfg,
         database=database,
@@ -724,7 +752,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         public_config=public_config,
         opportunities=opportunity_service,
         approvals=approvals,
-        applications=applications,
+        applications=ApplicationService(candidate, notifications.application_changed),
         notifications=notifications,
         messaging=messaging,
         admin_messages=AdminMessages(messaging, repos.accounts, repos.workspaces),
@@ -760,7 +788,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         automation=automation,
         digests=digests,
         verification=verification,
-        answers=answers,
+        answers=AnswerService(candidate),
         job_links=JobLinkService(
             JobLinkContext(
                 check_address=options.address_check or public_https_url,
@@ -787,19 +815,9 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         ),
         government=_government(GovernmentParts(candidate, repos, storage, file_links, fetch_page, secret)),
         fees=_fees(cfg, GovernmentParts(candidate, repos, storage, file_links, fetch_page, secret)),
-        portal=build_portal(
-            PortalParts(
-                candidate=candidate,
-                repos=repos,
-                storage=storage,
-                notifications=notifications,
-                submissions=submissions,
-                connections=integrations.google,
-                answers=answers,
-                applications=applications,
-                browser=options.browser or (lambda: chromium_session(cfg.portals.browser)),
-                live=(lambda: options.real_applications) if options.real_applications is not None else (lambda: real_applications_enabled(cfg.submission)),
-                vault=FernetCipher(vault_secret(cfg.integrations.vault, secret), cfg.portals.vault_context),
-            )
+        portal=_portal(
+            cfg,
+            options,
+            PortalWiring(candidate, repos, storage, notifications, submissions, integrations.google, secret),
         ),
     )
