@@ -5,6 +5,7 @@ import {
   GraduationCap,
   FileDown,
   FileCheck2,
+  Bot,
   Landmark,
   EyeOff,
   Receipt,
@@ -85,6 +86,10 @@ export function SettingsPage() {
           <ListRow icon={EyeOff} title={t('settings.confidential')} subtitle={t('settings.confidentialBody')} href={Routes.confidential} />
           <Separator />
           <ListRow icon={Receipt} title={t('fees.title')} subtitle={t('fees.menuBody')} href={Routes.fees} />
+          <Separator />
+          <ListRow icon={Bot} title={t('portal.autopilot.title')} subtitle={t('portal.menu.autopilotBody')} href={Routes.autopilot} />
+          <Separator />
+          <ListRow icon={KeyRound} title={t('portal.accounts.title')} subtitle={t('portal.menu.accountsBody')} href={Routes.portalAccounts} />
         </Card>
         <Card>
           <ListRow icon={Bell} title={t('settings.notifications')} subtitle={t('settings.digestBody')} href={Routes.notifications} />

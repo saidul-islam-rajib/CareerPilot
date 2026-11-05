@@ -8,6 +8,7 @@ import { EnumKey, StatusTone, SubmissionStatus, TimelineActor } from '@careerpil
 import { Banner, Button, Card, ConfirmDialog, EnumBadge, ErrorState, ListRow, LoadingState, PageHeader, Section, cn, useToast } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
 import { FollowUpsSection, OutcomeDialog } from './follow-ups';
+import { AttemptPanel } from '@/features/portal/attempt-panel';
 
 const KILOBYTE = 1024;
 const DOT_CLASSES: Record<TimelineActor, string> = {
@@ -38,6 +39,7 @@ export function ApplicationPage() {
     <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <div className="flex min-w-0 flex-col gap-6">
         <PageHeader title={a.opportunity.title} description={`${a.opportunity.organization} · ${a.opportunity.location}`} />
+        <AttemptPanel applicationId={a.id} enabled />
         {a.submissionStatus === SubmissionStatus.ManualActionRequired ? (
           <Banner
             tone={StatusTone.Warning}

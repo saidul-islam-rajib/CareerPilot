@@ -33,6 +33,8 @@ export const Routes = {
   sourceJobs: (id: string) => `/settings/sources/${encodeURIComponent(id)}`,
   countries: '/settings/countries',
   confidential: '/settings/confidential',
+  autopilot: '/settings/autopilot',
+  portalAccounts: '/settings/portal-accounts',
   fees: '/fees',
   feesPayment: (id: string) => `/fees/${encodeURIComponent(id)}`,
   changePassword: '/settings/password',

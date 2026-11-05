@@ -3530,7 +3530,7 @@
   },
   "portal": {
     "stop": {
-      "captcha": "The site asked for a CAPTCHA or bot check. Only you can complete it on the official site.",
+      "captcha": "The site showed a visible CAPTCHA or bot-check challenge. Only you can complete it on the official site.",
       "mfa": "The site asked for a second sign-in step (MFA). Only you can complete it.",
       "identity": "The site asked to verify your identity. Only you can do that.",
       "attestation": "The form has a declaration or truthfulness statement that only you can confirm.",

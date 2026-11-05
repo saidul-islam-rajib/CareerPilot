@@ -109,6 +109,10 @@ export function accountNeedsAttention(status: PortalAccountStatus): boolean {
   return status === PortalAccountStatus.NeedsAttention;
 }
 
+export function portalUserStepKey(step: string): string {
+  return `portal.userOnlyStep.${step}`;
+}
+
 export function attemptCanResume(attempt: AttemptView): boolean {
   return attempt.state !== AttemptState.Confirmed && !attempt.submitClicked;
 }
@@ -127,12 +131,12 @@ export function usePortalAccounts() {
   return useQuery({ queryKey: portalKeys.accounts, queryFn: () => api.portal.listAccounts() });
 }
 
-export function usePortalAttempt(applicationId: string) {
+export function usePortalAttempt(applicationId: string, enabled = true) {
   const api = useApi();
   return useQuery({
     queryKey: portalKeys.attempt(applicationId),
-    queryFn: () => api.portal.attempt(applicationId),
-    retry: false,
+    queryFn: () => api.portal.attempt(applicationId).catch(() => null),
+    enabled,
   });
 }
 
