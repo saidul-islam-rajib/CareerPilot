@@ -8,6 +8,7 @@ from careerpilot.administration.models import (
     AdminSourceRow,
     AdminUserRow,
     AuditEntry,
+    CustomRole,
     NotificationCounts,
     PlatformSettings,
     SecretMetadata,
@@ -39,6 +40,8 @@ class AdminAccountRepository(Protocol):
     def list_all(self) -> list[AdminAccount]: ...
 
     def save(self, credential: AdminCredential) -> None: ...
+
+    def remove(self, admin_id: str, reason: str) -> None: ...
 
 
 class PlatformSettingsRepository(Protocol):
@@ -73,6 +76,12 @@ class Directory(Protocol):
     def operations(self) -> OperationsSnapshot: ...
 
     def save_operations(self, document: dict[str, object]) -> None: ...
+
+    def custom_roles(self) -> list[CustomRole]: ...
+
+    def save_custom_role(self, role: CustomRole) -> None: ...
+
+    def remove_custom_role(self, role_id: str, reason: str) -> None: ...
 
     def sessions(self) -> list[UserSession]: ...
 

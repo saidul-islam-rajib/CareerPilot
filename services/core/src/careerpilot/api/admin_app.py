@@ -4,7 +4,7 @@ from fastapi import APIRouter, FastAPI, Request
 from fastapi.responses import JSONResponse, Response
 from pydantic import StrictInt
 
-from careerpilot.administration.models import NewSource, SourceDecision
+from careerpilot.administration.models import AdminPermission, NewSource, SourceDecision
 from careerpilot.administration.user_records import AdminApplicationChange, AdminProfileChange
 from careerpilot.api import admin_messaging_routes, government_routes, integrations_routes, portal_routes, privacy_routes
 from careerpilot.api.common import client_info, configure, no_content, ok
@@ -80,6 +80,22 @@ class JobDecisionBody(CamelModel):
 class TrackChangeBody(CamelModel):
     result_count: int | None = None
     mode: ApplicationMode | None = None
+
+
+class AdminCreateBody(CamelModel):
+    full_name: str
+    email: str
+    role: AdminRole
+
+
+class RoleCreateBody(CamelModel):
+    name: str
+    permissions: list[AdminPermission]
+
+
+class RoleAssignBody(CamelModel):
+    admin_id: str
+    assigned: bool
 
 
 class AdminUpdateBody(CamelModel):
@@ -278,6 +294,38 @@ def admins(admin: CurrentAdmin, services: Services) -> JSONResponse:
 @router.patch("/admins/{admin_id}")
 def update_admin(admin_id: str, body: AdminUpdateBody, admin: CurrentAdmin, services: Services) -> JSONResponse:
     return ok(services.admin_accounts.update(admin, admin_id, body.role, body.suspended))
+
+
+@router.post("/admins")
+def create_admin(body: AdminCreateBody, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.admin_accounts.create(admin, body.full_name, body.email, body.role))
+
+
+@router.delete("/admins/{admin_id}")
+def delete_admin(admin_id: str, admin: CurrentAdmin, services: Services) -> Response:
+    services.admin_accounts.delete(admin, admin_id)
+    return no_content()
+
+
+@router.get("/roles")
+def roles(admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.admin_roles.all(admin))
+
+
+@router.post("/roles")
+def create_role(body: RoleCreateBody, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.admin_roles.create(admin, body.name, body.permissions))
+
+
+@router.put("/roles/{role_id}/members")
+def assign_role(role_id: str, body: RoleAssignBody, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.admin_roles.assign(admin, role_id, body.admin_id, body.assigned))
+
+
+@router.delete("/roles/{role_id}")
+def delete_role(role_id: str, admin: CurrentAdmin, services: Services) -> Response:
+    services.admin_roles.delete(admin, role_id)
+    return no_content()
 
 
 def create_admin_app(container: Container) -> FastAPI:

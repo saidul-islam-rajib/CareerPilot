@@ -18,6 +18,7 @@ from careerpilot.administration.live_figures import LiveFigures
 from careerpilot.administration.messages import AdminMessages
 from careerpilot.administration.models import AdminSourceRow, EmergencyStop, NotificationCounts, PlatformSettings
 from careerpilot.administration.presence import PresenceContext, PresenceService
+from careerpilot.administration.roles import AdminRoleService
 from careerpilot.administration.services import (
     AdminAccountService,
     AdminAuditService,
@@ -43,6 +44,7 @@ from careerpilot.candidate.services.answers import AnswerService
 from careerpilot.candidate.services.applications import ApplicationService
 from careerpilot.candidate.services.approvals import ApprovalService
 from careerpilot.candidate.services.auth import AuthService
+from careerpilot.candidate.services.bulk_approvals import BulkApprovalService
 from careerpilot.candidate.services.dashboard import DashboardService
 from careerpilot.candidate.services.digest import DigestContext, DigestService
 from careerpilot.candidate.services.feedback import FeedbackService
@@ -172,6 +174,7 @@ class Container:
     profile: ProfileService
     preferences: PreferencesService
     feedback: FeedbackService
+    bulk_approvals: BulkApprovalService
     dashboard: DashboardService
     admin_auth: AdminAuthService
     admin_dashboard: AdminDashboardService
@@ -180,6 +183,7 @@ class Container:
     admin_settings: PlatformSettingsService
     admin_audit: AdminAuditService
     admin_accounts: AdminAccountService
+    admin_roles: AdminRoleService
     discovery: DiscoveryService
     recommendations: RecommendationService
     files: FileStorage
@@ -875,6 +879,11 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         profile=profile,
         preferences=preferences,
         feedback=feedback,
+        bulk_approvals=BulkApprovalService(
+            candidate,
+            approvals,
+            lambda user_id: {view.rule.opportunity_id for view in domains.fees.rules.items(user_id) if view.rule.opportunity_id},
+        ),
         dashboard=DashboardService(candidate, opportunity_service),
         admin_auth=AdminAuthService(admin, guard, admin_links),
         admin_dashboard=AdminDashboardService(
@@ -885,7 +894,8 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         admin_catalog=admin_catalog,
         admin_settings=admin_settings,
         admin_audit=AdminAuditService(admin),
-        admin_accounts=AdminAccountService(admin),
+        admin_accounts=AdminAccountService(admin, admin_links),
+        admin_roles=AdminRoleService(admin),
         discovery=discovery,
         recommendations=recommendations,
         source_checks=source_checks,

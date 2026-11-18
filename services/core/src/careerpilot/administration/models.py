@@ -51,6 +51,13 @@ class AdminAccount(CamelModel):
     last_sign_in_at: str | None = None
 
 
+class CustomRole(CamelModel):
+    id: str
+    name: str
+    permissions: list[AdminPermission]
+    member_ids: list[str] = Field(default_factory=list[str])
+
+
 class UserSession(CamelModel):
     id: str
     user_id: str

@@ -4,7 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import timedelta
 
-from careerpilot.administration.account_links import AdminLinkDetails, AdminLinkService
+from careerpilot.administration.account_links import ADMIN_ID_PREFIX, UNSET_PASSWORD, AdminLinkDetails, AdminLinkService
 from careerpilot.administration.context import ADMIN_AUDIENCE, AdminActor, AdminContext, PageRequest, paginate
 from careerpilot.administration.discovery_sync import SourceCheckRunner
 from careerpilot.administration.limits import effective_source_limit
@@ -181,6 +181,9 @@ class AdminAuthService:
     @staticmethod
     def _summary(account: AdminAccount) -> AdminSummary:
         return AdminSummary(id=account.id, full_name=account.full_name, email=account.email, role=account.role)
+
+
+ADMIN_DELETED_REASON = "deleted_by_super_admin"
 
 
 def no_unread() -> int:
@@ -595,8 +598,39 @@ class AdminAuditService:
 
 
 class AdminAccountService:
-    def __init__(self, context: AdminContext) -> None:
+    def __init__(self, context: AdminContext, links: AdminLinkService | None = None) -> None:
         self._ctx = context
+        self._links = links
+
+    def create(self, actor: AdminActor, full_name: str, email: str, role: AdminRole) -> AdminAccount:
+        actor.require(AdminArea.ADMINS, PermissionAction.CREATE)
+        address = require_email(email, self._ctx.settings.validation.email)
+        if self._ctx.admins.find_by_email(address) is not None:
+            raise conflict("admin_exists")
+        account = AdminAccount(
+            id=self._ctx.ids.next(ADMIN_ID_PREFIX),
+            full_name=full_name.strip(),
+            email=address,
+            role=role,
+            suspended=False,
+            mfa_enabled=False,
+        )
+        credential = AdminCredential(account=account, password_hash=UNSET_PASSWORD)
+        self._ctx.admins.save(credential)
+        actor.record("admin.created", account.email)
+        if self._links is not None:
+            self._links.send(credential)
+        return account
+
+    def delete(self, actor: AdminActor, admin_id: str) -> None:
+        actor.require(AdminArea.ADMINS, PermissionAction.DELETE)
+        credential = self._ctx.admins.get(admin_id)
+        if credential is None:
+            raise not_found("admin")
+        if admin_id == actor.summary.id:
+            raise conflict("cannot_change_self")
+        self._ctx.admins.remove(admin_id, ADMIN_DELETED_REASON)
+        actor.record("admin.deleted", credential.account.email)
 
     def list(self, actor: AdminActor) -> list[AdminAccount]:
         actor.require(AdminArea.ADMINS, PermissionAction.READ)

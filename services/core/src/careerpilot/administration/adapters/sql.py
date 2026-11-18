@@ -14,11 +14,12 @@ from careerpilot.administration.models import (
     AdminSourceRow,
     AdminUserRow,
     AuditEntry,
+    CustomRole,
     PlatformSettings,
     UserSession,
 )
 from careerpilot.administration.ports import AdminCredential, OperationsSnapshot
-from careerpilot.platform.clock import iso, parse_iso
+from careerpilot.platform.clock import Clock, iso, parse_iso
 from careerpilot.platform.enums import ActorType, AdminRole
 from careerpilot.platform.persistence import ID_LENGTH, SHORT_TEXT, TEXT, Audited, Base, Database, active
 
@@ -35,6 +36,7 @@ class ProjectionKind(StrEnum):
     SOURCE = "source"
     OPERATIONS = "operations"
     SESSION = "session"
+    CUSTOM_ROLE = "custom_role"
 
 
 class AdminAccountRow(Audited, Base):
@@ -93,8 +95,16 @@ def _account(row: AdminAccountRow) -> AdminCredential:
 
 
 class SqlAdminAccountRepository:
-    def __init__(self, database: Database) -> None:
+    def __init__(self, database: Database, clock: Clock) -> None:
         self._db = database
+        self._clock = clock
+
+    def remove(self, admin_id: str, reason: str) -> None:
+        def change(session: Session) -> None:
+            for row in session.scalars(active(AdminAccountRow).where(AdminAccountRow.id == admin_id)):
+                row.soft_delete(self._clock, reason)
+
+        self._db.write(change)
 
     def find_by_email(self, email: str) -> AdminCredential | None:
         with self._db.unit_of_work() as session:
@@ -182,8 +192,23 @@ class SqlAuditLog:
 
 
 class SqlDirectory:
-    def __init__(self, database: Database) -> None:
+    def __init__(self, database: Database, clock: Clock) -> None:
         self._db = database
+        self._clock = clock
+
+    def custom_roles(self) -> list[CustomRole]:
+        return self._list(ProjectionKind.CUSTOM_ROLE, CustomRole)
+
+    def save_custom_role(self, role: CustomRole) -> None:
+        self._save(ProjectionKind.CUSTOM_ROLE, role.id, role)
+
+    def remove_custom_role(self, role_id: str, reason: str) -> None:
+        def change(session: Session) -> None:
+            row = session.get(AdminProjectionRow, (ProjectionKind.CUSTOM_ROLE.value, role_id))
+            if row is not None and row.deleted_at is None:
+                row.soft_delete(self._clock, reason)
+
+        self._db.write(change)
 
     def users(self) -> list[AdminUserRow]:
         return self._list(ProjectionKind.USER, AdminUserRow)

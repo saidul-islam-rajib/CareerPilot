@@ -9,6 +9,7 @@ from careerpilot.administration.models import (
     AdminSourceRow,
     AdminUserRow,
     AuditEntry,
+    CustomRole,
     PlatformSettings,
     UserSession,
 )
@@ -32,6 +33,9 @@ class InMemoryAdminAccountRepository:
 
     def save(self, credential: AdminCredential) -> None:
         self._by_id[credential.account.id] = copy.deepcopy(credential)
+
+    def remove(self, admin_id: str, reason: str) -> None:
+        self._by_id.pop(admin_id, None)
 
 
 class InMemoryPlatformSettingsRepository:
@@ -73,6 +77,7 @@ class InMemoryDirectory:
         self._sources: list[AdminSourceRow] = []
         self._operations = empty_operations()
         self._sessions: dict[str, UserSession] = {}
+        self._roles: dict[str, CustomRole] = {}
 
     def users(self) -> list[AdminUserRow]:
         return [u.model_copy() for u in self._users]
@@ -103,6 +108,15 @@ class InMemoryDirectory:
 
     def save_operations(self, document: dict[str, object]) -> None:
         self._operations = operations_from_document(dict(document))
+
+    def custom_roles(self) -> list[CustomRole]:
+        return [r.model_copy(deep=True) for r in self._roles.values()]
+
+    def save_custom_role(self, role: CustomRole) -> None:
+        self._roles[role.id] = role.model_copy(deep=True)
+
+    def remove_custom_role(self, role_id: str, reason: str) -> None:
+        self._roles.pop(role_id, None)
 
     def sessions(self) -> list[UserSession]:
         return [s.model_copy() for s in self._sessions.values()]

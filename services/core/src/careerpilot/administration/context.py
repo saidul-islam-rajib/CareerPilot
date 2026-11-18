@@ -8,7 +8,7 @@ from careerpilot.administration.ports import AdminAccountRepository, AuditLog, D
 from careerpilot.candidate.ports import AccountRepository, WorkspaceRepository
 from careerpilot.platform.clock import Clock, IdGenerator, iso
 from careerpilot.platform.config import Settings
-from careerpilot.platform.enums import ActorType, AdminArea, PermissionAction, UserSegment
+from careerpilot.platform.enums import ActorType, AdminArea, AdminRole, PermissionAction, UserSegment
 from careerpilot.platform.errors import DomainError, ErrorCode
 from careerpilot.platform.security import PasswordHasher, TokenService
 
@@ -39,8 +39,16 @@ class AdminActor:
     context: AdminContext = field(repr=False)
 
     def require(self, area: AdminArea, action: PermissionAction) -> None:
-        if not can(self.summary.role, area, action):
+        if not self._allowed(area, action):
             raise DomainError(ErrorCode.FORBIDDEN)
+
+    def _allowed(self, area: AdminArea, action: PermissionAction) -> bool:
+        if self.summary.role is AdminRole.SUPER_ADMIN:
+            return True
+        for role in self.context.directory.custom_roles():
+            if self.summary.id in role.member_ids:
+                return any(p.area is area and action in p.actions for p in role.permissions)
+        return can(self.summary.role, area, action)
 
     def record(self, action: str, target: str) -> None:
         self.context.audit.append(

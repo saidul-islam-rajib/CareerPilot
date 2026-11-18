@@ -3,7 +3,7 @@ import pytest
 from careerpilot.administration.adapters.sql import SqlDirectory, SqlPlatformSettingsRepository
 from careerpilot.bootstrap import Container, default_platform_settings
 from careerpilot.candidate.services.auth import Registration
-from careerpilot.platform.clock import FixedClock
+from careerpilot.platform.clock import FixedClock, SystemClock
 from careerpilot.platform.config import load_settings
 from careerpilot.platform.email_delivery import InMemoryEmailSender
 from careerpilot.platform.enums import ApplicationMode
@@ -51,5 +51,5 @@ def test_an_empty_database_uses_config_defaults(clock: FixedClock) -> None:
     Base.metadata.create_all(database.engine)
     defaults = default_platform_settings(settings)
     assert SqlPlatformSettingsRepository(database, defaults).get() == defaults
-    operations = SqlDirectory(database).operations()
+    operations = SqlDirectory(database, SystemClock()).operations()
     assert (operations.services, operations.archived_circulars, operations.user_phones) == ([], 0, {})
