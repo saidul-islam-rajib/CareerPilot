@@ -21,7 +21,7 @@ export * from './hooks/use-writing';
 export * from './hooks/use-academic';
 export * from './hooks/use-fees';
 export * from './hooks/use-portal';
-export * from './hooks/use-portal';
+export * from './assist/script';
 export * from './hooks/fee-form';
 export * from './hooks/use-automation';
 export * from './hooks/use-opportunity';
