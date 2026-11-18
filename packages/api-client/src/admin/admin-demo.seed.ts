@@ -6,6 +6,8 @@ import {
   OpportunityStatus,
   OpportunityType,
   OutcomeStatus,
+  ReportKind,
+  ReportStatus,
   ServiceHealth,
   SourceReview,
   SourceStatus,
@@ -16,6 +18,7 @@ import {
 } from '@careerpilot/domain-ui-logic';
 import { ThemeKey } from '@careerpilot/ui-tokens';
 import type { DemoState } from '../in-memory/demo.seed';
+import type { OpportunityReport } from '../types';
 import type {
   AdminAccount,
   AdminApplicationRow,
@@ -38,6 +41,7 @@ export interface AdminDemoState {
   userPhones: Record<string, string>;
   secrets: Record<string, SecretMetadata[]>;
   opportunities: AdminOpportunityRow[];
+  reports: OpportunityReport[];
   sources: AdminSourceRow[];
   applications: AdminApplicationRow[];
   audit: AuditEntry[];
@@ -166,6 +170,18 @@ export function buildAdminDemoSeed(now: Date, userState: DemoState, accountLinkT
       ],
     },
     opportunities,
+    reports: [
+      {
+        id: 'rpt_demo_1',
+        userId: 'usr_demo',
+        opportunityId: opportunities[0]?.id ?? '',
+        opportunityTitle: opportunities[0]?.title ?? '',
+        kind: ReportKind.DeadLink,
+        note: 'The apply link shows a not found page.',
+        status: ReportStatus.Open,
+        createdAt: new Date(now.getTime() - DAY_MS).toISOString(),
+      },
+    ],
     sources,
     applications,
     audit,

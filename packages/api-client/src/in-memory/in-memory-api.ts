@@ -5,6 +5,7 @@ import {
   OutcomeStatus,
   PauseDuration,
   PauseScope,
+  ReportStatus,
   SubmissionStatus,
   SubmissionWindowKind,
   TimelineActor,
@@ -21,6 +22,7 @@ import {
   ApplicationFilter,
   type ApplicationRecord,
   type ApprovalDetail,
+  type OpportunityReport,
   type BulkApprovalResult,
   type OpportunityDetail,
   type OpportunitySummary,
@@ -126,6 +128,7 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     reject: failWith,
   });
   const addDays = (days: number) => new Date(clock.now().getTime() + days * DAY_MS).toISOString();
+  const reports: OpportunityReport[] = [];
 
   const findOpportunity = (id: string) => state.opportunities.find((o) => o.id === id) ?? notFound();
   const findApproval = (id: string) => state.approvals.find((a) => a.id === id) ?? notFound();
@@ -260,6 +263,25 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
         found.feedback = feedback;
         return respond(feedback);
       },
+      async reportOpportunity(id, input) {
+        const found = findOpportunity(id);
+        if (reports.some((r) => r.opportunityId === id && r.kind === input.kind && r.status === ReportStatus.Open)) {
+          return fail(ApiErrorCode.Conflict);
+        }
+        const report = {
+          id: `rpt_${reports.length + 1}`,
+          userId: DEMO_ID,
+          opportunityId: id,
+          opportunityTitle: found.title,
+          kind: input.kind,
+          note: input.note.trim(),
+          status: ReportStatus.Open,
+          createdAt: nowIso(),
+        };
+        reports.unshift(report);
+        return respond(report);
+      },
+      myReports: async () => respond([...reports]),
       async removeFeedback(id) {
         delete findOpportunity(id).feedback;
         return respond(undefined);

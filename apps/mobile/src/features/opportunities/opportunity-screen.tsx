@@ -6,8 +6,10 @@ import { EnumKey, OpportunityDecision, RequirementCheck, StatusTone } from '@car
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { Badge, Banner, Button, ButtonVariant, Card, EnumBadge, ErrorState, Icon, IconSize, ListRow, LoadingState, Row, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
+import { CheckJob } from './check-job';
 import { MatchFeedback } from './match-feedback';
 import { MissingSkills } from './missing-skills';
+import { ReportProblem } from './report-problem';
 import { matchTone } from './opportunity-card';
 
 const CHECK_ICONS: Record<RequirementCheck, LucideIcon> = {
@@ -112,6 +114,8 @@ export function OpportunityScreen() {
 
         <MatchFeedback opportunityId={o.id} current={o.feedback} />
 
+        <ReportProblem opportunityId={o.id} />
+
         <Section title={t('opportunity.requirements')}>
           <Card>
             {o.requirements.map((requirement) => (
@@ -123,6 +127,8 @@ export function OpportunityScreen() {
             ))}
           </Card>
         </Section>
+
+        <CheckJob url={o.source.url} />
 
         <Section title={t('opportunity.source')}>
           <Card>

@@ -21,8 +21,7 @@ export function BulkApprovalsPage() {
         <Banner
           tone={result.refused.length > 0 ? StatusTone.Warning : StatusTone.Success}
           icon={AlertTriangle}
-          title={t('approvals.bulk.approved', { count: result.approved.length })}
-          description={result.refused.length > 0 ? t('approvals.bulk.refused', { count: result.refused.length }) : undefined}
+          title={[t('approvals.bulk.approved', { count: result.approved.length }), result.refused.length > 0 ? t('approvals.bulk.refused', { count: result.refused.length }) : ''].join(' ').trim()}
         />
       ) : null}
       {bulk.failed ? <p role="alert">{t('approvals.bulk.failed')}</p> : null}

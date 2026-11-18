@@ -522,6 +522,18 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
         record('opportunity.expired', item.title);
         return respond(item);
       },
+      listReports: async (status) => respond(state.reports.filter((r) => !status || r.status === status)),
+      async setReportStatus(id, status) {
+        const item = state.reports.find((r) => r.id === id);
+        if (!item) {
+          return fail(ApiErrorCode.NotFound);
+        }
+        item.status = status;
+        item.reviewedBy = currentAdmin?.id;
+        item.reviewedAt = nowIso();
+        record(`opportunity_report.status_changed.${status}`, item.id);
+        return respond(item);
+      },
     },
     sources: {
       listSources: async (query) => respond(paginate(state.sources, query, (s) => s.name, (s) => s.status)),

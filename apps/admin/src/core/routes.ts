@@ -6,6 +6,7 @@ export const AdminRoutes = {
   users: '/users',
   user: (id: string) => `/users/${encodeURIComponent(id)}`,
   opportunities: '/opportunities',
+  reports: '/reports',
   sources: '/sources',
   government: '/government',
   portals: '/portals',

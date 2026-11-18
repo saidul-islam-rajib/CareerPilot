@@ -22,6 +22,8 @@ from careerpilot.platform.enums import (
 )
 from careerpilot.platform.messages import translate
 from careerpilot.platform.model import CamelModel
+from careerpilot.reports.enums import ReportStatus
+from careerpilot.reports.models import StatusInput
 
 PREFIX = "/admin/v1"
 PACKAGE = "careerpilot-core"
@@ -199,6 +201,16 @@ def reactivate(user_id: str, admin: CurrentAdmin, services: Services) -> JSONRes
 @router.post("/users/{user_id}/pause-automation")
 def pause_automation(user_id: str, admin: CurrentAdmin, services: Services) -> JSONResponse:
     return ok(services.admin_users.set_status(admin, user_id, UserAccountStatus.PAUSED, "user.automation_paused"))
+
+
+@router.get("/opportunity-reports")
+def opportunity_reports(admin: CurrentAdmin, services: Services, status: ReportStatus | None = None) -> JSONResponse:
+    return ok(services.opportunity_reports.admin_list(admin, status))
+
+
+@router.put("/opportunity-reports/{report_id}/status")
+def set_report_status(report_id: str, body: StatusInput, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.opportunity_reports.set_status(admin, report_id, body.status))
 
 
 @router.get("/opportunities")

@@ -28,6 +28,8 @@ import type {
   BulkBlock,
   WritingKind,
   FeedbackReason,
+  ReportKind,
+  ReportStatus,
   FeedbackVerdict,
   PayPeriod,
   RangeBasis,
@@ -217,6 +219,24 @@ export interface MatchFeedback {
   title: string;
   organization: string;
   createdAt: IsoDateTime;
+}
+
+export interface OpportunityReport {
+  id: string;
+  userId: string;
+  opportunityId: string;
+  opportunityTitle: string;
+  kind: ReportKind;
+  note: string;
+  status: ReportStatus;
+  createdAt: IsoDateTime;
+  reviewedBy?: string;
+  reviewedAt?: IsoDateTime;
+}
+
+export interface ReportInput {
+  kind: ReportKind;
+  note: string;
 }
 
 export interface FeedbackInput {
@@ -504,6 +524,7 @@ export interface ProfileLimits extends FormLimits {
 export interface UploadLimits {
   maxDocumentBytes: number;
   maxPhotoBytes: number;
+  maxSignatureBytes: number;
   documentTypes: string[];
   photoTypes: string[];
 }

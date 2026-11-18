@@ -133,6 +133,17 @@ def confirm_contact_code(contact_id: str, body: CodeBody, caller: Caller) -> JSO
     return caller.respond(caller.services.verification.confirm(caller.user_id, contact_id, body.code))
 
 
+@router.put("/profile/signature")
+def set_signature(file: UploadedFile, caller: Caller) -> JSONResponse:
+    upload = read_upload(file, caller.services.settings.profile.uploads.max_signature_bytes)
+    return caller.respond(caller.profiles.set_signature(caller.user_id, upload))
+
+
+@router.delete("/profile/signature")
+def remove_signature(caller: Caller) -> JSONResponse:
+    return caller.respond(caller.profiles.remove_signature(caller.user_id))
+
+
 @router.delete("/profile/photo")
 def remove_photo(caller: Caller) -> JSONResponse:
     return caller.respond(caller.profiles.remove_photo(caller.user_id))
@@ -186,6 +197,11 @@ def reorder_entries(section: str, body: OrderBody, caller: Caller) -> JSONRespon
 @router.patch("/profile/sections/{section}/{entry_id}")
 def update_entry(section: str, entry_id: str, body: EntryBody, caller: Caller) -> JSONResponse:
     return caller.respond(caller.profiles.update_entry(caller.user_id, section, entry_id, body.values))
+
+
+@router.post("/profile/sections/{section}/{entry_id}/fields/{field}/reveal")
+def reveal_field(section: str, entry_id: str, field: str, caller: Caller) -> JSONResponse:
+    return ok({"value": caller.profiles.reveal_field(caller.user_id, section, entry_id, field)})
 
 
 @router.delete("/profile/sections/{section}/{entry_id}")

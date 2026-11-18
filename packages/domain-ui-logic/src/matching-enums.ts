@@ -25,3 +25,19 @@ export const BulkBlock = {
   UnknownApproval: 'unknown_approval',
 } as const;
 export type BulkBlock = (typeof BulkBlock)[keyof typeof BulkBlock];
+
+export const ReportKind = {
+  DeadLink: 'dead_link',
+  InaccurateDetail: 'inaccurate_detail',
+  FalseMerge: 'false_merge',
+  Fraud: 'fraud',
+} as const;
+export type ReportKind = (typeof ReportKind)[keyof typeof ReportKind];
+
+export const ReportStatus = {
+  Open: 'open',
+  Reviewed: 'reviewed',
+  Actioned: 'actioned',
+  Dismissed: 'dismissed',
+} as const;
+export type ReportStatus = (typeof ReportStatus)[keyof typeof ReportStatus];

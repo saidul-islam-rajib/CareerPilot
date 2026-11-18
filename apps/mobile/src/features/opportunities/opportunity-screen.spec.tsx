@@ -14,6 +14,14 @@ describe('OpportunityScreen', () => {
     expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/circular/[opportunityId]', params: { opportunityId: 'opp_remote_frontend' } });
   });
 
+  it('checks the job and says plainly that it will stop on a host nobody approved', async () => {
+    mockParams.current = { id: 'opp_remote_frontend' };
+    const { unmount } = await renderWithProviders(<OpportunityScreen />);
+    await fireEvent.press(await screen.findByTestId('check-job'));
+    expect(await screen.findByText(/Will stop: .*/)).toBeTruthy();
+    await unmount();
+  });
+
   it('lists skills the job asks for and adds one the user has', async () => {
     mockParams.current = { id: 'opp_remote_frontend' };
     const { services } = await renderWithProviders(<OpportunityScreen />);
@@ -35,6 +43,13 @@ describe('OpportunityScreen', () => {
     });
     await fireEvent.press(await screen.findByTestId('feedback-clear'));
     await waitFor(async () => expect((await services.api.opportunities.getOpportunity('opp_remote_frontend')).feedback).toBeUndefined());
+  });
+
+  it('sends a report about a listing', async () => {
+    mockParams.current = { id: 'opp_remote_frontend' };
+    const { services } = await renderWithProviders(<OpportunityScreen />);
+    await fireEvent.press(await screen.findByTestId('report-send'));
+    await waitFor(async () => expect(await services.api.opportunities.myReports()).toHaveLength(1));
   });
 
   it('warns about a hard requirement failure', async () => {

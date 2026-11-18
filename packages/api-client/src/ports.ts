@@ -16,6 +16,8 @@ import type {
   BulkApprovalRow,
   ContactChanges,
   FeedbackInput,
+  OpportunityReport,
+  ReportInput,
   MatchFeedback,
   ContactInput,
   DashboardSummary,
@@ -82,6 +84,8 @@ export interface OpportunityApi {
   addByLink(url: string): Promise<OpportunityDetail>;
   giveFeedback(id: string, input: FeedbackInput): Promise<MatchFeedback>;
   removeFeedback(id: string): Promise<void>;
+  reportOpportunity(id: string, input: ReportInput): Promise<OpportunityReport>;
+  myReports(): Promise<OpportunityReport[]>;
 }
 
 export interface ApprovalApi {
@@ -154,6 +158,8 @@ export interface ProfileApi {
   setPhotoCrop(crop: PhotoCrop): Promise<Profile>;
   sendContactCode(contactId: string): Promise<VerificationChallenge>;
   confirmContactCode(contactId: string, code: string): Promise<Profile>;
+  setSignature(file: UploadSource): Promise<Profile>;
+  removeSignature(): Promise<Profile>;
   removePhoto(): Promise<Profile>;
   addContact(input: ContactInput): Promise<Profile>;
   updateContact(id: string, changes: ContactChanges): Promise<Profile>;
@@ -166,6 +172,7 @@ export interface ProfileApi {
   updateEntry(section: string, id: string, values: Record<string, EntryValue>): Promise<Profile>;
   removeEntry(section: string, id: string): Promise<Profile>;
   restoreEntry(section: string, id: string): Promise<Profile>;
+  revealField(section: string, id: string, field: string): Promise<string>;
   reorderEntries(section: string, orderedIds: string[]): Promise<Profile>;
   uploadDocument(input: DocumentInput): Promise<Profile>;
   uploadDocumentVersion(id: string, file: UploadSource): Promise<Profile>;

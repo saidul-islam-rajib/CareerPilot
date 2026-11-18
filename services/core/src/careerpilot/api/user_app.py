@@ -38,6 +38,7 @@ from careerpilot.platform.enums import (
 )
 from careerpilot.platform.messages import translate
 from careerpilot.platform.model import CamelModel
+from careerpilot.reports.models import ReportInput
 
 PREFIX = "/v1"
 PACKAGE = "careerpilot-core"
@@ -230,6 +231,16 @@ def give_feedback(opportunity_id: str, body: FeedbackInput, user: CurrentUser, s
 def remove_feedback(opportunity_id: str, user: CurrentUser, services: Services) -> Response:
     services.feedback.remove(user.id, opportunity_id)
     return no_content()
+
+
+@router.post("/opportunities/{opportunity_id}/reports")
+def report_opportunity(opportunity_id: str, body: ReportInput, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.opportunity_reports.submit(user.id, opportunity_id, body))
+
+
+@router.get("/reports")
+def my_reports(user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.opportunity_reports.mine(user.id))
 
 
 @router.post("/opportunities/by-link")

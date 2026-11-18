@@ -34,6 +34,7 @@ from careerpilot.platform.enums import (
 from careerpilot.portal.config import PortalsConfig
 from careerpilot.privacy.config import PrivacyConfig
 from careerpilot.reminders.config import RemindersConfig
+from careerpilot.reports.config import ReportsConfig
 from careerpilot.writing.config import WritingConfig
 
 CONFIG_ROOT_ENV = "CAREERPILOT_CONFIG_ROOT"
@@ -148,11 +149,23 @@ class AdminConfig(Strict):
     session_timeout_minutes: int = Field(gt=0)
 
 
+class MfaConfig(Strict):
+    digits: int = Field(ge=6, le=8)
+    period_seconds: int = Field(gt=0)
+    window_steps: int = Field(ge=0)
+    secret_bytes: int = Field(ge=10)
+    recovery_code_count: int = Field(gt=0)
+    recovery_code_bytes: int = Field(ge=4)
+    reauth_ttl_minutes: int = Field(gt=0)
+    vault_context: str
+
+
 class SecurityConfig(Strict):
     token_ttl_minutes: int = Field(gt=0)
     admin_token_ttl_minutes: int = Field(gt=0)
     token_issuer: str
     token_algorithm: str
+    mfa: MfaConfig
 
 
 class HttpConfig(Strict):
@@ -489,6 +502,7 @@ class ProfileFieldConfig(Strict):
     min: float | None = None
     max: float | None = None
     options: str | None = None
+    sensitive: bool = False
 
 
 class ProfileSectionConfig(Strict):
@@ -529,6 +543,7 @@ class ProfileLimits(Strict):
 class UploadConfig(Strict):
     max_document_bytes: int = Field(gt=0)
     max_photo_bytes: int = Field(gt=0)
+    max_signature_bytes: int = Field(gt=0)
     document_types: list[str]
     photo_types: list[str]
 
@@ -566,7 +581,13 @@ class ConsistencyConfig(Strict):
     ignored_characters: str = ""
 
 
+class MaskingConfig(Strict):
+    placeholder: str = Field(min_length=1)
+    visible_tail: int = Field(ge=0)
+
+
 class ProfileConfig(Strict):
+    masking: MaskingConfig
     page_order: list[str]
     limits: ProfileLimits
     uploads: UploadConfig
@@ -979,6 +1000,7 @@ class Settings(Strict):
     fees: FeesConfig
     reminders: RemindersConfig
     portals: PortalsConfig
+    opportunity_reports: ReportsConfig
 
 
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:

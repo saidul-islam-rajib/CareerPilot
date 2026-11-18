@@ -108,6 +108,15 @@ describe('OpportunityPage', () => {
     await waitFor(async () => expect((await services.api.opportunities.getOpportunity('opp_bd_ctg')).feedback).toBeUndefined());
   });
 
+  it('sends a report about a listing and refuses the same open report twice', async () => {
+    const { services } = renderWithProviders(<OpportunityPage />, { params: { id: 'opp_bd_ctg' } });
+    fireEvent.click(await screen.findByRole('button', { name: 'Send report' }));
+    expect(await screen.findByText(/Your report was sent to the team/)).toBeInTheDocument();
+    expect(await services.api.opportunities.myReports()).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Send report' }));
+    expect(await screen.findByText(/already reported this problem/)).toBeInTheDocument();
+  });
+
   it('warns about a hard requirement failure', async () => {
     renderWithProviders(<OpportunityPage />, { params: { id: 'opp_gov_programmer' } });
     expect(await screen.findByText(/A hard requirement is not met/)).toBeInTheDocument();

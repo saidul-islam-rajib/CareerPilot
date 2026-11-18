@@ -180,6 +180,36 @@
     "favoriteAdded": "{company} is a favorite. Its jobs come first.",
     "favoriteRemoved": "{company} removed from favorites."
   },
+  "listingReports": {
+    "title": "Report a problem with this listing",
+    "body": "Tell the team if something is wrong. An admin will look at it.",
+    "kind": "What is wrong",
+    "note": "Details (optional)",
+    "send": "Send report",
+    "sent": "Thank you. Your report was sent to the team.",
+    "duplicate": "You already reported this problem and it is still open.",
+    "failed": "Could not send your report. Try again.",
+    "kinds": {
+      "dead_link": "The link does not work",
+      "inaccurate_detail": "A detail is wrong",
+      "false_merge": "Two different jobs were merged",
+      "fraud": "It looks like fraud"
+    },
+    "statuses": {
+      "open": "Open",
+      "reviewed": "Reviewed",
+      "actioned": "Action taken",
+      "dismissed": "Dismissed"
+    },
+    "admin": {
+      "title": "Listing reports",
+      "body": "Problems reported by users. Each status change is written to the audit log.",
+      "empty": "No reports.",
+      "by": "Reported on {date}",
+      "setStatus": "Mark as {status}",
+      "failed": "Could not update the report."
+    }
+  },
   "feedback": {
     "title": "Tell us about this match",
     "body": "Your answer changes how similar jobs are ranked for you.",
@@ -344,10 +374,30 @@
     "whatWasSent": "What was sent"
   },
   "profile": {
+    "sensitive": {
+      "reveal": "Show {field}",
+      "hide": "Hide {field}",
+      "showAction": "Show",
+      "hideAction": "Hide",
+      "revealFailed": "Could not show this value. Try again.",
+      "unchanged": "Leave the hidden value as it is to keep what you saved."
+    },
     "title": "Profile",
     "completeness": "Profile {percent}% complete",
     "photo": "Photo",
     "signature": "Signature",
+    "addSignature": "Add signature",
+    "drawSignature": "Draw signature",
+    "drawSignatureHint": "Sign inside the box with your finger, mouse, or pen.",
+    "signaturePad": "Signature pad",
+    "undoStroke": "Undo stroke",
+    "clearSignature": "Clear",
+    "uploadSignature": "Upload signature image",
+    "replaceSignature": "Replace signature",
+    "removeSignature": "Remove signature",
+    "signatureUpdated": "Signature updated",
+    "signatureRemoved": "Signature removed",
+    "signatureEmpty": "Draw or upload your signature to use it on applications.",
     "contacts": "Emails and phones",
     "education": "Education",
     "experience": "Experience",
@@ -580,7 +630,9 @@
         "father_name_bangla": "Father's name in Bangla",
         "mother_name_english": "Mother's name in English",
         "mother_name_bangla": "Mother's name in Bangla",
-        "nid_number": "NID or birth registration number",
+        "nid_number": "NID number",
+        "passport_number": "Passport number",
+        "birth_registration_number": "Birth registration number",
         "citizenship": "Citizenship",
         "home_district": "Home district"
       },

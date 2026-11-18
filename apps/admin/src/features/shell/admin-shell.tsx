@@ -3,7 +3,7 @@
 import type { PropsWithChildren } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FileLock2, Globe, Landmark, Briefcase, Database, FileSearch, LayoutDashboard, LogOut, MessageCircle, ScrollText, Settings, ShieldCheck, Users, type LucideIcon } from 'lucide-react';
+import { FileLock2, Flag, Globe, Landmark, Briefcase, Database, FileSearch, LayoutDashboard, LogOut, MessageCircle, ScrollText, Settings, ShieldCheck, Users, type LucideIcon } from 'lucide-react';
 import { can } from '@careerpilot/api-client';
 import { useEnumDisplay, useT } from '@careerpilot/client-core';
 import { AdminArea, EnumKey, PermissionAction } from '@careerpilot/domain-ui-logic';
@@ -26,6 +26,7 @@ const NAV: NavItem[] = [
   { href: AdminRoutes.users, area: AdminArea.Users, icon: Users },
   { href: AdminRoutes.messages, area: AdminArea.Users, icon: MessageCircle, label: 'admin.nav.messages', badge: true },
   { href: AdminRoutes.opportunities, area: AdminArea.Opportunities, icon: FileSearch },
+  { href: AdminRoutes.reports, area: AdminArea.Opportunities, icon: Flag, label: 'listingReports.admin.title' },
   { href: AdminRoutes.sources, area: AdminArea.Sources, icon: Database },
   { href: AdminRoutes.government, area: AdminArea.Opportunities, icon: Landmark },
   { href: AdminRoutes.portals, area: AdminArea.Sources, icon: Globe, label: 'portal.hosts.title' },

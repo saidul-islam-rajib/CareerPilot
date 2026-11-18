@@ -1,5 +1,5 @@
-import type { AdminRole, OpportunityDecision } from '@careerpilot/domain-ui-logic';
-import type { CompleteAccountLinkRequest, ConnectedAccount, ConversationSummary, MessagePage, MessageView, NewAttachment, SignInRequest } from '../types';
+import type { AdminRole, OpportunityDecision, ReportStatus } from '@careerpilot/domain-ui-logic';
+import type { CompleteAccountLinkRequest, ConnectedAccount, ConversationSummary, MessagePage, MessageView, NewAttachment, OpportunityReport, SignInRequest } from '../types';
 import type {
   AdminAccount,
   AdminPermission,
@@ -78,6 +78,8 @@ export interface AdminOpportunitiesApi {
   listOpportunities(query: PageQuery): Promise<Page<AdminOpportunityRow>>;
   flagOpportunity(id: string, reason: string): Promise<AdminOpportunityRow>;
   markExpired(id: string): Promise<AdminOpportunityRow>;
+  listReports(status?: ReportStatus): Promise<OpportunityReport[]>;
+  setReportStatus(id: string, status: ReportStatus): Promise<OpportunityReport>;
 }
 
 export interface AdminSourcesApi {

@@ -63,6 +63,9 @@ from careerpilot.portal.ports import PortalRecordRepository
 from careerpilot.privacy.adapters.in_memory import InMemoryConsentRepository, InMemoryDeletionRepository, InMemoryExportRepository
 from careerpilot.privacy.adapters.sql import SqlConsentRepository, SqlDeletionRepository, SqlExportRepository
 from careerpilot.privacy.ports import ConsentRepository, DeletionRepository, ExportRepository
+from careerpilot.reports.adapters.in_memory import InMemoryReports
+from careerpilot.reports.adapters.sql import SqlReports
+from careerpilot.reports.ports import ReportRepository
 from careerpilot.writing.adapters.in_memory import InMemoryWritingRepository
 from careerpilot.writing.adapters.sql import SqlWritingRepository
 from careerpilot.writing.ports import WritingRepository
@@ -97,6 +100,7 @@ class Repositories:
     academic_records: AcademicRecordRepository = field(default_factory=InMemoryAcademicRecords)
     fee_records: FeeRecordRepository = field(default_factory=InMemoryFeeRecords)
     portal_records: PortalRecordRepository = field(default_factory=InMemoryPortalRecords)
+    opportunity_reports: ReportRepository = field(default_factory=InMemoryReports)
 
 
 RepositoryFactory = Callable[[PasswordHasher, WorkspaceFactory, PlatformSettings], Repositories]
@@ -142,4 +146,5 @@ def sql_repositories(database: Database, empty: WorkspaceFactory, platform_defau
         academic_records=SqlAcademicRecords(database, SystemClock()),
         fee_records=SqlFeeRecords(database, SystemClock()),
         portal_records=SqlPortalRecords(database, SystemClock(), UuidIdGenerator()),
+        opportunity_reports=SqlReports(database),
     )

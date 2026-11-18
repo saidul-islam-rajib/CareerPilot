@@ -9,6 +9,7 @@ import { Badge, Banner, Button, Card, EnumBadge, ErrorState, ListRow, LoadingSta
 import { Routes } from '@/core/routes';
 import { MatchFeedback } from './match-feedback';
 import { MissingSkills } from './missing-skills';
+import { ReportProblem } from './report-problem';
 import { matchTone } from './opportunity-card';
 
 const CHECK_ICONS: Record<RequirementCheck, LucideIcon> = { met: Check, not_met: X, unknown: CircleHelp };
@@ -68,6 +69,8 @@ export function OpportunityPage() {
         <MissingSkills opportunityId={o.id} skills={o.missingSkills} />
 
         <MatchFeedback opportunityId={o.id} current={o.feedback} />
+
+        <ReportProblem opportunityId={o.id} />
 
         <Section title={t('opportunity.requirements')}>
           <Card>

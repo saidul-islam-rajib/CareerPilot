@@ -10,7 +10,7 @@ import anthropic
 from careerpilot.academic.context import AcademicContext
 from careerpilot.academic.service import AcademicServices, build_academic
 from careerpilot.administration.account_links import AdminLinkContext, AdminLinkService, invite_owner
-from careerpilot.administration.context import AdminContext
+from careerpilot.administration.context import AdminContext, UserAccessAudit
 from careerpilot.administration.discovery_sync import SourceCheckRunner, discover_when_empty
 from careerpilot.administration.health import database_probe, run_probes, store_probe
 from careerpilot.administration.limits import effective_source_limit
@@ -132,6 +132,7 @@ from careerpilot.privacy.ports import JobRunner
 from careerpilot.privacy.reports import ReportService
 from careerpilot.privacy.runner import BackgroundRunner, DirectRunner
 from careerpilot.reminders.service import ReminderContext, ReminderService, ReminderSources
+from careerpilot.reports.service import OpportunityReportService, ReportsContext
 from careerpilot.repositories import Repositories, RepositoryFactory, WorkspaceFactory, in_memory_repositories, sql_repositories
 from careerpilot.writing.assembly import build_writing
 from careerpilot.writing.ports import DraftGenerator
@@ -175,6 +176,7 @@ class Container:
     preferences: PreferencesService
     feedback: FeedbackService
     bulk_approvals: BulkApprovalService
+    opportunity_reports: OpportunityReportService
     dashboard: DashboardService
     admin_auth: AdminAuthService
     admin_dashboard: AdminDashboardService
@@ -804,8 +806,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     public_config.invalidate()
     admin_settings = PlatformSettingsService(admin, public_config.invalidate)
     preferences = PreferencesService(candidate, recommendations.rematch)
-    feedback = FeedbackService(candidate, recommendations.rematch)
-    profile = ProfileService(candidate, storage, file_links, recommendations.rematch)
+    profile = ProfileService(candidate, storage, file_links, recommendations.rematch, UserAccessAudit(repos.audit, clk, gen))
     user_sources = UserSourceService(
         UserSourceContext(
             admin=admin,
@@ -880,7 +881,17 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         ),
         profile=profile,
         preferences=preferences,
-        feedback=feedback,
+        feedback=FeedbackService(candidate, recommendations.rematch),
+        opportunity_reports=OpportunityReportService(
+            ReportsContext(
+                config=cfg.opportunity_reports,
+                clock=clk,
+                ids=gen,
+                reports=repos.opportunity_reports,
+                opportunities=repos.opportunities,
+                audit=repos.audit,
+            )
+        ),
         bulk_approvals=BulkApprovalService(
             candidate,
             approvals,

@@ -86,6 +86,8 @@ export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
       listOpportunities: (query) => get(`/admin/v1/opportunities?${queryString(query)}`),
       flagOpportunity: (id, reason) => post(`/admin/v1/opportunities/${enc(id)}/flag`, { reason }),
       markExpired: (id) => post(`/admin/v1/opportunities/${enc(id)}/expire`),
+      listReports: (status) => get(`/admin/v1/opportunity-reports${status ? `?status=${enc(status)}` : ''}`),
+      setReportStatus: (id, status) => put(`/admin/v1/opportunity-reports/${enc(id)}/status`, { status }),
     },
     sources: {
       listSources: (query) => get(`/admin/v1/sources?${queryString(query)}`),

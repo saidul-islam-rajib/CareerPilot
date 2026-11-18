@@ -1,0 +1,16 @@
+from typing import Protocol
+
+from careerpilot.reports.enums import ReportStatus
+from careerpilot.reports.models import OpportunityReport
+
+
+class ReportRepository(Protocol):
+    def add(self, report: OpportunityReport) -> None: ...
+
+    def get(self, report_id: str) -> OpportunityReport | None: ...
+
+    def save(self, report: OpportunityReport) -> None: ...
+
+    def for_user(self, user_id: str) -> list[OpportunityReport]: ...
+
+    def with_status(self, status: ReportStatus | None) -> list[OpportunityReport]: ...
