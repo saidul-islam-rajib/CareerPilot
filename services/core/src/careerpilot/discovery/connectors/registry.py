@@ -1,6 +1,7 @@
 from collections.abc import Callable, Sequence
 
 from careerpilot.discovery.connectors.ashby import AshbyConnector
+from careerpilot.discovery.connectors.bd_notice import BdNoticeConnector
 from careerpilot.discovery.connectors.easyjobs import EasyJobsConnector
 from careerpilot.discovery.connectors.greenhouse import GreenhouseConnector
 from careerpilot.discovery.connectors.html import HtmlConnector
@@ -9,6 +10,8 @@ from careerpilot.discovery.connectors.rss import RssConnector
 from careerpilot.discovery.connectors.smartrecruiters import SmartRecruitersConnector
 from careerpilot.discovery.connectors.workable import WorkableConnector
 from careerpilot.discovery.ports import CONNECTOR_INTERFACE_VERSION, SourceConnector
+from careerpilot.discovery.requirements import RuleRequirementExtractor
+from careerpilot.platform.config import DiscoveryConfig
 
 
 class ConnectorRegistry:
@@ -26,11 +29,16 @@ class ConnectorRegistry:
 
 
 def first_party_connectors(
-    fetch_page: Callable[[str], str] | None = None, max_details: int = 0, extra: Sequence[SourceConnector] = ()
+    fetch_page: Callable[[str], str] | None = None,
+    max_details: int = 0,
+    extra: Sequence[SourceConnector] = (),
+    discovery: DiscoveryConfig | None = None,
 ) -> ConnectorRegistry:
+    notices = [BdNoticeConnector(discovery.bangladesh, RuleRequirementExtractor(discovery))] if discovery else []
     return ConnectorRegistry(
         [
             *extra,
+            *notices,
             RssConnector(),
             GreenhouseConnector(),
             LeverConnector(),

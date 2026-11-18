@@ -72,6 +72,20 @@ discovery:
     legal_words: [ltd, limited, llc, inc, incorporated, plc, pvt, private, corp, corporation, company, co, gmbh, ag, sa, bv, pte, pty, llp, the]
     generic_words: [software, solutions, solution, technologies, technology, tech, digital, systems, system, labs, lab, global, international, group, holdings, services, consulting, it, bangladesh, bd]
     handle_suffixes: [bd]
+  bangladesh:
+    notice_keywords: [notice, circular, recruitment, vacancy, vacancies, career, appointment, নিয়োগ, বিজ্ঞপ্তি, নোটিশ, পদে, চাকরি]
+    document_suffixes: [.pdf]
+    bangla_digits: "০১২৩৪৫৬৭৮৯"
+    max_pdf_pages: 20
+    max_pdf_bytes: 5000000
+    default_country_code: BD
+    requirements:
+      age_max: ['(?:age|বয়স)[^0-9]{0,60}?(\d{2})\s*(?:years|year|বছর)']
+      experience_years: ['(\d{1,2})\s*(?:\+\s*)?(?:years?|বছর)[^.।0-9]{0,30}?(?:experience|অভিজ্ঞতা)', '(?:experience|অভিজ্ঞতা)[^0-9]{0,40}(\d{1,2})\s*(?:years?|বছর)']
+      fee_amount: ['(?:fee|ফি|application fee)[^0-9]{0,40}(?:tk\.?|taka|টাকা|bdt|৳)?\s*(\d[\d,]*)']
+      posts: ['(?:total|মোট)?\s*(\d{1,5})\s*(?:posts?|vacanc(?:y|ies)|টি\s*পদ|জন)']
+      deadline: ['(?:deadline|last date|closing date|আবেদনের শেষ তারিখ|শেষ তারিখ)[^0-9]{0,40}(\d{1,2}[-/.]\d{1,2}[-/.]\d{4}|\d{1,2}\s+[A-Za-z]{3,9},?\s+\d{4})']
+      education: ['(?:ssc|hsc|bachelor|master|honou?rs|diploma|degree|bsc|msc|mbbs|bba|mba|এসএসসি|এইচএসসি|স্নাতক|স্নাতকোত্তর|ডিপ্লোমা)']
   job_boards:
     - connector: html
       pattern: 'app\.hrythmic\.com/recruit/openings/company/([A-Za-z0-9_-]+)'
