@@ -924,6 +924,15 @@
       "essay": "Essay",
       "statement": "Statement"
     },
+    "academic_record_kind": {
+      "program": "Programs",
+      "test": "Tests",
+      "credential": "Credentials",
+      "referee": "Referees",
+      "recommendation": "Recommendations",
+      "outreach": "Outreach",
+      "settings": "Settings"
+    },
     "draft_status": {
       "ready": "Ready",
       "needs_fixes": "Needs fixes"
@@ -1309,6 +1318,15 @@
     "dashboard": {
       "title": "Dashboard",
       "generated": "Updated {date}",
+      "filters": {
+        "title": "Dashboard filters",
+        "dateFrom": "From date",
+        "dateTo": "To date",
+        "country": "Country code",
+        "track": "Track",
+        "userId": "User ID",
+        "clear": "Clear filters"
+      },
       "unreadMessages": "Unread messages",
       "registered": "Awaiting password",
       "deleted": "Deleted",
@@ -1571,6 +1589,8 @@
         "rules": "Automation rules",
         "ruleRow": "{state} · daily limit {count}",
         "noRules": "No automation rules.",
+        "academic": "Academic records",
+        "noAcademic": "No academic records.",
         "ruleOn": "On",
         "ruleOff": "Off",
         "exports": "Exports",

@@ -190,6 +190,8 @@ export interface FillPlan {
   confirmationPhrases: string[];
   skipTerms: string[];
   captchaSelectors: string[];
+  scanIntervalMs: number;
+  excerptChars: number;
 }
 
 export interface FillPassword {

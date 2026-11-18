@@ -170,6 +170,8 @@ export function createInMemoryPortal(options: InMemoryPortalOptions): InMemoryPo
         confirmationPhrases: [],
         skipTerms: [],
         captchaSelectors: [],
+        scanIntervalMs: 1500,
+        excerptChars: 300,
       });
     },
     async fillPassword(applicationId) {

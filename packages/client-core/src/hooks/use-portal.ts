@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { isApiError, type AttemptView, type AutopilotInput, type CompleteInput, type AutopilotState, type PortalAccountInput, type ResumeInput } from '@careerpilot/api-client';
+import { isApiError, type AttemptView, type AutopilotInput, type CompleteInput, type FillPlan, type ReadinessReport, type AutopilotState, type PortalAccountInput, type ResumeInput } from '@careerpilot/api-client';
 import {
   AttemptState,
   HostPolicy,
@@ -8,7 +8,7 @@ import {
   ReadinessState,
   StatusTone,
   type StopReason,
-  type Verdict,
+  Verdict,
   type WallKind,
 } from '@careerpilot/domain-ui-logic';
 import { useApi } from '../services/app-services';
@@ -124,6 +124,34 @@ export function attemptCanResume(attempt: AttemptView): boolean {
 
 export function attemptHasProof(attempt: AttemptView): boolean {
   return !!(attempt.confirmationText || attempt.finalUrl || attempt.evidenceKey);
+}
+
+export interface AssistCopyItem {
+  id: string;
+  label?: string;
+  labelKey?: string;
+  value: string;
+}
+
+export function assistCopyItems(plan: FillPlan): AssistCopyItem[] {
+  const items: AssistCopyItem[] = [];
+  if (plan.accountEmail) {
+    items.push({ id: 'account-email', labelKey: 'portal.assist.email', value: plan.accountEmail });
+  }
+  plan.facts.forEach((fact) => items.push({ id: `fact-${fact.fact}`, labelKey: `portal.assist.fact.${fact.fact}`, value: fact.value }));
+  plan.answers.forEach((answer, index) => items.push({ id: `answer-${index}`, label: answer.label, value: answer.answer }));
+  if (plan.coverLetter) {
+    items.push({ id: 'cover-letter', labelKey: 'portal.assist.coverLetter', value: plan.coverLetter });
+  }
+  return items;
+}
+
+export function assistUsesWebView(plan: FillPlan): boolean {
+  return plan.assistAllowed && plan.hostPolicy !== HostPolicy.Blocked;
+}
+
+export function readinessSummary(report: ReadinessReport): { canAutoApply: boolean; reasons: StopReason[] } {
+  return { canAutoApply: report.verdict === Verdict.CanAutoApply, reasons: report.reasons };
 }
 
 export function usePortalAutopilot() {
