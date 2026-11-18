@@ -7,6 +7,7 @@ import { useDecide, useFormat, useOpportunity, usePrepareApplication, usePublicC
 import { EnumKey, OpportunityDecision, RequirementCheck, StatusTone } from '@careerpilot/domain-ui-logic';
 import { Badge, Banner, Button, Card, EnumBadge, ErrorState, ListRow, LoadingState, Section, buttonVariants } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
+import { MatchFeedback } from './match-feedback';
 import { MissingSkills } from './missing-skills';
 import { matchTone } from './opportunity-card';
 
@@ -65,6 +66,8 @@ export function OpportunityPage() {
         </Section>
 
         <MissingSkills opportunityId={o.id} skills={o.missingSkills} />
+
+        <MatchFeedback opportunityId={o.id} current={o.feedback} />
 
         <Section title={t('opportunity.requirements')}>
           <Card>

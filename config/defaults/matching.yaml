@@ -96,3 +96,9 @@ matching:
       hourly: [per hour, an hour, hourly, /hour, /hr, per hr]
       monthly: [per month, a month, monthly, /month, /mo, per mo]
       yearly: [per year, a year, annual, annually, per annum, yearly, /year, /yr, p.a.]
+  feedback:
+    weight: 15
+    max_shift: 25
+    min_similarity: 0.34
+    same_organization_similarity: 0.5
+    max_entries: 500

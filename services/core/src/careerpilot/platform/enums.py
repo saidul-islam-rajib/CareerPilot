@@ -711,3 +711,18 @@ class HealthTarget(StrEnum):
     DATABASE = "database"
     CACHE = "cache"
     COORDINATION = "coordination"
+
+
+class FeedbackVerdict(StrEnum):
+    GOOD_MATCH = "good_match"
+    NOT_FOR_ME = "not_for_me"
+
+
+class FeedbackReason(StrEnum):
+    WRONG_ROLE = "wrong_role"
+    WRONG_LOCATION = "wrong_location"
+    LOW_PAY = "low_pay"
+    WRONG_LEVEL = "wrong_level"
+    WRONG_SKILLS = "wrong_skills"
+    WRONG_COMPANY = "wrong_company"
+    OTHER = "other"

@@ -21,7 +21,7 @@ from careerpilot.api.common import bearer_token, client_info, configure, no_cont
 from careerpilot.api.dependencies import Credentials, CurrentUser, Services
 from careerpilot.api.instrumentation import instrument
 from careerpilot.bootstrap import Container
-from careerpilot.candidate.models import CompensationRule, SubmissionWindow
+from careerpilot.candidate.models import CompensationRule, FeedbackInput, SubmissionWindow
 from careerpilot.candidate.services.answers import AnswerDraft
 from careerpilot.candidate.services.applications import TaskDraft
 from careerpilot.candidate.services.auth import Registration
@@ -214,6 +214,17 @@ def opportunity(opportunity_id: str, user: CurrentUser, services: Services) -> J
 @router.put("/opportunities/{opportunity_id}/decision")
 def decide(opportunity_id: str, body: DecisionBody, user: CurrentUser, services: Services) -> Response:
     services.opportunities.decide(user.id, opportunity_id, body.decision)
+    return no_content()
+
+
+@router.put("/opportunities/{opportunity_id}/feedback")
+def give_feedback(opportunity_id: str, body: FeedbackInput, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.feedback.give(user.id, opportunity_id, body))
+
+
+@router.delete("/opportunities/{opportunity_id}/feedback")
+def remove_feedback(opportunity_id: str, user: CurrentUser, services: Services) -> Response:
+    services.feedback.remove(user.id, opportunity_id)
     return no_content()
 
 

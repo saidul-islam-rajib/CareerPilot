@@ -252,6 +252,16 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
     },
     opportunities: {
       getOpportunity: async (id) => respond(findOpportunity(id)),
+      async giveFeedback(id, input) {
+        const found = findOpportunity(id);
+        const feedback = { opportunityId: id, verdict: input.verdict, reasons: [...new Set(input.reasons)], title: found.title, organization: found.organization, createdAt: nowIso() };
+        found.feedback = feedback;
+        return respond(feedback);
+      },
+      async removeFeedback(id) {
+        delete findOpportunity(id).feedback;
+        return respond(undefined);
+      },
       async decide(id, decision) {
         findOpportunity(id).decision = decision;
         return respond(undefined);
@@ -528,6 +538,9 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
         }
         state.settings.notifications = { ...state.settings.notifications, ...changes };
         return respond(state.settings);
+      },
+      async confirmProfile() {
+        return respond(undefined);
       },
     },
   };

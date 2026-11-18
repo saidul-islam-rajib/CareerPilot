@@ -111,6 +111,12 @@
     "sponsorshipStated": "Mentions visa sponsorship",
     "sponsorshipUnavailable": "Says visa sponsorship is not available",
     "requirementSponsorship": "Visa sponsorship for this role",
+    "feedbackPositive": "Similar to jobs you marked as a good match",
+    "feedbackNegative": "Similar to jobs you marked as not for you",
+    "requirementCompensation": "Pay meets your minimum",
+    "compensationMeets": "The stated pay meets your minimum",
+    "compensationBelow": "The stated pay is below your minimum",
+    "compensationUnstated": "Pay is not stated clearly, so it is not compared",
     "trackNames": {
       "remote": "Remote jobs",
       "international_sponsored": "International jobs with visa sponsorship",
@@ -173,6 +179,24 @@
     "unfavorite": "Remove {company} from favorites",
     "favoriteAdded": "{company} is a favorite. Its jobs come first.",
     "favoriteRemoved": "{company} removed from favorites."
+  },
+  "feedback": {
+    "title": "Tell us about this match",
+    "body": "Your answer changes how similar jobs are ranked for you.",
+    "reasons": "Reasons",
+    "good": "Good match",
+    "notForMe": "Not for me",
+    "clear": "Clear my answer",
+    "failed": "Could not save your answer.",
+    "reason": {
+      "wrong_role": "Wrong role",
+      "wrong_location": "Wrong location",
+      "low_pay": "Pay too low",
+      "wrong_level": "Wrong level",
+      "wrong_skills": "Wrong skills",
+      "wrong_company": "Not this company",
+      "other": "Other"
+    }
   },
   "opportunity": {
     "addedByLink": "Added by you from a link",
@@ -590,6 +614,30 @@
   "settings": {
     "title": "More",
     "tracks": "Tracks",
+    "pay": {
+      "title": "Pay rule",
+      "body": "Set the pay you need. Pay that is not stated clearly is never treated as too low.",
+      "menuBody": "Minimum pay and how postings without pay are handled",
+      "minimum": "Minimum pay",
+      "minimumHint": "Leave empty for no pay rule.",
+      "currency": "Currency",
+      "period": "Pay period",
+      "mode": "When pay is below the minimum",
+      "unstated": "When pay is not stated",
+      "basis": "Compare using",
+      "amountInvalid": "Enter a number such as 50000.",
+      "failed": "Could not save the pay rule.",
+      "saved": "Pay rule saved.",
+      "save": "Save pay rule",
+      "periods": { "hourly": "Per hour", "monthly": "Per month", "yearly": "Per year" },
+      "modes": { "hard_filter": "Leave the job out", "preference": "Only lower the match score" },
+      "unstatedPolicies": {
+        "include": "Include it everywhere",
+        "exclude": "Leave it out",
+        "recommend_only": "Recommend it, never apply automatically"
+      },
+      "bases": { "top": "Top of the range", "bottom": "Bottom of the range" }
+    },
     "countries": "Excluded countries",
     "countriesBody": "Jobs in these countries never reach your lists, in any track.",
     "countriesMenuBody": "Countries you don't want jobs from",
@@ -694,6 +742,13 @@
     "digestPreviewWhen": "Arrives every day at {time}.",
     "digestPreviewOff": "Turn on the daily digest to get this email.",
     "digestPreviewQuiet": "Only sections with something new are included. Nothing is sent on quiet days.",
+    "quietHoursEnabled": "Quiet hours",
+    "quietHoursBody": "Phone notifications wait until quiet hours end. They still appear in your notification list.",
+    "quietHoursStart": "Quiet from",
+    "quietHoursEnd": "Quiet until",
+    "quietHoursZone": "Quiet hours follow your time zone ({timeZone}).",
+    "urgentOverrides": "Let urgent items through",
+    "urgentOverridesBody": "Approvals about to expire, replies, blocked applications and payment deadlines can notify you during quiet hours.",
     "digestPreviewSections": {
       "matches": {
         "title": "New matches",
@@ -878,7 +933,12 @@
       "application_confirmed": "Application confirmed",
       "application_reply": "Application reply",
       "integration_attention": "Account needs attention",
-      "automation_attention": "Automation needs attention"
+      "automation_attention": "Automation needs attention",
+      "approval_expiring": "Approval about to expire",
+      "government_deadline": "Government deadline",
+      "fee_deadline": "Fee or payment deadline",
+      "supervisor_reply": "Supervisor reply",
+      "profile_confirmation": "Confirm your details"
     },
     "user_account_status": {
       "registered": "Registered",
@@ -1683,6 +1743,10 @@
     "weeklyCap": "Weekly limit",
     "inactivity": "Pause when I have been away (days)",
     "inactivityHint": "Automatic applications stop until you come back, and you are told.",
+    "freshness": "Ask me to confirm my details every (days)",
+    "freshnessHint": "Automatic applications pause until you confirm your contact details, job, availability and salary expectations.",
+    "confirmDetails": "Confirm my details are current",
+    "confirmedDetails": "Thanks, your details are confirmed.",
     "saveSettings": "Save settings",
     "saved": "Saved",
     "action": {
@@ -1718,6 +1782,7 @@
       "emergency_stop": "Emergency stop is on",
       "paused": "You paused applications",
       "inactive": "You have been away for a while",
+      "profile_stale": "Your profile details need confirming",
       "track_not_automatic": "This track asks you to approve each application",
       "hard_requirement_failed": "A required condition is not met",
       "unknown_requirement": "A required condition is unknown",
@@ -1747,6 +1812,7 @@
       "rule_limit": "Rule limit reached",
       "rule_inactive": "Rule is off or has ended",
       "inactive": "Paused because you have been away",
+      "profile_stale": "Paused until you confirm your details",
       "deadline_at_risk": "Waiting for you: deadline is close",
       "deadline_skipped": "Skipped: deadline is close"
     },
@@ -1821,6 +1887,38 @@
     "evidenceAccepted": "Email accepted by the mail server (message {messageId})",
     "evidenceConfirmed": "No bounce received within {hours} hours"
   },
+  "reminders": {
+    "approval": {
+      "title": "Approval about to expire",
+      "body": "{title} at {organization} will expire soon. Review it before it does."
+    },
+    "government": {
+      "title": "Government deadline coming up",
+      "body": "{title}: {date}. Open the application to see what is due."
+    },
+    "fee": {
+      "due_soon": {
+        "title": "Payment due soon",
+        "body": "{title} has a payment deadline coming up."
+      },
+      "overdue": {
+        "title": "Payment overdue",
+        "body": "{title} is past its payment deadline."
+      },
+      "confirm_outcome": {
+        "title": "Confirm your payment",
+        "body": "We could not tell whether {title} was paid. Check it and update the record."
+      }
+    },
+    "supervisor": {
+      "title": "A supervisor replied",
+      "body": "{name} has replied and the next step is yours."
+    },
+    "profile": {
+      "title": "Confirm your details",
+      "body": "Your contact details, job, availability and salary expectations have not been confirmed for {days} days. Automatic applications are paused until you do."
+    }
+  },
   "digest": {
     "subject": "Your CareerPilot update for {date}",
     "greeting": "Hello {name},",
@@ -1829,6 +1927,8 @@
     "sent": "Applications sent ({count})",
     "attention": "Needs your attention ({count})",
     "closingSoon": "Closing soon ({count})",
+    "daily": "Today's applications ({count})",
+    "dailyLine": "{title} at {organization} – {status}: {link}",
     "weekly": "Last week in summary ({count})",
     "matchLine": "{title} at {organization} – {score}% match",
     "approvalLine": "{title} at {organization} – approve by {date}",
@@ -3571,6 +3671,7 @@
     },
     "evidence": {
       "confirmed": "Confirmation page: {text}",
+      "assisted": "Marked as submitted by you after completing the employer site. Page text: {text}",
       "uncertain": "Submit was clicked but the confirmation could not be seen."
     },
     "notifications": {

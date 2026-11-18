@@ -60,6 +60,8 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
     },
     opportunities: {
       getOpportunity: (id) => get(`/v1/opportunities/${enc(id)}`),
+      giveFeedback: (id, input) => put(`/v1/opportunities/${enc(id)}/feedback`, input),
+      removeFeedback: (id) => del(`/v1/opportunities/${enc(id)}/feedback`),
       decide: (id, decision) => put(`/v1/opportunities/${enc(id)}/decision`, { decision }),
       prepareApplication: (id) => post(`/v1/opportunities/${enc(id)}/applications`),
       addByLink: (url) => postLong('/v1/opportunities/by-link', { url }),
@@ -150,6 +152,7 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       listSignInActivity: () => get('/v1/account/sign-in-activity'),
       changePassword: (change) => post('/v1/account/password', change),
       updateNotifications: (changes) => patch('/v1/settings/notifications', changes),
+      confirmProfile: () => post('/v1/profile/confirm'),
     },
     messaging: {
       inbox: () => get('/v1/inbox'),

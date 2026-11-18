@@ -23,6 +23,20 @@ describe('OpportunityScreen', () => {
     await waitFor(async () => expect((await services.api.profile.getProfile()).skills).toContain('GraphQL'));
   });
 
+  it('records feedback with reasons and clears it', async () => {
+    mockParams.current = { id: 'opp_remote_frontend' };
+    const { services } = await renderWithProviders(<OpportunityScreen />);
+    await fireEvent.press(await screen.findByTestId('feedback-reason-low_pay'));
+    await fireEvent.press(screen.getByTestId('feedback-not-for-me'));
+    await waitFor(async () => {
+      const feedback = (await services.api.opportunities.getOpportunity('opp_remote_frontend')).feedback;
+      expect(feedback?.verdict).toBe('not_for_me');
+      expect(feedback?.reasons).toEqual(['low_pay']);
+    });
+    await fireEvent.press(await screen.findByTestId('feedback-clear'));
+    await waitFor(async () => expect((await services.api.opportunities.getOpportunity('opp_remote_frontend')).feedback).toBeUndefined());
+  });
+
   it('warns about a hard requirement failure', async () => {
     mockParams.current = { id: 'opp_gov_programmer' };
     await renderWithProviders(<OpportunityScreen />);

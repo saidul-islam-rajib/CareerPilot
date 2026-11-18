@@ -25,6 +25,8 @@ import type {
   SubmissionWindowKind,
   TaskKind,
   TaskStatus,
+  FeedbackReason,
+  FeedbackVerdict,
   PayPeriod,
   RangeBasis,
   CompensationMode,
@@ -206,6 +208,20 @@ export interface ArchivedCircular {
   text: string;
 }
 
+export interface MatchFeedback {
+  opportunityId: string;
+  verdict: FeedbackVerdict;
+  reasons: FeedbackReason[];
+  title: string;
+  organization: string;
+  createdAt: IsoDateTime;
+}
+
+export interface FeedbackInput {
+  verdict: FeedbackVerdict;
+  reasons: FeedbackReason[];
+}
+
 export interface OpportunityDetail extends OpportunitySummary {
   description: string;
   matchFactors: MatchFactor[];
@@ -214,6 +230,7 @@ export interface OpportunityDetail extends OpportunitySummary {
   circular: ArchivedCircular;
   route: ApplicationRoute;
   applicationEmail?: string;
+  feedback?: MatchFeedback;
 }
 
 export interface TrackDigest {
@@ -533,6 +550,10 @@ export interface SubmissionWindow {
 export interface NotificationPreferences {
   digestEnabled: boolean;
   digestTime?: string;
+  quietHoursEnabled: boolean;
+  quietStart?: string;
+  quietEnd?: string;
+  urgentOverridesQuiet: boolean;
 }
 
 export interface CompensationRule {

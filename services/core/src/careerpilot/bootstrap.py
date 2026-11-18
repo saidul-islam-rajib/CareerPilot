@@ -12,10 +12,11 @@ from careerpilot.academic.service import AcademicServices, build_academic
 from careerpilot.administration.account_links import AdminLinkContext, AdminLinkService, invite_owner
 from careerpilot.administration.context import AdminContext
 from careerpilot.administration.discovery_sync import SourceCheckRunner, discover_when_empty
+from careerpilot.administration.health import database_probe, run_probes, store_probe
 from careerpilot.administration.limits import effective_source_limit
 from careerpilot.administration.live_figures import LiveFigures
 from careerpilot.administration.messages import AdminMessages
-from careerpilot.administration.models import AdminSourceRow, EmergencyStop, PlatformSettings
+from careerpilot.administration.models import AdminSourceRow, EmergencyStop, NotificationCounts, PlatformSettings
 from careerpilot.administration.presence import PresenceContext, PresenceService
 from careerpilot.administration.services import (
     AdminAccountService,
@@ -24,6 +25,7 @@ from careerpilot.administration.services import (
     AdminCatalogService,
     AdminDashboardService,
     AdminUserService,
+    LiveOperations,
     PlatformSettingsService,
     effective_link_ttl_minutes,
 )
@@ -43,6 +45,7 @@ from careerpilot.candidate.services.approvals import ApprovalService
 from careerpilot.candidate.services.auth import AuthService
 from careerpilot.candidate.services.dashboard import DashboardService
 from careerpilot.candidate.services.digest import DigestContext, DigestService
+from careerpilot.candidate.services.feedback import FeedbackService
 from careerpilot.candidate.services.job_links import JobLinkContext, JobLinkService
 from careerpilot.candidate.services.opportunities import OpportunityService
 from careerpilot.candidate.services.preferences import PreferencesService
@@ -81,7 +84,8 @@ from careerpilot.matching.claude import ClaudeMatcher
 from careerpilot.matching.ports import Matcher
 from careerpilot.matching.rules import RuleBasedMatcher
 from careerpilot.matching.service import RecommendationContext, RecommendationService, UserDefaults
-from careerpilot.messaging.notifications import NotificationContext, NotificationService
+from careerpilot.messaging.notifications import UNREGISTERED_REASON, NotificationContext, NotificationService
+from careerpilot.messaging.quiet import QuietHoursGate
 from careerpilot.messaging.service import MessagingContext, MessagingService
 from careerpilot.platform.clock import Clock, IdGenerator, SystemClock, UuidIdGenerator, iso
 from careerpilot.platform.config import (
@@ -95,11 +99,11 @@ from careerpilot.platform.config import (
 )
 from careerpilot.platform.coordination import KeySpace, MetadataCache, SignInGuard, release_fingerprint
 from careerpilot.platform.email_delivery import (
-    LateMailbox,
     BackgroundCourier,
     Courier,
     DirectCourier,
     EmailSender,
+    LateMailbox,
     RecipientRoutingSender,
     SmtpEmailSender,
     SmtpLogin,
@@ -107,7 +111,7 @@ from careerpilot.platform.email_delivery import (
     connect_smtp,
     connect_smtp_tls,
 )
-from careerpilot.platform.enums import ApplicationMode, DeliveryMode, PushMode, SmtpSecurity, SubmissionWindowKind
+from careerpilot.platform.enums import ApplicationMode, DeliveryMode, HealthTarget, PushMode, SmtpSecurity, SubmissionWindowKind
 from careerpilot.platform.files import FileLinkSigner, FileStorage, LocalFileStorage, SampleAwareStorage
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore
 from careerpilot.platform.messages import translate
@@ -125,6 +129,7 @@ from careerpilot.privacy.enums import ReportPeriod
 from careerpilot.privacy.ports import JobRunner
 from careerpilot.privacy.reports import ReportService
 from careerpilot.privacy.runner import BackgroundRunner, DirectRunner
+from careerpilot.reminders.service import ReminderContext, ReminderService, ReminderSources
 from careerpilot.repositories import Repositories, RepositoryFactory, WorkspaceFactory, in_memory_repositories, sql_repositories
 from careerpilot.writing.assembly import build_writing
 from careerpilot.writing.ports import DraftGenerator
@@ -166,6 +171,7 @@ class Container:
     applications: ApplicationService
     profile: ProfileService
     preferences: PreferencesService
+    feedback: FeedbackService
     dashboard: DashboardService
     admin_auth: AdminAuthService
     admin_dashboard: AdminDashboardService
@@ -195,6 +201,7 @@ class Container:
     academic: AcademicServices
     fees: FeesServices
     portal: PortalServices
+    reminders: ReminderService
 
 
 def default_tracks(settings: Settings) -> list[Track]:
@@ -434,6 +441,7 @@ def _messaging(
             devices=repos.push_devices,
             push=routes.push,
             private_lookup=lambda user_id: repos.workspaces.get(user_id).preferences.private_notifications,
+            quiet=QuietHoursGate(repos.workspaces, candidate.clock, candidate.settings.reminders.quiet_hours),
         )
     )
     messaging = MessagingService(
@@ -563,6 +571,22 @@ def _government(parts: GovernmentParts) -> GovernmentServices:
     return GovernmentServices(circulars, tracking, calendar)
 
 
+def _live_operations(
+    repos: Repositories, database: Database | None, cache_store: KeyValueStore, coord_store: KeyValueStore
+) -> LiveOperations:
+    probes = [store_probe(HealthTarget.CACHE, cache_store), store_probe(HealthTarget.COORDINATION, coord_store)]
+    if database is not None:
+        probes.insert(0, database_probe(database))
+    return LiveOperations(
+        notifications=lambda: NotificationCounts(
+            sent=repos.notifications.count_all(),
+            delivered=repos.notifications.count_read(),
+            failed=repos.push_devices.removed_count(UNREGISTERED_REASON),
+        ),
+        health=lambda: run_probes(probes),
+    )
+
+
 def _live_figures(catalog: AdminCatalogService, records: AdminUserRecords, repos: Repositories) -> LiveFigures:
     figures = LiveFigures(records, repos.directory, repos.listings.list_all)
     catalog.track_real_applications(records)
@@ -582,6 +606,62 @@ def _fees(cfg: Settings, parts: GovernmentParts) -> FeesServices:
             government=lambda user_id: tracking.list_for(user_id, ""),
         )
     )
+
+
+@dataclass(frozen=True)
+class Domains:
+    government: GovernmentServices
+    fees: FeesServices
+    academic: AcademicServices
+    reminders: ReminderService
+    reports: ReportService
+    digests: DigestService
+
+
+@dataclass(frozen=True)
+class DomainInputs:
+    sender: EmailSender
+    notifications: NotificationService
+    opportunities: OpportunityService
+
+
+def _domains(cfg: Settings, inputs: DomainInputs, parts: GovernmentParts) -> Domains:
+    candidate = parts.candidate
+    notifications = inputs.notifications
+    reports = ReportService(candidate)
+    digests = DigestService(
+        DigestContext(
+            candidate=candidate,
+            sender=inputs.sender,
+            weekly_report=lambda uid, on: reports.build(uid, ReportPeriod.WEEKLY, on),
+            daily_report=lambda uid, on: reports.build(uid, ReportPeriod.DAILY, on),
+        )
+    )
+    academic = build_academic(
+        AcademicContext(
+            config=cfg.academic,
+            clock=candidate.clock,
+            ids=candidate.ids,
+            records=parts.repos.academic_records,
+            workspaces=parts.repos.workspaces,
+            opportunities=inputs.opportunities,
+        )
+    )
+    government = _government(parts)
+    fees = _fees(cfg, parts)
+    reminders = ReminderService(
+        ReminderContext(
+            candidate=candidate,
+            notifications=notifications,
+            sources=ReminderSources(
+                government_upcoming=government.tracking.upcoming,
+                fee_reminders=lambda user_id: fees.overview.build(user_id).reminders,
+                supervisor_replies=academic.outreach.items,
+                freshness_days=lambda w: w.preferences.automation.freshness_days or cfg.automation.default_freshness_days,
+            ),
+        )
+    )
+    return Domains(government, fees, academic, reminders, reports, digests)
 
 
 @dataclass(frozen=True)
@@ -687,9 +767,10 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     source_checks = SourceCheckRunner(
         discovery, repos.directory, cfg.discovery.failing_after_failures, recommendations.refresh_all, source_policy.healed
     )
-    reports = ReportService(candidate)
-    digests = DigestService(
-        DigestContext(candidate=candidate, sender=sender, weekly_report=lambda uid, on: reports.build(uid, ReportPeriod.WEEKLY, on))
+    domains = _domains(
+        cfg,
+        DomainInputs(sender, notifications, opportunity_service),
+        GovernmentParts(candidate, repos, storage, file_links, fetch_page, secret),
     )
     courier = DirectCourier(options.email_sender) if options.email_sender else background_courier(cfg, account_sender_for(cfg, sender))
     verification = ContactVerificationService(
@@ -717,6 +798,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     public_config.invalidate()
     admin_settings = PlatformSettingsService(admin, public_config.invalidate)
     preferences = PreferencesService(candidate, recommendations.rematch)
+    feedback = FeedbackService(candidate, recommendations.rematch)
     profile = ProfileService(candidate, storage, file_links, recommendations.rematch)
     user_sources = UserSourceService(
         UserSourceContext(
@@ -740,7 +822,9 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     )
     admin_catalog = AdminCatalogService(admin, source_checks, source_policy, recommendations.refresh_all)
     live_figures = _live_figures(admin_catalog, user_records, repos)
-    integrations = _integrations(IntegrationParts(candidate, repos, notifications, tokens, coord_store, keys, secret, route.mailbox), options)
+    integrations = _integrations(
+        IntegrationParts(candidate, repos, notifications, tokens, coord_store, keys, secret, route.mailbox), options
+    )
     privacy = build_privacy(
         PrivacyParts(
             candidate=candidate,
@@ -749,7 +833,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
             links=file_links,
             courier=courier,
             connections=integrations.google,
-            reports=reports,
+            reports=domains.reports,
             empty_workspace=empty,
             runner=options.job_runner or job_runner_for(cfg, options),
             grace_days=lambda: repos.platform.get().deletion_grace_days,
@@ -785,13 +869,17 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
                 exports=repos.exports,
                 deletions=repos.deletions,
                 notifications=repos.notifications,
+                academic_records=repos.academic_records,
             )
         ),
         profile=profile,
         preferences=preferences,
+        feedback=feedback,
         dashboard=DashboardService(candidate, opportunity_service),
         admin_auth=AdminAuthService(admin, guard, admin_links),
-        admin_dashboard=AdminDashboardService(admin, live_figures, messaging.team_unread),
+        admin_dashboard=AdminDashboardService(
+            admin, live_figures, messaging.team_unread, _live_operations(repos, database, cache_store, coord_store)
+        ),
         admin_users=AdminUserService(admin, user_records),
         user_records=user_records,
         admin_catalog=admin_catalog,
@@ -805,7 +893,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         file_links=file_links,
         submissions=submissions,
         automation=automation,
-        digests=digests,
+        digests=domains.digests,
         verification=verification,
         answers=AnswerService(candidate),
         job_links=JobLinkService(
@@ -822,18 +910,10 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
         integrations=integrations,
         privacy=privacy,
         writing=build_writing(candidate, repos, opportunity_service, options.ai_writer),
-        academic=build_academic(
-            AcademicContext(
-                config=cfg.academic,
-                clock=candidate.clock,
-                ids=candidate.ids,
-                records=repos.academic_records,
-                workspaces=repos.workspaces,
-                opportunities=opportunity_service,
-            )
-        ),
-        government=_government(GovernmentParts(candidate, repos, storage, file_links, fetch_page, secret)),
-        fees=_fees(cfg, GovernmentParts(candidate, repos, storage, file_links, fetch_page, secret)),
+        academic=domains.academic,
+        government=domains.government,
+        fees=domains.fees,
+        reminders=domains.reminders,
         portal=_portal(
             cfg,
             options,

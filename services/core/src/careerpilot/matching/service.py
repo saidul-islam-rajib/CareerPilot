@@ -6,6 +6,7 @@ from careerpilot.candidate.ports import AccountRepository, CandidateWorkspace, O
 from careerpilot.candidate.tracks import CompanyQuota, UserScope, is_excluded, ordered_tracks, role_key, user_scope
 from careerpilot.discovery.models import Listing
 from careerpilot.matching.compensation import extract_compensation, fit_of, is_filtered_out, with_compensation
+from careerpilot.matching.feedback import with_feedback
 from careerpilot.matching.ports import Matcher
 from careerpilot.matching.rules import is_eligible, sponsorship_evidence
 from careerpilot.platform.clock import Clock
@@ -105,7 +106,8 @@ class RecommendationService:
     def _score(self, workspace: CandidateWorkspace, track: Track, listing: Listing) -> OpportunityMatch:
         match = self._ctx.matcher.assess(workspace.profile, track, listing)
         config = self._ctx.config.compensation
-        return with_compensation(match, extract_compensation(listing.description, config), workspace.preferences.compensation, config)
+        priced = with_compensation(match, extract_compensation(listing.description, config), workspace.preferences.compensation, config)
+        return with_feedback(priced, listing, list(workspace.feedback.values()), self._ctx.config.feedback)
 
     def _state(self, workspace: CandidateWorkspace, listings: list[Listing]) -> RematchState:
         return RematchState(

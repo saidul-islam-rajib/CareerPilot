@@ -3,11 +3,11 @@ from collections import Counter
 import pytest
 
 from careerpilot.bootstrap import Container, ContainerOverrides, build_container
-from careerpilot.candidate.models import CompensationRule, Money, OpportunityMatch, Profile, Track
+from careerpilot.candidate.models import CompensationRule, FeedbackInput, Money, OpportunityMatch, Profile, Track
 from careerpilot.discovery.models import Listing
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator, iso
 from careerpilot.platform.email_delivery import InMemoryEmailSender
-from careerpilot.platform.enums import ApplicationMode, OpportunityDecision, UnstatedPolicy
+from careerpilot.platform.enums import ApplicationMode, FeedbackReason, FeedbackVerdict, OpportunityDecision, UnstatedPolicy
 from careerpilot.platform.errors import DomainError
 from careerpilot.platform.files import InMemoryFileStorage
 from careerpilot.testing import load_sample_data, sample_repositories, sample_settings
@@ -153,3 +153,14 @@ def test_a_rule_excluding_unstated_pay_keeps_listings_without_pay_off_the_lists(
     rule = CompensationRule(minimum=Money(amount_minor=100_000, currency="USD"), unstated=UnstatedPolicy.EXCLUDE)
     app.preferences.update_compensation(DEMO_USER, rule)
     assert PYTHON_LISTING not in placements(app)[REMOTE_TRACK]
+
+
+def test_feedback_is_stored_with_the_opportunity_and_can_be_removed(app: Container) -> None:
+    body = FeedbackInput(verdict=FeedbackVerdict.NOT_FOR_ME, reasons=[FeedbackReason.LOW_PAY, FeedbackReason.LOW_PAY])
+    given = app.feedback.give(DEMO_USER, ACTED_ON_REMOTE[0], body)
+    assert given.reasons == [FeedbackReason.LOW_PAY]
+    assert app.opportunities.detail(DEMO_USER, ACTED_ON_REMOTE[0]).feedback == given
+    app.feedback.remove(DEMO_USER, ACTED_ON_REMOTE[0])
+    assert app.opportunities.detail(DEMO_USER, ACTED_ON_REMOTE[0]).feedback is None
+    with pytest.raises(DomainError):
+        app.feedback.give(DEMO_USER, "opp_missing", body)

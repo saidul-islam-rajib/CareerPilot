@@ -95,6 +95,19 @@ describe('OpportunityPage', () => {
     expect((await services.api.approvals.listApprovals()).some((a) => a.opportunity.id === 'opp_bd_ctg')).toBe(true);
   });
 
+  it('records feedback with reasons and clears it', async () => {
+    const { services } = renderWithProviders(<OpportunityPage />, { params: { id: 'opp_bd_ctg' } });
+    fireEvent.click(await screen.findByRole('button', { name: 'Pay too low' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Not for me' }));
+    await waitFor(async () => {
+      const feedback = (await services.api.opportunities.getOpportunity('opp_bd_ctg')).feedback;
+      expect(feedback?.verdict).toBe('not_for_me');
+      expect(feedback?.reasons).toEqual(['low_pay']);
+    });
+    fireEvent.click(await screen.findByRole('button', { name: 'Clear my answer' }));
+    await waitFor(async () => expect((await services.api.opportunities.getOpportunity('opp_bd_ctg')).feedback).toBeUndefined());
+  });
+
   it('warns about a hard requirement failure', async () => {
     renderWithProviders(<OpportunityPage />, { params: { id: 'opp_gov_programmer' } });
     expect(await screen.findByText(/A hard requirement is not met/)).toBeInTheDocument();

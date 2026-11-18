@@ -12,6 +12,8 @@ import type {
   CompensationReference,
   CompensationRule,
   ContactChanges,
+  FeedbackInput,
+  MatchFeedback,
   ContactInput,
   DashboardSummary,
   DocumentChanges,
@@ -75,6 +77,8 @@ export interface OpportunityApi {
   decide(id: string, decision: OpportunityDecision): Promise<void>;
   prepareApplication(id: string): Promise<ApprovalSummary>;
   addByLink(url: string): Promise<OpportunityDetail>;
+  giveFeedback(id: string, input: FeedbackInput): Promise<MatchFeedback>;
+  removeFeedback(id: string): Promise<void>;
 }
 
 export interface ApprovalApi {
@@ -179,6 +183,7 @@ export interface SettingsApi {
   listSignInActivity(): Promise<SignInEvent[]>;
   changePassword(change: PasswordChange): Promise<void>;
   updateNotifications(changes: Partial<NotificationPreferences>): Promise<Settings>;
+  confirmProfile(): Promise<void>;
   compensationReference(): Promise<CompensationReference>;
   updateCompensation(rule: CompensationRule): Promise<Settings>;
 }

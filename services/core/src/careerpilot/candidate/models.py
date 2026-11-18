@@ -12,6 +12,8 @@ from careerpilot.platform.enums import (
     CompensationMode,
     ContactKind,
     DocumentKind,
+    FeedbackReason,
+    FeedbackVerdict,
     NotificationKind,
     NotificationTarget,
     OpportunityDecision,
@@ -112,6 +114,15 @@ class OpportunityMatch(CamelModel):
     matched_at: str
 
 
+class MatchFeedback(CamelModel):
+    opportunity_id: str
+    verdict: FeedbackVerdict
+    reasons: list[FeedbackReason] = Field(default_factory=list[FeedbackReason])
+    title: str
+    organization: str
+    created_at: str
+
+
 class OpportunityDetail(OpportunitySummary):
     description: str
     match_factors: list[MatchFactor]
@@ -120,6 +131,7 @@ class OpportunityDetail(OpportunitySummary):
     circular: ArchivedCircular
     route: str
     application_email: str | None = None
+    feedback: MatchFeedback | None = None
 
     def summary(self) -> OpportunitySummary:
         return OpportunitySummary.model_validate(self.model_dump(include=set(OpportunitySummary.model_fields)))
@@ -472,6 +484,11 @@ class CompensationRule(CamelModel):
     mode: CompensationMode = CompensationMode.PREFERENCE
     unstated: UnstatedPolicy = UnstatedPolicy.RECOMMEND_ONLY
     basis: RangeBasis = RangeBasis.TOP
+
+
+class FeedbackInput(CamelModel):
+    verdict: FeedbackVerdict
+    reasons: list[FeedbackReason] = Field(default_factory=list[FeedbackReason])
 
 
 class CompensationReference(CamelModel):

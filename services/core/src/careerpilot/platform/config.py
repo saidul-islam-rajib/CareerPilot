@@ -403,6 +403,14 @@ class CompensationConfig(Strict):
     period_phrases: dict[str, list[str]]
 
 
+class FeedbackConfig(Strict):
+    weight: int = Field(ge=0)
+    max_shift: int = Field(ge=0)
+    min_similarity: float = Field(ge=0, le=1)
+    same_organization_similarity: float = Field(ge=0, le=1)
+    max_entries: int = Field(gt=0)
+
+
 class MatchingConfig(Strict):
     mode: MatchingMode
     model: str
@@ -422,6 +430,7 @@ class MatchingConfig(Strict):
     track_rules: dict[str, TrackRule]
     sponsorship: SponsorshipPhrases
     compensation: CompensationConfig
+    feedback: FeedbackConfig
 
 
 class WorkersConfig(Strict):

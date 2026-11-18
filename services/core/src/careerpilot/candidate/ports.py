@@ -5,6 +5,7 @@ from careerpilot.candidate.models import (
     ApplicationRecord,
     ApprovalDetail,
     HeldPush,
+    MatchFeedback,
     OpportunityDetail,
     OpportunityMatch,
     Preferences,
@@ -42,6 +43,7 @@ class CandidateWorkspace:
     matches: dict[str, OpportunityMatch] = field(default_factory=dict[str, OpportunityMatch])
     last_digest_on: str | None = None
     saved_answers: list[SavedAnswer] = field(default_factory=list[SavedAnswer])
+    feedback: dict[str, MatchFeedback] = field(default_factory=dict[str, MatchFeedback])
     held_pushes: list[HeldPush] = field(default_factory=list[HeldPush])
     reminders_sent: list[str] = field(default_factory=list[str])
     profile_confirmed_at: str | None = None

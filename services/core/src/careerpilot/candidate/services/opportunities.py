@@ -23,6 +23,7 @@ class OpportunityService:
             raise not_found("opportunity")
         update: dict[str, object] = {
             "decision": workspace.decisions.get(opportunity_id),
+            "feedback": workspace.feedback.get(opportunity_id),
             "missing_skills": self._skills.missing(workspace.profile.skills, opportunity.title, opportunity.description),
         }
         match = workspace.matches.get(opportunity_id)
