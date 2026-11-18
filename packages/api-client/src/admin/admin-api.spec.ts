@@ -150,6 +150,27 @@ describe('in-memory admin api', () => {
     expect(await errorCode(api.auth.signIn({ email: 'operations@sober.com', password: 'admin@sober.com' }))).toBe(ApiErrorCode.InvalidCredentials);
   });
 
+  it('creates and deletes admins and custom roles', async () => {
+    const api = await signedIn();
+    const created = await api.admins.createAdmin({ fullName: 'New Admin', email: 'new.admin@example.com', role: AdminRole.Support });
+    expect(await errorCode(api.admins.createAdmin({ fullName: 'Again', email: 'NEW.admin@example.com', role: AdminRole.Support }))).toBe(ApiErrorCode.Conflict);
+    const role = await api.admins.createRole('Source editors', [{ area: AdminArea.Sources, actions: [PermissionAction.Read] }]);
+    expect((await api.admins.assignRole(role.id, created.id, true)).memberIds).toEqual([created.id]);
+    await api.admins.deleteAdmin(created.id);
+    expect((await api.admins.listRoles())[0]?.memberIds).toEqual([]);
+    await api.admins.deleteRole(role.id);
+    expect(await api.admins.listRoles()).toEqual([]);
+    expect(await errorCode(api.admins.deleteAdmin('adm_super'))).toBe(ApiErrorCode.Conflict);
+  });
+
+  it('narrows the dashboard with filters', async () => {
+    const api = await signedIn();
+    const all = await api.dashboard.getDashboard();
+    const none = await api.dashboard.getDashboard({ userId: 'usr_missing' });
+    expect(none.users.total).toBe(0);
+    expect(all.users.total).toBeGreaterThan(0);
+  });
+
   it('adds sources from suggestions and refuses unsafe, unknown, or repeated ones', async () => {
     const api = createAdminApi({ suggestedSources: [SUGGESTION] });
     await api.auth.signIn({ email: 'admin@sober.com', password: 'admin@sober.com' });

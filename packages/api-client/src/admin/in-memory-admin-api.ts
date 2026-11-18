@@ -25,7 +25,7 @@ import type { ConversationSummary, MessageView, NewAttachment, ReplyPreview } fr
 import type { DemoState } from '../in-memory/demo.seed';
 import type { CareerPilotAdminApi } from './admin-ports';
 import type { AdminDemoAccount, AdminDemoState } from './admin-demo.seed';
-import { SourceConnector, type AdminSourceRow, type AdminSummary, type AdminUserDetail, type AdminUserRecord, type AdminUserRow, type CountByKey, type NewSource, type Page, type PageQuery } from './admin-types';
+import { SourceConnector, type AdminSourceRow, type CustomRole, type AdminSummary, type AdminUserDetail, type AdminUserRecord, type AdminUserRow, type CountByKey, type NewSource, type Page, type PageQuery } from './admin-types';
 import { permissionsForRole } from './permissions';
 
 export interface InMemoryAdminApiOptions {
@@ -76,6 +76,7 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
   const userState = options.userState;
   const { clock, ids } = options;
   let currentAdmin: AdminSummary | undefined;
+  let customRoles: CustomRole[] = [];
 
   const respond = <T>(value: T): Promise<T> => new Promise((resolve) => setTimeout(() => resolve(clone(value)), options.latencyMs));
   const fail = (code: ApiErrorCode, detail?: string): Promise<never> =>
@@ -288,10 +289,22 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
       },
     },
     dashboard: {
-      async getDashboard() {
+      async getDashboard(filter) {
         const weekAgo = clock.now().getTime() - options.recentWindowDays * DAY_MS;
-        const users = state.users;
-        const apps = state.applications;
+        const inDates = (stamp: string) => {
+          const day = stamp.slice(0, ISO_DATE_LENGTH);
+          return (!filter?.dateFrom || day >= filter.dateFrom) && (!filter?.dateTo || day <= filter.dateTo);
+        };
+        const users = state.users.filter(
+          (u) =>
+            inDates(u.createdAt) &&
+            (!filter?.country || u.country.toLowerCase() === filter.country.toLowerCase()) &&
+            (!filter?.track || (u.trackKinds ?? []).includes(filter.track)) &&
+            (!filter?.userId || u.id === filter.userId),
+        );
+        const narrowed = !!(filter?.country || filter?.track || filter?.userId);
+        const userNames = new Set(users.map((u) => u.fullName));
+        const apps = state.applications.filter((a) => inDates(a.updatedAt) && (!narrowed || userNames.has(a.userName)));
         const opportunities = state.opportunities;
         const perDay = Array.from({ length: options.chartDays }, (_, i) => {
           const day = new Date(clock.now().getTime() - (options.chartDays - 1 - i) * DAY_MS).toISOString().slice(0, ISO_DATE_LENGTH);
@@ -436,7 +449,7 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
           return fail(ApiErrorCode.NotFound);
         }
         record('user.overview_viewed', user.fullName);
-        return respond({ governmentApplications: [], writingDrafts: [], exports: [], notifications: [], unreadNotifications: 0, automationRules: [] });
+        return respond({ governmentApplications: [], writingDrafts: [], exports: [], notifications: [], unreadNotifications: 0, automationRules: [], academicRecords: [] });
       },
       async conversation(conversationId) {
         record('chat.viewed', conversationId);
@@ -644,6 +657,58 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
         admin.account.role = role;
         record('admin.role_changed', `${admin.account.email} → ${role}`);
         return respond(admin.account);
+      },
+      async createAdmin(admin) {
+        if (findAdmin(admin.email)) {
+          return fail(ApiErrorCode.Conflict);
+        }
+        const account = { id: ids.next('admin'), fullName: admin.fullName.trim(), email: admin.email.trim().toLowerCase(), role: admin.role, suspended: false, mfaEnabled: false };
+        state.admins.push({ account, password: '' });
+        record('admin.created', account.email);
+        return respond(account);
+      },
+      async deleteAdmin(id) {
+        const admin = state.admins.find((a) => a.account.id === id);
+        if (!admin) {
+          return fail(ApiErrorCode.NotFound);
+        }
+        if (admin.account.id === currentAdmin?.id) {
+          return fail(ApiErrorCode.Conflict);
+        }
+        state.admins = state.admins.filter((a) => a.account.id !== id);
+        customRoles.forEach((role) => {
+          role.memberIds = role.memberIds.filter((memberId) => memberId !== id);
+        });
+        record('admin.deleted', admin.account.email);
+        return respond(undefined);
+      },
+      listRoles: async () => respond(customRoles),
+      async createRole(name, permissions) {
+        const role = { id: ids.next('role'), name: name.trim(), permissions, memberIds: [] };
+        customRoles.push(role);
+        record('role.created', role.name);
+        return respond(role);
+      },
+      async assignRole(roleId, adminId, assigned) {
+        const role = customRoles.find((r) => r.id === roleId);
+        if (!role || !state.admins.some((a) => a.account.id === adminId)) {
+          return fail(ApiErrorCode.NotFound);
+        }
+        customRoles.forEach((other) => {
+          other.memberIds = other.memberIds.filter((memberId) => memberId !== adminId);
+        });
+        role.memberIds = assigned ? [...role.memberIds, adminId] : role.memberIds;
+        record(assigned ? 'role.assigned' : 'role.unassigned', `${role.name} · ${adminId}`);
+        return respond(role);
+      },
+      async deleteRole(id) {
+        const role = customRoles.find((r) => r.id === id);
+        if (!role) {
+          return fail(ApiErrorCode.NotFound);
+        }
+        customRoles = customRoles.filter((r) => r.id !== id);
+        record('role.deleted', role.name);
+        return respond(undefined);
       },
       async setSuspended(id, suspended) {
         const admin = state.admins.find((a) => a.account.id === id);

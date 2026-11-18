@@ -152,6 +152,7 @@ export interface AdminUserRow {
   profileCompleteness: number;
   phone?: string;
   presence: UserPresence;
+  trackKinds?: string[];
 }
 
 export interface SecretMetadata {
@@ -239,6 +240,7 @@ export interface SourceDecision {
 
 export interface AdminApplicationRow {
   id: string;
+  userId?: string;
   userName: string;
   opportunityTitle: string;
   organization: string;
@@ -433,6 +435,32 @@ export interface AdminNotification {
   read: boolean;
 }
 
+export interface AdminAcademicSummary {
+  kind: string;
+  count: number;
+}
+
+export interface CustomRole {
+  id: string;
+  name: string;
+  permissions: AdminPermission[];
+  memberIds: string[];
+}
+
+export interface NewAdmin {
+  fullName: string;
+  email: string;
+  role: AdminRole;
+}
+
+export interface DashboardFilter {
+  dateFrom?: string;
+  dateTo?: string;
+  country?: string;
+  track?: string;
+  userId?: string;
+}
+
 export interface AdminUserOverview {
   governmentApplications: AdminGovApplication[];
   writingDrafts: AdminWritingDraft[];
@@ -441,6 +469,7 @@ export interface AdminUserOverview {
   notifications: AdminNotification[];
   unreadNotifications: number;
   automationRules: AutomationRule[];
+  academicRecords: AdminAcademicSummary[];
 }
 
 export interface TeamUnread {

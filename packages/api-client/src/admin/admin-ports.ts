@@ -2,6 +2,10 @@ import type { AdminRole, OpportunityDecision } from '@careerpilot/domain-ui-logi
 import type { CompleteAccountLinkRequest, ConnectedAccount, ConversationSummary, MessagePage, MessageView, NewAttachment, SignInRequest } from '../types';
 import type {
   AdminAccount,
+  AdminPermission,
+  CustomRole,
+  DashboardFilter,
+  NewAdmin,
   AdminApplicationRow,
   AdminDashboard,
   AdminLinkDetails,
@@ -38,7 +42,7 @@ export interface AdminAuthApi {
 }
 
 export interface AdminDashboardApi {
-  getDashboard(): Promise<AdminDashboard>;
+  getDashboard(filter?: DashboardFilter): Promise<AdminDashboard>;
 }
 
 export interface AdminUsersApi {
@@ -106,6 +110,12 @@ export interface AdminAccountsApi {
   listAdmins(): Promise<AdminAccount[]>;
   setRole(id: string, role: AdminRole): Promise<AdminAccount>;
   setSuspended(id: string, suspended: boolean): Promise<AdminAccount>;
+  createAdmin(admin: NewAdmin): Promise<AdminAccount>;
+  deleteAdmin(id: string): Promise<void>;
+  listRoles(): Promise<CustomRole[]>;
+  createRole(name: string, permissions: AdminPermission[]): Promise<CustomRole>;
+  assignRole(roleId: string, adminId: string, assigned: boolean): Promise<CustomRole>;
+  deleteRole(id: string): Promise<void>;
 }
 
 import type { GovernmentAdminApi } from '../government/ports';

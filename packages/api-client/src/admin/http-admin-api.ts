@@ -1,7 +1,7 @@
 import type { HttpClient } from '../http/http-client';
 import { HttpMethod, RequestPace } from '../http/http-client';
 import type { CareerPilotAdminApi } from './admin-ports';
-import type { PageQuery } from './admin-types';
+import type { DashboardFilter, PageQuery } from './admin-types';
 import { uploadForm } from '../http/http-api';
 import { createHttpGovernmentAdmin } from '../government/http';
 import { createHttpPortalAdmin } from '../portal/http';
@@ -23,11 +23,23 @@ function queryString(query: PageQuery): string {
   return params.toString();
 }
 
+function filterString(filter?: DashboardFilter): string {
+  const params = new URLSearchParams();
+  Object.entries(filter ?? {}).forEach(([key, value]) => {
+    if (value) {
+      params.set(key, value);
+    }
+  });
+  const text = params.toString();
+  return text ? `?${text}` : '';
+}
+
 export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
   const get = <T>(path: string) => http.request<T>(HttpMethod.Get, path);
   const post = <T>(path: string, body?: unknown) => http.request<T>(HttpMethod.Post, path, body ?? {});
   const postLong = <T>(path: string, body: unknown) => http.request<T>(HttpMethod.Post, path, body, RequestPace.Long);
   const patch = <T>(path: string, body: unknown) => http.request<T>(HttpMethod.Patch, path, body);
+  const remove = (path: string) => http.request<void>(HttpMethod.Delete, path);
   const put = <T>(path: string, body: unknown) => http.request<T>(HttpMethod.Put, path, body);
 
   return {
@@ -41,7 +53,7 @@ export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
       inspectAccountLink: (token) => post('/admin/v1/auth/account-links/inspect', { token }),
       completeAccountLink: (request) => post('/admin/v1/auth/account-links/complete', request),
     },
-    dashboard: { getDashboard: () => get('/admin/v1/dashboard') },
+    dashboard: { getDashboard: (filter) => get(`/admin/v1/dashboard${filterString(filter)}`) },
     users: {
       listUsers: (query) => get(`/admin/v1/users?${queryString(query)}`),
       getUser: (id) => get(`/admin/v1/users/${enc(id)}`),
@@ -99,6 +111,12 @@ export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
       listAdmins: () => get('/admin/v1/admins'),
       setRole: (id, role) => patch(`/admin/v1/admins/${enc(id)}`, { role }),
       setSuspended: (id, suspended) => patch(`/admin/v1/admins/${enc(id)}`, { suspended }),
+      createAdmin: (admin) => post('/admin/v1/admins', admin),
+      deleteAdmin: (id) => remove(`/admin/v1/admins/${enc(id)}`),
+      listRoles: () => get('/admin/v1/roles'),
+      createRole: (name, permissions) => post('/admin/v1/roles', { name, permissions }),
+      assignRole: (roleId, adminId, assigned) => put(`/admin/v1/roles/${enc(roleId)}/members`, { adminId, assigned }),
+      deleteRole: (id) => remove(`/admin/v1/roles/${enc(id)}`),
     },
   };
 }
