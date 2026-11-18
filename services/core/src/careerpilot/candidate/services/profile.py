@@ -1,8 +1,10 @@
 import re
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from datetime import date
 from pathlib import PurePath
 
+from careerpilot.candidate.age import parse_date_of_birth, require_guardian_when_young
 from careerpilot.candidate.consistency import ConsistencyChecker
 from careerpilot.candidate.context import CandidateContext, ChangeListener, ignore_change
 from careerpilot.candidate.models import (
@@ -58,6 +60,8 @@ class BasicsChanges:
     location: str | None = None
     country_code: str | None = None
     summary: str | None = None
+    date_of_birth: str | None = None
+    guardian_consent: bool | None = None
 
 
 def start_profile(profile: Profile, user: UserSummary, contact_id: str) -> None:
@@ -400,6 +404,18 @@ class ProfileService:
             if code and COUNTRY_CODE.fullmatch(code) is None:
                 raise validation_error("country_code")
             profile.country_code = code
+        self._apply_age(profile, changes)
+
+    def _apply_age(self, profile: Profile, changes: BasicsChanges) -> None:
+        if changes.date_of_birth is None and changes.guardian_consent is None:
+            return
+        today = self._ctx.clock.now().date()
+        if changes.date_of_birth is not None:
+            profile.date_of_birth = parse_date_of_birth(changes.date_of_birth, today).isoformat() if changes.date_of_birth.strip() else None
+        if changes.guardian_consent is not None:
+            profile.guardian_consent = changes.guardian_consent
+        born = date.fromisoformat(profile.date_of_birth) if profile.date_of_birth else None
+        require_guardian_when_young(born, profile.guardian_consent, self._ctx.settings.account.minimum_age, today)
 
     def _sync_account_name(self, user_id: str, full_name: str) -> None:
         account = self._ctx.accounts.get(user_id)

@@ -8,6 +8,7 @@ account:
   deletion_grace_days: 14
   approval_validity_days: 3
   recent_window_days: 7
+  minimum_age: 16
   pause_options:
     - { duration: days, amount: 7 }
     - { duration: days, amount: 30 }

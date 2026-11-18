@@ -2,6 +2,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, replace
 from typing import Protocol
 
+from careerpilot.candidate.age import parse_date_of_birth, require_guardian_when_young
 from careerpilot.candidate.context import USER_AUDIENCE, CandidateContext
 from careerpilot.candidate.models import Session, SignInEvent, UserSummary
 from careerpilot.candidate.ports import Account
@@ -31,6 +32,8 @@ class Registration:
     consent: bool
     terms_version: str
     privacy_version: str
+    date_of_birth: str | None = None
+    guardian_consent: bool = False
 
 
 def ignore_registration(_user_id: str, _registration: Registration, _client: ClientInfo) -> None:
@@ -93,6 +96,7 @@ class AuthService:
         policy = self._ctx.settings.validation
         if not registration.consent:
             raise validation_error("consent")
+        self._require_age(registration)
         email = require_email(registration.email, policy.email)
         full_name = require_name(registration.full_name, policy.name)
         existing = self._ctx.accounts.find_by_email(email)
@@ -114,6 +118,13 @@ class AuthService:
             self._ctx.accounts.save(account)
         self._on_registered(account.user.id, registration, client)
         self._links.send(account, AccountEmail.SETUP)
+
+    def _require_age(self, registration: Registration) -> None:
+        if registration.date_of_birth is None:
+            return
+        today = self._ctx.clock.now().date()
+        born = parse_date_of_birth(registration.date_of_birth, today)
+        require_guardian_when_young(born, registration.guardian_consent, self._ctx.settings.account.minimum_age, today)
 
     def request_password_reset(self, email: str, client: ClientInfo) -> None:
         self._guard.throttle(GuardScope.USER, client.ip)

@@ -29,6 +29,8 @@ class BasicsBody(CamelModel):
     location: str | None = None
     country_code: str | None = None
     summary: str | None = None
+    date_of_birth: str | None = None
+    guardian_consent: bool | None = None
 
 
 class ContactBody(CamelModel):
@@ -99,7 +101,13 @@ def profile(caller: Caller) -> JSONResponse:
 @router.patch("/profile")
 def update_basics(body: BasicsBody, caller: Caller) -> JSONResponse:
     changes = BasicsChanges(
-        full_name=body.full_name, headline=body.headline, location=body.location, country_code=body.country_code, summary=body.summary
+        full_name=body.full_name,
+        headline=body.headline,
+        location=body.location,
+        country_code=body.country_code,
+        summary=body.summary,
+        date_of_birth=body.date_of_birth,
+        guardian_consent=body.guardian_consent,
     )
     return caller.respond(caller.profiles.update_basics(caller.user_id, changes))
 
