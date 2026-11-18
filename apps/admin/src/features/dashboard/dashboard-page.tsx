@@ -1,11 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import { OctagonX } from 'lucide-react';
+import type { DashboardFilter } from '@careerpilot/api-client';
 import { useEnumDisplay, useFormat, useT } from '@careerpilot/client-core';
 import { EnumKey, OpportunityStatus, SourceStatus, StatusTone, SubmissionStatus, UserAccountStatus, UserSegment } from '@careerpilot/domain-ui-logic';
 import { Banner, BarChart, Breakdown, Card, EnumBadge, ErrorState, LoadingState, MetricTile, PageHeader, Section } from '@careerpilot/ui-web';
 import { useDashboard } from '@/core/admin-queries';
 import { AdminRoutes, listLink } from '@/core/routes';
+import { DashboardFilters } from './dashboard-filters';
 
 const MONTH_DAY_LENGTH = 5;
 const STATUS = 'status';
@@ -15,7 +18,8 @@ export function DashboardPage() {
   const t = useT();
   const format = useFormat();
   const display = useEnumDisplay();
-  const dashboard = useDashboard();
+  const [filter, setFilter] = useState<DashboardFilter>({});
+  const dashboard = useDashboard(filter);
 
   if (dashboard.isPending) {
     return <LoadingState />;
@@ -30,6 +34,7 @@ export function DashboardPage() {
   return (
     <>
       <PageHeader title={t('admin.dashboard.title')} description={t('admin.dashboard.generated', { date: format.dateTime(d.generatedAt) })} />
+      <DashboardFilters filter={filter} onChange={setFilter} />
       {d.emergencyStop.active ? (
         <Banner
           tone={StatusTone.Danger}

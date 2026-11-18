@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { PageQuery } from '@careerpilot/api-client';
+import type { DashboardFilter, PageQuery } from '@careerpilot/api-client';
 import { useAdminApi } from './admin-services';
 
 export const adminKeys = {
@@ -15,6 +15,7 @@ export const adminKeys = {
   inbox: (search: string) => ['admin', 'messages', 'inbox', search] as const,
   settings: ['admin', 'settings'] as const,
   admins: ['admin', 'admins'] as const,
+  roles: ['admin', 'roles'] as const,
   link: (token: string) => ['admin', 'link', token] as const,
   sourceSuggestions: ['admin', 'sources', 'suggestions'] as const,
   sourceRequests: ['admin', 'sources', 'requests'] as const,
@@ -28,9 +29,9 @@ export function useAdminMutation<TArgs, TResult>(run: (args: TArgs) => Promise<T
   });
 }
 
-export function useDashboard() {
+export function useDashboard(filter?: DashboardFilter) {
   const api = useAdminApi();
-  return useQuery({ queryKey: adminKeys.dashboard, queryFn: () => api.dashboard.getDashboard() });
+  return useQuery({ queryKey: [...adminKeys.dashboard, filter ?? {}], queryFn: () => api.dashboard.getDashboard(filter), placeholderData: (previous) => previous });
 }
 
 export function usePagedList<T>(resource: string, query: PageQuery, fetcher: (query: PageQuery) => Promise<T>) {

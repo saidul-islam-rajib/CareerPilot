@@ -4,10 +4,12 @@ import { useQuery } from '@tanstack/react-query';
 import type { AdminAccount } from '@careerpilot/api-client';
 import { useEnumDisplay, useFormat, useT } from '@careerpilot/client-core';
 import { AdminArea, AdminRole, EnumKey, PermissionAction, StatusTone, enumValues } from '@careerpilot/domain-ui-logic';
-import { Badge, Button, DataTable, EnumBadge, ErrorState, LoadingState, PageHeader } from '@careerpilot/ui-web';
+import { Badge, Button, ConfirmDialog, DataTable, EnumBadge, ErrorState, LoadingState, PageHeader } from '@careerpilot/ui-web';
 import { adminKeys, useAdminMutation } from '@/core/admin-queries';
 import { useAdminApi } from '@/core/admin-services';
 import { useAdminSession, useCan } from '@/core/admin-session';
+import { AdminCreateDialog } from './admin-create-dialog';
+import { CustomRoles } from './custom-roles';
 
 export function AdminsPage() {
   const t = useT();
@@ -16,8 +18,11 @@ export function AdminsPage() {
   const display = useEnumDisplay();
   const { admin } = useAdminSession();
   const canUpdate = useCan(AdminArea.Admins, PermissionAction.Update);
+  const canCreate = useCan(AdminArea.Admins, PermissionAction.Create);
+  const canDelete = useCan(AdminArea.Admins, PermissionAction.Delete);
   const admins = useQuery({ queryKey: adminKeys.admins, queryFn: () => api.admins.listAdmins() });
   const setRole = useAdminMutation(({ id, role }: { id: string; role: AdminRole }) => api.admins.setRole(id, role));
+  const remove = useAdminMutation((id: string) => api.admins.deleteAdmin(id));
   const setSuspended = useAdminMutation(({ id, suspended }: { id: string; suspended: boolean }) => api.admins.setSuspended(id, suspended));
 
   if (admins.isPending) {
@@ -29,7 +34,7 @@ export function AdminsPage() {
 
   return (
     <>
-      <PageHeader title={t('admin.admins.title')} />
+      <PageHeader title={t('admin.admins.title')} actions={canCreate ? <AdminCreateDialog /> : undefined} />
       <DataTable<AdminAccount>
         caption={t('admin.admins.title')}
         rows={admins.data}
@@ -75,14 +80,33 @@ export function AdminsPage() {
             key: 'actions',
             header: t('admin.actions'),
             cell: (a) =>
-              canUpdate && a.id !== admin?.id ? (
-                <Button size="sm" variant={a.suspended ? 'outline' : 'destructive'} onClick={() => setSuspended.mutate({ id: a.id, suspended: !a.suspended })}>
-                  {a.suspended ? t('admin.admins.reactivate') : t('admin.admins.suspend')}
-                </Button>
+              a.id !== admin?.id ? (
+                <span className="flex flex-wrap gap-2">
+                  {canUpdate ? (
+                    <Button size="sm" variant={a.suspended ? 'outline' : 'destructive'} onClick={() => setSuspended.mutate({ id: a.id, suspended: !a.suspended })}>
+                      {a.suspended ? t('admin.admins.reactivate') : t('admin.admins.suspend')}
+                    </Button>
+                  ) : null}
+                  {canDelete ? (
+                    <ConfirmDialog
+                      title={t('admin.admins.deleteTitle', { name: a.fullName })}
+                      body={t('admin.admins.deleteBody')}
+                      confirmLabel={t('admin.admins.delete')}
+                      destructive
+                      onConfirm={() => remove.mutate(a.id)}
+                      trigger={
+                        <Button size="sm" variant="outline">
+                          {t('admin.admins.delete')}
+                        </Button>
+                      }
+                    />
+                  ) : null}
+                </span>
               ) : null,
           },
         ]}
       />
+      <CustomRoles admins={admins.data} canManage={canCreate} />
     </>
   );
 }

@@ -98,6 +98,11 @@ export function OverviewPanel({ userId }: { userId: string }) {
           />
         ))}
       </Group>
+      <Group title={t('admin.records.overview.academic')} empty={t('admin.records.overview.noAcademic')}>
+        {data.academicRecords.map((item) => (
+          <ListRow key={item.kind} title={label('academic_record_kind', item.kind)} trailing={<Badge label={String(item.count)} />} />
+        ))}
+      </Group>
       <Group title={t('admin.records.overview.exports')} empty={t('admin.records.overview.noExports')}>
         {data.exports.map((item) => (
           <ListRow

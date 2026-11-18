@@ -999,6 +999,22 @@
       "flagged": "Flagged",
       "duplicate": "Duplicate"
     },
+    "admin_area": {
+      "dashboard": "Dashboard",
+      "users": "Users",
+      "opportunities": "Opportunities",
+      "sources": "Sources",
+      "applications": "Applications",
+      "settings": "Settings",
+      "audit": "Audit log",
+      "admins": "Admins and roles"
+    },
+    "permission_action": {
+      "read": "View",
+      "create": "Add",
+      "update": "Change",
+      "delete": "Delete"
+    },
     "admin_role": {
       "super_admin": "Super Admin",
       "support": "Support",
@@ -1563,7 +1579,27 @@
       "reactivate": "Reactivate",
       "mfaOn": "On",
       "mfaOff": "Off",
-      "you": "You"
+      "you": "You",
+      "create": "Add admin",
+      "createTitle": "Add an admin",
+      "createHint": "The new admin gets an email link to choose a password.",
+      "createFailed": "The admin could not be added. Check the email address.",
+      "email": "Email address",
+      "delete": "Delete",
+      "deleteTitle": "Delete {name}?",
+      "deleteBody": "The admin loses access immediately. The account is kept in the audit trail."
+    },
+    "roles": {
+      "title": "Custom roles",
+      "create": "Add role",
+      "createFailed": "The role could not be added. Use a new name.",
+      "name": "Role name",
+      "empty": "No custom roles yet.",
+      "members": "{count} admins",
+      "assign": "Assign admin",
+      "delete": "Delete",
+      "deleteTitle": "Delete {name}?",
+      "deleteBody": "Admins with this role return to their base role."
     },
     "records": {
       "title": "Everything about this user",
