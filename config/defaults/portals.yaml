@@ -11,6 +11,9 @@ portals:
   evidence_prefix: portal-evidence
   vault_context: careerpilot.portal.accounts
   summary_version: 1
+  assist:
+    scan_interval_ms: 1500
+    excerpt_chars: 300
   limits:
     max_pages: 8
     max_fields_per_page: 80

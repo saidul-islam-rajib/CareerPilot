@@ -229,6 +229,8 @@ class FillPlan(CamelModel):
     confirmation_phrases: list[str] = Field(default_factory=list[str])
     skip_terms: list[str] = Field(default_factory=list[str])
     captcha_selectors: list[str] = Field(default_factory=list[str])
+    scan_interval_ms: int = 0
+    excerpt_chars: int = 0
 
 
 class FillPassword(CamelModel):

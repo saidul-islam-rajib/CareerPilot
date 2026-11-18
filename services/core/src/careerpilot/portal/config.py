@@ -105,7 +105,13 @@ class FormLimits(PortalBase):
     max_list_items: int = Field(gt=0)
 
 
+class AssistConfig(PortalBase):
+    scan_interval_ms: int = Field(gt=0)
+    excerpt_chars: int = Field(gt=0)
+
+
 class PortalsConfig(PortalBase):
+    assist: AssistConfig
     routes: list[ApplicationRoute]
     limits: FormLimits
     browser: BrowserConfig

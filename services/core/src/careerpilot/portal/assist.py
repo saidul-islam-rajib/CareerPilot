@@ -68,6 +68,8 @@ class AssistService:
             confirmation_phrases=self._cfg.terms_for(PageKind.CONFIRMATION),
             skip_terms=self._skipped_terms(),
             captcha_selectors=self._cfg.captcha_selectors,
+            scan_interval_ms=self._cfg.assist.scan_interval_ms,
+            excerpt_chars=self._cfg.assist.excerpt_chars,
         )
 
     def password(self, user_id: str, application_id: str) -> FillPassword:

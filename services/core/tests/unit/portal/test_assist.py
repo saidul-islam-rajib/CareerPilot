@@ -50,7 +50,7 @@ def test_fill_plan_holds_only_verified_facts_and_saved_answers(clock: FixedClock
     assert all(f.value for f in plan.facts)
     assert {a.label for a in plan.answers} >= {"Years of experience", "Do you require visa sponsorship?"}
     assert "thank you for applying" in plan.confirmation_phrases
-    assert plan.captcha_selectors
+    assert plan.captcha_selectors and plan.scan_interval_ms > 0 and plan.excerpt_chars > 0
     assert "certify" in plan.skip_terms
 
 
