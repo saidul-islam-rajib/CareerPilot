@@ -28,6 +28,7 @@ export default function SignedInLayout() {
       <Stack.Screen name="approval/[id]" options={{ title: t('approvals.title') }} />
       <Stack.Screen name="writing/[opportunityId]" options={{ title: t('writing.title') }} />
       <Stack.Screen name="application/[id]" options={{ title: t('applications.record') }} />
+      <Stack.Screen name="assist/[id]" options={{ title: t('portal.assist.title') }} />
       <Stack.Screen name="follow-up" options={{ title: t('applications.followUps') }} />
       <Stack.Screen name="outcome" options={{ title: t('applications.updateOutcome') }} />
       <Stack.Screen name="circular/[opportunityId]" options={{ title: t('applications.circular'), presentation: 'modal' }} />

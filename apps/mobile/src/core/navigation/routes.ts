@@ -16,6 +16,7 @@ export const Routes = {
   opportunity: (id: string) => ({ pathname: '/opportunity/[id]', params: { id } }) as const,
   addJobByLink: '/opportunity/add',
   writing: (opportunityId: string) => ({ pathname: '/writing/[opportunityId]', params: { opportunityId } }) as const,
+  assist: (id: string) => ({ pathname: '/assist/[id]', params: { id } }) as const,
   approval: (id: string) => ({ pathname: '/approval/[id]', params: { id } }) as const,
   application: (id: string) => ({ pathname: '/application/[id]', params: { id } }) as const,
   followUp: (applicationId: string, taskId?: string, suggested = false) =>
@@ -25,6 +26,7 @@ export const Routes = {
   viewer: (uri: string, title: string) => ({ pathname: '/viewer', params: { uri, title } }) as const,
   editBasics: '/profile/basics',
   photoCrop: '/profile/photo',
+  signaturePad: '/profile/signature',
   verifyContact: (id: string) => ({ pathname: '/profile/verify-contact', params: { id } }) as const,
   editSkills: '/profile/skills',
   editContact: (id?: string) => ({ pathname: '/profile/contact', params: id ? { id } : {} }) as const,

@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
+import { Routes } from '@/core/navigation/routes';
 import {
   attemptCanResume,
   attemptHasProof,
@@ -14,6 +16,7 @@ import { Badge, Button, ButtonVariant, Card, SnackbarTone, Text, TextField, Text
 
 export function AttemptPanel({ applicationId }: { applicationId: string }) {
   const t = useT();
+  const router = useRouter();
   const snackbar = useSnackbar();
   const query = usePortalAttempt(applicationId);
   const actions = usePortalActions();
@@ -52,6 +55,9 @@ export function AttemptPanel({ applicationId }: { applicationId: string }) {
       ) : null}
       {attempt.officialUrl ? (
         <Button label={t('portal.attempt.openOfficial')} variant={ButtonVariant.Outline} onPress={() => void WebBrowser.openBrowserAsync(attempt.officialUrl)} fullWidth testID="portal-open-official" />
+      ) : null}
+      {attempt.officialUrl && !attempt.submitClicked ? (
+        <Button label={t('portal.assist.open')} fullWidth onPress={() => router.push(Routes.assist(applicationId))} testID="portal-assist" />
       ) : null}
       {attempt.prepared.length ? <Text variant={TextVariant.Subheading}>{t('portal.attempt.prepared')}</Text> : null}
       {attempt.prepared.map((item) => (

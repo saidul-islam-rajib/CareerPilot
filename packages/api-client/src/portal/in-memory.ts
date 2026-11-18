@@ -6,6 +6,7 @@ import {
   PortalFailure,
   ReadinessState,
   StopReason,
+  Verdict,
   WallKind,
 } from '@careerpilot/domain-ui-logic';
 import { ApiErrorCode } from '../errors';
@@ -235,6 +236,7 @@ export function createInMemoryPortal(options: InMemoryPortalOptions): InMemoryPo
         fields: [],
         mapped: 0,
         unknown: 0,
+        verdict: blocked ? Verdict.WillStop : Verdict.CanAutoApply,
         reasons: blocked ? [policy === HostPolicy.Blocked ? StopReason.HostBlocked : StopReason.HostReview] : [],
         error: '',
       };

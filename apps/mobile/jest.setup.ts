@@ -9,6 +9,15 @@ jest.mock('react-native-worklets', () => require('react-native-worklets/lib/modu
 
 jest.mock('expo-constants', () => ({ __esModule: true, default: { expoConfig: { version: '1.0.0', extra: {} } } }));
 
+jest.mock('react-native-webview', () => {
+  const { createElement } = require('react');
+  const { View } = require('react-native');
+  const WebView = (props: { testID?: string }) => createElement(View, { testID: props.testID });
+  return { __esModule: true, WebView, default: WebView };
+});
+
+jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));
+
 jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn(() => Promise.resolve()) }));
 
 jest.mock('expo-document-picker', () => ({ getDocumentAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })) }));
