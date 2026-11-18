@@ -59,10 +59,43 @@ const profileSchema = z.object({
   uploads: z.object({
     maxDocumentBytes: positiveInt,
     maxPhotoBytes: positiveInt,
+    maxSignatureBytes: positiveInt,
     documentTypes: z.array(z.string()),
     photoTypes: z.array(z.string()),
   }),
   completeness: z.array(z.object({ kind: enumSchema(enumValues(CompletenessKind)), weight: z.number().int().nonnegative(), section: z.string().optional() })),
+});
+
+const bffUpstreamSchema = z.object({
+  urlEnv: z.string(),
+  attachSession: z.boolean(),
+  sessionPaths: z.array(z.string()).optional(),
+  reauthPaths: z.array(z.string()).optional(),
+  signOutPaths: z.array(z.string()).optional(),
+});
+
+const bffAppSchema = z.object({
+  basePath: z.string(),
+  sessionCookie: z.string(),
+  reauthCookie: z.string().optional(),
+  csrfCookie: z.string(),
+  allowedOrigins: z.array(z.string()),
+  upstreams: z.record(z.string(), bffUpstreamSchema),
+});
+
+export const bffSchema = z.object({
+  sameSite: z.enum(['lax', 'strict']),
+  secureCookies: z.boolean(),
+  csrfHeader: z.string(),
+  csrfPath: z.string(),
+  timeoutMs: z.number().int().positive(),
+  sessionField: z.string(),
+  reauthField: z.string(),
+  fallbackMaxAgeSeconds: z.number().int().positive(),
+  requestHeaders: z.array(z.string()),
+  responseHeaders: z.array(z.string()),
+  web: bffAppSchema.optional(),
+  admin: bffAppSchema.optional(),
 });
 
 export const appConfigSchema = z.object({
@@ -85,6 +118,7 @@ export const appConfigSchema = z.object({
     termsVersion: z.string(),
     privacyVersion: z.string(),
   }),
+  bff: bffSchema.optional(),
   branding: z.object({
     productName: z.string(),
     developerName: z.string(),

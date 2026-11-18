@@ -3,6 +3,8 @@ export const ApiErrorCode = {
   EmailTaken: 'email_taken',
   Unauthorized: 'unauthorized',
   Forbidden: 'forbidden',
+  MfaRequired: 'mfa_required',
+  ReauthRequired: 'reauth_required',
   NotFound: 'not_found',
   Conflict: 'conflict',
   Validation: 'validation',

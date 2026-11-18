@@ -16,3 +16,9 @@ matching:
 profile:
   storage:
     local_root: /data/files
+bff:
+  secure_cookies: true
+  web:
+    allowed_origins: []
+  admin:
+    allowed_origins: []

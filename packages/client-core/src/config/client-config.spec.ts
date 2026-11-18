@@ -22,6 +22,15 @@ describe('client config shipped to browsers and phones', () => {
     }
   });
 
+  it('sets secure session cookies only in production and keeps apps on separate cookie names', () => {
+    const local = parseAppConfig({ careerpilot: loadClientConfig('local') }).bff;
+    const production = parseAppConfig({ careerpilot: loadClientConfig('production') }).bff;
+    expect(local?.secureCookies).toBe(false);
+    expect(production?.secureCookies).toBe(true);
+    expect(local?.web?.sessionCookie).not.toBe(local?.admin?.sessionCookie);
+    expect(local?.admin?.reauthCookie).toBeTruthy();
+  });
+
   it('never carries server-only settings', () => {
     const shipped = loadClientConfig('docker');
     for (const section of SERVER_ONLY) {

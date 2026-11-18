@@ -171,6 +171,8 @@ services:
       args:
         APP: web
         PORT: "3000"
+    environment:
+      CAREERPILOT_BFF_USER_API_URL: http://user-api:8000
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:
@@ -183,6 +185,9 @@ services:
       args:
         APP: admin
         PORT: "3001"
+    environment:
+      CAREERPILOT_BFF_ADMIN_API_URL: http://admin-api:8001
+      CAREERPILOT_BFF_USER_API_URL: http://user-api:8000
     ports:
       - "127.0.0.1:3001:3001"
     depends_on:

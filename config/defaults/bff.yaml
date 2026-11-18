@@ -1,0 +1,38 @@
+bff:
+  same_site: lax
+  secure_cookies: false
+  csrf_header: X-CSRF-Token
+  csrf_path: csrf
+  timeout_ms: 30000
+  session_field: accessToken
+  reauth_field: reauthToken
+  fallback_max_age_seconds: 1800
+  request_headers: [accept, accept-language, content-type, user-agent, x-client-time-zone, x-forwarded-for]
+  response_headers: [cache-control, content-disposition, content-language, content-type, etag, retry-after]
+  web:
+    base_path: /api/bff
+    session_cookie: cp_session
+    csrf_cookie: cp_csrf
+    allowed_origins: [http://localhost:3000, http://127.0.0.1:3000]
+    upstreams:
+      user:
+        url_env: CAREERPILOT_BFF_USER_API_URL
+        attach_session: true
+        session_paths: [/v1/auth/sign-in, /v1/auth/account-links/complete]
+        sign_out_paths: [/v1/auth/sign-out]
+  admin:
+    base_path: /api/bff
+    session_cookie: cp_admin_session
+    reauth_cookie: cp_admin_reauth
+    csrf_cookie: cp_admin_csrf
+    allowed_origins: [http://localhost:3001, http://127.0.0.1:3001]
+    upstreams:
+      admin:
+        url_env: CAREERPILOT_BFF_ADMIN_API_URL
+        attach_session: true
+        session_paths: [/admin/v1/auth/sign-in, /admin/v1/auth/account-links/complete]
+        reauth_paths: [/admin/v1/auth/reauthenticate]
+        sign_out_paths: [/admin/v1/auth/sign-out]
+      user:
+        url_env: CAREERPILOT_BFF_USER_API_URL
+        attach_session: false

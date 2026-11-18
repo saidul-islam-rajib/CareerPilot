@@ -2,7 +2,7 @@
 
 import { createContext, useContext, type PropsWithChildren } from 'react';
 import { createHttpAdminApi, createHttpClient, systemClock, type CareerPilotAdminApi, type CareerPilotApi, type Clock } from '@careerpilot/api-client';
-import { createAppServices, type AppServices, type KeyValueStore, type TokenHolder } from '@careerpilot/client-core';
+import { createAppServices, createBffTransport, type AppServices, type KeyValueStore, type TokenHolder } from '@careerpilot/client-core';
 import type { AdminConfig } from './admin-config';
 
 export interface AdminServices {
@@ -20,11 +20,12 @@ export interface AdminApis {
 }
 
 function httpAdminApi(config: AdminConfig, tokens: TokenHolder): CareerPilotAdminApi {
+  const transport = createBffTransport(config, 'admin', 'admin');
   return createHttpAdminApi(
     createHttpClient({
-      baseUrl: config.admin.baseUrl,
+      baseUrl: transport?.baseUrl ?? config.admin.baseUrl,
       timeoutMs: config.api.timeoutMs,
-      fetchFn: fetch,
+      fetchFn: transport?.fetchFn ?? ((...args) => fetch(...args)),
       getAccessToken: () => tokens.token,
       onUnauthorized: () => tokens.onUnauthorized?.(),
     }),
@@ -33,7 +34,7 @@ function httpAdminApi(config: AdminConfig, tokens: TokenHolder): CareerPilotAdmi
 
 export function createAdminServices(config: AdminConfig, store: KeyValueStore, clock: Clock = systemClock, apis?: AdminApis): AdminServices {
   const tokens: TokenHolder = {};
-  const userServices = createAppServices(config, store, clock, apis?.user);
+  const userServices = createAppServices(config, store, clock, apis?.user, createBffTransport(config, 'admin', 'user'));
   const api = apis?.admin ?? httpAdminApi(config, tokens);
   return { config, api, store, clock, tokens, userServices };
 }

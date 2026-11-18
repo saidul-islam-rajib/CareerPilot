@@ -20,14 +20,26 @@ export interface AppServices {
   probeServer: (address: string) => Promise<boolean>;
 }
 
-export function createAppServices(config: AppConfig, store: KeyValueStore, clock: Clock = systemClock, api?: CareerPilotApi): AppServices {
+export interface ApiTransport {
+  baseUrl: () => string;
+  fetchFn: typeof fetch;
+}
+
+export function createAppServices(
+  config: AppConfig,
+  store: KeyValueStore,
+  clock: Clock = systemClock,
+  api?: CareerPilotApi,
+  transport?: ApiTransport,
+): AppServices {
   const tokens: TokenHolder = {};
   const server = createServerAddress(config.api.baseUrl);
   const connected =
     api ??
     createApi({
       config,
-      baseUrl: server.current,
+      baseUrl: transport?.baseUrl ?? server.current,
+      fetchFn: transport?.fetchFn,
       getAccessToken: () => tokens.token,
       onUnauthorized: () => tokens.onUnauthorized?.(),
     });

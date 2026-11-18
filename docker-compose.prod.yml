@@ -243,6 +243,8 @@ services:
         APP_ENV: production
         CAREERPILOT_API_URL: https://api.${CAREERPILOT_DOMAIN}
         CAREERPILOT_ADMIN_API_URL: https://admin-api.${CAREERPILOT_DOMAIN}
+    environment:
+      CAREERPILOT_BFF_USER_API_URL: http://user-api:8000
     restart: unless-stopped
     logging: *logging
     networks: [edge]
@@ -257,6 +259,9 @@ services:
         <<: *web-args
         APP: admin
         PORT: "3001"
+    environment:
+      CAREERPILOT_BFF_ADMIN_API_URL: http://admin-api:8001
+      CAREERPILOT_BFF_USER_API_URL: http://user-api:8000
     restart: unless-stopped
     logging: *logging
     networks: [edge]
