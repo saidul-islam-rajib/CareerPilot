@@ -13,6 +13,7 @@ import {
   useT,
 } from '@careerpilot/client-core';
 import { Badge, Button, Card, TextField, useToast } from '@careerpilot/ui-web';
+import { AssistCopyPanel } from './assist-copy-panel';
 
 function Proof({ attempt }: { attempt: AttemptView }) {
   const t = useT();
@@ -81,6 +82,7 @@ export function AttemptPanel({ applicationId, enabled }: { applicationId: string
       {attempt.officialUrl ? (
         <a className="text-sm font-semibold text-primary underline-offset-2 hover:underline" href={attempt.officialUrl} target="_blank" rel="noreferrer">{t('portal.attempt.openOfficial')}</a>
       ) : null}
+      {attempt.officialUrl && !attempt.submitClicked ? <AssistCopyPanel applicationId={applicationId} /> : null}
       <PreparedList attempt={attempt} />
       {attempt.submitClicked ? <p className="text-sm text-muted">{t('portal.attempt.alreadySent')}</p> : null}
       {canResume && attempt.pending.length ? (

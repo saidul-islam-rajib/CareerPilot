@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import { createMemoryStore } from '@careerpilot/client-core';
 import { AttemptState, StopReason } from '@careerpilot/domain-ui-logic';
 import { createTestServices, renderWithProviders, testNow } from '@/test/render';
@@ -59,5 +60,36 @@ describe('portal pages', () => {
     expect(screen.getByRole('button', { name: 'Resume Autopilot' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'I finished it on the site' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'I finished it on the site' })).toBeInTheDocument());
+  });
+
+  it('offers the official link and copy buttons from the fill plan', async () => {
+    const services = seededServices();
+    const writeText = vi.fn(() => Promise.resolve());
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    await services.api.portal.addAccount({ host: 'jobs.example.com', employer: 'Acme', email: 'me@example.com', password: 'secret-pw' });
+    const application = (await services.api.applications.listApplications('all'))[0];
+    const attempt = {
+      applicationId: application.id,
+      state: AttemptState.Stopped,
+      stop: StopReason.Captcha,
+      detail: '',
+      officialUrl: 'https://jobs.example.com/apply',
+      host: 'jobs.example.com',
+      prepared: [],
+      pending: [],
+      submitClicked: false,
+      runs: 1,
+      finalUrl: '',
+      confirmationText: '',
+      evidenceKey: '',
+      updatedAt: '',
+    };
+    (services.api.portal as unknown as { seedAttempt: (view: typeof attempt) => void }).seedAttempt(attempt);
+    renderWithProviders(<AttemptPanel applicationId={application.id} enabled />, { services });
+    fireEvent.click(await screen.findByTestId('assist-copy-account-email'));
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith('me@example.com'));
+    expect(screen.queryByText(/secret-pw/)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('assist-copy-password'));
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith('secret-pw'));
   });
 });

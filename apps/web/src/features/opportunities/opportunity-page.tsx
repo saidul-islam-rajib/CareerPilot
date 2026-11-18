@@ -7,6 +7,7 @@ import { useDecide, useFormat, useOpportunity, usePrepareApplication, usePublicC
 import { EnumKey, OpportunityDecision, RequirementCheck, StatusTone } from '@careerpilot/domain-ui-logic';
 import { Badge, Banner, Button, Card, EnumBadge, ErrorState, ListRow, LoadingState, Section, buttonVariants } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
+import { CheckJob } from './check-job';
 import { MatchFeedback } from './match-feedback';
 import { MissingSkills } from './missing-skills';
 import { ReportProblem } from './report-problem';
@@ -88,6 +89,8 @@ export function OpportunityPage() {
             </ul>
           </Card>
         </Section>
+
+        <CheckJob url={o.source.url} />
 
         <Section title={t('opportunity.source')}>
           <Card>

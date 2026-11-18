@@ -95,6 +95,12 @@ describe('OpportunityPage', () => {
     expect((await services.api.approvals.listApprovals()).some((a) => a.opportunity.id === 'opp_bd_ctg')).toBe(true);
   });
 
+  it('checks the job and says plainly that it will stop', async () => {
+    renderWithProviders(<OpportunityPage />, { params: { id: 'opp_bd_ctg' } });
+    fireEvent.click(await screen.findByRole('button', { name: 'Check this job' }));
+    expect(await screen.findByText(/Will stop:/)).toBeInTheDocument();
+  });
+
   it('records feedback with reasons and clears it', async () => {
     const { services } = renderWithProviders(<OpportunityPage />, { params: { id: 'opp_bd_ctg' } });
     fireEvent.click(await screen.findByRole('button', { name: 'Pay too low' }));
