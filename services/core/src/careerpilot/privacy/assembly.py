@@ -1,6 +1,8 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from careerpilot.academic.enums import RecordKind
+from careerpilot.academic.ports import AcademicRecordRepository
 from careerpilot.candidate.context import CandidateContext
 from careerpilot.candidate.ports import CandidateWorkspace
 from careerpilot.integrations.connections import ConnectionService
@@ -16,6 +18,7 @@ from careerpilot.privacy.renderers import ExportRenderer
 from careerpilot.privacy.reports import ReportService
 from careerpilot.repositories import Repositories
 
+ANONYMIZED_REASON = "account_anonymized"
 SCRUB_REASON_FIELDS = {"ip": "", "device": "", "approximate_location": ""}
 
 
@@ -42,6 +45,10 @@ class PrivacyServices:
     admin: AdminPrivacy
 
 
+def academic_documents(records: AcademicRecordRepository, user_id: str) -> list[dict[str, object]]:
+    return [{"kind": kind.value, **document} for kind in RecordKind for document in records.for_user(user_id, kind)]
+
+
 def session_scrubber(repos: Repositories) -> Callable[[str], None]:
     def scrub(user_id: str) -> None:
         for session in repos.directory.sessions():
@@ -60,6 +67,7 @@ def build_privacy(parts: PrivacyParts) -> PrivacyServices:
         consents=repos.consents.for_user,
         deletions=repos.deletions.latest,
         connections=parts.connections.views,
+        academic_records=lambda user_id: academic_documents(repos.academic_records, user_id),
     )
     exports = ExportService(
         ExportContext(
@@ -82,6 +90,7 @@ def build_privacy(parts: PrivacyParts) -> PrivacyServices:
             messages=repos.messages,
             disconnect=parts.connections.disconnect,
             erase_exports=exports.erase_all_for,
+            erase_academic=lambda user_id: repos.academic_records.anonymize_all(user_id, ANONYMIZED_REASON),
             scrub_sessions=session_scrubber(repos),
             empty_workspace=parts.empty_workspace,
             grace_days=parts.grace_days,

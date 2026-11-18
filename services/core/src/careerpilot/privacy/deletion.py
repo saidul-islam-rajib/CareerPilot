@@ -35,6 +35,7 @@ class DeletionContext:
     messages: MessageRepository
     disconnect: Callable[[str], None]
     erase_exports: Callable[[str], int]
+    erase_academic: Callable[[str], int]
     scrub_sessions: Callable[[str], None]
     empty_workspace: Callable[[str], CandidateWorkspace]
     grace_days: Callable[[], int]
@@ -121,6 +122,7 @@ class DeletionService:
         self._erase_files(self._ctx.messages.erase_sender(user_id, translate("privacy.deletedUser")))
         self._ctx.devices.remove([device.token for device in self._ctx.devices.for_user(user_id)], REASON)
         self._ctx.erase_exports(user_id)
+        self._ctx.erase_academic(user_id)
         self._ctx.disconnect(user_id)
         self._ctx.scrub_sessions(user_id)
         self._candidate.workspaces.save(user_id, self._ctx.empty_workspace(user_id))

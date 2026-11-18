@@ -108,13 +108,15 @@ def user_row(account: Account, workspace: CandidateWorkspace, default_country: s
         automatic_enabled=any(track.mode is ApplicationMode.AUTOMATIC for track in workspace.preferences.tracks),
         profile_completeness=workspace.profile.completeness,
         phone=primary_phone(workspace),
+        track_kinds=[track.kind for track in workspace.preferences.tracks],
     )
 
 
-def application_row(application: ApplicationRecord, user_name: str, workspace: CandidateWorkspace) -> AdminApplicationRow:
+def application_row(application: ApplicationRecord, user_id: str, user_name: str, workspace: CandidateWorkspace) -> AdminApplicationRow:
     automatic = any(track.mode is ApplicationMode.AUTOMATIC for track in workspace.preferences.tracks)
     return AdminApplicationRow(
         id=application.id,
+        user_id=user_id,
         user_name=user_name,
         opportunity_title=application.opportunity.title,
         organization=application.opportunity.organization,
@@ -161,7 +163,7 @@ class AdminUserRecords:
             if account is None:
                 continue
             workspace = self._ctx.workspaces.get(user_id)
-            rows.extend(application_row(application, account.user.full_name, workspace) for application in workspace.applications)
+            rows.extend(application_row(application, user_id, account.user.full_name, workspace) for application in workspace.applications)
         known = {row.id for row in rows}
         return rows + [row for row in self._ctx.directory.applications() if row.id not in known]
 

@@ -23,6 +23,12 @@ class InMemoryNotificationRepository:
     def has_unread(self, user_id: str, target_id: str) -> bool:
         return any(n.user_id == user_id and n.target_id == target_id and n.read_at is None for n in self._items)
 
+    def count_all(self) -> int:
+        return len(self._items)
+
+    def count_read(self) -> int:
+        return sum(1 for n in self._items if n.read_at is not None)
+
 
 class InMemoryConversationRepository:
     def __init__(self) -> None:
@@ -92,6 +98,7 @@ class InMemoryMessageRepository:
 class InMemoryPushDeviceRepository:
     def __init__(self) -> None:
         self._devices: dict[str, PushDevice] = {}
+        self._removed: list[str] = []
 
     def save(self, device: PushDevice) -> None:
         self._devices[device.token] = device.model_copy()
@@ -102,4 +109,8 @@ class InMemoryPushDeviceRepository:
 
     def remove(self, tokens: list[str], reason: str) -> None:
         for token in tokens:
-            self._devices.pop(token, None)
+            if self._devices.pop(token, None) is not None:
+                self._removed.append(reason)
+
+    def removed_count(self, reason: str) -> int:
+        return self._removed.count(reason)

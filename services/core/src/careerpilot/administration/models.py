@@ -86,6 +86,7 @@ class AdminUserRow(CamelModel):
     profile_completeness: int
     phone: str | None = None
     presence: UserPresence = Field(default_factory=UserPresence)
+    track_kinds: list[str] = Field(default_factory=list[str])
 
 
 class SecretMetadata(CamelModel):
@@ -97,6 +98,7 @@ class SecretMetadata(CamelModel):
 
 class AdminApplicationRow(CamelModel):
     id: str
+    user_id: str = ""
     user_name: str
     opportunity_title: str
     organization: str

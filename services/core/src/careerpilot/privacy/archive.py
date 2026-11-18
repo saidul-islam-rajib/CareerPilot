@@ -30,6 +30,7 @@ class ArchiveSources:
     consents: Callable[[str], list[ConsentRecord]]
     deletions: Callable[[str], DeletionRecord | None]
     connections: Callable[[str], list[ConnectionView]]
+    academic_records: Callable[[str], list[dict[str, object]]]
 
 
 def jsonable(items: list[CamelModel]) -> list[dict[str, object]]:
@@ -73,6 +74,7 @@ class ArchiveBuilder:
             ArchiveSection.CONSENTS: lambda: jsonable(list(self._sources.consents(user_id))),
             ArchiveSection.CONNECTIONS: lambda: jsonable(list(self._sources.connections(user_id))),
             ArchiveSection.DELETION_HISTORY: lambda: self._deletions(user_id),
+            ArchiveSection.ACADEMIC_RECORDS: lambda: self._sources.academic_records(user_id),
         }
         return builders[section]()
 

@@ -1,13 +1,14 @@
 import re
 from collections import Counter
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import timedelta
 
 from careerpilot.administration.account_links import AdminLinkDetails, AdminLinkService
 from careerpilot.administration.context import ADMIN_AUDIENCE, AdminActor, AdminContext, PageRequest, paginate
 from careerpilot.administration.discovery_sync import SourceCheckRunner
 from careerpilot.administration.limits import effective_source_limit
-from careerpilot.administration.live_figures import DirectoryFigures, Figures
+from careerpilot.administration.live_figures import ISO_DATE_LENGTH, DashboardFilter, DirectoryFigures, Figures
 from careerpilot.administration.models import (
     AdminAccount,
     AdminApplicationRow,
@@ -63,7 +64,6 @@ from careerpilot.platform.errors import DomainError, ErrorCode, conflict, not_fo
 from careerpilot.platform.model import CamelModel
 from careerpilot.platform.validation import require_email, require_name, require_password, require_text
 
-ISO_DATE_LENGTH = 10
 RECENT_APPLICATIONS_LIMIT = 5
 LINK_TTL_FIELD = "account_link_ttl_minutes"
 SOURCE_LIMIT_FIELD = "max_sources_per_user"
@@ -187,17 +187,37 @@ def no_unread() -> int:
     return 0
 
 
+@dataclass(frozen=True)
+class LiveOperations:
+    notifications: Callable[[], NotificationCounts]
+    health: Callable[[], list[ServiceStatus]]
+
+
 class AdminDashboardService:
-    def __init__(self, context: AdminContext, figures: Figures | None = None, unread: Callable[[], int] = no_unread) -> None:
+    def __init__(
+        self,
+        context: AdminContext,
+        figures: Figures | None = None,
+        unread: Callable[[], int] = no_unread,
+        live: LiveOperations | None = None,
+    ) -> None:
         self._ctx = context
         self._figures = figures or DirectoryFigures(context.directory)
         self._unread = unread
+        self._live = live
 
-    def get(self, actor: AdminActor) -> AdminDashboard:
+    def _notifications(self) -> NotificationCounts:
+        return self._live.notifications() if self._live else self._ctx.directory.operations().notifications
+
+    def _health(self) -> list[ServiceStatus]:
+        return self._live.health() if self._live else self._ctx.directory.operations().services
+
+    def get(self, actor: AdminActor, query: DashboardFilter | None = None) -> AdminDashboard:
         actor.require(AdminArea.DASHBOARD, PermissionAction.READ)
         now = self._ctx.clock.now()
-        users = self._figures.users()
-        apps = self._figures.applications()
+        query = query or DashboardFilter()
+        users = self._figures.users(query)
+        apps = self._figures.applications(query)
         opportunities = self._figures.opportunities()
         sources = self._figures.sources()
         operations = self._ctx.directory.operations()
@@ -242,8 +262,8 @@ class AdminDashboardService:
                 failing=sum(1 for s in sources if s.status is SourceStatus.FAILING),
                 disabled=sum(1 for s in sources if s.status is SourceStatus.DISABLED),
             ),
-            notifications=operations.notifications,
-            health=operations.services,
+            notifications=self._notifications(),
+            health=self._health(),
             emergency_stop=self._ctx.platform.get().emergency_stop,
             unread_messages=self._unread(),
         )

@@ -2,6 +2,7 @@ from datetime import timedelta
 
 import pytest
 
+from careerpilot.academic.enums import RecordKind
 from careerpilot.bootstrap import Container
 from careerpilot.candidate.services.auth import Registration
 from careerpilot.integrations.fake_google import FakeGoogleGateway
@@ -115,3 +116,11 @@ def test_a_registered_user_can_delete_and_the_address_is_freed(
     assert empty_container.privacy.deletion.process_due() == 1
     again = register_and_activate(empty_container, outbox, registration)
     assert again.user.id != session.user.id
+
+
+def test_anonymization_erases_academic_records(container: Container, clock: FixedClock, tap: RepositoryTap) -> None:
+    tap.repos.academic_records.save(DEMO_USER, RecordKind.PROGRAM, "prg_1", {"name": "Personal study plan"})
+    container.privacy.deletion.request(DEMO_USER, OWNER_PASSWORD)
+    clock.advance(GRACE + timedelta(minutes=1))
+    container.privacy.deletion.process_due()
+    assert tap.repos.academic_records.for_user(DEMO_USER, RecordKind.PROGRAM) == []

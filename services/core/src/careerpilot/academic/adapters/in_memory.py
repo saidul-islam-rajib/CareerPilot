@@ -19,3 +19,9 @@ class InMemoryAcademicRecords:
 
     def remove(self, user_id: str, kind: RecordKind, record_id: str, reason: str) -> None:
         self._items.pop((user_id, kind, record_id), None)
+
+    def anonymize_all(self, user_id: str, reason: str) -> int:
+        keys = [key for key in self._items if key[0] == user_id]
+        for key in keys:
+            del self._items[key]
+        return len(keys)

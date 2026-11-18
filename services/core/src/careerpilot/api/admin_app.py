@@ -8,7 +8,7 @@ from careerpilot.administration.models import NewSource, SourceDecision
 from careerpilot.administration.user_records import AdminApplicationChange, AdminProfileChange
 from careerpilot.api import admin_messaging_routes, government_routes, integrations_routes, portal_routes, privacy_routes
 from careerpilot.api.common import client_info, configure, no_content, ok
-from careerpilot.api.dependencies import CurrentAdmin, Paging, Services
+from careerpilot.api.dependencies import CurrentAdmin, Filtering, Paging, Services
 from careerpilot.api.instrumentation import instrument
 from careerpilot.bootstrap import Container
 from careerpilot.platform.enums import (
@@ -114,8 +114,8 @@ def sign_out(_: CurrentAdmin) -> Response:
 
 
 @router.get("/dashboard")
-def dashboard(admin: CurrentAdmin, services: Services) -> JSONResponse:
-    return ok(services.admin_dashboard.get(admin))
+def dashboard(admin: CurrentAdmin, services: Services, query: Filtering) -> JSONResponse:
+    return ok(services.admin_dashboard.get(admin, query))
 
 
 @router.get("/users")

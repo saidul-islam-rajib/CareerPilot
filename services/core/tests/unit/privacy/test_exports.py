@@ -6,6 +6,7 @@ from datetime import timedelta
 
 import pytest
 
+from careerpilot.academic.enums import RecordKind
 from careerpilot.bootstrap import Container
 from careerpilot.platform.clock import FixedClock
 from careerpilot.platform.errors import DomainError, ErrorCode
@@ -129,3 +130,11 @@ def test_exports_belong_to_their_owner(container: Container) -> None:
         container.privacy.exports.get("usr_other", view.id, BASE_URL)
     assert error.value.code is ErrorCode.NOT_FOUND
     assert container.privacy.exports.history("usr_other", BASE_URL) == []
+
+
+def test_full_archive_includes_academic_records(container: Container, storage: InMemoryFileStorage, tap: RepositoryTap) -> None:
+    tap.repos.academic_records.save(DEMO_USER, RecordKind.PROGRAM, "prg_1", {"name": "Personal study plan"})
+    spec = ExportSpec(ExportKind.ARCHIVE, ExportFormat.ZIP, password=OWNER_PASSWORD)
+    view = request_view(container, container.privacy.exports.request(DEMO_USER, spec))
+    archive = zipfile.ZipFile(io.BytesIO(stored_bytes(storage, view)))
+    assert json.loads(archive.read("academic_records.json")) == [{"kind": "program", "name": "Personal study plan"}]

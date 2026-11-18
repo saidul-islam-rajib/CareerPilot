@@ -93,4 +93,5 @@ class ArchiveSection(StrEnum):
     CONSENTS = "consents"
     CONNECTIONS = "connections"
     DELETION_HISTORY = "deletion_history"
+    ACADEMIC_RECORDS = "academic_records"
     FILES = "files"

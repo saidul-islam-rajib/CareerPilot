@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from careerpilot.academic.enums import RecordKind
+from careerpilot.academic.ports import AcademicRecordRepository
 from careerpilot.administration.context import AdminActor
 from careerpilot.automation.models import AutomationRule
 from careerpilot.candidate.ports import AccountRepository, WorkspaceRepository
@@ -75,6 +77,11 @@ class AdminNotification(CamelModel):
     read: bool
 
 
+class AdminAcademicSummary(CamelModel):
+    kind: RecordKind
+    count: int
+
+
 class AdminUserOverview(CamelModel):
     government_applications: list[AdminGovApplication]
     writing_drafts: list[AdminWritingDraft]
@@ -83,6 +90,7 @@ class AdminUserOverview(CamelModel):
     notifications: list[AdminNotification]
     unread_notifications: int
     automation_rules: list[AutomationRule]
+    academic_records: list[AdminAcademicSummary]
 
 
 @dataclass(frozen=True)
@@ -95,6 +103,7 @@ class UserOverviewParts:
     exports: ExportRepository
     deletions: DeletionRepository
     notifications: NotificationRepository
+    academic_records: AcademicRecordRepository
 
 
 class AdminUserOverviewService:
@@ -120,7 +129,12 @@ class AdminUserOverviewService:
             ],
             unread_notifications=parts.notifications.unread_count(user_id),
             automation_rules=parts.workspaces.get(user_id).preferences.automation.active_rules(),
+            academic_records=self._academic(user_id),
         )
+
+    def _academic(self, user_id: str) -> list[AdminAcademicSummary]:
+        counted = [(kind, len(self._parts.academic_records.for_user(user_id, kind))) for kind in RecordKind]
+        return [AdminAcademicSummary(kind=kind, count=count) for kind, count in counted if count]
 
     @staticmethod
     def _draft(draft: WritingDraft) -> AdminWritingDraft:

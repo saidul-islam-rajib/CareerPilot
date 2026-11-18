@@ -41,7 +41,7 @@ privacy:
       - { key: matchScore, label_key: reports.column.matchScore }
       - { key: deadline, label_key: reports.column.deadline }
     archive_sections:
-      [profile, preferences, applications, approvals, saved_answers, sign_in_activity, consents, connections, deletion_history, files]
+      [profile, preferences, applications, approvals, saved_answers, sign_in_activity, consents, connections, deletion_history, academic_records, files]
     pdf_line_limit: 110
     pdf_lines_per_page: 52
   deletion:

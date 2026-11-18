@@ -48,3 +48,15 @@ class SqlAcademicRecords:
                 row.soft_delete(self._clock, reason)
 
         self._db.write(change)
+
+    def anonymize_all(self, user_id: str, reason: str) -> int:
+        erased: list[int] = []
+
+        def change(session: Session) -> None:
+            for row in session.scalars(active(AcademicRecordRow).where(AcademicRecordRow.user_id == user_id)):
+                row.document = {}
+                row.soft_delete(self._clock, reason)
+                erased.append(1)
+
+        self._db.write(change)
+        return len(erased)

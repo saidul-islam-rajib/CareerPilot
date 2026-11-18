@@ -101,6 +101,19 @@ class SqlNotificationRepository:
             rows = session.scalars(active(NotificationRow).where(NotificationRow.user_id == user_id, NotificationRow.read_at.is_(None)))
             return any(Notification.model_validate(r.document).target_id == target_id for r in rows)
 
+    def count_all(self) -> int:
+        with self._db.unit_of_work() as session:
+            return session.scalar(select(func.count()).select_from(NotificationRow).where(NotificationRow.deleted_at.is_(None))) or 0
+
+    def count_read(self) -> int:
+        with self._db.unit_of_work() as session:
+            query = (
+                select(func.count())
+                .select_from(NotificationRow)
+                .where(NotificationRow.read_at.is_not(None), NotificationRow.deleted_at.is_(None))
+            )
+            return session.scalar(query) or 0
+
 
 class SqlConversationRepository:
     def __init__(self, database: Database) -> None:
@@ -257,3 +270,12 @@ class SqlPushDeviceRepository:
                 row.soft_delete(self._clock, reason)
 
         self._db.write(change)
+
+    def removed_count(self, reason: str) -> int:
+        with self._db.unit_of_work() as session:
+            query = (
+                select(func.count())
+                .select_from(PushDeviceRow)
+                .where(PushDeviceRow.deleted_at.is_not(None), PushDeviceRow.delete_reason == reason)
+            )
+            return session.scalar(query) or 0
