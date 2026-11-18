@@ -16,3 +16,12 @@ submission:
   real_applications_true_values: ["true", "1", "yes", "on"]
   real_applications_blocked_markers: [CI, PYTEST_CURRENT_TEST, GITHUB_ACTIONS]
   real_applications_blocked_environments: [test, ci]
+  bulk_max_items: 50
+  attestation_phrases:
+    - i certify
+    - i declare
+    - i hereby declare
+    - i confirm that the information
+    - true and correct
+    - to the best of my knowledge
+    - under penalty

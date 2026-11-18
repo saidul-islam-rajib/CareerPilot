@@ -6,6 +6,7 @@ export const Routes = {
   setPassword: (token: string) => `/set-password?token=${encodeURIComponent(token)}`,
   home: '/',
   approvals: '/approvals',
+  approvalsBulk: '/approvals/bulk',
   messages: '/messages',
   conversation: (id: string) => `/messages/${encodeURIComponent(id)}`,
   inbox: '/notifications',

@@ -1,8 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { Clock } from 'lucide-react';
 import { useApprovals, useFormat, useT } from '@careerpilot/client-core';
-import { EmptyState, ErrorState, LoadingState, PageHeader } from '@careerpilot/ui-web';
+import { EmptyState, ErrorState, LoadingState, PageHeader, buttonVariants } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
 import { OpportunityCard } from '@/features/opportunities/opportunity-card';
 
@@ -14,6 +15,11 @@ export function ApprovalsPage() {
   return (
     <>
       <PageHeader title={t('approvals.title')} description={items.length > 0 ? t('approvals.pendingCount', { count: items.length }) : undefined} />
+      {items.length > 1 ? (
+        <Link href={Routes.approvalsBulk} className={buttonVariants({ variant: 'outline' })}>
+          {t('approvals.bulk.open')}
+        </Link>
+      ) : null}
       {approvals.isPending ? <LoadingState /> : null}
       {approvals.isError ? <ErrorState onRetry={() => void approvals.refetch()} /> : null}
       {approvals.isSuccess && items.length === 0 ? <EmptyState title={t('approvals.empty')} /> : null}

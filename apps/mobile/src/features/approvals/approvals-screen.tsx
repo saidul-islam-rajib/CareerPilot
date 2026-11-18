@@ -5,7 +5,7 @@ import { Clock } from '@/ui/icons';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { OpportunityCard } from '@/features/opportunities/opportunity-card';
-import { EmptyState, ErrorState, Icon, IconSize, LoadingState, Row, Screen, Text, TextTone, TextVariant } from '@/ui';
+import { Button, ButtonVariant, EmptyState, ErrorState, Icon, IconSize, LoadingState, Row, Screen, Text, TextTone, TextVariant } from '@/ui';
 
 export function ApprovalsScreen() {
   const t = useT();
@@ -19,6 +19,9 @@ export function ApprovalsScreen() {
       {approvals.isPending ? <LoadingState /> : null}
       {approvals.isError ? <ErrorState onRetry={() => void approvals.refetch()} /> : null}
       {approvals.isSuccess && items.length === 0 ? <EmptyState title={t('approvals.empty')} /> : null}
+      {items.length > 1 ? (
+        <Button label={t('approvals.bulk.open')} variant={ButtonVariant.Outline} onPress={() => router.push(Routes.approvalsBulk)} testID="approvals-bulk-open" />
+      ) : null}
       {items.length > 0 ? <Text tone={TextTone.Muted}>{t('approvals.pendingCount', { count: items.length })}</Text> : null}
       {items.map((approval) => (
         <View key={approval.id} style={{ gap: theme.space.xs }}>

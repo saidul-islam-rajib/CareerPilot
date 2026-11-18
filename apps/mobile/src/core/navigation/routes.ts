@@ -6,6 +6,7 @@ export const Routes = {
   setPassword: (token: string) => ({ pathname: '/set-password', params: { token } }) as const,
   home: '/',
   approvals: '/approvals',
+  approvalsBulk: '/approval/bulk',
   applications: '/applications',
   profile: '/profile',
   more: '/more',

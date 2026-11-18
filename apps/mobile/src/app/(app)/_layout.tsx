@@ -24,6 +24,7 @@ export default function SignedInLayout() {
       <Stack.Screen name="chat/[id]" options={{ title: '' }} />
       <Stack.Screen name="inbox" options={{ title: t('notifications.title') }} />
       <Stack.Screen name="opportunity/add" options={{ title: t('jobLink.title') }} />
+      <Stack.Screen name="approval/bulk" options={{ title: t('approvals.bulk.title') }} />
       <Stack.Screen name="approval/[id]" options={{ title: t('approvals.title') }} />
       <Stack.Screen name="writing/[opportunityId]" options={{ title: t('writing.title') }} />
       <Stack.Screen name="application/[id]" options={{ title: t('applications.record') }} />
