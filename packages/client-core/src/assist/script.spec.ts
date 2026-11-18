@@ -46,8 +46,8 @@ function byId(id: string) {
   return dom.window.document.getElementById(id) as HTMLInputElement;
 }
 
+function lastStatus() {
   return parseAssistMessage(messages[messages.length - 1] ?? '');
-  return parseAssistMessage(messages[messages.length - 1]);
 }
 
 const FORM = `
