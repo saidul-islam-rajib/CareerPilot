@@ -11,6 +11,9 @@ import type {
   CompleteAccountLinkRequest,
   CompensationReference,
   CompensationRule,
+  BulkApprovalItem,
+  BulkApprovalResult,
+  BulkApprovalRow,
   ContactChanges,
   FeedbackInput,
   MatchFeedback,
@@ -87,6 +90,8 @@ export interface ApprovalApi {
   updateAnswer(approvalId: string, answerId: string, answer: string, saveForReuse?: boolean): Promise<ApprovalDetail>;
   approve(id: string): Promise<ApprovalDetail>;
   reject(id: string): Promise<ApprovalDetail>;
+  bulkRows(): Promise<BulkApprovalRow[]>;
+  bulkApprove(items: BulkApprovalItem[]): Promise<BulkApprovalResult>;
 }
 
 export interface ApplicationApi {

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Bell, BriefcaseBusiness, CheckCheck, MessageCircle, Plug, Zap, type LucideIcon } from 'lucide-react';
+import { Bell, BriefcaseBusiness, CheckCheck, CheckCircle2, GraduationCap, Landmark, MessageCircle, Plug, UserRound, Wallet, Zap, type LucideIcon } from 'lucide-react';
 import type { AppNotification } from '@careerpilot/api-client';
 import { useFormat, useNotifications, useReadNotifications, useT } from '@careerpilot/client-core';
 import { NotificationTarget } from '@careerpilot/domain-ui-logic';
@@ -13,6 +13,11 @@ const HREFS: Record<NotificationTarget, (id: string) => string> = {
   [NotificationTarget.Application]: Routes.application,
   [NotificationTarget.Integration]: () => Routes.connectedAccounts,
   [NotificationTarget.Automation]: () => Routes.automation,
+  [NotificationTarget.Approval]: Routes.approval,
+  [NotificationTarget.GovernmentApplication]: Routes.governmentApplication,
+  [NotificationTarget.Fee]: () => Routes.fees,
+  [NotificationTarget.Program]: Routes.studentsProgram,
+  [NotificationTarget.Profile]: () => Routes.profile,
 };
 
 const GLYPHS: Record<NotificationTarget, LucideIcon> = {
@@ -20,6 +25,11 @@ const GLYPHS: Record<NotificationTarget, LucideIcon> = {
   [NotificationTarget.Application]: BriefcaseBusiness,
   [NotificationTarget.Integration]: Plug,
   [NotificationTarget.Automation]: Zap,
+  [NotificationTarget.Approval]: CheckCircle2,
+  [NotificationTarget.GovernmentApplication]: Landmark,
+  [NotificationTarget.Fee]: Wallet,
+  [NotificationTarget.Program]: GraduationCap,
+  [NotificationTarget.Profile]: UserRound,
 };
 
 export function notificationHref(notification: AppNotification): string {

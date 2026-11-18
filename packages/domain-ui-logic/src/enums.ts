@@ -454,6 +454,11 @@ export const NotificationKind = {
   ApplicationReply: 'application_reply',
   IntegrationAttention: 'integration_attention',
   AutomationAttention: 'automation_attention',
+  ApprovalExpiring: 'approval_expiring',
+  GovernmentDeadline: 'government_deadline',
+  FeeDeadline: 'fee_deadline',
+  SupervisorReply: 'supervisor_reply',
+  ProfileConfirmation: 'profile_confirmation',
 } as const;
 export type NotificationKind = (typeof NotificationKind)[keyof typeof NotificationKind];
 
@@ -462,6 +467,11 @@ export const NotificationTarget = {
   Application: 'application',
   Integration: 'integration',
   Automation: 'automation',
+  Approval: 'approval',
+  GovernmentApplication: 'government_application',
+  Fee: 'fee',
+  Program: 'program',
+  Profile: 'profile',
 } as const;
 export type NotificationTarget = (typeof NotificationTarget)[keyof typeof NotificationTarget];
 

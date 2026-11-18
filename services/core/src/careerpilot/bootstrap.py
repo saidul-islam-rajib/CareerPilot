@@ -384,7 +384,7 @@ def source_display_name(rows: list[AdminSourceRow], source_id: str) -> str:
 def _source_policy(
     cfg: Settings, options: ContainerOverrides, fetch_page: PageFetcher, connectors: frozenset[str], json_jobs: list[JsonJobsConnector]
 ) -> SourcePolicy:
-    readers = options.connectors or first_party_connectors(extra=json_jobs)
+    readers = options.connectors or first_party_connectors(extra=json_jobs, discovery=cfg.discovery)
     resolver = SourceResolver(fetch_page, readers, cfg.discovery)
     quick_fetch = options.page_fetcher or quick_page_fetcher_for(cfg.discovery)
     search = CompanySearch(SearchProbes(quick_fetch, SourceResolver(quick_fetch, readers, cfg.discovery), resolver), cfg.discovery)
@@ -733,7 +733,9 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     guard = SignInGuard(coord_store, keys, cfg.coordination)
     fetch_page = options.page_fetcher or page_fetcher_for(cfg.discovery)
     json_jobs = [JsonJobsConnector(cfg.discovery.json_fields, cfg.discovery.date_formats)]
-    registry = options.connectors or first_party_connectors(lambda url: fetch_page(url)[1], cfg.discovery.max_detail_pages, json_jobs)
+    registry = options.connectors or first_party_connectors(
+        lambda url: fetch_page(url)[1], cfg.discovery.max_detail_pages, json_jobs, discovery=cfg.discovery
+    )
     discovery = DiscoveryService(
         DiscoveryContext(
             config=cfg.discovery,

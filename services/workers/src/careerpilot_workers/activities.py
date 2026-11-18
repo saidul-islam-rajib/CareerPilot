@@ -12,6 +12,7 @@ from careerpilot_workers.workflows import (
     PROCESS_READINESS,
     RUN_PORTAL_APPLICATION,
     RUN_PRIVACY_JOBS,
+    RUN_REMINDERS,
     SEND_DIGESTS,
     SUBMIT_APPLICATION,
     SYNC_INBOXES,
@@ -71,6 +72,15 @@ class DigestActivities:
     @activity.defn(name=SEND_DIGESTS)
     def send_digests(self) -> int:
         return self._container.digests.send_due()
+
+
+class ReminderActivities:
+    def __init__(self, container: Container) -> None:
+        self._container = container
+
+    @activity.defn(name=RUN_REMINDERS)
+    def run_reminders(self) -> int:
+        return self._container.reminders.run_due()
 
 
 class PrivacyActivities:

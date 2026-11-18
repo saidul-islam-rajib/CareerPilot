@@ -726,3 +726,13 @@ class FeedbackReason(StrEnum):
     WRONG_SKILLS = "wrong_skills"
     WRONG_COMPANY = "wrong_company"
     OTHER = "other"
+
+
+class BulkBlock(StrEnum):
+    HARD_FAILURE = "hard_failure"
+    UNANSWERED_QUESTIONS = "unanswered_questions"
+    FEE = "fee"
+    ATTESTATION = "attestation"
+    CHANGED = "changed"
+    NOT_PENDING = "not_pending"
+    UNKNOWN_APPROVAL = "unknown_approval"

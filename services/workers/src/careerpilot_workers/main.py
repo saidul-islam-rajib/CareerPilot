@@ -22,6 +22,7 @@ from careerpilot_workers.activities import (
     DiscoveryActivities,
     IntegrationActivities,
     PrivacyActivities,
+    ReminderActivities,
     SubmissionActivities,
 )
 from careerpilot_workers.workflows import (
@@ -31,6 +32,7 @@ from careerpilot_workers.workflows import (
     InboxSyncWorkflow,
     PortalWorkflow,
     PrivacyWorkflow,
+    ReminderWorkflow,
     SubmissionWorkflow,
 )
 
@@ -87,6 +89,15 @@ def privacy_schedule(config: WorkersConfig) -> Schedule:
     )
 
 
+def reminder_schedule(config: WorkersConfig) -> Schedule:
+    return Schedule(
+        action=ScheduleActionStartWorkflow(
+            ReminderWorkflow.run, activity_plan(config), id=config.reminder_workflow_id, task_queue=config.submission_task_queue
+        ),
+        spec=ScheduleSpec(intervals=[ScheduleIntervalSpec(every=timedelta(minutes=config.reminder_interval_minutes))]),
+    )
+
+
 def portal_schedule(config: WorkersConfig, portals: PortalsConfig) -> Schedule:
     plan = ActivityPlan(activity_timeout_seconds=portals.activity_timeout_seconds, activity_max_attempts=config.activity_max_attempts)
     return Schedule(
@@ -116,8 +127,10 @@ async def serve() -> None:
     await ensure_schedule(client, workers.digest_schedule_id, digest_schedule(workers))
     await ensure_schedule(client, workers.inbox_sync_schedule_id, inbox_sync_schedule(workers))
     await ensure_schedule(client, workers.privacy_schedule_id, privacy_schedule(workers))
+    await ensure_schedule(client, workers.reminder_schedule_id, reminder_schedule(workers))
     await ensure_schedule(client, settings.portals.schedule_id, portal_schedule(workers, settings.portals))
     privacy = PrivacyActivities(container)
+    reminders = ReminderActivities(container)
     discovery = DiscoveryActivities(container)
     submission = SubmissionActivities(container)
     digests = DigestActivities(container)
@@ -133,7 +146,7 @@ async def serve() -> None:
         submission_worker = Worker(
             client,
             task_queue=workers.submission_task_queue,
-            workflows=[SubmissionWorkflow, DigestWorkflow, InboxSyncWorkflow, PrivacyWorkflow],
+            workflows=[SubmissionWorkflow, DigestWorkflow, InboxSyncWorkflow, PrivacyWorkflow, ReminderWorkflow],
             activities=[
                 submission.due_applications,
                 submission.submit_application,
@@ -141,6 +154,7 @@ async def serve() -> None:
                 digests.send_digests,
                 integrations.sync_inboxes,
                 privacy.run_privacy_jobs,
+                reminders.run_reminders,
             ],
             activity_executor=executor,
             max_concurrent_activities=SEQUENTIAL,

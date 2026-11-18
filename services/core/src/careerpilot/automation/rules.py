@@ -25,6 +25,8 @@ def limits_of(config: AutomationConfig) -> AutomationLimits:
         max_total_cap=config.max_total_cap,
         min_inactivity_days=config.min_inactivity_days,
         max_inactivity_days=config.max_inactivity_days,
+        min_freshness_days=config.min_freshness_days,
+        max_freshness_days=config.max_freshness_days,
         max_deadline_buffer_hours=config.max_deadline_buffer_hours,
         max_list_items=config.max_list_items,
     )
@@ -52,6 +54,7 @@ class RuleValidator:
         within(body.deadline_buffer_hours, MIN_BUFFER, config.max_deadline_buffer_hours)
         within(body.weekly_cap, MIN_CAP, config.max_weekly_cap)
         within(body.inactivity_days, config.min_inactivity_days, config.max_inactivity_days)
+        within(body.freshness_days, config.min_freshness_days, config.max_freshness_days)
 
     def validated(self, workspace: CandidateWorkspace, body: RuleInput) -> AutomationRule:
         self._check_numbers(body)

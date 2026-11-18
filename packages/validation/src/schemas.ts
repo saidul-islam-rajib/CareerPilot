@@ -84,6 +84,10 @@ export function createSchemas(policy: ValidationPolicy) {
   const notifications = z.object({
     digestEnabled: z.boolean(),
     digestTime: z.string().regex(TIME_PATTERN, ValidationMessage.Time),
+    quietHoursEnabled: z.boolean().optional(),
+    quietStart: z.string().regex(TIME_PATTERN, ValidationMessage.Time).optional(),
+    quietEnd: z.string().regex(TIME_PATTERN, ValidationMessage.Time).optional(),
+    urgentOverridesQuiet: z.boolean().optional(),
   });
 
   return { signIn, register, setPassword, forgotPassword, email, phone, answer, resultCount, submissionWindow, changePassword, notifications };

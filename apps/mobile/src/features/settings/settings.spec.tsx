@@ -143,7 +143,7 @@ describe('NotificationsScreen', () => {
     expect(screen.getByText(/The daily email is off/)).toBeTruthy();
     await fireEvent.press(screen.getByTestId('notifications-save'));
     expect(await screen.findByText('Saved')).toBeTruthy();
-    expect((await services.api.settings.getSettings()).notifications).toEqual({ digestEnabled: false, digestTime: '07:30' });
+    expect((await services.api.settings.getSettings()).notifications).toMatchObject({ digestEnabled: false, digestTime: '07:30' });
   });
 });
 

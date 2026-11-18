@@ -21,6 +21,8 @@ const DEFAULT_LIMITS: AutomationLimits = {
   maxTotalCap: 1000,
   minInactivityDays: 7,
   maxInactivityDays: 365,
+  minFreshnessDays: 7,
+  maxFreshnessDays: 180,
   maxDeadlineBufferHours: 336,
   maxListItems: 50,
 };
@@ -29,6 +31,7 @@ const DEFAULT_SETTINGS: AutomationSettings = {
   deadlineAction: DeadlineAction.NotifyAndAsk,
   weeklyCap: 35,
   inactivityDays: 30,
+  freshnessDays: 30,
   dailyCap: 20,
 };
 const USER_ONLY_STEPS = [
@@ -146,6 +149,7 @@ export function createInMemoryAutomation(options: InMemoryAutomationOptions): Au
         deadlineAction: input.deadlineAction ?? settings.deadlineAction,
         weeklyCap: input.weeklyCap ?? settings.weeklyCap,
         inactivityDays: input.inactivityDays ?? settings.inactivityDays,
+        freshnessDays: input.freshnessDays ?? settings.freshnessDays,
       };
       return respond(settings);
     },

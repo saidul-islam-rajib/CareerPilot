@@ -70,6 +70,7 @@ class AccountConfig(Strict):
     deletion_grace_days: int = Field(gt=0)
     approval_validity_days: int = Field(gt=0)
     recent_window_days: int = Field(gt=0)
+    minimum_age: int = Field(gt=0)
     pause_options: list[PauseOptionConfig]
 
 
@@ -293,6 +294,25 @@ class CompanySearchConfig(Strict):
     handle_suffixes: list[str]
 
 
+class BangladeshRequirementPatterns(Strict):
+    age_max: list[str]
+    experience_years: list[str]
+    fee_amount: list[str]
+    posts: list[str]
+    deadline: list[str]
+    education: list[str]
+
+
+class BangladeshConfig(Strict):
+    notice_keywords: list[str]
+    document_suffixes: list[str]
+    bangla_digits: str
+    max_pdf_pages: int = Field(gt=0)
+    max_pdf_bytes: int = Field(gt=0)
+    default_country_code: str
+    requirements: BangladeshRequirementPatterns
+
+
 class DiscoveryConfig(Strict):
     fetch_mode: FetchMode
     fixture_root: str = ""
@@ -316,6 +336,7 @@ class DiscoveryConfig(Strict):
     ignored_hosts: list[str]
     company_search: CompanySearchConfig
     classification: ClassificationConfig
+    bangladesh: BangladeshConfig
     sources: dict[str, SourceDefinition]
     suggested_sources: list[SuggestedSource] = Field(default_factory=list[SuggestedSource])
     warning_signs: WarningSignConfig
@@ -576,6 +597,8 @@ class SubmissionConfig(Strict):
     real_applications_true_values: list[str]
     real_applications_blocked_markers: list[str]
     real_applications_blocked_environments: list[str]
+    bulk_max_items: int = Field(gt=0)
+    attestation_phrases: list[str]
 
 
 TIME_OF_DAY_PATTERN = r"^([01]\d|2[0-3]):[0-5]\d$"

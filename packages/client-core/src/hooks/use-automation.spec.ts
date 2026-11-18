@@ -26,6 +26,8 @@ const limits = {
   maxTotalCap: 1000,
   minInactivityDays: 7,
   maxInactivityDays: 365,
+  minFreshnessDays: 7,
+  maxFreshnessDays: 180,
   maxDeadlineBufferHours: 336,
   maxListItems: 50,
 };

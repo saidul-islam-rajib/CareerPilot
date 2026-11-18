@@ -25,6 +25,8 @@ import type {
   SubmissionWindowKind,
   TaskKind,
   TaskStatus,
+  BulkBlock,
+  WritingKind,
   FeedbackReason,
   FeedbackVerdict,
   PayPeriod,
@@ -275,6 +277,29 @@ export interface ApprovalSummary {
   state: ApprovalState;
   createdAt: IsoDateTime;
   expiresAt: IsoDateTime;
+}
+
+export interface BulkApprovalRow {
+  approvalId: string;
+  employer: string;
+  role: string;
+  route: ApplicationRoute;
+  cvName: string;
+  writingKinds: WritingKind[];
+  warnings: BulkBlock[];
+  eligible: boolean;
+  reviewToken: string;
+  expiresAt: IsoDateTime;
+}
+
+export interface BulkApprovalItem {
+  approvalId: string;
+  reviewToken: string;
+}
+
+export interface BulkApprovalResult {
+  approved: string[];
+  refused: { approvalId: string; reasons: BulkBlock[] }[];
 }
 
 export interface ApprovalDetail extends ApprovalSummary {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ApiErrorCode, isApiError, type Contact } from '@careerpilot/api-client';
+import { ApiErrorCode, isApiError, type Contact, type NotificationPreferences } from '@careerpilot/api-client';
 import { ContactKind } from '@careerpilot/domain-ui-logic';
 import { validate, type ChangePasswordInput, type FieldErrors, type NotificationsInput } from '@careerpilot/validation';
 import { usePublicConfig } from '../config/public-config';
@@ -45,6 +45,26 @@ export function digestRecipient(contacts: Contact[] | undefined, accountEmail: s
   return emails.find((c) => c.isPrimary)?.value ?? emails[0]?.value ?? accountEmail;
 }
 
+const NOTIFICATION_DEFAULTS: NotificationsInput = {
+  digestEnabled: true,
+  digestTime: '',
+  quietHoursEnabled: false,
+  quietStart: '',
+  quietEnd: '',
+  urgentOverridesQuiet: false,
+};
+
+function valuesOf(saved: NotificationPreferences): NotificationsInput {
+  return {
+    digestEnabled: saved.digestEnabled,
+    digestTime: saved.digestTime ?? '',
+    quietHoursEnabled: saved.quietHoursEnabled,
+    quietStart: saved.quietStart ?? '',
+    quietEnd: saved.quietEnd ?? '',
+    urgentOverridesQuiet: saved.urgentOverridesQuiet,
+  };
+}
+
 export function useNotificationsForm({ onSaved }: { onSaved?: () => void } = {}) {
   const schemas = useSchemas();
   const settings = useSettings();
@@ -53,12 +73,12 @@ export function useNotificationsForm({ onSaved }: { onSaved?: () => void } = {})
   const { config } = usePublicConfig();
   const mutation = useUpdateNotifications();
   const saved = settings.data?.notifications;
-  const [values, setValues] = useState<NotificationsInput>({ digestEnabled: true, digestTime: '' });
+  const [values, setValues] = useState<NotificationsInput>({ ...NOTIFICATION_DEFAULTS });
   const [errors, setErrors] = useState<FieldErrors>({});
 
   useEffect(() => {
     if (saved) {
-      setValues({ digestEnabled: saved.digestEnabled, digestTime: saved.digestTime ?? '' });
+      setValues(valuesOf(saved));
     }
   }, [saved]);
 
@@ -79,12 +99,16 @@ export function useNotificationsForm({ onSaved }: { onSaved?: () => void } = {})
     settings,
     values,
     errors,
-    dirty: saved !== undefined && (values.digestEnabled !== saved.digestEnabled || values.digestTime !== (saved.digestTime ?? '')),
+    dirty: saved !== undefined && JSON.stringify(values) !== JSON.stringify(valuesOf(saved)),
     presets: config.notifications.digestTimePresets,
     timeZone: settings.data?.timeZone ?? config.defaultTimeZone,
     recipient: digestRecipient(profile.data?.contacts, session.user?.email),
     setDigestEnabled: (digestEnabled: boolean) => setValues((v) => ({ ...v, digestEnabled })),
     setDigestTime,
+    setQuietHoursEnabled: (quietHoursEnabled: boolean) => setValues((v) => ({ ...v, quietHoursEnabled })),
+    setQuietStart: (quietStart: string) => setValues((v) => ({ ...v, quietStart })),
+    setQuietEnd: (quietEnd: string) => setValues((v) => ({ ...v, quietEnd })),
+    setUrgentOverridesQuiet: (urgentOverridesQuiet: boolean) => setValues((v) => ({ ...v, urgentOverridesQuiet })),
     submit,
     saving: mutation.isPending,
     saved: mutation.isSuccess,

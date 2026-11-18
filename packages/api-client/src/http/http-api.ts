@@ -71,6 +71,8 @@ export function createHttpApi(http: HttpClient): CareerPilotApi {
       getApproval: (id) => get(`/v1/approvals/${enc(id)}`),
       updateAnswer: (approvalId, answerId, answer, saveForReuse = false) =>
         put(`/v1/approvals/${enc(approvalId)}/answers/${enc(answerId)}`, { answer, saveForReuse }),
+      bulkRows: () => get('/v1/approvals/bulk'),
+      bulkApprove: (items) => post('/v1/approvals/bulk-approve', { items }),
       approve: (id) => post(`/v1/approvals/${enc(id)}/approve`),
       reject: (id) => post(`/v1/approvals/${enc(id)}/reject`),
     },

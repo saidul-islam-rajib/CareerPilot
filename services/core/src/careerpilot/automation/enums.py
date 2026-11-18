@@ -17,6 +17,7 @@ class SkipReason(StrEnum):
     EMERGENCY_STOP = "emergency_stop"
     PAUSED = "paused"
     INACTIVE = "inactive"
+    PROFILE_STALE = "profile_stale"
     TRACK_NOT_AUTOMATIC = "track_not_automatic"
     HARD_REQUIREMENT_FAILED = "hard_requirement_failed"
     UNKNOWN_REQUIREMENT = "unknown_requirement"

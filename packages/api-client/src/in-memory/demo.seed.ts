@@ -289,7 +289,7 @@ export function buildDemoSeed(now: Date): DemoState {
     blockedUsers: [],
     compensation: { period: PayPeriod.Monthly, mode: CompensationMode.Preference, unstated: UnstatedPolicy.RecommendOnly, basis: RangeBasis.Top },
     submissionWindow: { kind: SubmissionWindowKind.DailyWindow, start: '00:00', end: '01:00' },
-    notifications: { digestEnabled: true, digestTime: '08:00' },
+    notifications: { digestEnabled: true, digestTime: '08:00', quietHoursEnabled: false, quietStart: '22:00', quietEnd: '07:00', urgentOverridesQuiet: false },
     tracks: [
       { id: 'trk_remote', kind: TrackKind.Remote, resultCount: 5, mode: ApplicationMode.ApproveEach, position: 1 },
       { id: 'trk_intl', kind: TrackKind.InternationalSponsored, resultCount: 5, mode: ApplicationMode.ApproveEach, position: 2 },

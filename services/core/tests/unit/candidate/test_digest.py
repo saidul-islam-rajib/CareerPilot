@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from careerpilot.api.user_app import create_user_app
 from careerpilot.bootstrap import Container, ContainerOverrides, build_container
 from careerpilot.candidate.models import SubmissionWindow
+from careerpilot.candidate.services.preferences import NotificationChanges
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
 from careerpilot.platform.email_delivery import DeliveryError, InMemoryEmailSender
 from careerpilot.platform.enums import ApplicationFilter, SubmissionWindowKind
@@ -51,12 +52,12 @@ def test_digest_is_sent_once_a_day_after_the_chosen_time(app: Container, sender:
 
 
 def test_digest_respects_preferences(app: Container) -> None:
-    app.preferences.update_notifications(DEMO_USER, digest_enabled=None, digest_time="23:30")
+    app.preferences.update_notifications(DEMO_USER, NotificationChanges(digest_enabled=None, digest_time="23:30"))
     assert DEMO_USER not in app.digests.due_users()
-    app.preferences.update_notifications(DEMO_USER, digest_enabled=False, digest_time="00:00")
+    app.preferences.update_notifications(DEMO_USER, NotificationChanges(digest_enabled=False, digest_time="00:00"))
     assert DEMO_USER not in app.digests.due_users()
     with pytest.raises(DomainError):
-        app.preferences.update_notifications(DEMO_USER, digest_enabled=True, digest_time="25:00")
+        app.preferences.update_notifications(DEMO_USER, NotificationChanges(digest_enabled=True, digest_time="25:00"))
 
 
 def test_sections_report_sent_and_blocked_applications(app: Container) -> None:
@@ -81,7 +82,8 @@ def test_notification_settings_endpoint(app: Container) -> None:
     token = client.post("/v1/auth/sign-in", json={"email": "admin@sober.com", "password": "admin@sober.com"}).json()["accessToken"]
     headers = {"Authorization": f"Bearer {token}"}
     body = client.patch("/v1/settings/notifications", headers=headers, json={"digestEnabled": False, "digestTime": "07:30"}).json()
-    assert body["notifications"] == {"digestEnabled": False, "digestTime": "07:30"}
+    assert body["notifications"] | {"digestEnabled": False, "digestTime": "07:30"} == body["notifications"]
+    assert body["notifications"]["digestTime"] == "07:30"
     assert client.patch("/v1/settings/notifications", headers=headers, json={"digestTime": "7pm"}).status_code == 422
     assert client.get("/v1/settings", headers=headers).json()["notifications"]["digestEnabled"] is False
 
@@ -98,7 +100,8 @@ def test_new_users_see_the_default_digest_time(app: Container, sender: InMemoryE
     completed = client.post("/v1/auth/account-links/complete", json={"token": link_token(sender), "password": STRONG_PASSWORD})
     token = completed.json()["accessToken"]
     settings = client.get("/v1/settings", headers={"Authorization": f"Bearer {token}"}).json()
-    assert settings["notifications"] == {"digestEnabled": True, "digestTime": "08:00"}
+    assert settings["notifications"]["digestEnabled"] is True
+    assert settings["notifications"]["digestTime"] == "08:00"
 
 
 def test_public_config_offers_digest_time_presets(app: Container) -> None:

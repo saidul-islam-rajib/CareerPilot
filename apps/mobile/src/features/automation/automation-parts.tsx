@@ -7,6 +7,7 @@ import {
   outcomeKey,
   parseCap,
   skipReasonKey,
+  useConfirmProfile,
   useFormat,
   useT,
   userOnlyKey,
@@ -59,12 +60,15 @@ export function SettingsCard({ overview, saving, saved, onSave }: SettingsCardPr
   const [action, setAction] = useState<DeadlineAction>(settings.deadlineAction);
   const [weekly, setWeekly] = useState(String(settings.weeklyCap));
   const [inactivity, setInactivity] = useState(String(settings.inactivityDays));
+  const [freshness, setFreshness] = useState(String(settings.freshnessDays));
+  const confirm = useConfirmProfile();
   const [attempted, setAttempted] = useState(false);
   const input: AutomationSettingsInput = {
     deadlineAction: action,
     ...(parseCap(buffer) !== undefined ? { deadlineBufferHours: parseCap(buffer) as number } : {}),
     ...(parseCap(weekly) !== undefined ? { weeklyCap: parseCap(weekly) as number } : {}),
     ...(parseCap(inactivity) !== undefined ? { inactivityDays: parseCap(inactivity) as number } : {}),
+    ...(parseCap(freshness) !== undefined ? { freshnessDays: parseCap(freshness) as number } : {}),
   };
   const valid = validateSettings(input, limits);
   const rangeError = (low: number, high: number) => (attempted && !valid ? { error: 'validation.range', errorParams: { min: low, max: high } } : {});
@@ -81,6 +85,9 @@ export function SettingsCard({ overview, saving, saved, onSave }: SettingsCardPr
       />
       <TextField label={t('automation.weeklyCap')} value={weekly} keyboardType="number-pad" onChangeText={setWeekly} testID="settings-weekly" {...rangeError(1, limits.maxWeeklyCap)} />
       <TextField label={t('automation.inactivity')} hint={t('automation.inactivityHint')} value={inactivity} keyboardType="number-pad" onChangeText={setInactivity} testID="settings-inactivity" {...rangeError(limits.minInactivityDays, limits.maxInactivityDays)} />
+      <TextField label={t('automation.freshness')} hint={t('automation.freshnessHint')} value={freshness} keyboardType="number-pad" onChangeText={setFreshness} testID="settings-freshness" {...rangeError(limits.minFreshnessDays, limits.maxFreshnessDays)} />
+      <Button label={t('automation.confirmDetails')} variant={ButtonVariant.Secondary} loading={confirm.isPending} fullWidth testID="settings-confirm-details" onPress={() => confirm.mutate()} />
+      {confirm.isSuccess ? <Text tone={TextTone.Muted}>{t('automation.confirmedDetails')}</Text> : null}
       <Button
         label={t('automation.saveSettings')}
         loading={saving}

@@ -5,6 +5,7 @@ export const queryKeys = {
   dashboard: ['dashboard'] as const,
   opportunity: (id: string) => ['opportunity', id] as const,
   approvals: ['approvals'] as const,
+  bulkApprovals: ['approvals', 'bulk'] as const,
   approval: (id: string) => ['approval', id] as const,
   applications: (filter: ApplicationFilter) => ['applications', filter] as const,
   applicationsAll: ['applications'] as const,

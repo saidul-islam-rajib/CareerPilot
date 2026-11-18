@@ -37,6 +37,11 @@ export function useUpdateNotifications() {
   return useSettingsMutation((changes: Partial<NotificationPreferences>) => api.settings.updateNotifications(changes));
 }
 
+export function useConfirmProfile() {
+  const api = useApi();
+  return useMutation({ mutationFn: () => api.settings.confirmProfile() });
+}
+
 export function useChangePassword() {
   const api = useApi();
   return useMutation({ mutationFn: (change: PasswordChange) => api.settings.changePassword(change) });

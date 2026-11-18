@@ -133,7 +133,8 @@ export function validateSettings(input: AutomationSettingsInput, limits: Automat
   return (
     within(input.deadlineBufferHours, 0, limits.maxDeadlineBufferHours) &&
     within(input.weeklyCap, 1, limits.maxWeeklyCap) &&
-    within(input.inactivityDays, limits.minInactivityDays, limits.maxInactivityDays)
+    within(input.inactivityDays, limits.minInactivityDays, limits.maxInactivityDays) &&
+    within(input.freshnessDays, limits.minFreshnessDays, limits.maxFreshnessDays)
   );
 }
 

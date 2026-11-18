@@ -13,6 +13,9 @@ automation:
   default_inactivity_days: 30
   min_inactivity_days: 7
   max_inactivity_days: 365
+  default_freshness_days: 30
+  min_freshness_days: 7
+  max_freshness_days: 180
   default_weekly_cap: 35
   max_weekly_cap: 200
   max_daily_cap: 50

@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { isApiError, type AttemptView, type AutopilotInput, type AutopilotState, type PortalAccountInput, type ResumeInput } from '@careerpilot/api-client';
+import { isApiError, type AttemptView, type AutopilotInput, type CompleteInput, type AutopilotState, type PortalAccountInput, type ResumeInput } from '@careerpilot/api-client';
 import {
   AttemptState,
   HostPolicy,
   PortalAccountStatus,
   PortalFailure,
+  ReadinessState,
   StatusTone,
   type StopReason,
   type Verdict,
@@ -12,11 +13,15 @@ import {
 } from '@careerpilot/domain-ui-logic';
 import { useApi } from '../services/app-services';
 
+const READINESS_POLL_MS = 3000;
+
 export const portalKeys = {
   all: ['portal'] as const,
   autopilot: ['portal', 'autopilot'] as const,
   accounts: ['portal', 'accounts'] as const,
   attempt: (applicationId: string) => ['portal', 'attempt', applicationId] as const,
+  fillPlan: (applicationId: string) => ['portal', 'fill-plan', applicationId] as const,
+  readiness: (reportId: string) => ['portal', 'readiness', reportId] as const,
 };
 
 const KNOWN_FAILURES: readonly string[] = Object.values(PortalFailure);
@@ -140,6 +145,27 @@ export function usePortalAttempt(applicationId: string, enabled = true) {
   });
 }
 
+export function usePortalFillPlan(applicationId: string, enabled = true) {
+  const api = useApi();
+  return useQuery({
+    queryKey: portalKeys.fillPlan(applicationId),
+    queryFn: () => api.portal.fillPlan(applicationId),
+    enabled,
+    staleTime: 0,
+    gcTime: 0,
+  });
+}
+
+export function usePortalReadiness(reportId: string | undefined) {
+  const api = useApi();
+  return useQuery({
+    queryKey: portalKeys.readiness(reportId ?? ''),
+    queryFn: () => api.portal.readinessReport(reportId ?? ''),
+    enabled: !!reportId,
+    refetchInterval: (query) => (query.state.data?.state === ReadinessState.Pending ? READINESS_POLL_MS : false),
+  });
+}
+
 export function usePortalActions() {
   const api = useApi();
   const client = useQueryClient();
@@ -160,8 +186,12 @@ export function usePortalActions() {
       onSuccess: refreshApplications,
     }),
     complete: useMutation({
-      mutationFn: (applicationId: string) => api.portal.complete(applicationId),
+      mutationFn: (input: string | { applicationId: string; body?: CompleteInput }) =>
+        typeof input === 'string' ? api.portal.complete(input) : api.portal.complete(input.applicationId, input.body),
       onSuccess: refreshApplications,
     }),
+    revealPassword: useMutation({ mutationFn: (applicationId: string) => api.portal.fillPassword(applicationId) }),
+    evidenceLink: useMutation({ mutationFn: (applicationId: string) => api.portal.evidenceLink(applicationId) }),
+    checkJob: useMutation({ mutationFn: (url: string) => api.portal.requestReadiness(url) }),
   };
 }

@@ -2,9 +2,10 @@ import re
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from careerpilot.candidate.models import ApplicationRecord
+from careerpilot.candidate.models import ApplicationRecord, HeldPush
 from careerpilot.messaging.models import Inbox, Member, Notification, NotificationView, PushDevice
 from careerpilot.messaging.ports import ConversationRepository, MessageRepository, NotificationRepository, PushDeviceRepository
+from careerpilot.messaging.quiet import QuietHoursGate
 from careerpilot.platform.clock import Clock, IdGenerator, iso
 from careerpilot.platform.config import MessagingConfig
 from careerpilot.platform.enums import DevicePlatform, NotificationKind, NotificationTarget, SubmissionStatus
@@ -37,6 +38,7 @@ class NotificationContext:
     devices: PushDeviceRepository
     push: PushDispatcher
     private_lookup: Callable[[str], bool] = lambda _user_id: False
+    quiet: QuietHoursGate | None = None
 
 
 def notification_view(notification: Notification) -> NotificationView:
@@ -81,6 +83,21 @@ class NotificationService:
             self._ctx.devices.remove([token], SIGNED_OUT_REASON)
 
     def _push(self, user_id: str, kind: NotificationKind, title: str, body: str, target: tuple[NotificationTarget, str]) -> None:
+        if not self._ctx.devices.for_user(user_id):
+            return
+        quiet = self._ctx.quiet
+        held = HeldPush(kind=kind, title=title, body=body, target=target[0], target_id=target[1], held_at=iso(self._ctx.clock.now()))
+        if quiet is None or not quiet.hold(user_id, held):
+            self._deliver(user_id, kind, title, body, target)
+
+    def release_held(self, user_id: str) -> int:
+        quiet = self._ctx.quiet
+        released = quiet.release(user_id) if quiet else []
+        for push in released:
+            self._deliver(user_id, push.kind, push.title, push.body, (push.target, push.target_id))
+        return len(released)
+
+    def _deliver(self, user_id: str, kind: NotificationKind, title: str, body: str, target: tuple[NotificationTarget, str]) -> None:
         tokens = [d.token for d in self._ctx.devices.for_user(user_id)]
         if not tokens:
             return

@@ -91,6 +91,10 @@ describe('account schemas', () => {
 
   it('accepts times of day only', () => {
     expect(validate(schemas.notifications, { digestEnabled: true, digestTime: '07:30' }).ok).toBe(true);
+    expect(validate(schemas.notifications, { digestEnabled: true, digestTime: '07:30', quietHoursEnabled: true, quietStart: '22:00', quietEnd: '7am' })).toEqual({
+      ok: false,
+      errors: { quietEnd: ValidationMessage.Time },
+    });
     expect(validate(schemas.notifications, { digestEnabled: false, digestTime: '7pm' })).toEqual({ ok: false, errors: { digestTime: ValidationMessage.Time } });
   });
 });

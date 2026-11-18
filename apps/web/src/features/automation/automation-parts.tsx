@@ -9,6 +9,7 @@ import {
   outcomeKey,
   parseCap,
   skipReasonKey,
+  useConfirmProfile,
   useFormat,
   useT,
   userOnlyKey,
@@ -68,12 +69,15 @@ export function SettingsCard({ overview, saving, saved, onSave }: SettingsCardPr
   const [action, setAction] = useState<DeadlineAction>(settings.deadlineAction);
   const [weekly, setWeekly] = useState(String(settings.weeklyCap));
   const [inactivity, setInactivity] = useState(String(settings.inactivityDays));
+  const [freshness, setFreshness] = useState(String(settings.freshnessDays));
+  const confirm = useConfirmProfile();
   const [attempted, setAttempted] = useState(false);
   const input: AutomationSettingsInput = {
     deadlineAction: action,
     ...(parseCap(buffer) !== undefined ? { deadlineBufferHours: parseCap(buffer) as number } : {}),
     ...(parseCap(weekly) !== undefined ? { weeklyCap: parseCap(weekly) as number } : {}),
     ...(parseCap(inactivity) !== undefined ? { inactivityDays: parseCap(inactivity) as number } : {}),
+    ...(parseCap(freshness) !== undefined ? { freshnessDays: parseCap(freshness) as number } : {}),
   };
   const valid = validateSettings(input, limits);
   const rangeError = (low: number, high: number) => (attempted && !valid ? { error: 'validation.range', errorParams: { min: low, max: high } } : {});
@@ -89,6 +93,13 @@ export function SettingsCard({ overview, saving, saved, onSave }: SettingsCardPr
       />
       <TextField label={t('automation.weeklyCap')} type="number" min={1} value={weekly} onChange={(e) => setWeekly(e.target.value)} {...rangeError(1, limits.maxWeeklyCap)} />
       <TextField label={t('automation.inactivity')} hint={t('automation.inactivityHint')} type="number" value={inactivity} onChange={(e) => setInactivity(e.target.value)} {...rangeError(limits.minInactivityDays, limits.maxInactivityDays)} />
+      <TextField label={t('automation.freshness')} hint={t('automation.freshnessHint')} type="number" value={freshness} onChange={(e) => setFreshness(e.target.value)} {...rangeError(limits.minFreshnessDays, limits.maxFreshnessDays)} />
+      <div className="flex flex-wrap items-center gap-3">
+        <Button variant="secondary" loading={confirm.isPending} onClick={() => confirm.mutate()}>
+          {t('automation.confirmDetails')}
+        </Button>
+        {confirm.isSuccess ? <span role="status" className="text-sm text-muted">{t('automation.confirmedDetails')}</span> : null}
+      </div>
       <div className="flex flex-wrap items-center gap-3">
         <Button
           loading={saving}

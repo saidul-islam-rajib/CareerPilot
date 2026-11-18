@@ -146,6 +146,19 @@ export function NotificationsPage() {
               ) : (
                 <p className="border-t border-border p-5 text-sm text-muted">{t('settings.digestOffNote')}</p>
               )}
+              <div className="flex flex-col gap-4 border-t border-border p-5">
+                <SwitchField checked={values.quietHoursEnabled ?? false} onChange={form.setQuietHoursEnabled} label={t('settings.quietHoursEnabled')} description={t('settings.quietHoursBody')} />
+                {values.quietHoursEnabled ? (
+                  <>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <TextField type="time" label={t('settings.quietHoursStart')} value={values.quietStart ?? ''} onChange={(e) => form.setQuietStart(e.target.value)} error={form.errors.quietStart} />
+                      <TextField type="time" label={t('settings.quietHoursEnd')} value={values.quietEnd ?? ''} onChange={(e) => form.setQuietEnd(e.target.value)} error={form.errors.quietEnd} />
+                    </div>
+                    <p className="text-xs text-muted">{t('settings.quietHoursZone', { timeZone: form.timeZone })}</p>
+                    <SwitchField checked={values.urgentOverridesQuiet ?? false} onChange={form.setUrgentOverridesQuiet} label={t('settings.urgentOverrides')} description={t('settings.urgentOverridesBody')} />
+                  </>
+                ) : null}
+              </div>
               <div className="flex flex-col-reverse items-stretch gap-3 border-t border-border p-4 sm:flex-row sm:items-center sm:justify-end">
                 {form.dirty ? (
                   <p className="text-sm text-muted sm:mr-auto" role="status">

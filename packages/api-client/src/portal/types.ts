@@ -154,3 +154,54 @@ export interface ReadinessReport {
   reasons: StopReason[];
   error: string;
 }
+
+export interface FillFact {
+  fact: string;
+  value: string;
+  autocomplete: string[];
+  names: string[];
+  labels: string[];
+}
+
+export interface FillAnswer {
+  label: string;
+  answer: string;
+}
+
+export interface FillCv {
+  name: string;
+  url: string;
+}
+
+export interface FillPlan {
+  applicationId: string;
+  officialUrl: string;
+  host: string;
+  hostPolicy: HostPolicy;
+  assistAllowed: boolean;
+  accountEmail: string;
+  hasPassword: boolean;
+  facts: FillFact[];
+  answers: FillAnswer[];
+  coverLetter: string;
+  coverLetterLabels: string[];
+  resumeLabels: string[];
+  cv?: FillCv;
+  confirmationPhrases: string[];
+  skipTerms: string[];
+  captchaSelectors: string[];
+}
+
+export interface FillPassword {
+  email: string;
+  password: string;
+}
+
+export interface EvidenceLink {
+  url: string;
+}
+
+export interface CompleteInput {
+  finalUrl?: string;
+  confirmationText?: string;
+}

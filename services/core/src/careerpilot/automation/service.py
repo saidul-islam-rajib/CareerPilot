@@ -123,6 +123,7 @@ class AutomationService:
         automation.deadline_action = body.deadline_action
         automation.weekly_cap = body.weekly_cap
         automation.inactivity_days = body.inactivity_days
+        automation.freshness_days = body.freshness_days
         self._candidate.workspaces.save(user_id, workspace)
         return self._policy.effective(automation, self._ctx.platform())
 

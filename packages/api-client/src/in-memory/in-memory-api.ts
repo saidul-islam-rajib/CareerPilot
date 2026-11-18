@@ -21,6 +21,7 @@ import {
   ApplicationFilter,
   type ApplicationRecord,
   type ApprovalDetail,
+  type BulkApprovalResult,
   type OpportunityDetail,
   type OpportunitySummary,
   type PauseOption,
@@ -29,6 +30,7 @@ import {
 } from '../types';
 import { DEMO_COMPENSATION_CURRENCIES, type DemoState } from './demo.seed';
 import { createAccountLinks } from './account-links';
+import { bulkRefusal, bulkRow } from './bulk-approvals';
 import { createAnswers, hasBlankAnswers } from './answers';
 import { createFollowUps } from './follow-ups';
 import { createInMemoryGovernment } from '../government/in-memory';
@@ -322,6 +324,25 @@ export function createInMemoryApi(options: InMemoryApiOptions): CareerPilotApi {
           answers.saveFromApproval(item.question, answer);
         }
         return respond(approval);
+      },
+      bulkRows: async () => respond(state.approvals.filter((a) => a.state === ApprovalState.Pending).map(bulkRow)),
+      async bulkApprove(items) {
+        if (items.length === 0) {
+          return fail(ApiErrorCode.Validation);
+        }
+        const result: BulkApprovalResult = { approved: [], refused: [] };
+        for (const item of items) {
+          const approval = state.approvals.find((a) => a.id === item.approvalId);
+          const reasons = bulkRefusal(approval, item.reviewToken);
+          if (!approval || reasons.length > 0) {
+            result.refused.push({ approvalId: item.approvalId, reasons });
+            continue;
+          }
+          approval.state = ApprovalState.Approved;
+          createApplication(approval);
+          result.approved.push(item.approvalId);
+        }
+        return respond(result);
       },
       async approve(id) {
         const approval = findApproval(id);

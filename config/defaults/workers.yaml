@@ -20,3 +20,6 @@ workers:
   privacy_workflow_id: privacy-jobs
   privacy_schedule_id: privacy-schedule
   privacy_interval_minutes: 5
+  reminder_workflow_id: reminder-jobs
+  reminder_schedule_id: reminder-schedule
+  reminder_interval_minutes: 15

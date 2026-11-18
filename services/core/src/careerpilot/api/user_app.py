@@ -21,7 +21,7 @@ from careerpilot.api.common import bearer_token, client_info, configure, no_cont
 from careerpilot.api.dependencies import Credentials, CurrentUser, Services
 from careerpilot.api.instrumentation import instrument
 from careerpilot.bootstrap import Container
-from careerpilot.candidate.models import CompensationRule, FeedbackInput, SubmissionWindow
+from careerpilot.candidate.models import BulkApprovalRequest, CompensationRule, FeedbackInput, SubmissionWindow
 from careerpilot.candidate.services.answers import AnswerDraft
 from careerpilot.candidate.services.applications import TaskDraft
 from careerpilot.candidate.services.auth import Registration
@@ -59,6 +59,8 @@ class RegisterBody(CamelModel):
     email: str
     consent: bool
     consent_documents: ConsentDocuments
+    date_of_birth: str | None = None
+    guardian_consent: bool = False
 
 
 class EmailBody(CamelModel):
@@ -169,6 +171,8 @@ def register(body: RegisterBody, request: Request, services: Services) -> Respon
         consent=body.consent,
         terms_version=body.consent_documents.terms,
         privacy_version=body.consent_documents.privacy,
+        date_of_birth=body.date_of_birth,
+        guardian_consent=body.guardian_consent,
     )
     services.auth.register(registration, client_info(request, services.settings))
     return no_content()
@@ -241,6 +245,16 @@ def prepare(opportunity_id: str, user: CurrentUser, services: Services) -> JSONR
 @router.get("/approvals")
 def approvals(user: CurrentUser, services: Services) -> JSONResponse:
     return ok(services.approvals.list_pending(user.id))
+
+
+@router.get("/approvals/bulk")
+def bulk_approval_rows(user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.bulk_approvals.rows(user.id))
+
+
+@router.post("/approvals/bulk-approve")
+def bulk_approve(body: BulkApprovalRequest, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.bulk_approvals.approve(user.id, body))
 
 
 @router.get("/approvals/{approval_id}")

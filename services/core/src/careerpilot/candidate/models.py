@@ -9,6 +9,7 @@ from careerpilot.platform.enums import (
     AnswerTopic,
     ApplicationMode,
     ApprovalState,
+    BulkBlock,
     CompensationMode,
     ContactKind,
     DocumentKind,
@@ -206,6 +207,38 @@ class ApprovalDetail(ApprovalSummary):
 
     def summary(self) -> ApprovalSummary:
         return ApprovalSummary.model_validate(self.model_dump(include=set(ApprovalSummary.model_fields)))
+
+
+class BulkApprovalRow(CamelModel):
+    approval_id: str
+    employer: str
+    role: str
+    route: str
+    cv_name: str
+    writing_kinds: list[WritingKind]
+    warnings: list[BulkBlock]
+    eligible: bool
+    review_token: str
+    expires_at: str
+
+
+class BulkApprovalItem(CamelModel):
+    approval_id: str
+    review_token: str
+
+
+class BulkApprovalRequest(CamelModel):
+    items: list[BulkApprovalItem]
+
+
+class BulkRefusal(CamelModel):
+    approval_id: str
+    reasons: list[BulkBlock]
+
+
+class BulkApprovalResult(CamelModel):
+    approved: list[str]
+    refused: list[BulkRefusal]
 
 
 class TimelineEntry(CamelModel):
@@ -409,6 +442,8 @@ class Profile(CamelModel):
     location: str = ""
     country_code: str = ""
     summary: str = ""
+    date_of_birth: str | None = None
+    guardian_consent: bool = False
     photo: StoredFile | None = None
     photo_url: str | None = None
     photo_crop: PhotoCrop | None = None

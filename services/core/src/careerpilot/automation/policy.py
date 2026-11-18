@@ -67,6 +67,11 @@ def last_active(workspace: CandidateWorkspace) -> datetime | None:
     return max(moments) if moments else None
 
 
+def profile_stale(workspace: CandidateWorkspace, now: datetime, days: int) -> bool:
+    confirmed = workspace.profile_confirmed_at
+    return confirmed is not None and now - parse_iso(confirmed) > timedelta(days=days)
+
+
 def global_schedule(workspace: CandidateWorkspace) -> RuleSchedule:
     window = workspace.preferences.submission_window
     if window.kind is SubmissionWindowKind.DAILY_WINDOW:
@@ -102,6 +107,7 @@ class AutomationPolicy:
             deadline_action=settings.deadline_action or config.default_deadline_action,
             weekly_cap=min(settings.weekly_cap or config.default_weekly_cap, config.max_weekly_cap),
             inactivity_days=settings.inactivity_days or config.default_inactivity_days,
+            freshness_days=settings.freshness_days or config.default_freshness_days,
             daily_cap=platform.daily_application_cap,
         )
 
@@ -115,6 +121,10 @@ class AutomationPolicy:
             (emergency_stopped(situation.platform.emergency_stop, route), SkipReason.EMERGENCY_STOP),
             (is_paused(situation.workspace, situation.now), SkipReason.PAUSED),
             (active is not None and situation.now - active > limit, SkipReason.INACTIVE),
+            (
+                profile_stale(situation.workspace, situation.now, self.settings_of(situation).freshness_days),
+                SkipReason.PROFILE_STALE,
+            ),
         ]
         return [reason for blocked, reason in checks if blocked]
 

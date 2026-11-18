@@ -31,6 +31,7 @@ export * from './hooks/use-settings';
 export * from './hooks/compensation-form';
 export * from './hooks/use-compensation';
 export * from './hooks/use-match-feedback';
+export * from './hooks/use-bulk-approvals';
 export * from './i18n/i18n';
 export * from './query/query-client';
 export * from './query/query-keys';

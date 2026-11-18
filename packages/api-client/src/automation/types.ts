@@ -49,6 +49,7 @@ export interface AutomationSettingsInput {
   deadlineAction?: DeadlineAction;
   weeklyCap?: number;
   inactivityDays?: number;
+  freshnessDays?: number;
 }
 
 export interface AutomationSettings {
@@ -56,6 +57,7 @@ export interface AutomationSettings {
   deadlineAction: DeadlineAction;
   weeklyCap: number;
   inactivityDays: number;
+  freshnessDays: number;
   dailyCap: number;
 }
 
@@ -67,6 +69,8 @@ export interface AutomationLimits {
   maxTotalCap: number;
   minInactivityDays: number;
   maxInactivityDays: number;
+  minFreshnessDays: number;
+  maxFreshnessDays: number;
   maxDeadlineBufferHours: number;
   maxListItems: number;
 }

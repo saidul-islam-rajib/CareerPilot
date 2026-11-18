@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import type { AppNotification } from '@careerpilot/api-client';
 import { useFormat, useNewNotifications, useNotifications, useReadNotifications, useT } from '@careerpilot/client-core';
 import { NotificationTarget } from '@careerpilot/domain-ui-logic';
-import { BriefcaseBusiness, CheckCheck, MessageCircle, Plug, Zap, type LucideIcon } from '@/ui/icons';
+import { BriefcaseBusiness, CheckCheck, CheckCircle2, GraduationCap, Landmark, MessageCircle, Plug, UserRound, Zap, type LucideIcon } from '@/ui/icons';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { Button, ButtonVariant, EmptyState, ErrorState, Icon, LoadingState, Text, TextTone, TextVariant, useSnackbar } from '@/ui';
@@ -14,6 +14,11 @@ const ROUTES = {
   [NotificationTarget.Application]: Routes.application,
   [NotificationTarget.Integration]: () => Routes.connectedAccounts,
   [NotificationTarget.Automation]: () => Routes.automation,
+  [NotificationTarget.Approval]: Routes.approval,
+  [NotificationTarget.GovernmentApplication]: Routes.governmentApplication,
+  [NotificationTarget.Fee]: () => Routes.fees,
+  [NotificationTarget.Program]: Routes.studentsProgram,
+  [NotificationTarget.Profile]: () => Routes.profile,
 } as const;
 
 const GLYPHS: Record<NotificationTarget, LucideIcon> = {
@@ -21,6 +26,11 @@ const GLYPHS: Record<NotificationTarget, LucideIcon> = {
   [NotificationTarget.Application]: BriefcaseBusiness,
   [NotificationTarget.Integration]: Plug,
   [NotificationTarget.Automation]: Zap,
+  [NotificationTarget.Approval]: CheckCircle2,
+  [NotificationTarget.GovernmentApplication]: Landmark,
+  [NotificationTarget.Fee]: BriefcaseBusiness,
+  [NotificationTarget.Program]: GraduationCap,
+  [NotificationTarget.Profile]: UserRound,
 };
 
 export function notificationRoute(notification: Pick<AppNotification, 'target' | 'targetId'>) {

@@ -76,6 +76,7 @@ class AutomationSettings(CamelModel):
     deadline_action: DeadlineAction | None = None
     weekly_cap: int | None = None
     inactivity_days: int | None = None
+    freshness_days: int | None = None
     skipped: list[SkippedRecord] = Field(default_factory=list[SkippedRecord])
 
     def active_rules(self) -> list[AutomationRule]:
@@ -87,6 +88,7 @@ class SettingsInput(CamelModel):
     deadline_action: DeadlineAction | None = None
     weekly_cap: int | None = None
     inactivity_days: int | None = None
+    freshness_days: int | None = None
 
 
 class EffectiveSettings(CamelModel):
@@ -94,6 +96,7 @@ class EffectiveSettings(CamelModel):
     deadline_action: DeadlineAction
     weekly_cap: int
     inactivity_days: int
+    freshness_days: int
     daily_cap: int
 
 
@@ -105,6 +108,8 @@ class AutomationLimits(CamelModel):
     max_total_cap: int
     min_inactivity_days: int
     max_inactivity_days: int
+    min_freshness_days: int
+    max_freshness_days: int
     max_deadline_buffer_hours: int
     max_list_items: int
 

@@ -150,6 +150,42 @@ export function createInMemoryPortal(options: InMemoryPortalOptions): InMemoryPo
       }
       return record;
     },
+    async fillPlan(applicationId) {
+      const found = attempts.get(applicationId) ?? (await fail(ApiErrorCode.NotFound, PortalFailure.NotFound));
+      const account = accounts.find((a) => a.host === found.host);
+      const policy = hosts.get(found.host)?.policy ?? HostPolicy.Review;
+      return respond({
+        applicationId,
+        officialUrl: found.officialUrl,
+        host: found.host,
+        hostPolicy: policy,
+        assistAllowed: policy !== HostPolicy.Blocked,
+        accountEmail: account?.email ?? '',
+        hasPassword: !!account,
+        facts: [],
+        answers: [],
+        coverLetter: '',
+        coverLetterLabels: [],
+        resumeLabels: [],
+        confirmationPhrases: [],
+        skipTerms: [],
+        captchaSelectors: [],
+      });
+    },
+    async fillPassword(applicationId) {
+      const found = attempts.get(applicationId) ?? (await fail(ApiErrorCode.NotFound, PortalFailure.NotFound));
+      const account = accounts.find((a) => a.host === found.host) ?? (await fail(ApiErrorCode.NotFound, PortalFailure.NotFound));
+      return respond({ email: account.email, password: passwords.get(account.id) ?? '' });
+    },
+    async evidenceLink(applicationId) {
+      const found = attempts.get(applicationId) ?? (await fail(ApiErrorCode.NotFound, PortalFailure.NotFound));
+      if (!found.evidenceKey) {
+        await fail(ApiErrorCode.NotFound, PortalFailure.NotFound);
+      }
+      return respond({ url: `memory://${found.evidenceKey}` });
+    },
+    requestReadiness: (url) => admin.requestReadiness(url),
+    readinessReport: (reportId) => admin.readiness(options.userId(), reportId),
     seedAttempt(view) {
       attempts.set(view.applicationId, structuredClone(view));
     },

@@ -160,6 +160,16 @@ export function NotificationsScreen() {
           <Text tone={TextTone.Muted}>{t('settings.digestOffNote')}</Text>
         )}
       </Card>
+      <Card>
+        <SwitchRow label={t('settings.quietHoursEnabled')} description={t('settings.quietHoursBody')} value={values.quietHoursEnabled ?? false} onChange={form.setQuietHoursEnabled} testID="quiet-enabled" />
+        {values.quietHoursEnabled ? (
+          <View style={{ gap: theme.space.md }}>
+            <TextField label={t('settings.quietHoursStart')} value={values.quietStart ?? ''} onChangeText={form.setQuietStart} error={form.errors.quietStart} placeholder={t('settings.timePlaceholder')} keyboardType="numbers-and-punctuation" testID="quiet-start" />
+            <TextField label={t('settings.quietHoursEnd')} value={values.quietEnd ?? ''} onChangeText={form.setQuietEnd} error={form.errors.quietEnd} hint={t('settings.quietHoursZone', { timeZone: form.timeZone })} placeholder={t('settings.timePlaceholder')} keyboardType="numbers-and-punctuation" testID="quiet-end" />
+            <SwitchRow label={t('settings.urgentOverrides')} description={t('settings.urgentOverridesBody')} value={values.urgentOverridesQuiet ?? false} onChange={form.setUrgentOverridesQuiet} testID="quiet-urgent" />
+          </View>
+        ) : null}
+      </Card>
       <DigestPreview enabled={values.digestEnabled} time={values.digestTime} />
     </Screen>
   );

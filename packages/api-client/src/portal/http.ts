@@ -22,7 +22,12 @@ export function createHttpPortal(http: HttpClient): PortalApi {
     removeAccount: (id) => del(`${base}/accounts/${enc(id)}`),
     attempt: (applicationId) => get(`${application(applicationId)}/attempt`),
     resume: (applicationId, input) => post(`${application(applicationId)}/resume`, input),
-    complete: (applicationId) => post(`${application(applicationId)}/complete`),
+    complete: (applicationId, input) => post(`${application(applicationId)}/complete`, input),
+    fillPlan: (applicationId) => get(`${application(applicationId)}/fill-plan`),
+    fillPassword: (applicationId) => get(`${application(applicationId)}/fill-plan/password`),
+    evidenceLink: (applicationId) => get(`${application(applicationId)}/evidence`),
+    requestReadiness: (url) => post(`${base}/readiness`, { url }),
+    readinessReport: (reportId) => get(`${base}/readiness/${enc(reportId)}`),
   };
 }
 

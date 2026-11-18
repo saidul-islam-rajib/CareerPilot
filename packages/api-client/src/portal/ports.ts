@@ -3,6 +3,10 @@ import type {
   AttemptView,
   AutopilotInput,
   AutopilotState,
+  CompleteInput,
+  EvidenceLink,
+  FillPassword,
+  FillPlan,
   PortalAccountInput,
   PortalAccountSecret,
   PortalAccountView,
@@ -23,7 +27,12 @@ export interface PortalApi {
   removeAccount(id: string): Promise<void>;
   attempt(applicationId: string): Promise<AttemptView>;
   resume(applicationId: string, input: ResumeInput): Promise<ApplicationRecord>;
-  complete(applicationId: string): Promise<ApplicationRecord>;
+  complete(applicationId: string, input?: CompleteInput): Promise<ApplicationRecord>;
+  fillPlan(applicationId: string): Promise<FillPlan>;
+  fillPassword(applicationId: string): Promise<FillPassword>;
+  evidenceLink(applicationId: string): Promise<EvidenceLink>;
+  requestReadiness(url: string): Promise<ReadinessReport>;
+  readinessReport(reportId: string): Promise<ReadinessReport>;
 }
 
 export interface PortalAdminApi {

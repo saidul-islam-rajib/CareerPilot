@@ -14,3 +14,14 @@ export const FeedbackReason = {
   Other: 'other',
 } as const;
 export type FeedbackReason = (typeof FeedbackReason)[keyof typeof FeedbackReason];
+
+export const BulkBlock = {
+  HardFailure: 'hard_failure',
+  UnansweredQuestions: 'unanswered_questions',
+  Fee: 'fee',
+  Attestation: 'attestation',
+  Changed: 'changed',
+  NotPending: 'not_pending',
+  UnknownApproval: 'unknown_approval',
+} as const;
+export type BulkBlock = (typeof BulkBlock)[keyof typeof BulkBlock];

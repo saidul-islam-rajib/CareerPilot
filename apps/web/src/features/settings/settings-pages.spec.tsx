@@ -42,7 +42,7 @@ describe('NotificationsPage', () => {
     fireEvent.change(time, { target: { value: '07:30' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     expect(await screen.findByText('Saved')).toBeInTheDocument();
-    expect((await services.api.settings.getSettings()).notifications).toEqual({ digestEnabled: true, digestTime: '07:30' });
+    expect((await services.api.settings.getSettings()).notifications).toMatchObject({ digestEnabled: true, digestTime: '07:30' });
     fireEvent.click(screen.getByRole('switch', { name: 'Daily digest email' }));
     expect(screen.getByText(/The daily email is off/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));

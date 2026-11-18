@@ -1,0 +1,12 @@
+reminders:
+  approval_lead_hours: [48, 12]
+  government_lead_days: [3, 1]
+  quiet_hours:
+    default_start: "22:00"
+    default_end: "07:00"
+    urgent_kinds:
+      - approval_expiring
+      - application_reply
+      - automation_attention
+      - integration_attention
+      - fee_deadline
