@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import { catalogs, createTranslator } from '@careerpilot/i18n';
 import { Providers } from '@/core/providers';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
+const inter = localFont({ src: './fonts/inter-latin-variable.woff2', variable: '--font-inter', display: 'swap', weight: '100 900' });
 const t = createTranslator(catalogs.en);
 
 export const metadata: Metadata = {
