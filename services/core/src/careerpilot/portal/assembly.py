@@ -10,6 +10,7 @@ from careerpilot.integrations.ports import TokenCipher
 from careerpilot.messaging.notifications import NotificationService
 from careerpilot.platform.files import FileStorage
 from careerpilot.portal.accounts import AccountsContext, PortalAccounts
+from careerpilot.portal.assist import AssistContext, AssistService
 from careerpilot.portal.driver import BrowserSession
 from careerpilot.portal.hosts import HostPolicies, HostsContext
 from careerpilot.portal.readiness import ReadinessChecker, ReadinessContext
@@ -23,6 +24,7 @@ from careerpilot.repositories import Repositories
 @dataclass(frozen=True)
 class PortalServices:
     service: PortalService
+    assist: AssistService
     runner: PortalRunner
     readiness: ReadinessChecker
     hosts: HostPolicies
@@ -91,8 +93,10 @@ def build_portal(parts: PortalParts) -> PortalServices:
             mail_connected=lambda user_id: parts.connections.status(user_id).mail_access,
         )
     )
+    assist = AssistService(AssistContext(config, records, candidate.workspaces, accounts, hosts))
     return PortalServices(
         service,
+        assist,
         runner,
         readiness,
         hosts,

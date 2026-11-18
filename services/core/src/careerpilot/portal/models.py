@@ -192,3 +192,54 @@ class ReadinessReport(CamelModel):
     reasons: list[StopReason] = Field(default_factory=list[StopReason])
     mode: RunMode = RunMode.READINESS
     error: str = ""
+
+
+class FillFact(CamelModel):
+    fact: str
+    value: str
+    autocomplete: list[str] = Field(default_factory=list[str])
+    names: list[str] = Field(default_factory=list[str])
+    labels: list[str] = Field(default_factory=list[str])
+
+
+class FillAnswer(CamelModel):
+    label: str
+    answer: str
+
+
+class FillCv(CamelModel):
+    name: str
+    url: str
+
+
+class FillPlan(CamelModel):
+    application_id: str
+    official_url: str
+    host: str
+    host_policy: HostPolicy
+    assist_allowed: bool
+    account_email: str = ""
+    has_password: bool = False
+    facts: list[FillFact] = Field(default_factory=list[FillFact])
+    answers: list[FillAnswer] = Field(default_factory=list[FillAnswer])
+    cover_letter: str = ""
+    cover_letter_labels: list[str] = Field(default_factory=list[str])
+    resume_labels: list[str] = Field(default_factory=list[str])
+    cv: FillCv | None = None
+    confirmation_phrases: list[str] = Field(default_factory=list[str])
+    skip_terms: list[str] = Field(default_factory=list[str])
+    captcha_selectors: list[str] = Field(default_factory=list[str])
+
+
+class FillPassword(CamelModel):
+    email: str
+    password: str
+
+
+class EvidenceLink(CamelModel):
+    url: str
+
+
+class CompleteInput(CamelModel):
+    final_url: str = ""
+    confirmation_text: str = ""

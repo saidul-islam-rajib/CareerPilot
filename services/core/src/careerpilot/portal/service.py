@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from careerpilot.candidate.models import ApplicationRecord, TimelineEntry
+from careerpilot.candidate.models import ApplicationRecord, Evidence, TimelineEntry
 from careerpilot.candidate.ports import WorkspaceRepository
 from careerpilot.candidate.services.answers import AnswerDraft, AnswerService
 from careerpilot.candidate.services.applications import ApplicationService
@@ -21,6 +21,7 @@ from careerpilot.portal.models import (
     AutopilotInput,
     AutopilotState,
     AutopilotSummary,
+    CompleteInput,
     HostInput,
     HostRecord,
     Permissions,
@@ -133,12 +134,24 @@ class PortalService:
         )
         return self._requeue(user_id, application_id)
 
-    def complete(self, user_id: str, application_id: str) -> ApplicationRecord:
+    def complete(self, user_id: str, application_id: str, body: CompleteInput | None = None) -> ApplicationRecord:
         attempt = self._attempts.get(user_id, application_id)
         record = self._ctx.applications.record_submitted(user_id, application_id)
         if attempt is not None:
             self._attempts.save(user_id, application_id, attempt.model_copy(update={"submit_clicked": True}))
+        if body is not None and (body.final_url or body.confirmation_text):
+            record = self._add_evidence(user_id, application_id, body)
         return record
+
+    def _add_evidence(self, user_id: str, application_id: str, body: CompleteInput) -> ApplicationRecord:
+        limit = self._ctx.config.limits.max_evidence_chars
+        workspace = self._ctx.workspaces.get(user_id)
+        application = next(a for a in workspace.applications if a.id == application_id)
+        text = translate("portal.evidence.assisted", {"text": body.confirmation_text.strip()[:limit]})
+        url = body.final_url.strip()[: self._ctx.config.limits.max_text_chars] or None
+        application.evidence.append(Evidence(text=text, at=iso(self._ctx.clock.now()), url=url))
+        self._ctx.workspaces.save(user_id, workspace)
+        return application
 
     def hosts(self) -> list[HostRecord]:
         return self._ctx.hosts.records()

@@ -1,11 +1,13 @@
-from fastapi import APIRouter
+from collections.abc import Callable
+
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, Response
 
 from careerpilot.api.common import no_content, ok
 from careerpilot.api.dependencies import CurrentAdmin, CurrentUser, Services
 from careerpilot.platform.enums import AdminArea, PermissionAction
 from careerpilot.platform.model import CamelModel
-from careerpilot.portal.models import AccountInput, AutopilotInput, HostInput, ReadinessRequest, ResumeInput
+from careerpilot.portal.models import AccountInput, AutopilotInput, CompleteInput, HostInput, ReadinessRequest, ResumeInput
 
 router = APIRouter(prefix="/v1/portal")
 admin_router = APIRouter(prefix="/admin/v1/portals")
@@ -16,6 +18,11 @@ READINESS_AUDIT = "portal.readiness"
 class AdminReadinessRequest(CamelModel):
     url: str
     user_id: str | None = None
+
+
+def file_link(request: Request, services: Services) -> Callable[[str, str], str]:
+    base_url = str(request.base_url)
+    return lambda key, name: services.file_links.link(base_url, key, name)
 
 
 @router.get("/autopilot")
@@ -70,8 +77,23 @@ def resume(application_id: str, body: ResumeInput, user: CurrentUser, services: 
 
 
 @router.post("/applications/{application_id}/complete")
-def complete(application_id: str, user: CurrentUser, services: Services) -> JSONResponse:
-    return ok(services.portal.service.complete(user.id, application_id))
+def complete(application_id: str, user: CurrentUser, services: Services, body: CompleteInput | None = None) -> JSONResponse:
+    return ok(services.portal.service.complete(user.id, application_id, body))
+
+
+@router.get("/applications/{application_id}/fill-plan")
+def fill_plan(application_id: str, user: CurrentUser, request: Request, services: Services) -> JSONResponse:
+    return ok(services.portal.assist.plan(user.id, application_id, file_link(request, services)))
+
+
+@router.get("/applications/{application_id}/fill-plan/password")
+def fill_password(application_id: str, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.portal.assist.password(user.id, application_id))
+
+
+@router.get("/applications/{application_id}/evidence")
+def evidence(application_id: str, user: CurrentUser, request: Request, services: Services) -> JSONResponse:
+    return ok(services.portal.assist.evidence_link(user.id, application_id, file_link(request, services)))
 
 
 @router.post("/readiness")
