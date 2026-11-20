@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { AlertTriangle, Archive, Bookmark, Check, CircleHelp, Minus, PenLine, Plus, Send, X, type LucideIcon } from 'lucide-react';
-import { useDecide, useFormat, useOpportunity, usePrepareApplication, usePublicConfig, useT } from '@careerpilot/client-core';
+import { FeeSourceKind, useDecide, useFormat, useOpportunity, usePrepareApplication, usePublicConfig, useT } from '@careerpilot/client-core';
 import { EnumKey, OpportunityDecision, RequirementCheck, StatusTone } from '@careerpilot/domain-ui-logic';
 import { Badge, Banner, Button, Card, EnumBadge, ErrorState, ListRow, LoadingState, Section, buttonVariants } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
+import { FeeFromSource } from '@/features/fees/fee-from-source';
 import { CheckJob } from './check-job';
 import { MatchFeedback } from './match-feedback';
 import { MissingSkills } from './missing-skills';
@@ -70,6 +71,8 @@ export function OpportunityPage() {
         <MissingSkills opportunityId={o.id} skills={o.missingSkills} />
 
         <MatchFeedback opportunityId={o.id} current={o.feedback} />
+
+        <FeeFromSource kind={FeeSourceKind.Opportunity} id={o.id} />
 
         <ReportProblem opportunityId={o.id} />
 

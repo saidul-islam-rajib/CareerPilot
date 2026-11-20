@@ -1,3 +1,4 @@
+import type { UploadSource } from '../types';
 import type {
   FeeRuleInput,
   FeesOverview,
@@ -25,4 +26,7 @@ export interface FeesApi {
   recordAction(id: string, input: PaymentActionInput): Promise<PaymentView>;
   addReceipt(id: string, input: ReceiptInput): Promise<PaymentView>;
   removeReceipt(id: string, receiptId: string): Promise<PaymentView>;
+  addReceiptFile(id: string, file: UploadSource): Promise<PaymentView>;
+  ruleFromOpportunity(opportunityId: string): Promise<RuleView>;
+  ruleFromProgram(programId: string): Promise<RuleView>;
 }

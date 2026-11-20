@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Linking, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { PaymentView, ReceiptInput } from '@careerpilot/api-client';
 import {
@@ -12,6 +12,7 @@ import {
   feeGuidanceKey,
   feeKindKey,
   feeReceiptKey,
+  useFeesReference,
   feeStatusKey,
   feeStatusTone,
   feeUrgencyKey,
@@ -23,6 +24,7 @@ import {
   useT,
 } from '@careerpilot/client-core';
 import { PaymentAction, PaymentStatus, ReceiptKind, StatusTone } from '@careerpilot/domain-ui-logic';
+import { pickDocument } from '@/features/profile/profile-support';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import {
@@ -119,6 +121,13 @@ function Receipts({ view }: { view: PaymentView }) {
   const failed = useFailure();
   const [kind, setKind] = useState<ReceiptKind>(ReceiptKind.ConfirmationMessage);
   const [reference, setReference] = useState('');
+  const referenceData = useFeesReference().data;
+  const upload = async () => {
+    const file = await pickDocument(referenceData?.receiptFileTypes ?? []);
+    if (file) {
+      actions.addReceiptFile.mutate({ id: view.payment.id, file }, { onError: failed });
+    }
+  };
   const add = () => {
     if (!reference.trim()) {
       return;
@@ -131,7 +140,13 @@ function Receipts({ view }: { view: PaymentView }) {
         {view.payment.receipts.length === 0 ? <Text tone={TextTone.Muted}>{t('fees.noReceipts')}</Text> : null}
         {view.payment.receipts.map((receipt) => (
           <View key={receipt.id}>
-            <Text>{receipt.reference}</Text>
+            {receipt.url ? (
+              <Text accessibilityLabel={t('fees.receiptFileOpen', { reference: receipt.reference })} onPress={() => void Linking.openURL(receipt.url ?? '')}>
+                {receipt.reference}
+              </Text>
+            ) : (
+              <Text>{receipt.reference}</Text>
+            )}
             <Text tone={TextTone.Muted}>{[t(feeReceiptKey(receipt.kind)), format.dateTime(receipt.addedAt)].join(' · ')}</Text>
             <Button
               label={t('fees.remove')}
@@ -145,11 +160,12 @@ function Receipts({ view }: { view: PaymentView }) {
           label={t('fees.receiptKindLabel')}
           value={kind}
           placeholder={t('fees.receiptKindLabel')}
-          options={Object.values(ReceiptKind).map((value) => ({ value, label: t(feeReceiptKey(value)) }))}
+          options={Object.values(ReceiptKind).filter((value) => value !== ReceiptKind.UploadedFile).map((value) => ({ value, label: t(feeReceiptKey(value)) }))}
           onChange={(value) => setKind(value as ReceiptKind)}
         />
         <TextField label={t('fees.receiptReference')} value={reference} onChangeText={setReference} />
         <Button label={t('fees.addReceipt')} variant={ButtonVariant.Outline} onPress={add} loading={actions.addReceipt.isPending} fullWidth />
+        <Button label={t('fees.receiptFile')} variant={ButtonVariant.Outline} onPress={() => void upload()} loading={actions.addReceiptFile.isPending} fullWidth />
       </Card>
     </Section>
   );

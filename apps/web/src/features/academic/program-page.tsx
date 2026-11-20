@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useAcademicActions, useProgram, useT } from '@careerpilot/client-core';
+import { FeeSourceKind, useAcademicActions, useProgram, useT } from '@careerpilot/client-core';
+import { FeeFromSource } from '@/features/fees/fee-from-source';
 import { Button, ErrorState, LoadingState, PageHeader } from '@careerpilot/ui-web';
 import { Routes } from '@/core/routes';
 import { Notices, useEnumLabel } from './academic-parts';
@@ -48,6 +49,7 @@ function ProgramBody({ program }: { program: Program }) {
       </Link>
       <Notices />
       <PlanSection programId={program.id} />
+      <FeeFromSource kind={FeeSourceKind.Program} id={program.id} />
       <RequirementsSection program={program} save={save} />
       <FundingSection program={program} save={save} />
       <PortalSection program={program} save={save} />

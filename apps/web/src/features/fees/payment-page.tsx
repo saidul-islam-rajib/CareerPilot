@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import type { PaymentView, ReceiptInput } from '@careerpilot/api-client';
 import {
@@ -10,6 +10,7 @@ import {
   enumLabelKey,
   feeActionKey,
   feeErrorKey,
+  useFeesReference,
   feeGuidanceKey,
   feeKindKey,
   feeReceiptKey,
@@ -99,6 +100,14 @@ function Receipts({ view }: { view: PaymentView }) {
   const actions = useFeeActions();
   const [kind, setKind] = useState<ReceiptKind>(ReceiptKind.ConfirmationMessage);
   const [reference, setReference] = useState('');
+  const picker = useRef<HTMLInputElement>(null);
+  const referenceData = useFeesReference().data;
+  const upload = (file: File) => {
+    actions.addReceiptFile.mutate(
+      { id: view.payment.id, file: { name: file.name, type: file.type, size: file.size, blob: file } },
+      { onError: (error) => toast.show({ message: t(feeErrorKey(error)) }) },
+    );
+  };
   const add = () => {
     if (!reference.trim()) {
       return;
@@ -115,7 +124,13 @@ function Receipts({ view }: { view: PaymentView }) {
         {view.payment.receipts.map((receipt) => (
           <div key={receipt.id} className="flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0">
-              <p className="break-words font-medium">{receipt.reference}</p>
+              {receipt.url ? (
+                <a className="break-words font-medium underline" href={receipt.url} target="_blank" rel="noreferrer" aria-label={t('fees.receiptFileOpen', { reference: receipt.reference })}>
+                  {receipt.reference}
+                </a>
+              ) : (
+                <p className="break-words font-medium">{receipt.reference}</p>
+              )}
               <p className="text-sm text-muted">{[t(feeReceiptKey(receipt.kind)), format.dateTime(receipt.addedAt)].join(' · ')}</p>
             </div>
             <Button
@@ -131,13 +146,31 @@ function Receipts({ view }: { view: PaymentView }) {
         <SelectField
           label={t('fees.receiptKindLabel')}
           value={kind}
-          options={Object.values(ReceiptKind).map((value) => ({ value, label: t(feeReceiptKey(value)) }))}
+          options={Object.values(ReceiptKind).filter((value) => value !== ReceiptKind.UploadedFile).map((value) => ({ value, label: t(feeReceiptKey(value)) }))}
           onValueChange={(value) => setKind(value as ReceiptKind)}
         />
         <TextField label={t('fees.receiptReference')} value={reference} onChange={(event) => setReference(event.target.value)} />
         <Button variant="outline" onClick={add} loading={actions.addReceipt.isPending}>
           {t('fees.addReceipt')}
         </Button>
+        <Button variant="outline" onClick={() => picker.current?.click()} loading={actions.addReceiptFile.isPending}>
+          {t('fees.receiptFile')}
+        </Button>
+        <input
+          ref={picker}
+          type="file"
+          accept={(referenceData?.receiptFileTypes ?? []).join(',')}
+          className="sr-only"
+          tabIndex={-1}
+          aria-hidden
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = '';
+            if (file) {
+              upload(file);
+            }
+          }}
+        />
       </Card>
     </Section>
   );

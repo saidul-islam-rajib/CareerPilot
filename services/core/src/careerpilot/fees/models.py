@@ -149,3 +149,5 @@ class Reference(CamelModel):
     due_soon_days: int
     max_text_length: int
     max_receipts_per_payment: int
+    receipt_file_types: list[str]
+    receipt_file_max_bytes: int

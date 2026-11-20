@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { isApiError, type FeeRuleInput, type PaymentActionInput, type PaymentInput, type PaymentView, type ReceiptInput } from '@careerpilot/api-client';
+import { isApiError, type FeeRuleInput, type PaymentActionInput, type PaymentInput, type PaymentView, type ReceiptInput, type UploadSource } from '@careerpilot/api-client';
 import {
   FeeFailure,
   FeeUrgency,
@@ -202,9 +202,31 @@ export function useFeeActions() {
       mutationFn: (input: { id: string; receipt: ReceiptInput }) => api.fees.addReceipt(input.id, input.receipt),
       ...options,
     }),
+    addReceiptFile: useMutation({
+      mutationFn: (input: { id: string; file: UploadSource }) => api.fees.addReceiptFile(input.id, input.file),
+      ...options,
+    }),
+    ruleFromOpportunity: useMutation({ mutationFn: (opportunityId: string) => api.fees.ruleFromOpportunity(opportunityId), ...options }),
+    ruleFromProgram: useMutation({ mutationFn: (programId: string) => api.fees.ruleFromProgram(programId), ...options }),
     removeReceipt: useMutation({
       mutationFn: (input: { id: string; receiptId: string }) => api.fees.removeReceipt(input.id, input.receiptId),
       ...options,
     }),
+  };
+}
+
+export enum FeeSourceKind {
+  Opportunity = 'opportunity',
+  Program = 'program',
+}
+
+export function useFeeRuleFromSource(kind: FeeSourceKind, id: string) {
+  const actions = useFeeActions();
+  const mutation = kind === FeeSourceKind.Opportunity ? actions.ruleFromOpportunity : actions.ruleFromProgram;
+  return {
+    create: () => mutation.mutate(id),
+    creating: mutation.isPending,
+    created: mutation.isSuccess,
+    errorKey: mutation.isError ? feeErrorKey(mutation.error) : undefined,
   };
 }

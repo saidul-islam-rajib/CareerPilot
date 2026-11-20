@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useDecide, useFormat, useOpportunity, usePrepareApplication, usePublicConfig, useT } from '@careerpilot/client-core';
+import { FeeSourceKind, useDecide, useFormat, useOpportunity, usePrepareApplication, usePublicConfig, useT } from '@careerpilot/client-core';
 import { View } from 'react-native';
 import { AlertTriangle, Archive, Bookmark, Check, CircleHelp, Minus, PenLine, Plus, Send, X, type LucideIcon } from '@/ui/icons';
 import { EnumKey, OpportunityDecision, RequirementCheck, StatusTone } from '@careerpilot/domain-ui-logic';
@@ -9,6 +9,7 @@ import { Badge, Banner, Button, ButtonVariant, Card, EnumBadge, ErrorState, Icon
 import { CheckJob } from './check-job';
 import { MatchFeedback } from './match-feedback';
 import { MissingSkills } from './missing-skills';
+import { FeeFromSource } from '@/features/fees/fee-from-source';
 import { ReportProblem } from './report-problem';
 import { matchTone } from './opportunity-card';
 
@@ -114,6 +115,7 @@ export function OpportunityScreen() {
 
         <MatchFeedback opportunityId={o.id} current={o.feedback} />
 
+        <FeeFromSource kind={FeeSourceKind.Opportunity} id={o.id} />
         <ReportProblem opportunityId={o.id} />
 
         <Section title={t('opportunity.requirements')}>

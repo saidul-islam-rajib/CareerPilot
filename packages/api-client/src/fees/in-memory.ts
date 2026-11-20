@@ -8,6 +8,7 @@ import {
   FeeWarning,
   PaymentAction,
   PaymentStatus,
+  ReceiptKind,
 } from '@careerpilot/domain-ui-logic';
 import { ApiErrorCode } from '../errors';
 import type { Clock, IdGenerator } from '../ports';
@@ -23,6 +24,8 @@ const REFERENCE: FeesReference = {
   dueSoonDays: 3,
   maxTextLength: 1000,
   maxReceiptsPerPayment: MAX_RECEIPTS,
+  receiptFileTypes: ['application/pdf', 'image/png', 'image/jpeg'],
+  receiptFileMaxBytes: 5_242_880,
 };
 const ALLOWED_FROM: Record<PaymentAction, readonly PaymentStatus[]> = {
   [PaymentAction.ConfirmPaid]: [PaymentStatus.Due, PaymentStatus.Uncertain, PaymentStatus.Failed],
@@ -328,6 +331,23 @@ export function createInMemoryFees(options: InMemoryFeesOptions): FeesApi {
       }
       payment.receipts.push({ ...input, id: ids.next('fec'), addedAt: nowIso() });
       return respond(viewOf(payment));
+    },
+    async addReceiptFile(id, file) {
+      const payment = await findPayment(id);
+      if (payment.receipts.length >= MAX_RECEIPTS) {
+        await fail(ApiErrorCode.Validation, FeeFailure.TooManyItems);
+      }
+      if (file.size === 0) {
+        await fail(ApiErrorCode.Validation, FeeFailure.FileEmpty);
+      }
+      payment.receipts.push({ kind: ReceiptKind.UploadedFile, reference: file.name, id: ids.next('fec'), addedAt: nowIso() });
+      return respond(viewOf(payment));
+    },
+    async ruleFromOpportunity() {
+      return fail(ApiErrorCode.Validation, FeeFailure.FeeNotStated);
+    },
+    async ruleFromProgram() {
+      return fail(ApiErrorCode.Validation, FeeFailure.UnknownProgram);
     },
     async removeReceipt(id, receiptId) {
       const payment = await findPayment(id);

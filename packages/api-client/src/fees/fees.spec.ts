@@ -109,6 +109,15 @@ describe('in-memory fees', () => {
     await expect(api.createPayment({ ...payment, currency: 'XXX' })).rejects.toMatchObject({ detail: FeeFailure.UnsupportedCurrency });
   });
 
+  it('stores an uploaded receipt file and never invents a fee from a listing', async () => {
+    const api = setup();
+    const created = await api.createPayment(payment);
+    const added = await api.addReceiptFile(created.payment.id, { name: 'slip.pdf', type: 'application/pdf', size: 4 });
+    expect(added.payment.receipts[0]).toMatchObject({ kind: ReceiptKind.UploadedFile, reference: 'slip.pdf' });
+    await expect(api.addReceiptFile(created.payment.id, { name: 'e.pdf', type: 'application/pdf', size: 0 })).rejects.toMatchObject({ detail: FeeFailure.FileEmpty });
+    await expect(api.ruleFromOpportunity('o1')).rejects.toMatchObject({ detail: FeeFailure.FeeNotStated });
+  });
+
   it('removes rules and payments', async () => {
     const api = setup();
     const fee = await api.createRule(rule);
@@ -129,11 +138,17 @@ describe('http fees', () => {
     await api.overview();
     await api.recordAction('p 1', { action: PaymentAction.MarkUncertain });
     await api.removeReceipt('p1', 'r1');
+    await api.addReceiptFile('p1', { name: 'slip.pdf', type: 'application/pdf', size: 4, blob: new Blob(['%PDF']) });
+    await api.ruleFromOpportunity('o 1');
+    await api.ruleFromProgram('g1');
     const calls = fetchFn.mock.calls.map((call) => call as unknown as [string, { method: string }]);
     expect(calls.map(([url, init]) => `${init.method} ${url}`)).toEqual([
       'GET https://api.example.com/v1/fees/overview',
       'POST https://api.example.com/v1/fees/payments/p%201/actions',
       'DELETE https://api.example.com/v1/fees/payments/p1/receipts/r1',
+      'POST https://api.example.com/v1/fees/payments/p1/receipt-files',
+      'POST https://api.example.com/v1/fees/rules/from-opportunity/o%201',
+      'POST https://api.example.com/v1/fees/rules/from-program/g1',
     ]);
   });
 });

@@ -29,6 +29,8 @@ def build_fees(context: FeesContext) -> FeesServices:
         due_soon_days=config.due_soon_days,
         max_text_length=config.max_text_length,
         max_receipts_per_payment=config.max_receipts_per_payment,
+        receipt_file_types=config.receipt_files.types,
+        receipt_file_max_bytes=config.receipt_files.max_bytes,
     )
     rules = RuleService(context, stores)
     return FeesServices(

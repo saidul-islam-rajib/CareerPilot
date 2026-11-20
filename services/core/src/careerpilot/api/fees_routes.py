@@ -5,8 +5,10 @@ from fastapi.responses import JSONResponse, Response
 
 from careerpilot.api.common import no_content, ok
 from careerpilot.api.dependencies import CurrentUser, Services
+from careerpilot.api.profile_routes import read_upload
 from careerpilot.bootstrap import Container
 from careerpilot.fees.models import ActionBody, FeeRuleInput, PaymentInput, PaymentView, ReceiptInput
+from careerpilot.fees.receipt_files import ReceiptUpload
 
 router = APIRouter(prefix="/v1/fees")
 UploadedFile = Annotated[UploadFile, File()]
@@ -98,3 +100,21 @@ def add_receipt(payment_id: str, body: ReceiptInput, user: CurrentUser, services
 @router.delete("/payments/{payment_id}/receipts/{receipt_id}")
 def remove_receipt(payment_id: str, receipt_id: str, user: CurrentUser, services: Services) -> JSONResponse:
     return ok(services.fees.payments.remove_receipt(user.id, payment_id, receipt_id))
+
+
+@router.post("/payments/{payment_id}/receipt-files")
+def add_receipt_file(payment_id: str, file: UploadedFile, request: Request, user: CurrentUser, services: Services) -> JSONResponse:
+    limit = services.settings.fees.receipt_files.max_bytes
+    upload = read_upload(file, limit)
+    view = services.fees.receipt_files.add(user.id, payment_id, ReceiptUpload(upload.file_name, upload.data))
+    return ok(linked(view, request, services))
+
+
+@router.post("/rules/from-opportunity/{opportunity_id}")
+def rule_from_opportunity(opportunity_id: str, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.fees.sources.from_opportunity(user.id, opportunity_id))
+
+
+@router.post("/rules/from-program/{program_id}")
+def rule_from_program(program_id: str, user: CurrentUser, services: Services) -> JSONResponse:
+    return ok(services.fees.sources.from_program(user.id, program_id))

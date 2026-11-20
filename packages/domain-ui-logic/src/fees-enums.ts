@@ -34,6 +34,7 @@ export const ReceiptKind = {
   ReceiptNumber: 'receipt_number',
   PortalConfirmation: 'portal_confirmation',
   BankStatement: 'bank_statement',
+  UploadedFile: 'uploaded_file',
 } as const;
 export type ReceiptKind = (typeof ReceiptKind)[keyof typeof ReceiptKind];
 
@@ -76,5 +77,10 @@ export const FeeFailure = {
   UnsupportedCurrency: 'unsupported_currency',
   InvalidTransition: 'invalid_transition',
   UnknownRule: 'unknown_rule',
+  FeeNotStated: 'fee_not_stated',
+  UnknownProgram: 'unknown_program',
+  FileEmpty: 'file_empty',
+  FileTooLarge: 'file_too_large',
+  FileType: 'file_type',
 } as const;
 export type FeeFailure = (typeof FeeFailure)[keyof typeof FeeFailure];

@@ -44,8 +44,8 @@ def services_with(views: list[GovApplicationView]) -> FeesServices:
         lambda _: views,
         InMemoryFileStorage(),
         {},
-        lambda *_: None,
-        lambda *_: None,
+        lambda _user, _id: None,
+        lambda _user, _id: None,
     )
     return build_fees(context)
 

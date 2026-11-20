@@ -17,6 +17,8 @@ export interface FeesReference {
   dueSoonDays: number;
   maxTextLength: number;
   maxReceiptsPerPayment: number;
+  receiptFileTypes: string[];
+  receiptFileMaxBytes: number;
 }
 
 export interface FeeRuleInput {
@@ -57,6 +59,8 @@ export interface ReceiptInput {
 export interface Receipt extends ReceiptInput {
   id: string;
   addedAt: string;
+  url?: string;
+  sha256?: string;
 }
 
 export interface StatusEvent {

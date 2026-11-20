@@ -1,4 +1,5 @@
 import { HttpMethod, type HttpClient } from '../http/http-client';
+import { uploadForm } from '../http/http-api';
 import type { FeesApi } from './ports';
 
 const enc = encodeURIComponent;
@@ -26,6 +27,9 @@ export function createHttpFees(http: HttpClient): FeesApi {
     removePayment: (id) => del(payment(id)),
     recordAction: (id, input) => post(`${payment(id)}/actions`, input),
     addReceipt: (id, input) => post(`${payment(id)}/receipts`, input),
+    addReceiptFile: (id, file) => http.request(HttpMethod.Post, `${payment(id)}/receipt-files`, uploadForm(file)),
+    ruleFromOpportunity: (opportunityId) => post(`${base}/rules/from-opportunity/${enc(opportunityId)}`),
+    ruleFromProgram: (programId) => post(`${base}/rules/from-program/${enc(programId)}`),
     removeReceipt: (id, receiptId) => del(`${payment(id)}/receipts/${enc(receiptId)}`),
   };
 }

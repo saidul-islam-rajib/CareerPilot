@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useAcademicActions, useProgram, useT } from '@careerpilot/client-core';
+import { FeeSourceKind, useAcademicActions, useProgram, useT } from '@careerpilot/client-core';
+import { FeeFromSource } from '@/features/fees/fee-from-source';
 import type { Program } from '@careerpilot/api-client';
 import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
@@ -34,6 +35,7 @@ function ProgramBody({ program }: { program: Program }) {
       </View>
       <Notices />
       <PlanSection programId={program.id} />
+      <FeeFromSource kind={FeeSourceKind.Program} id={program.id} />
       <RequirementsSection program={program} save={save} />
       <FundingSection program={program} save={save} />
       <PortalSection program={program} save={save} />
