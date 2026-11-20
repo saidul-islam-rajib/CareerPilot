@@ -34,4 +34,17 @@ describe('createBffRouteHandlers', () => {
     expect(resolve).toHaveBeenCalledTimes(1);
     expect(fetchFn).toHaveBeenCalledTimes(2);
   });
+
+  it('falls back to the global fetch when no fetch is given', async () => {
+    const globalFetch = vi.fn(async () => new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } }));
+    vi.stubGlobal('fetch', globalFetch);
+    try {
+      const handlers = createBffRouteHandlers(() => resolveBffConfig(raw, 'web', {}, { URL: 'http://api.test' }));
+      const response = await handlers.GET(new Request('http://app.test/x'), { params: Promise.resolve({ path: ['user', 'v1', 'config'] }) });
+      expect(response.status).toBe(200);
+      expect(globalFetch).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
 });

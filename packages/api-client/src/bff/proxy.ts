@@ -167,7 +167,7 @@ function passesCsrf(request: Request, config: BffConfig, cookies: Record<string,
 }
 
 export async function handleBffRequest(request: Request, segments: string[], dependencies: BffDependencies): Promise<Response> {
-  const deps: ResolvedDependencies = { fetchFn: (...args) => fetch(...args), nowMs: Date.now, ...dependencies };
+  const deps: ResolvedDependencies = { ...dependencies, fetchFn: dependencies.fetchFn ?? ((...args) => fetch(...args)), nowMs: dependencies.nowMs ?? Date.now };
   const { config } = deps;
   const cookies = readCookies(request.headers.get('cookie'));
   const [upstreamName, ...rest] = segments;
