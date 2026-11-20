@@ -2,6 +2,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
+import { createTestAccount } from './test-account.mjs';
 
 const appDir = path.resolve(process.argv[2] ?? 'apps/web');
 const outDir = path.resolve(process.argv[3] ?? '.validation/web');
@@ -60,8 +61,16 @@ const profiles = {
   },
 };
 
-const profile = profiles[process.env.VALIDATION_PROFILE ?? 'web'];
+const profileName = process.env.VALIDATION_PROFILE ?? 'web';
+const profile = profiles[profileName];
 const screens = profile.screens;
+
+async function accountFor(name) {
+  if (name === 'admin') {
+    return { email: process.env.VALIDATION_ADMIN_EMAIL, password: process.env.VALIDATION_ADMIN_PASSWORD };
+  }
+  return createTestAccount();
+}
 
 async function waitForServer() {
   const deadline = Date.now() + startTimeoutMs;
@@ -83,6 +92,7 @@ const errors = [];
 const layoutIssues = [];
 try {
   await waitForServer();
+  const account = await accountFor(profileName);
   const browser = await chromium.launch({ channel: process.env.BROWSER_CHANNEL ?? 'msedge' });
   for (const width of widths) {
     const dir = path.join(outDir, String(width));
@@ -106,8 +116,8 @@ try {
       await shot(name);
     }
     await page.goto(`${base}${profile.signInPath}`);
-    await page.getByLabel('Email').fill('admin@sober.com');
-    await page.getByLabel('Password', { exact: true }).fill('admin@sober.com');
+    await page.getByLabel('Email').fill(account.email);
+    await page.getByLabel('Password', { exact: true }).fill(account.password);
     await page.getByRole('button', { name: 'Sign in' }).click();
     await page.waitForURL(`${base}/`, { timeout: startTimeoutMs });
     for (const [name, route] of screens) {

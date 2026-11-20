@@ -2,6 +2,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
+import { createTestAccount } from './test-account.mjs';
 
 const root = path.resolve(process.argv[2] ?? 'apps/mobile/dist');
 const outDir = path.resolve(process.argv[3] ?? '.validation/mobile');
@@ -75,8 +76,9 @@ await page.goto(`${base}/register`);
 await page.getByTestId('register-submit').click();
 await shot('register-errors');
 await page.goto(`${base}/sign-in`);
-await page.getByTestId('sign-in-email').fill('admin@sober.com');
-await page.getByTestId('sign-in-password').fill('admin@sober.com');
+const account = await createTestAccount();
+await page.getByTestId('sign-in-email').fill(account.email);
+await page.getByTestId('sign-in-password').fill(account.password);
 await page.getByTestId('sign-in-submit').click();
 await page.waitForSelector('[data-testid="home-screen"]', { timeout: 15000 });
 for (const [name, route] of screens) {
