@@ -11,6 +11,7 @@ import { ValidationMessage } from '@careerpilot/validation';
 import { Badge, Banner, BrandMark, Button, Card, ConfirmDialog, ErrorState, LoadingState, PageHeader, Section, TextField, ThemeScope, cn } from '@careerpilot/ui-web';
 import { adminKeys, useAdminMutation } from '@/core/admin-queries';
 import { useAdminApi } from '@/core/admin-services';
+import { useReauth } from '@/features/security/reauth-provider';
 import { useCan } from '@/core/admin-session';
 
 function ThemePreview({ themeKey }: { themeKey: ThemeKey }) {
@@ -142,14 +143,15 @@ function LimitsForm({ settings }: { settings: PlatformSettings }) {
 export function SettingsPage() {
   const t = useT();
   const api = useAdminApi();
+  const reauth = useReauth();
   const format = useFormat();
   const canUpdate = useCan(AdminArea.Settings, PermissionAction.Update);
   const settings = useQuery({ queryKey: adminKeys.settings, queryFn: () => api.settings.getSettings() });
   const [preview, setPreview] = useState<ThemeKey>();
   const [reason, setReason] = useState('');
   const applyTheme = useAdminMutation((activeTheme: ThemeKey) => api.settings.updateSettings({ activeTheme }));
-  const startStop = useAdminMutation((stopReason: string) => api.settings.startEmergencyStop({ scope: EmergencyStopScope.AllUsers, reason: stopReason }));
-  const endStop = useAdminMutation(() => api.settings.endEmergencyStop());
+  const startStop = useAdminMutation((stopReason: string) => reauth.run(() => api.settings.startEmergencyStop({ scope: EmergencyStopScope.AllUsers, reason: stopReason })));
+  const endStop = useAdminMutation(() => reauth.run(() => api.settings.endEmergencyStop()));
 
   if (settings.isPending) {
     return <LoadingState />;

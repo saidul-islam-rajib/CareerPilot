@@ -10,10 +10,10 @@ Source: specs/REMAINING.md (BFF, admin MFA, S3 storage). Requirements: REQ-13, R
 
 ## Tasks
 - [x] E35-1 Spec and decisions
-- [ ] E35-2 packages/bff: proxy handler, cookie and CSRF rules, unit tests; config `bff` section
-- [ ] E35-3 Web and admin route handlers; client uses `/api/bff`, no token in JS or storage
-- [ ] E35-4 Backend TOTP: secret (vault-encrypted), recovery codes, enrolment, sign-in code, migration, tests
-- [ ] E35-5 Re-authentication proof on suspend, delete, role change, platform stop; tests
-- [ ] E35-6 Admin app: enrolment screen, code field on sign-in, re-auth dialog; tests
+- [x] E35-2 packages/bff: proxy handler, cookie and CSRF rules, unit tests; config `bff` section
+- [x] E35-3 Web and admin route handlers; client uses `/api/bff`, no token in JS or storage
+- [x] E35-4 Backend TOTP: secret (vault-encrypted), recovery codes, enrolment, sign-in code, migration, tests
+- [x] E35-5 Re-authentication proof on suspend, delete, role change, platform stop; tests
+- [x] E35-6 Admin app: enrolment screen, code field on sign-in, re-auth dialog; tests
 - [ ] E35-7 Storage port: S3-compatible adapter chosen by `storage.backend`, signed links, tests
 - [ ] E35-8 MinIO in docker-compose.prod.yml; env names in .env.production.example

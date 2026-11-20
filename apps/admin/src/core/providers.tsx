@@ -5,6 +5,7 @@ import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import { AppServicesProvider, PublicConfigProvider, createQueryClient } from '@careerpilot/client-core';
 import { themes } from '@careerpilot/ui-tokens';
 import { AppTheme, ToastProvider } from '@careerpilot/ui-web';
+import { ReauthProvider } from '@/features/security/reauth-provider';
 import { getAdminConfig } from './admin-config';
 import { AdminServicesProvider, createAdminServices, type AdminServices } from './admin-services';
 import { AdminSessionProvider } from './admin-session';
@@ -25,7 +26,9 @@ export function Providers({ services, queryClient, children }: PropsWithChildren
           <AppTheme theme={themes[adminServices.config.ui.adminTheme]} className="min-h-dvh bg-surface text-foreground">
             <AdminServicesProvider services={adminServices}>
               <ToastProvider>
-                <AdminSessionProvider>{children}</AdminSessionProvider>
+                <AdminSessionProvider>
+                  <ReauthProvider>{children}</ReauthProvider>
+                </AdminSessionProvider>
               </ToastProvider>
             </AdminServicesProvider>
           </AppTheme>

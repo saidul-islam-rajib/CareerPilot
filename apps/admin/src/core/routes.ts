@@ -16,6 +16,7 @@ export const AdminRoutes = {
   privacy: '/privacy',
   admins: '/admins',
   messages: '/messages',
+  security: '/security',
 } as const;
 
 export function listLink(route: string, filter: Record<string, string>): string {

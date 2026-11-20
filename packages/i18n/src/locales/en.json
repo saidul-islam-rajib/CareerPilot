@@ -1018,6 +1018,7 @@
       "application_submitted": "Application submitted",
       "application_confirmed": "Application confirmed",
       "application_reply": "Application reply",
+      "application_bounced": "Application not delivered",
       "integration_attention": "Account needs attention",
       "automation_attention": "Automation needs attention",
       "approval_expiring": "Approval about to expire",
@@ -1363,6 +1364,34 @@
     "appName": "CareerPilot Admin",
     "signInTitle": "Admin sign in",
     "signInBody": "For CareerPilot administrators only. All actions are recorded.",
+    "mfa": {
+      "codeLabel": "Authentication code",
+      "codeHint": "Enter the 6-digit code from your authenticator app, or a recovery code.",
+      "codeRequired": "Enter your authentication code to continue.",
+      "navLabel": "Security",
+      "title": "Two-factor security",
+      "intro": "Protect your admin account with a code from an authenticator app. Recovery codes work once each if you lose your phone.",
+      "setUp": "Set up authenticator",
+      "setUpStep": "Add this account to your authenticator app using the setup link or the secret key, then enter the code it shows.",
+      "secretLabel": "Secret key",
+      "uriLabel": "Setup link",
+      "confirm": "Confirm and turn on",
+      "confirmFailed": "That code was not accepted. Check the code and try again.",
+      "recoveryTitle": "Your recovery codes",
+      "recoveryWarning": "Save these codes somewhere safe. They are shown only once.",
+      "recoveryDone": "I have saved my codes",
+      "regenerateTitle": "Regenerate recovery codes",
+      "regenerateHint": "Creating new codes makes the old ones stop working. Enter a current authentication code.",
+      "regenerate": "Generate new codes",
+      "regenerateFailed": "Codes could not be generated. Check your authentication code."
+    },
+    "reauth": {
+      "title": "Confirm it is you",
+      "body": "This action needs your password and a current authentication code.",
+      "submit": "Confirm and continue",
+      "failed": "Confirmation failed. Check your password and code.",
+      "mfaMissing": "Turn on two-factor security first, then try again."
+    },
     "nav": {
       "dashboard": "Dashboard",
       "users": "Users",
@@ -2408,6 +2437,12 @@
       "recorded": "{sender} replied ({kind}): {subject}",
       "confirmed": "The employer replied, so your application was received.",
       "openEmail": "Open email"
+    },
+    "bounce": {
+      "timeline": "The email to {to} came back undelivered, so the application was not received. It was not sent again.",
+      "evidence": "A delivery failure notice for {to} arrived in your connected inbox.",
+      "title": "Application not delivered",
+      "body": "{title} at {organization} bounced. Check the address and send it yourself."
     },
     "evidenceReply": "A reply from the employer arrived in your connected inbox.",
     "interviewTaskTitle": "Interview with {organization}",
@@ -3741,11 +3776,17 @@
     "receiptReference": "Reference or message text",
     "receiptNote": "Note",
     "receiptRemove": "Remove receipt {reference}",
+    "receiptFile": "Upload receipt file",
+    "receiptFileOpen": "Open file {reference}",
+    "fromOpportunity": "Create fee rule from this opportunity",
+    "fromProgram": "Create fee rule from this program",
+    "ruleCreated": "Fee rule added.",
     "receiptKind": {
       "confirmation_message": "Confirmation message",
       "receipt_number": "Receipt number",
       "portal_confirmation": "Portal confirmation",
-      "bank_statement": "Bank statement line"
+      "bank_statement": "Bank statement line",
+      "uploaded_file": "Uploaded file"
     },
     "history": "History",
     "error": {
@@ -3755,6 +3796,11 @@
       "invalid_transition": "That change is not possible from the current status.",
       "too_many_items": "You have reached the limit.",
       "unknown_rule": "That fee could not be found.",
+      "fee_not_stated": "No fee is stated here. Add the fee yourself.",
+      "unknown_program": "That program could not be found.",
+      "file_empty": "That file is empty.",
+      "file_too_large": "That file is too large.",
+      "file_type": "Use a PDF, PNG or JPEG file.",
       "generic": "That could not be saved. Try again."
     }
   },

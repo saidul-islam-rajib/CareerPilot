@@ -1,5 +1,5 @@
 import type { AdminRole, OpportunityDecision, ReportStatus } from '@careerpilot/domain-ui-logic';
-import type { CompleteAccountLinkRequest, ConnectedAccount, ConversationSummary, MessagePage, MessageView, NewAttachment, OpportunityReport, SignInRequest } from '../types';
+import type { CompleteAccountLinkRequest, ConnectedAccount, ConversationSummary, MessagePage, MessageView, NewAttachment, OpportunityReport } from '../types';
 import type {
   AdminAccount,
   AdminPermission,
@@ -11,6 +11,11 @@ import type {
   AdminLinkDetails,
   AdminOpportunityRow,
   AdminSession,
+  AdminSignInRequest,
+  MfaEnrolment,
+  ReauthProof,
+  ReauthRequest,
+  RecoveryCodes,
   AdminSourceRow,
   AdminApplicationChange,
   AdminUserFiles,
@@ -34,7 +39,11 @@ import type {
 } from './admin-types';
 
 export interface AdminAuthApi {
-  signIn(request: SignInRequest): Promise<AdminSession>;
+  signIn(request: AdminSignInRequest): Promise<AdminSession>;
+  reauthenticate(request: ReauthRequest): Promise<ReauthProof>;
+  beginMfaEnrolment(): Promise<MfaEnrolment>;
+  confirmMfa(code: string): Promise<RecoveryCodes>;
+  regenerateRecoveryCodes(code: string): Promise<RecoveryCodes>;
   signOut(): Promise<void>;
   requestPasswordLink(request: PasswordLinkRequest): Promise<void>;
   inspectAccountLink(token: string): Promise<AdminLinkDetails>;

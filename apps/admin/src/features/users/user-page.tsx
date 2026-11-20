@@ -8,6 +8,7 @@ import { AdminArea, EnumKey, PermissionAction, UserAccountStatus } from '@career
 import { Button, Card, ConfirmDialog, EnumBadge, ErrorState, ListRow, LoadingState, PageHeader, Section } from '@careerpilot/ui-web';
 import { adminKeys, useAdminMutation } from '@/core/admin-queries';
 import { useAdminApi } from '@/core/admin-services';
+import { useReauth } from '@/features/security/reauth-provider';
 import { useCan } from '@/core/admin-session';
 import { ContactsCard } from './user-overview';
 import { UserRecordTabs } from './user-record';
@@ -16,10 +17,11 @@ export function UserPage() {
   const { id } = useParams<{ id: string }>();
   const t = useT();
   const api = useAdminApi();
+  const reauth = useReauth();
   const format = useFormat();
   const canUpdate = useCan(AdminArea.Users, PermissionAction.Update);
   const user = useQuery({ queryKey: adminKeys.user(id), queryFn: () => api.users.getUser(id) });
-  const suspend = useAdminMutation(() => api.users.suspendUser(id, t('admin.users.suspendReason')));
+  const suspend = useAdminMutation(() => reauth.run(() => api.users.suspendUser(id, t('admin.users.suspendReason'))));
   const reactivate = useAdminMutation(() => api.users.reactivateUser(id));
   const pause = useAdminMutation(() => api.users.pauseAutomation(id));
 

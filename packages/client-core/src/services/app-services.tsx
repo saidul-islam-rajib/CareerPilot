@@ -7,6 +7,7 @@ import { createServerAddress, serverAnswers, type ServerAddress } from './server
 
 export interface TokenHolder {
   token?: string;
+  reauthToken?: string;
   onUnauthorized?: () => void;
 }
 

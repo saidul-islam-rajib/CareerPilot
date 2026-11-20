@@ -8,6 +8,7 @@ import { AdminArea, PermissionAction, enumValues } from '@careerpilot/domain-ui-
 import { Button, Checkbox, ConfirmDialog, EmptyState, ErrorState, FormDialog, ListRow, LoadingState, Section, SelectField, TextField } from '@careerpilot/ui-web';
 import { adminKeys, useAdminMutation } from '@/core/admin-queries';
 import { useAdminApi } from '@/core/admin-services';
+import { useReauth } from '@/features/security/reauth-provider';
 
 type Grants = Partial<Record<AdminArea, PermissionAction[]>>;
 
@@ -21,10 +22,11 @@ function toPermissions(grants: Grants): AdminPermission[] {
 function RoleCreateDialog() {
   const t = useT();
   const api = useAdminApi();
+  const reauth = useReauth();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [grants, setGrants] = useState<Grants>({});
-  const create = useAdminMutation(() => api.admins.createRole(name, toPermissions(grants)));
+  const create = useAdminMutation(() => reauth.run(() => api.admins.createRole(name, toPermissions(grants))));
   const toggle = (area: AdminArea, action: PermissionAction) => {
     const current = grants[area] ?? [];
     setGrants({ ...grants, [area]: current.includes(action) ? current.filter((a) => a !== action) : [...current, action] });
@@ -68,9 +70,10 @@ function RoleCreateDialog() {
 export function CustomRoles({ admins, canManage }: { admins: AdminAccount[]; canManage: boolean }) {
   const t = useT();
   const api = useAdminApi();
+  const reauth = useReauth();
   const roles = useQuery({ queryKey: adminKeys.roles, queryFn: () => api.admins.listRoles() });
-  const assign = useAdminMutation(({ roleId, adminId }: { roleId: string; adminId: string }) => api.admins.assignRole(roleId, adminId, true));
-  const remove = useAdminMutation((id: string) => api.admins.deleteRole(id));
+  const assign = useAdminMutation(({ roleId, adminId }: { roleId: string; adminId: string }) => reauth.run(() => api.admins.assignRole(roleId, adminId, true)));
+  const remove = useAdminMutation((id: string) => reauth.run(() => api.admins.deleteRole(id)));
   if (roles.isPending) {
     return <LoadingState />;
   }

@@ -48,6 +48,10 @@ export function createHttpAdminApi(http: HttpClient): CareerPilotAdminApi {
     privacy: createHttpPrivacyAdmin(http),
     auth: {
       signIn: (request) => post('/admin/v1/auth/sign-in', request),
+      reauthenticate: (request) => post('/admin/v1/auth/reauthenticate', request),
+      beginMfaEnrolment: () => post('/admin/v1/auth/mfa/enrol'),
+      confirmMfa: (code) => post('/admin/v1/auth/mfa/confirm', { code }),
+      regenerateRecoveryCodes: (code) => post('/admin/v1/auth/mfa/recovery-codes', { code }),
       signOut: () => post('/admin/v1/auth/sign-out'),
       requestPasswordLink: (request) => post('/admin/v1/auth/password-link', request),
       inspectAccountLink: (token) => post('/admin/v1/auth/account-links/inspect', { token }),

@@ -6,6 +6,7 @@ import { useEnumDisplay, useFormat, useT } from '@careerpilot/client-core';
 import { AdminArea, AdminRole, EnumKey, PermissionAction, StatusTone, enumValues } from '@careerpilot/domain-ui-logic';
 import { Badge, Button, ConfirmDialog, DataTable, EnumBadge, ErrorState, LoadingState, PageHeader } from '@careerpilot/ui-web';
 import { adminKeys, useAdminMutation } from '@/core/admin-queries';
+import { useReauth } from '@/features/security/reauth-provider';
 import { useAdminApi } from '@/core/admin-services';
 import { useAdminSession, useCan } from '@/core/admin-session';
 import { AdminCreateDialog } from './admin-create-dialog';
@@ -14,6 +15,7 @@ import { CustomRoles } from './custom-roles';
 export function AdminsPage() {
   const t = useT();
   const api = useAdminApi();
+  const reauth = useReauth();
   const format = useFormat();
   const display = useEnumDisplay();
   const { admin } = useAdminSession();
@@ -21,9 +23,9 @@ export function AdminsPage() {
   const canCreate = useCan(AdminArea.Admins, PermissionAction.Create);
   const canDelete = useCan(AdminArea.Admins, PermissionAction.Delete);
   const admins = useQuery({ queryKey: adminKeys.admins, queryFn: () => api.admins.listAdmins() });
-  const setRole = useAdminMutation(({ id, role }: { id: string; role: AdminRole }) => api.admins.setRole(id, role));
-  const remove = useAdminMutation((id: string) => api.admins.deleteAdmin(id));
-  const setSuspended = useAdminMutation(({ id, suspended }: { id: string; suspended: boolean }) => api.admins.setSuspended(id, suspended));
+  const setRole = useAdminMutation(({ id, role }: { id: string; role: AdminRole }) => reauth.run(() => api.admins.setRole(id, role)));
+  const remove = useAdminMutation((id: string) => reauth.run(() => api.admins.deleteAdmin(id)));
+  const setSuspended = useAdminMutation(({ id, suspended }: { id: string; suspended: boolean }) => reauth.run(() => api.admins.setSuspended(id, suspended)));
 
   if (admins.isPending) {
     return <LoadingState />;

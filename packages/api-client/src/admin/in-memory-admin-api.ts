@@ -25,7 +25,7 @@ import type { ConversationSummary, MessageView, NewAttachment, ReplyPreview } fr
 import type { DemoState } from '../in-memory/demo.seed';
 import type { CareerPilotAdminApi } from './admin-ports';
 import type { AdminDemoAccount, AdminDemoState } from './admin-demo.seed';
-import { SourceConnector, type AdminSourceRow, type CustomRole, type AdminSummary, type AdminUserDetail, type AdminUserRecord, type AdminUserRow, type CountByKey, type NewSource, type Page, type PageQuery } from './admin-types';
+import { SourceConnector, type AdminSourceRow, type CustomRole, type AdminSummary, type RecoveryCodes, type AdminUserDetail, type AdminUserRecord, type AdminUserRow, type CountByKey, type NewSource, type Page, type PageQuery } from './admin-types';
 import { permissionsForRole } from './permissions';
 
 export interface InMemoryAdminApiOptions {
@@ -41,9 +41,13 @@ export interface InMemoryAdminApiOptions {
   sourceLimitBounds: { min: number; max: number };
   linkToken: string;
   suggestedSources?: NewSource[];
+  mfaCode?: string;
+  reauthTtlMinutes?: number;
+  recoveryCodeCount?: number;
 }
 
 const DAY_MS = 86_400_000;
+const MS_PER_MINUTE = 60_000;
 const MEMORY_FILE = 'memory://file';
 const TEAM_SENDER = 'CareerPilot team';
 const SOURCE_CONNECTORS: readonly string[] = Object.values(SourceConnector);
@@ -77,6 +81,11 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
   const { clock, ids } = options;
   let currentAdmin: AdminSummary | undefined;
   let customRoles: CustomRole[] = [];
+  const enrolledAdmins = new Set<string>();
+  const pendingEnrolments = new Set<string>();
+  const mfaCode = options.mfaCode ?? options.linkToken;
+  const codeAccepted = (code: string | undefined) => code === mfaCode;
+  const newRecoveryCodes = (): RecoveryCodes => ({ codes: Array.from({ length: options.recoveryCodeCount ?? 1 }, () => ids.next('recovery')) });
 
   const respond = <T>(value: T): Promise<T> => new Promise((resolve) => setTimeout(() => resolve(clone(value)), options.latencyMs));
   const fail = (code: ApiErrorCode, detail?: string): Promise<never> =>
@@ -263,7 +272,57 @@ export function createInMemoryAdminApi(options: InMemoryAdminApiOptions): Career
         if (!match || match.account.suspended || match.password !== request.password) {
           return fail(ApiErrorCode.InvalidCredentials);
         }
+        if (enrolledAdmins.has(match.account.id)) {
+          if (!request.code) {
+            return fail(ApiErrorCode.MfaRequired);
+          }
+          if (!codeAccepted(request.code)) {
+            return fail(ApiErrorCode.InvalidCredentials);
+          }
+        }
         return startSession(match);
+      },
+      async reauthenticate(request) {
+        const match = currentAdmin ? state.admins.find((a) => a.account.id === currentAdmin?.id) : undefined;
+        if (!match) {
+          return fail(ApiErrorCode.Unauthorized);
+        }
+        if (!enrolledAdmins.has(match.account.id)) {
+          return fail(ApiErrorCode.MfaRequired);
+        }
+        if (match.password !== request.password || !codeAccepted(request.code)) {
+          return fail(ApiErrorCode.InvalidCredentials);
+        }
+        const ttlMs = (options.reauthTtlMinutes ?? 1) * MS_PER_MINUTE;
+        return respond({ reauthToken: ids.next('reauth'), expiresAt: new Date(clock.now().getTime() + ttlMs).toISOString() });
+      },
+      async beginMfaEnrolment() {
+        if (!currentAdmin) {
+          return fail(ApiErrorCode.Unauthorized);
+        }
+        pendingEnrolments.add(currentAdmin.id);
+        return respond({ secret: mfaCode, otpauthUri: `otpauth://totp/${encodeURIComponent(currentAdmin.email)}?secret=${mfaCode}` });
+      },
+      async confirmMfa(code) {
+        if (!currentAdmin || !pendingEnrolments.has(currentAdmin.id)) {
+          return fail(ApiErrorCode.Conflict);
+        }
+        if (!codeAccepted(code)) {
+          return fail(ApiErrorCode.InvalidCredentials);
+        }
+        pendingEnrolments.delete(currentAdmin.id);
+        enrolledAdmins.add(currentAdmin.id);
+        record('admin.mfa_enrolled', currentAdmin.email);
+        return respond(newRecoveryCodes());
+      },
+      async regenerateRecoveryCodes(code) {
+        if (!currentAdmin || !enrolledAdmins.has(currentAdmin.id)) {
+          return fail(ApiErrorCode.MfaRequired);
+        }
+        if (!codeAccepted(code)) {
+          return fail(ApiErrorCode.InvalidCredentials);
+        }
+        return respond(newRecoveryCodes());
       },
       async signOut() {
         currentAdmin = undefined;

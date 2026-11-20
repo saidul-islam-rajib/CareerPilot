@@ -21,6 +21,7 @@ export interface HttpClientOptions {
   uploadTimeoutMs?: number;
   fetchFn: typeof fetch;
   getAccessToken: () => string | undefined;
+  getReauthToken?: () => string | undefined;
   onUnauthorized?: () => void;
 }
 
@@ -30,6 +31,7 @@ export interface HttpClient {
 
 const NO_CONTENT = 204;
 export const TIME_ZONE_HEADER = 'X-Client-Time-Zone';
+export const REAUTH_HEADER = 'X-Reauth-Token';
 
 export function deviceTimeZone(): string | undefined {
   try {
@@ -76,6 +78,10 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
       }
       if (token) {
         headers.Authorization = `Bearer ${token}`;
+      }
+      const reauthToken = options.getReauthToken?.();
+      if (reauthToken) {
+        headers[REAUTH_HEADER] = reauthToken;
       }
       try {
         const response = await fetchFn(`${baseUrl()}${path}`, {

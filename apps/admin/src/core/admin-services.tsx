@@ -27,6 +27,7 @@ function httpAdminApi(config: AdminConfig, tokens: TokenHolder): CareerPilotAdmi
       timeoutMs: config.api.timeoutMs,
       fetchFn: transport?.fetchFn ?? ((...args) => fetch(...args)),
       getAccessToken: () => tokens.token,
+      getReauthToken: () => (transport ? undefined : tokens.reauthToken),
       onUnauthorized: () => tokens.onUnauthorized?.(),
     }),
   );

@@ -29,6 +29,7 @@ export function AdminSessionProvider({ children }: PropsWithChildren) {
 
   const clear = useCallback(async () => {
     tokens.token = undefined;
+    tokens.reauthToken = undefined;
     setSession(undefined);
     setStatus(SessionStatus.SignedOut);
     queryClient.removeQueries({ predicate: (q) => q.queryKey[0] === 'admin' });

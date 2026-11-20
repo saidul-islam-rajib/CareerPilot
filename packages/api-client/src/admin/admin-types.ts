@@ -46,6 +46,31 @@ export interface AdminLinkDetails {
   email: string;
 }
 
+export interface AdminSignInRequest {
+  email: string;
+  password: string;
+  code?: string;
+}
+
+export interface MfaEnrolment {
+  secret: string;
+  otpauthUri: string;
+}
+
+export interface RecoveryCodes {
+  codes: string[];
+}
+
+export interface ReauthRequest {
+  password: string;
+  code: string;
+}
+
+export interface ReauthProof {
+  reauthToken: string;
+  expiresAt: string;
+}
+
 export interface PasswordLinkRequest {
   email: string;
 }

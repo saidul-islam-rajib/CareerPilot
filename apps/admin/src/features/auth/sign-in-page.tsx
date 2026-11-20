@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useMutation } from '@tanstack/react-query';
 import { AlertCircle, ShieldCheck } from 'lucide-react';
-import { type SignInRequest } from '@careerpilot/api-client';
+import { ApiErrorCode, isApiError, type AdminSignInRequest } from '@careerpilot/api-client';
 import { authErrorKey, useSchemas, useT } from '@careerpilot/client-core';
 import { StatusTone } from '@careerpilot/domain-ui-logic';
 import { validate, type FieldErrors } from '@careerpilot/validation';
@@ -19,9 +19,11 @@ export function SignInPage() {
   const api = useAdminApi();
   const session = useAdminSession();
   const schemas = useSchemas();
-  const [values, setValues] = useState<SignInRequest>({ email: '', password: '' });
+  const [values, setValues] = useState<AdminSignInRequest>({ email: '', password: '' });
   const [errors, setErrors] = useState<FieldErrors>({});
-  const signIn = useMutation({ mutationFn: (input: SignInRequest) => api.auth.signIn(input), onSuccess: (result) => session.start(result) });
+  const signIn = useMutation({ mutationFn: (input: AdminSignInRequest) => api.auth.signIn(input), onSuccess: (result) => session.start(result) });
+
+  const codeNeeded = isApiError(signIn.error, ApiErrorCode.MfaRequired) || Boolean(values.code);
 
   const submit = () => {
     const result = validate(schemas.signIn, values);
@@ -30,7 +32,7 @@ export function SignInPage() {
       return;
     }
     setErrors({});
-    signIn.mutate(result.value);
+    signIn.mutate({ ...result.value, code: values.code || undefined });
   };
 
   return (
@@ -42,7 +44,7 @@ export function SignInPage() {
           {t('admin.signInBody')}
         </p>
       </div>
-      {signIn.error ? (
+      {signIn.error && !isApiError(signIn.error, ApiErrorCode.MfaRequired) ? (
         <Banner tone={StatusTone.Danger} icon={AlertCircle} title={t(authErrorKey(signIn.error))} />
       ) : null}
       <Card>
@@ -56,6 +58,16 @@ export function SignInPage() {
         >
           <TextField label={t('auth.email')} type="email" autoComplete="username" value={values.email} onChange={(e) => setValues((v) => ({ ...v, email: e.target.value }))} error={errors.email} />
           <TextField label={t('auth.password')} secret autoComplete="current-password" value={values.password} onChange={(e) => setValues((v) => ({ ...v, password: e.target.value }))} error={errors.password} />
+          {codeNeeded ? (
+            <TextField
+              label={t('admin.mfa.codeLabel')}
+              hint={t('admin.mfa.codeHint')}
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              value={values.code ?? ''}
+              onChange={(e) => setValues((v) => ({ ...v, code: e.target.value }))}
+            />
+          ) : null}
           <Button type="submit" fullWidth loading={signIn.isPending}>
             {t('auth.signIn')}
           </Button>

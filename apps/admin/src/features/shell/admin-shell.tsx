@@ -84,6 +84,9 @@ export function AdminShell({ children }: PropsWithChildren) {
           <span className="flex-1 text-sm text-muted">
             {admin ? t('admin.signedInAs', { name: admin.fullName, role: display(EnumKey.AdminRole, admin.role).label }) : null}
           </span>
+          <Link href={AdminRoutes.security} className="text-sm font-semibold text-primary hover:underline">
+            {t('admin.mfa.navLabel')}
+          </Link>
           <Button variant="outline" size="sm" icon={LogOut} onClick={() => void end()}>
             {t('auth.signOut')}
           </Button>

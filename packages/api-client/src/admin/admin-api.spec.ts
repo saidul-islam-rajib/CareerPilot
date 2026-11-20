@@ -259,3 +259,19 @@ describe('admin visibility and inbox', () => {
     expect(await errorCode(api.users.overview('usr_missing'))).toBe(ApiErrorCode.NotFound);
   });
 });
+
+describe('admin two-factor', () => {
+  it('enrols, requires the code on sign-in and issues a reauth proof', async () => {
+    const api = await signedIn();
+    expect(await errorCode(api.auth.reauthenticate({ password: 'admin@sober.com', code: LINK_TOKEN }))).toBe(ApiErrorCode.MfaRequired);
+    const enrolment = await api.auth.beginMfaEnrolment();
+    expect(enrolment.otpauthUri).toContain('otpauth://totp/');
+    expect(await errorCode(api.auth.confirmMfa('wrong'))).toBe(ApiErrorCode.InvalidCredentials);
+    expect((await api.auth.confirmMfa(LINK_TOKEN)).codes.length).toBeGreaterThan(0);
+    expect(await errorCode(api.auth.signIn({ email: 'admin@sober.com', password: 'admin@sober.com' }))).toBe(ApiErrorCode.MfaRequired);
+    const proof = await api.auth.reauthenticate({ password: 'admin@sober.com', code: LINK_TOKEN });
+    expect(proof.reauthToken).toBeTruthy();
+    expect(await errorCode(api.auth.reauthenticate({ password: 'bad', code: LINK_TOKEN }))).toBe(ApiErrorCode.InvalidCredentials);
+    expect((await api.auth.regenerateRecoveryCodes(LINK_TOKEN)).codes.length).toBeGreaterThan(0);
+  });
+});
