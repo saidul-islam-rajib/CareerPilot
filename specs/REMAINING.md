@@ -6,10 +6,7 @@ Updated 2026-11-05. Ticked 6 tasks that code proves built: E02 scheduled checks 
 |---|---|---|---|
 | Bangladesh portal, government notice and university connectors with PDF and Bangla extraction | E02 tasks; E14 | BUILD | Greenhouse, Lever, Ashby exist; BD and university sources missing |
 | Profile-based requirement extraction from PDFs and Bangla circulars | E03 tasks | BUILD | Template path first; live AI needs ANTHROPIC_API_KEY (ACCOUNT) |
-| Quiet hours for notifications | E08 backlog | BUILD | Not found in code |
 | Bulk approval of applications | E09 backlog | BUILD | Only single approvals found |
-| Reminders for approvals before they expire (§11.3) | E06 tasks | BUILD | expires_at exists; no reminder job |
-| Daily application report alongside digest (§28.4) | E06 tasks | BUILD | Digest exists; report section missing |
 | Email and phone verification with codes | E04 tasks | BUILD | Email code flow exists; phone waits on SMS (E07) |
 | Identity details (masked) and addresses sections | E04 tasks | BUILD | Masking exists for contacts only |
 | Signature pad and photo crop presets | E04 tasks | BUILD | Web signature and mobile crop screen exist; check both platforms |
@@ -21,10 +18,8 @@ Updated 2026-11-05. Ticked 6 tasks that code proves built: E02 scheduled checks 
 | Fee rule read from opportunity or program (option B) | E28 [!] | BUILD | Recommended B |
 | Receipt upload as stored file (option B) | E28 [!] | BUILD | Recommended as follow-up |
 | Fee reminders through worker schedule (option B) | E28 [!] | BUILD | Recommended with E22 reminders |
-| Profile-freshness pause (§41, §52.3) | E25 [!] | BUILD | Needs confirmation-reminder work first |
 | Employer AI-use policy field (REQ-10.7) | E24 [!] | BUILD | Draft source already labelled |
 | Privacy export and deletion for academic records | E26 [!] | BUILD | Recommended option A |
-| Supervisor reply reminders | E26 [!] | BUILD | Recommended option A notification kind |
 | Dashboard date, country, track and user filters (53.3) | E27 [!] | BUILD | Recommended option A query filters |
 | Live notification counts and system health | E27 [!] | BUILD | Recommended option A |
 | Problem reports and academic records on user record | E27 [!] | BUILD | Add admin read ports |

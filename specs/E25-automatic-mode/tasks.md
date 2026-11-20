@@ -12,4 +12,4 @@
 - [x] Mobile screens
 - [!] Recipient time zone for submission windows (Section 49.1): option A user time zone only (built), option B per-rule choice with recipient zone from the posting. Recommendation: B in a later sprint, needs reliable posting time zone data.
 - [!] Per-route windows (Section 49.1): option A rule schedule filtered by allowed routes (built), option B dedicated route window table. Recommendation: A.
-- [!] Profile-freshness pause (Sections 41, 52.3): not built here, needs the confirmation-reminder epic.
+- [x] Profile-freshness pause (Sections 41, 52.3): built in E30 (freshnessDays, profile_stale, confirm endpoint).
