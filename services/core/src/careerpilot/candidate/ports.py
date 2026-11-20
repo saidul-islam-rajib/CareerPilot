@@ -75,3 +75,12 @@ class WorkspaceRepository(Protocol):
     def get(self, user_id: str) -> CandidateWorkspace: ...
 
     def save(self, user_id: str, workspace: CandidateWorkspace) -> None: ...
+
+
+class SensitiveAccessLog(Protocol):
+    def record(self, user_id: str, actor_name: str, action: str, target: str) -> None: ...
+
+
+class NoSensitiveAccessLog:
+    def record(self, user_id: str, actor_name: str, action: str, target: str) -> None:
+        return None

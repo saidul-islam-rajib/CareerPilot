@@ -113,7 +113,7 @@ def present_profile(
         summary=profile.summary,
         photo_url=link(profile.photo.key, profile.photo.file_name) if profile.photo else profile.photo_url,
         photo_crop=profile.photo_crop if profile.has_photo() else None,
-        signature_url=profile.signature_url,
+        signature_url=link(profile.signature.key, profile.signature.file_name) if profile.signature else profile.signature_url,
         completeness=score,
         completeness_items=items,
         contacts=[c.model_copy(update={"deleted_at": None}) for c in profile.active_contacts()],

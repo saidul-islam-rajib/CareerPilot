@@ -447,6 +447,7 @@ class Profile(CamelModel):
     photo: StoredFile | None = None
     photo_url: str | None = None
     photo_crop: PhotoCrop | None = None
+    signature: StoredFile | None = None
     signature_url: str | None = None
     completeness: int = 0
     contacts: list[Contact]

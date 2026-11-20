@@ -88,6 +88,7 @@ export { default as ThumbsDown } from 'lucide-react-native/icons/thumbs-down';
 export { default as Flag } from 'lucide-react-native/icons/flag';
 export { default as Receipt } from 'lucide-react-native/icons/receipt';
 export { default as Eraser } from 'lucide-react-native/icons/eraser';
+export { default as Undo2 } from 'lucide-react-native/icons/undo-2';
 export { default as FilePlus } from 'lucide-react-native/icons/file-plus';
 export { default as Link2Off } from 'lucide-react-native/icons/link-2-off';
 export { default as PenLine } from 'lucide-react-native/icons/pen-line';

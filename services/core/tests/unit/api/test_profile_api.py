@@ -184,5 +184,5 @@ def test_cors_allows_deletes_and_config_exposes_profile_definitions(client: Test
     )
     assert "DELETE" in preflight.headers.get("access-control-allow-methods", "")
     profile = client.get("/v1/config").json()["profile"]
-    assert profile["sections"][0]["fields"][0] == {"key": "title", "type": "text", "required": True, "maxLength": 120}
+    assert profile["sections"][0]["fields"][0] == {"key": "title", "type": "text", "required": True, "maxLength": 120, "sensitive": False}
     assert profile["uploads"]["documentTypes"] == ["application/pdf"]

@@ -112,6 +112,14 @@ export function useRemovePhoto() {
   return useProfileMutation((api, _: void) => api.profile.removePhoto());
 }
 
+export function useSetSignature() {
+  return useProfileMutation((api, file: UploadSource) => api.profile.setSignature(file));
+}
+
+export function useRemoveSignature() {
+  return useProfileMutation((api, _: void) => api.profile.removeSignature());
+}
+
 export function useAddContact() {
   return useProfileMutation((api, input: ContactInput) => api.profile.addContact(input));
 }
@@ -180,6 +188,11 @@ export function useRemoveEntry(section: string) {
 
 export function useRestoreEntry(section: string) {
   return useProfileMutation((api, id: string) => api.profile.restoreEntry(section, id));
+}
+
+export function useRevealField(section: string) {
+  const api = useApi();
+  return useMutation({ mutationFn: (input: { id: string; field: string }) => api.profile.revealField(section, input.id, input.field) });
 }
 
 export function useReorderEntries(section: string) {

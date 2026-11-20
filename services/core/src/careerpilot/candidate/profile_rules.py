@@ -5,7 +5,14 @@ from typing import cast
 from urllib.parse import urlsplit
 
 from careerpilot.candidate.models import PhotoCrop
-from careerpilot.platform.config import EnumValueConfig, ProfileFieldConfig, ProfileLimits, ProfileSectionConfig, ValidationConfig
+from careerpilot.platform.config import (
+    EnumValueConfig,
+    MaskingConfig,
+    ProfileFieldConfig,
+    ProfileLimits,
+    ProfileSectionConfig,
+    ValidationConfig,
+)
 from careerpilot.platform.enums import ProfileFieldType
 from careerpilot.platform.errors import DomainError, validation_error
 from careerpilot.platform.validation import require_email
@@ -203,3 +210,8 @@ def as_mapping(value: object) -> Mapping[str, object]:
     if not isinstance(value, dict):
         raise validation_error("values")
     return cast("Mapping[str, object]", value)
+
+
+def mask_value(value: str, masking: MaskingConfig) -> str:
+    tail = value[-masking.visible_tail :] if masking.visible_tail and len(value) > masking.visible_tail else ""
+    return f"{masking.placeholder}{tail}"

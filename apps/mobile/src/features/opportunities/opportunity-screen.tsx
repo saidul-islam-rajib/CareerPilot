@@ -7,7 +7,6 @@ import { Routes } from '@/core/navigation/routes';
 import { useTheme } from '@/core/theme/theme';
 import { Badge, Banner, Button, ButtonVariant, Card, EnumBadge, ErrorState, Icon, IconSize, ListRow, LoadingState, Row, Screen, Section, Text, TextTone, TextVariant } from '@/ui';
 import { CheckJob } from './check-job';
-import { CheckJob } from './check-job';
 import { MatchFeedback } from './match-feedback';
 import { MissingSkills } from './missing-skills';
 import { ReportProblem } from './report-problem';
@@ -128,8 +127,6 @@ export function OpportunityScreen() {
             ))}
           </Card>
         </Section>
-
-        <CheckJob url={o.source.url} />
 
         <CheckJob url={o.source.url} />
 

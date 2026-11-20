@@ -7,6 +7,7 @@ import { sortEntries, useFormat, useProfileSettings, useRemoveEntry, useReorderE
 import { canAddEntry, describeEntry, type SectionDefinition } from '@careerpilot/dynamic-forms';
 import { Button, Card, OverflowMenu, SortableList } from '@careerpilot/ui-web';
 import { EntryDialog } from './entry-dialog';
+import { SensitiveValues } from './sensitive-values';
 import { sectionAnchor, sectionIcon, useRemoveWithUndo } from './profile-support';
 
 interface DialogState {
@@ -44,6 +45,7 @@ function EntryCard({
           {display.title}
         </button>
         {meta ? <p className="text-sm text-muted">{meta}</p> : null}
+        <SensitiveValues section={section} entry={entry} />
         {display.body ? <p className="line-clamp-3 whitespace-pre-line text-sm text-foreground">{display.body}</p> : null}
         {display.link ? (
           <a href={display.link} target="_blank" rel="noopener noreferrer" className="flex w-fit max-w-full items-center gap-1 text-sm text-primary underline-offset-4 hover:underline">

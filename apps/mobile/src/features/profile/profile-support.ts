@@ -59,6 +59,12 @@ export async function pickPhoto(): Promise<UploadSource | undefined> {
   return asset ? toUploadSource({ uri: asset.uri, name: asset.fileName, mimeType: asset.mimeType, size: asset.fileSize, file: asset.file }) : undefined;
 }
 
+export async function pickSignature(): Promise<UploadSource | undefined> {
+  const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: false, quality: 1 });
+  const asset = result.canceled ? undefined : result.assets?.[0];
+  return asset ? toUploadSource({ uri: asset.uri, name: asset.fileName, mimeType: asset.mimeType, size: asset.fileSize, file: asset.file }) : undefined;
+}
+
 export function useProfileFeedback() {
   const t = useT();
   const snackbar = useSnackbar();
@@ -87,6 +93,7 @@ export function useUploadRules() {
   return {
     documents: rule(settings.uploads.documentTypes, settings.uploads.maxDocumentBytes),
     photos: rule(settings.uploads.photoTypes, settings.uploads.maxPhotoBytes),
+    signatures: rule(settings.uploads.photoTypes, settings.uploads.maxSignatureBytes),
   };
 }
 

@@ -18,18 +18,19 @@ from careerpilot.candidate.models import (
     StoredFile,
     UserSummary,
 )
-from careerpilot.candidate.ports import CandidateWorkspace
+from careerpilot.candidate.ports import CandidateWorkspace, NoSensitiveAccessLog, SensitiveAccessLog
 from careerpilot.candidate.profile_rules import (
     FieldRules,
     as_mapping,
     clean_multiline,
     clean_text,
+    mask_value,
     normalize_skills,
     option_index,
     require_length,
     require_photo_crop,
 )
-from careerpilot.candidate.profile_view import ProfileView, present_profile
+from careerpilot.candidate.profile_view import ProfileEntryView, ProfileView, present_profile
 from careerpilot.platform.clock import iso
 from careerpilot.platform.config import ProfileConfig, ProfileSectionConfig
 from careerpilot.platform.enums import CompletenessKind, ContactKind, DocumentKind
@@ -43,6 +44,7 @@ FIRST_VERSION = 1
 FIRST_POSITION = 1
 FILE_NAME_FALLBACK = "document"
 ACCOUNT_EMAIL_LABEL = "profile.accountEmailLabel"
+REVEAL_ACTION = "profile.revealed_sensitive_field"
 
 COUNTRY_CODE = re.compile(r"[A-Z]{2}")
 
@@ -106,8 +108,14 @@ def completeness(profile: Profile, config: ProfileConfig) -> tuple[int, list[Com
 
 class ProfileService:
     def __init__(
-        self, context: CandidateContext, storage: FileStorage, links: FileLinkSigner, on_change: ChangeListener = ignore_change
+        self,
+        context: CandidateContext,
+        storage: FileStorage,
+        links: FileLinkSigner,
+        on_change: ChangeListener = ignore_change,
+        access_log: SensitiveAccessLog | None = None,
     ) -> None:
+        self._access_log = access_log or NoSensitiveAccessLog()
         self._ctx = context
         self._storage = storage
         self._links = links
@@ -127,13 +135,46 @@ class ProfileService:
 
     def view(self, profile: Profile, base_url: str) -> ProfileView:
         home = profile.country_code or self._ctx.settings.account.default_country_code
-        return present_profile(
-            profile,
-            completeness(profile, self._config),
-            lambda key, name: self._links.link(base_url, key, name),
-            home_country=home,
-            consistency=self._consistency.check(profile, home),
+        return self._masked(
+            present_profile(
+                profile,
+                completeness(profile, self._config),
+                lambda key, name: self._links.link(base_url, key, name),
+                home_country=home,
+                consistency=self._consistency.check(profile, home),
+            )
         )
+
+    def reveal_field(self, user_id: str, section_key: str, entry_id: str, field_key: str) -> str:
+        section = self._section(section_key)
+        field = section.field(field_key)
+        if field is None or not field.sensitive:
+            raise not_found("field")
+        profile = self._ctx.workspaces.get(user_id).profile
+        entry = self._active_entry(profile, section.key, entry_id)
+        self._access_log.record(user_id, profile.full_name, REVEAL_ACTION, f"{section.key}.{field.key}")
+        return entry.text(field.key)
+
+    def _masked(self, view: ProfileView) -> ProfileView:
+        masking = self._config.masking
+        sections: dict[str, list[ProfileEntryView]] = {}
+        for key, entries in view.sections.items():
+            section = self._config.section(key)
+            sensitive = {f.key for f in section.fields if f.sensitive} if section else set[str]()
+            sections[key] = [
+                e.model_copy(update={"values": {k: mask_value(str(v), masking) if k in sensitive else v for k, v in e.values.items()}})
+                for e in entries
+            ]
+        return view.model_copy(update={"sections": sections})
+
+    def _keep_masked(self, section: ProfileSectionConfig, stored: ProfileEntry, raw: Mapping[str, object]) -> dict[str, object]:
+        masking = self._config.masking
+        kept = dict(raw)
+        for field in section.fields:
+            current = stored.values.get(field.key)
+            if field.sensitive and current is not None and kept.get(field.key) == mask_value(str(current), masking):
+                kept[field.key] = current
+        return kept
 
     def update_basics(self, user_id: str, changes: BasicsChanges) -> Profile:
         return self._mutate(user_id, lambda w: self._apply_basics(user_id, w, changes))
@@ -156,6 +197,23 @@ class ProfileService:
             workspace.profile.photo_crop = checked
 
         return self._mutate(user_id, frame)
+
+    def set_signature(self, user_id: str, upload: Upload) -> Profile:
+        uploads = self._config.uploads
+        stored = self._store(upload, "signatures", uploads.photo_types, uploads.max_signature_bytes)
+
+        def replace(workspace: CandidateWorkspace) -> None:
+            workspace.profile.signature = stored
+            workspace.profile.signature_url = None
+
+        return self._mutate(user_id, replace)
+
+    def remove_signature(self, user_id: str) -> Profile:
+        def clear(workspace: CandidateWorkspace) -> None:
+            workspace.profile.signature = None
+            workspace.profile.signature_url = None
+
+        return self._mutate(user_id, clear)
 
     def remove_photo(self, user_id: str) -> Profile:
         def clear(workspace: CandidateWorkspace) -> None:
@@ -267,7 +325,7 @@ class ProfileService:
 
         def update(workspace: CandidateWorkspace) -> None:
             entry = self._active_entry(workspace.profile, section.key, entry_id)
-            parsed = self._rules().section_values(section, as_mapping(values))
+            parsed = self._rules().section_values(section, self._keep_masked(section, entry, as_mapping(values)))
             self._replace_entry(workspace.profile, section.key, entry.model_copy(update={"values": parsed, "updated_at": self._now()}))
 
         return self._mutate(user_id, update)

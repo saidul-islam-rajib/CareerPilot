@@ -67,6 +67,12 @@ const MS_PER_SECOND = 1000;
 const MASK = '•••';
 const EMAIL_AT = '@';
 const VISIBLE_PHONE_DIGITS = 3;
+const VISIBLE_TAIL = 4;
+
+function maskSensitive(value: EntryValue): EntryValue {
+  const text = String(value);
+  return `${MASK}${text.length > VISIBLE_TAIL ? text.slice(-VISIBLE_TAIL) : ''}`;
+}
 
 function maskDestination(contact: Contact): string {
   const at = contact.value.indexOf(EMAIL_AT);
@@ -156,6 +162,37 @@ export function createProfileStore(options: ProfileStoreOptions): ProfileApi {
     }
   }
 
+  function sensitiveKeys(section: string): string[] {
+    return (settings.sections.find((s) => s.key === section)?.fields ?? []).filter((f) => f.sensitive).map((f) => f.key);
+  }
+
+  function masked(): Profile {
+    const sections = Object.fromEntries(
+      Object.entries(profile.sections).map(([key, entries]) => {
+        const hidden = sensitiveKeys(key);
+        return [
+          key,
+          entries.map((entry) => ({
+            ...entry,
+            values: Object.fromEntries(Object.entries(entry.values).map(([field, value]) => [field, hidden.includes(field) && value ? maskSensitive(value) : value])),
+          })),
+        ];
+      }),
+    );
+    return { ...profile, sections };
+  }
+
+  function keepMasked(section: SectionDefinition, stored: ProfileEntry, values: Record<string, EntryValue>): Record<string, EntryValue> {
+    const kept = { ...values };
+    for (const field of section.fields.filter((f) => f.sensitive)) {
+      const current = stored.values[field.key];
+      if (current && kept[field.key] === maskSensitive(current)) {
+        kept[field.key] = current;
+      }
+    }
+    return kept;
+  }
+
   async function run(change: () => void): Promise<Profile> {
     try {
       change();
@@ -175,7 +212,7 @@ export function createProfileStore(options: ProfileStoreOptions): ProfileApi {
     }
     profile.homeCountry = options.homeCountry();
     profile.consistency ??= [];
-    return options.respond(profile);
+    return options.respond(masked());
   }
 
   function requireLength(value: string, max: number, detail: string): string {
@@ -384,7 +421,7 @@ export function createProfileStore(options: ProfileStoreOptions): ProfileApi {
       run(() => {
         const section = sectionOf(key);
         const entry = find(entriesOf(section.key), id, 'entry');
-        entry.values = entryValues(section, values);
+        entry.values = entryValues(section, keepMasked(section, entry, values));
         entry.updatedAt = nowIso();
       }),
     removeEntry: (key, id) =>
@@ -401,6 +438,22 @@ export function createProfileStore(options: ProfileStoreOptions): ProfileApi {
         }
         const entry = take(trash.entries[section.key] ?? [], id, 'entry');
         entries.push({ ...entry, position: nextPosition(entries) });
+      }),
+    setSignature: (file) =>
+      run(() => {
+        profile.signatureUrl = stored(file, settings.uploads.photoTypes, settings.uploads.maxSignatureBytes).url;
+      }),
+    removeSignature: () =>
+      run(() => {
+        delete profile.signatureUrl;
+      }),
+    revealField: (key, id, field) =>
+      attempt(() => {
+        const section = sectionOf(key);
+        if (!section.fields.some((f) => f.key === field && f.sensitive)) {
+          missing('field');
+        }
+        return String(find(entriesOf(section.key), id, 'entry').values[field] ?? '');
       }),
     reorderEntries: (key, orderedIds) => run(() => reorder(entriesOf(sectionOf(key).key), orderedIds, 'entry_order')),
     uploadDocument: (input) =>

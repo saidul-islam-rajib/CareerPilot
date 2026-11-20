@@ -6,13 +6,14 @@ import type { Profile } from '@careerpilot/api-client';
 import { useProfile, useProfileSettings, useT } from '@careerpilot/client-core';
 import { ProfileBlock, isEnumValue } from '@careerpilot/domain-ui-logic';
 import { sectionVisible, type SectionDefinition } from '@careerpilot/dynamic-forms';
-import { Card, ErrorState, ImageViewer, LoadingState, cn } from '@careerpilot/ui-web';
+import { ErrorState, LoadingState, cn } from '@careerpilot/ui-web';
 import { ConsistencyCard } from './consistency-card';
 import { ContactsSection } from './contacts-section';
 import { DocumentsSection } from './documents-section';
 import { EntrySection } from './entry-section';
 import { AboutSection, ProfileHeader } from './profile-header';
 import { sectionAnchor } from './profile-support';
+import { SignatureCard } from './signature-card';
 import { SkillsSection } from './skills-section';
 
 interface PageBlock {
@@ -88,10 +89,10 @@ export function ProfilePage() {
   if (profile.isError) {
     return <ErrorState onRetry={() => void profile.refetch()} />;
   }
-  return <ProfileContent profile={profile.data} signatureLabel={t('profile.signature')} zoomLabel={t('profile.tapToZoom')} />;
+  return <ProfileContent profile={profile.data} />;
 }
 
-function ProfileContent({ profile, signatureLabel, zoomLabel }: { profile: Profile; signatureLabel: string; zoomLabel: string }) {
+function ProfileContent({ profile }: { profile: Profile }) {
   const blocks = useBlocks(profile);
   return (
     <div className="flex flex-col gap-6">
@@ -103,20 +104,7 @@ function ProfileContent({ profile, signatureLabel, zoomLabel }: { profile: Profi
           {blocks.map((block) => (
             <div key={block.key}>{block.render()}</div>
           ))}
-          {profile.signatureUrl ? (
-            <Card>
-              <h2 className="font-semibold">{signatureLabel}</h2>
-              <ImageViewer
-                src={profile.signatureUrl}
-                title={signatureLabel}
-                trigger={
-                  <button type="button" aria-label={`${signatureLabel}. ${zoomLabel}`} className="w-full max-w-sm rounded-control bg-surface p-2">
-                    <img src={profile.signatureUrl} alt="" className="w-full" />
-                  </button>
-                }
-              />
-            </Card>
-          ) : null}
+          <SignatureCard profile={profile} />
         </div>
       </div>
     </div>

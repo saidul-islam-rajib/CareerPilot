@@ -236,3 +236,15 @@ def test_profiles_created_before_registration_filled_them_are_started_on_read(co
     started = container.profile.get(user_id)
     assert started.full_name == "Rafiq Karim"
     assert [(c.value, c.is_primary) for c in started.active_contacts()] == [("rafiq@example.com", True)]
+
+
+PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"\x00" * 32
+
+
+def test_signature_can_be_replaced_and_removed(container: Container) -> None:
+    profile = container.profile.set_signature(DEMO_USER, Upload("signature.png", PNG_BYTES))
+    assert profile.signature is not None
+    assert container.profile.view(profile, "http://api.test/").signature_url
+    assert container.profile.remove_signature(DEMO_USER).signature is None
+    with pytest.raises(DomainError):
+        container.profile.set_signature(DEMO_USER, Upload("signature.png", b"not an image"))

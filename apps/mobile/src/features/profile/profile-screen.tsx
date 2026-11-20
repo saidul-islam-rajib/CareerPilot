@@ -15,7 +15,9 @@ import {
   useReorderContacts,
   useReorderDocuments,
   useReorderEntries,
+  useRemoveSignature,
   useSetPhoto,
+  useSetSignature,
   useT,
   useUploadDocument,
 } from '@careerpilot/client-core';
@@ -43,7 +45,8 @@ import {
   TextTone,
   TextVariant,
 } from '@/ui';
-import { pickDocument, pickPhoto, sectionIcon, useProfileFeedback, useUploadRules } from './profile-support';
+import { SensitiveValues } from './sensitive-values';
+import { pickDocument, pickPhoto, pickSignature, sectionIcon, useProfileFeedback, useUploadRules } from './profile-support';
 
 const PERCENT = 100;
 
@@ -124,15 +127,18 @@ function EntryRow({ section, entry, onPress }: { section: SectionDefinition; ent
   const display = describeEntry(section, entry.values, optionLabel);
   const meta = [...display.subtitle, display.period ? format.period(display.period) : undefined].filter(Boolean).join(' · ');
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={display.title} onPress={onPress} style={{ gap: theme.space.xxs, paddingVertical: theme.space.sm }}>
-      <Text variant={TextVariant.Subheading}>{display.title}</Text>
-      {meta ? (
-        <Text variant={TextVariant.Label} tone={TextTone.Muted}>
-          {meta}
-        </Text>
-      ) : null}
-      {display.body ? <Text numberOfLines={3}>{display.body}</Text> : null}
-    </Pressable>
+    <View style={{ gap: theme.space.xxs, paddingVertical: theme.space.sm }}>
+      <Pressable accessibilityRole="button" accessibilityLabel={display.title} onPress={onPress} style={{ gap: theme.space.xxs }}>
+        <Text variant={TextVariant.Subheading}>{display.title}</Text>
+        {meta ? (
+          <Text variant={TextVariant.Label} tone={TextTone.Muted}>
+            {meta}
+          </Text>
+        ) : null}
+        {display.body ? <Text numberOfLines={3}>{display.body}</Text> : null}
+      </Pressable>
+      <SensitiveValues section={section} entry={entry} />
+    </View>
   );
 }
 
@@ -372,19 +378,53 @@ function ProfileContent({ profile, refreshing, onRefresh }: { profile: Profile; 
         const content = isEnumValue(ProfileBlock, key) ? fixed[key]() : section ? <SectionBlock section={section} entries={profile.sections[section.key]} /> : null;
         return content ? <View key={key}>{content}</View> : null;
       })}
-      {profile.signatureUrl ? (
-        <BlockCard icon={Pencil} title={t('profile.signature')}>
-          <Pressable
-            accessibilityRole="imagebutton"
-            accessibilityLabel={`${t('profile.signature')}. ${t('profile.tapToZoom')}`}
-            onPress={() => profile.signatureUrl && router.push(Routes.viewer(profile.signatureUrl, t('profile.signature')))}
-            style={{ backgroundColor: theme.colors.surface, borderRadius: theme.radius.control, padding: theme.space.sm }}
-          >
-            <Image source={{ uri: profile.signatureUrl }} style={{ width: '100%', aspectRatio: 3 }} contentFit="contain" />
-          </Pressable>
-        </BlockCard>
-      ) : null}
+      <SignatureBlock profile={profile} />
     </Screen>
+  );
+}
+
+function SignatureBlock({ profile }: { profile: Profile }) {
+  const t = useT();
+  const theme = useTheme();
+  const router = useRouter();
+  const feedback = useProfileFeedback();
+  const rules = useUploadRules();
+  const setSignature = useSetSignature();
+  const removeSignature = useRemoveSignature();
+  const upload = async () => {
+    const source = await pickSignature();
+    if (!source) {
+      return;
+    }
+    const rejection = rules.signatures.check(source);
+    if (rejection) {
+      feedback.rejected(rejection, rules.signatures.params);
+      return;
+    }
+    setSignature.mutate(source, { onSuccess: () => feedback.saved(t('profile.signatureUpdated')), onError: (failure) => feedback.failed(failure, rules.signatures.params) });
+  };
+  return (
+    <BlockCard icon={Pencil} title={t('profile.signature')}>
+      {profile.signatureUrl ? (
+        <Pressable
+          accessibilityRole="imagebutton"
+          accessibilityLabel={`${t('profile.signature')}. ${t('profile.tapToZoom')}`}
+          onPress={() => profile.signatureUrl && router.push(Routes.viewer(profile.signatureUrl, t('profile.signature')))}
+          style={{ backgroundColor: theme.colors.surface, borderRadius: theme.radius.control, padding: theme.space.sm }}
+        >
+          <Image source={{ uri: profile.signatureUrl }} style={{ width: '100%', aspectRatio: 3 }} contentFit="contain" />
+        </Pressable>
+      ) : (
+        <Text tone={TextTone.Muted}>{t('profile.signatureEmpty')}</Text>
+      )}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm }}>
+        <Button label={profile.signatureUrl ? t('profile.replaceSignature') : t('profile.drawSignature')} variant={ButtonVariant.Secondary} onPress={() => router.push(Routes.signaturePad)} />
+        <Button label={t('profile.uploadSignature')} variant={ButtonVariant.Secondary} loading={setSignature.isPending} onPress={() => void upload()} />
+        {profile.signatureUrl ? (
+          <Button label={t('profile.removeSignature')} variant={ButtonVariant.Ghost} onPress={() => removeSignature.mutate(undefined, { onSuccess: () => feedback.saved(t('profile.signatureRemoved')), onError: (failure) => feedback.failed(failure) })} />
+        ) : null}
+      </View>
+    </BlockCard>
   );
 }
 

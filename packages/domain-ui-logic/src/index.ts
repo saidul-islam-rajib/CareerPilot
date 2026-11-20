@@ -6,4 +6,5 @@ export * from './matching-enums';
 export * from './portal-enums';
 export * from './format';
 export * from './photo-crop';
+export * from './signature-png';
 export * from './zoned-time';

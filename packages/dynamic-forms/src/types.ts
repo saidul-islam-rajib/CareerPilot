@@ -11,6 +11,7 @@ export interface FieldDefinition {
   min?: number;
   max?: number;
   options?: EnumKey;
+  sensitive?: boolean;
 }
 
 export interface SectionDefinition {

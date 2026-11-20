@@ -125,4 +125,23 @@ describe('in-memory profile store', () => {
     expect(after.completenessItems.find((item) => item.key === 'documents')?.done).toBe(false);
     expect(after.completeness).toBeLessThan(before.completeness);
   });
+
+  it('masks sensitive identity fields, reveals on request, and keeps the stored value when the mask is saved back', async () => {
+    const api = createTestApi();
+    const values = { name_english: 'Ayesha Rahman', date_of_birth: '1998-04-23', nid_number: '1998123456789' };
+    const added = await api.profile.addEntry('identity', values);
+    const entry = added.sections.identity?.[0];
+    expect(entry?.values.nid_number).toBe('•••6789');
+    expect(await api.profile.revealField('identity', entry?.id ?? '', 'nid_number')).toBe('1998123456789');
+    expect(await failure(api.profile.revealField('identity', entry?.id ?? '', 'name_english'))).toEqual({ code: ApiErrorCode.NotFound, detail: 'field' });
+    await api.profile.updateEntry('identity', entry?.id ?? '', { ...values, nid_number: '•••6789' });
+    expect(await api.profile.revealField('identity', entry?.id ?? '', 'nid_number')).toBe('1998123456789');
+  });
+
+  it('sets and removes the signature', async () => {
+    const api = createTestApi();
+    const png: UploadSource = { name: 'signature.png', type: 'image/png', size: 64, blob: new Blob([new Uint8Array(64)], { type: 'image/png' }) };
+    expect((await api.profile.setSignature(png)).signatureUrl).toBeTruthy();
+    expect((await api.profile.removeSignature()).signatureUrl).toBeUndefined();
+  });
 });

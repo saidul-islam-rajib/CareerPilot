@@ -69,6 +69,11 @@ export function useUploadRules() {
       maxBytes: settings.uploads.maxPhotoBytes,
       params: { types: typesLabel(settings.uploads.photoTypes), size: format.fileSize(settings.uploads.maxPhotoBytes) },
     },
+    signatures: {
+      accept: settings.uploads.photoTypes,
+      maxBytes: settings.uploads.maxSignatureBytes,
+      params: { types: typesLabel(settings.uploads.photoTypes), size: format.fileSize(settings.uploads.maxSignatureBytes) },
+    },
     rejectionKey: (reason: FileRejection) => REJECTION_KEYS[reason],
   };
 }

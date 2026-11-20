@@ -64,6 +64,7 @@ export const contentMaxWidth = 720;
 
 export const zoom = { min: 1, max: 5, step: 1, doubleTap: 2.5 } as const;
 export const photoCrop = { sliderStep: 0.01, buttonStep: 0.25, nudge: 0.08, wheelStep: 0.0015 } as const;
+export const signaturePad = { width: 600, height: 200, strokeWidth: 4, minPoints: 2 } as const;
 
 export const gesture = { longPressMs: 250, dragScale: 1.02, dragElevation: 6, swipeReply: 64 } as const;
 
