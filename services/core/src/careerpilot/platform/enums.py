@@ -349,6 +349,7 @@ class NotificationKind(StrEnum):
     APPLICATION_SUBMITTED = "application_submitted"
     APPLICATION_CONFIRMED = "application_confirmed"
     APPLICATION_REPLY = "application_reply"
+    APPLICATION_BOUNCED = "application_bounced"
     INTEGRATION_ATTENTION = "integration_attention"
     AUTOMATION_ATTENTION = "automation_attention"
     APPROVAL_EXPIRING = "approval_expiring"

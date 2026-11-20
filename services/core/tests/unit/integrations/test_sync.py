@@ -162,7 +162,7 @@ def test_free_mail_domains_match_only_the_exact_address(google: Container, gatew
 def test_the_query_only_asks_for_employer_senders_and_keywords(google: Container, gateway: FakeGoogleGateway, clock: FixedClock) -> None:
     connect(google)
     google.integrations.sync.sync_user(DEMO_USER)
-    [query] = gateway.queries
+    [query] = [q for q in gateway.queries if EMPLOYER in q]
     assert f"from:{EMPLOYER}" in query and "from:baydigital.example.com" in query
     assert "subject:(" in query and "-from:me" in query
     assert query.startswith(f"after:{int((clock.now() - timedelta(days=14)).timestamp())} ")

@@ -452,6 +452,7 @@ export const NotificationKind = {
   ApplicationSubmitted: 'application_submitted',
   ApplicationConfirmed: 'application_confirmed',
   ApplicationReply: 'application_reply',
+  ApplicationBounced: 'application_bounced',
   IntegrationAttention: 'integration_attention',
   AutomationAttention: 'automation_attention',
   ApprovalExpiring: 'approval_expiring',

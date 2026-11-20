@@ -796,6 +796,12 @@ class SyncConfig(Strict):
     any_separator: str
 
 
+class BounceConfig(Strict):
+    sender_terms: list[str]
+    subject_phrases: list[str]
+    query_template: str
+
+
 class MailMatchingConfig(Strict):
     subject_keywords: list[str]
     min_organization_length: int = Field(gt=0)
@@ -844,6 +850,7 @@ class IntegrationsConfig(Strict):
     google: GoogleConfig
     vault: VaultConfig
     sync: SyncConfig
+    bounce: BounceConfig
     matching: MailMatchingConfig
     classification: ReplyClassificationConfig
     calendar: CalendarSyncConfig

@@ -43,6 +43,19 @@ integrations:
     sender_template: "from:{sender}"
     subject_template: "subject:({keywords})"
     any_separator: " OR "
+  bounce:
+    sender_terms:
+      - mailer-daemon
+      - postmaster
+    subject_phrases:
+      - delivery status notification
+      - undeliverable
+      - undelivered mail
+      - delivery has failed
+      - mail delivery failed
+      - returned mail
+      - failure notice
+    query_template: "after:{after} ({terms})"
   matching:
     subject_keywords:
       - application

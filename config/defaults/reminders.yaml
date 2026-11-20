@@ -6,6 +6,7 @@ reminders:
     default_end: "07:00"
     urgent_kinds:
       - approval_expiring
+      - application_bounced
       - application_reply
       - automation_attention
       - integration_attention

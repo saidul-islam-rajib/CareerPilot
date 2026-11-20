@@ -7,6 +7,6 @@
 - [x] Automatic mode approvals by rule
 - [x] Temporal SubmissionWorkflow on a schedule (own task queue, one at a time)
 - [x] Docker: SMTP to Mailpit; end-to-end check: discovery → match → rule approval → email with CV in Mailpit
-- [ ] Inbound bounce processing (move "Confirmed" to "Failed" on a late bounce)
+- [x] Inbound bounce processing (move "Confirmed" to "Failed" on a late bounce)
 - [ ] Portal routes with browser automation where permitted (ATS adapters)
 - [x] Rule simulation (dry run) and deadline buffer settings (§27.2)

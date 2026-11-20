@@ -74,6 +74,7 @@ from careerpilot.government.connector import TeletalkReader
 from careerpilot.government.tracking import GovernmentTracking, TrackingContext
 from careerpilot.government.workdays import WorkCalendar
 from careerpilot.integrations.admin import AdminIntegrations
+from careerpilot.integrations.bounces import BounceDetector
 from careerpilot.integrations.calendar_sync import CalendarContext, CalendarSync
 from careerpilot.integrations.classifier import RuleBasedClassifier
 from careerpilot.integrations.connections import ConnectionContext, ConnectionService, credentials_reader
@@ -528,6 +529,7 @@ def _integrations(parts: IntegrationParts, options: ContainerOverrides) -> Integ
             synced=parts.repos.synced_messages,
             matcher=ApplicationMatcher(settings.matching, frozenset(cfg.discovery.warning_signs.free_mail_domains)),
             classifier=RuleBasedClassifier(settings.classification),
+            bounces=BounceDetector(settings.bounce),
             applier=applier,
             calendar=calendar,
             notifications=parts.notifications,

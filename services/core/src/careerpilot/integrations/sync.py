@@ -6,6 +6,7 @@ from datetime import timedelta
 from careerpilot.candidate.models import ApplicationRecord
 from careerpilot.candidate.ports import CandidateWorkspace, OpportunityRepository, WorkspaceRepository
 from careerpilot.candidate.services.applications import STATUS_GROUPS
+from careerpilot.integrations.bounces import BOUNCEABLE_STATUSES, BounceDetector
 from careerpilot.integrations.calendar_sync import CalendarSync
 from careerpilot.integrations.connections import ConnectionContext, TokenKeeper
 from careerpilot.integrations.matching import ApplicationMatcher
@@ -21,6 +22,7 @@ from careerpilot.platform.enums import (
     NotificationKind,
     NotificationTarget,
     ReplyDisposition,
+    ReplyKind,
     SubmissionStatus,
     SyncFailure,
 )
@@ -29,6 +31,7 @@ from careerpilot.platform.messages import translate
 logger = logging.getLogger(__name__)
 SYNCED_ID_PREFIX = "syn"
 REPLY_STATUSES = STATUS_GROUPS[ApplicationFilter.SUBMITTED] | {SubmissionStatus.OUTCOME_UNKNOWN}
+MessageCache = dict[str, MailMessage | None]
 ApplicationListener = Callable[[str, ApplicationRecord], None]
 
 
@@ -40,6 +43,7 @@ class SyncContext:
     synced: SyncedMessageRepository
     matcher: ApplicationMatcher
     classifier: ReplyClassifier
+    bounces: BounceDetector
     applier: ReplyApplier
     calendar: CalendarSync
     notifications: NotificationService
@@ -88,7 +92,7 @@ class SyncService:
         messages = events = 0
         failure: SyncFailure | None = None
         if google.mail_scope in current.scopes:
-            messages = self._mail(user_id, current, token)
+            messages = self._mail(user_id, current, token, {})
         else:
             failure = SyncFailure.MISSING_MAIL_ACCESS
         if google.calendar_scope in current.scopes:
@@ -98,14 +102,16 @@ class SyncService:
         self._ctx.connection.connections.save(done.model_copy(update={"last_sync_at": stamp, "last_error": failure}))
         return SyncSummary(messages=messages, events=events)
 
-    def _mail(self, user_id: str, record: ConnectionRecord, token: str) -> int:
+    def _mail(self, user_id: str, record: ConnectionRecord, token: str, cache: MessageCache) -> int:
         workspace = self._ctx.workspaces.get(user_id)
+        bounced = self._bounces(user_id, record, token, workspace, cache)
         targets = self._targets(workspace)
         if not targets:
-            return 0
+            return bounced
         gateway = self._ctx.connection.gateway
         found = gateway.find_messages(token, self._query(record, targets), self._cfg.sync.max_messages_per_run)
-        incoming = [m for m in (gateway.read_message(token, i) for i in found if not self._ctx.synced.seen(user_id, i)) if m]
+        incoming = [m for m in (self._read(cache, token, i) for i in found if not self._ctx.synced.seen(user_id, i)) if m]
+        incoming = [m for m in incoming if not self._ctx.bounces.is_bounce(m)]
         incoming.sort(key=lambda message: message.received_at)
         recorded = [self._record(user_id, workspace, targets, message) for message in incoming]
         handled = [item for item in recorded if item is not None]
@@ -116,7 +122,73 @@ class SyncService:
             self._notify(user_id, application, stored)
             if confirmed:
                 self._ctx.on_status(user_id, application)
-        return len(handled)
+        return len(handled) + bounced
+
+    def _bounces(self, user_id: str, record: ConnectionRecord, token: str, workspace: CandidateWorkspace, cache: MessageCache) -> int:
+        candidates = [a for a in workspace.applications if a.submission_status in BOUNCEABLE_STATUSES and a.emails]
+        if not candidates:
+            return 0
+        gateway = self._ctx.connection.gateway
+        found = gateway.find_messages(token, self._bounce_query(record), self._cfg.sync.max_messages_per_run)
+        unseen = [m for m in (self._read(cache, token, i) for i in found if not self._ctx.synced.seen(user_id, i)) if m]
+        handled = 0
+        for message in sorted(unseen, key=lambda item: item.received_at):
+            if not self._ctx.bounces.is_bounce(message):
+                continue
+            match = self._ctx.bounces.match(message, candidates)
+            if match is None:
+                continue
+            application, recipient = match
+            link = self._cfg.google.mail_link_template.format(message_id=message.id)
+            now_text = iso(self._ctx.connection.clock.now())
+            self._ctx.bounces.apply(application, recipient, message, link, now_text)
+            self._ctx.workspaces.save(user_id, workspace)
+            self._ctx.synced.add(self._bounce_record(user_id, application, message))
+            self._notify_bounce(user_id, application)
+            candidates = [a for a in candidates if a.id != application.id]
+            handled += 1
+        return handled
+
+    def _read(self, cache: MessageCache, token: str, message_id: str) -> MailMessage | None:
+        if message_id not in cache:
+            cache[message_id] = self._ctx.connection.gateway.read_message(token, message_id)
+        return cache[message_id]
+
+    def _bounce_record(self, user_id: str, application: ApplicationRecord, message: MailMessage) -> SyncedMessage:
+        return SyncedMessage(
+            id=self._ctx.connection.ids.next(SYNCED_ID_PREFIX),
+            user_id=user_id,
+            message_id=message.id,
+            application_id=application.id,
+            received_at=iso(message.received_at),
+            kind=ReplyKind.OTHER_REPLY,
+            disposition=ReplyDisposition.RECORDED,
+            confidence=1.0,
+            subject=message.subject[: self._cfg.sync.max_subject_chars],
+        )
+
+    def _bounce_query(self, record: ConnectionRecord) -> str:
+        sync, bounce = self._cfg.sync, self._cfg.bounce
+        now = self._ctx.connection.clock.now()
+        since = (
+            parse_iso(record.last_sync_at) - timedelta(hours=sync.overlap_hours)
+            if record.last_sync_at
+            else now - timedelta(days=sync.lookback_days)
+        )
+        senders = [sync.sender_template.format(sender=term) for term in bounce.sender_terms]
+        subjects = [sync.subject_template.format(keywords=phrase) for phrase in bounce.subject_phrases]
+        terms = sync.any_separator.join([*senders, *subjects])
+        return bounce.query_template.format(after=int(since.timestamp()), terms=terms)
+
+    def _notify_bounce(self, user_id: str, application: ApplicationRecord) -> None:
+        names = {"title": application.opportunity.title, "organization": application.opportunity.organization}
+        self._ctx.notifications.notify(
+            user_id,
+            NotificationKind.APPLICATION_BOUNCED,
+            translate("integrations.bounce.title"),
+            translate("integrations.bounce.body", names),
+            (NotificationTarget.APPLICATION, application.id),
+        )
 
     def _record(
         self, user_id: str, workspace: CandidateWorkspace, targets: dict[str, Targets], message: MailMessage
