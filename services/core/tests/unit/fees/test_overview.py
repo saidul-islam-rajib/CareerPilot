@@ -9,6 +9,7 @@ from careerpilot.government.models import FeeRecord, GovApplicationView
 from careerpilot.platform.clock import FixedClock, SequentialIdGenerator
 from careerpilot.platform.config import load_settings
 from careerpilot.platform.enums import FeeStatus, FeeUrgency, GovApplicationStatus
+from careerpilot.platform.files import InMemoryFileStorage
 from tests.unit.fees.conftest import BASE, act, deadline_in, make_payment, rule_body
 
 NOW = datetime(2026, 10, 20, 6, 0, tzinfo=UTC)
@@ -35,7 +36,17 @@ def government_view(
 
 
 def services_with(views: list[GovApplicationView]) -> FeesServices:
-    context = FeesContext(load_settings().fees, FixedClock(NOW), SequentialIdGenerator(), InMemoryFeeRecords(), lambda _: views)
+    context = FeesContext(
+        load_settings().fees,
+        FixedClock(NOW),
+        SequentialIdGenerator(),
+        InMemoryFeeRecords(),
+        lambda _: views,
+        InMemoryFileStorage(),
+        {},
+        lambda *_: None,
+        lambda *_: None,
+    )
     return build_fees(context)
 
 

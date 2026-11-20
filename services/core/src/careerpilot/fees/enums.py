@@ -35,6 +35,7 @@ class PaymentAction(StrEnum):
 
 
 class ReceiptKind(StrEnum):
+    UPLOADED_FILE = "uploaded_file"
     CONFIRMATION_MESSAGE = "confirmation_message"
     RECEIPT_NUMBER = "receipt_number"
     PORTAL_CONFIRMATION = "portal_confirmation"
@@ -76,6 +77,11 @@ class Failure(StrEnum):
     UNSUPPORTED_CURRENCY = "unsupported_currency"
     INVALID_TRANSITION = "invalid_transition"
     UNKNOWN_RULE = "unknown_rule"
+    FEE_NOT_STATED = "fee_not_stated"
+    UNKNOWN_PROGRAM = "unknown_program"
+    FILE_EMPTY = "file_empty"
+    FILE_TOO_LARGE = "file_too_large"
+    FILE_TYPE = "file_type"
 
 
 class Warning(StrEnum):

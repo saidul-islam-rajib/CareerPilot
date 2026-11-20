@@ -1,5 +1,6 @@
 from pydantic import AwareDatetime, Field
 
+from careerpilot.candidate.models import StoredFile
 from careerpilot.fees.enums import (
     FeeKind,
     Guidance,
@@ -49,6 +50,9 @@ class ReceiptInput(CamelModel):
 class Receipt(ReceiptInput):
     id: str
     added_at: str
+    file: StoredFile | None = None
+    sha256: str | None = None
+    url: str | None = None
 
 
 class StatusEvent(CamelModel):

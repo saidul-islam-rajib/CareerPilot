@@ -12,3 +12,18 @@ fees:
     - {status: failed, steps: [verify_with_payee, retry_after_check]}
     - {status: refunded, steps: [add_receipt]}
     - {status: paid, steps: [check_duplicate]}
+  receipt_files:
+    max_bytes: 5242880
+    types: [application/pdf, image/png, image/jpeg]
+    max_name_chars: 120
+    folder: fee-receipts
+  opportunity_fee:
+    phrases: [application fee, exam fee, registration fee, processing fee, admission fee, fee of, fee is, "fee:"]
+    window_chars: 60
+    kind_by_type:
+      job: job
+      internship: internship
+      government_job: government
+      scholarship: scholarship
+      masters: admission
+      phd: admission

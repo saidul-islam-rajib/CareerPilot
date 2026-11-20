@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 
-from careerpilot.fees.enums import Guidance, PaymentStatus
+from careerpilot.fees.enums import FeeKind, Guidance, PaymentStatus
 
 
 class FeesBase(BaseModel):
@@ -12,6 +12,19 @@ class StatusGuidance(FeesBase):
     steps: list[Guidance]
 
 
+class ReceiptFilesConfig(FeesBase):
+    max_bytes: int = Field(gt=0)
+    types: list[str]
+    max_name_chars: int = Field(gt=0)
+    folder: str
+
+
+class OpportunityFeeConfig(FeesBase):
+    phrases: list[str]
+    window_chars: int = Field(gt=0)
+    kind_by_type: dict[str, FeeKind]
+
+
 class FeesConfig(FeesBase):
     max_text_length: int = Field(gt=0)
     max_items: int = Field(gt=0)
@@ -21,6 +34,8 @@ class FeesConfig(FeesBase):
     default_currency: str
     currencies: list[str]
     guidance: list[StatusGuidance]
+    receipt_files: ReceiptFilesConfig
+    opportunity_fee: OpportunityFeeConfig
 
     def steps_for(self, status: PaymentStatus) -> list[Guidance]:
         return next((rule.steps for rule in self.guidance if rule.status is status), list[Guidance]())

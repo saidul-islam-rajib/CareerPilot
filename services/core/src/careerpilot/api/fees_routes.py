@@ -1,11 +1,26 @@
-from fastapi import APIRouter
+from typing import Annotated
+
+from fastapi import APIRouter, File, Request, UploadFile
 from fastapi.responses import JSONResponse, Response
 
 from careerpilot.api.common import no_content, ok
 from careerpilot.api.dependencies import CurrentUser, Services
-from careerpilot.fees.models import ActionBody, FeeRuleInput, PaymentInput, ReceiptInput
+from careerpilot.bootstrap import Container
+from careerpilot.fees.models import ActionBody, FeeRuleInput, PaymentInput, PaymentView, ReceiptInput
 
 router = APIRouter(prefix="/v1/fees")
+UploadedFile = Annotated[UploadFile, File()]
+
+
+def linked(view: PaymentView, request: Request, services: Container) -> PaymentView:
+    base_url = str(request.base_url)
+    receipts = [
+        receipt.model_copy(update={"url": services.file_links.link(base_url, receipt.file.key, receipt.file.file_name)})
+        if receipt.file is not None
+        else receipt
+        for receipt in view.payment.receipts
+    ]
+    return view.model_copy(update={"payment": view.payment.model_copy(update={"receipts": receipts})})
 
 
 @router.get("/reference")

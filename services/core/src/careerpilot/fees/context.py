@@ -7,9 +7,11 @@ from careerpilot.fees.enums import Failure, PaymentStatus, RecordKind, Urgency
 from careerpilot.fees.models import FeeRule, Payment
 from careerpilot.fees.ports import FeeRecordRepository
 from careerpilot.fees.store import RecordStore
+from careerpilot.fees.subjects import OpportunityLookup, ProgramLookup
 from careerpilot.government.models import GovApplicationView
 from careerpilot.platform.clock import Clock, IdGenerator
 from careerpilot.platform.errors import validation_error
+from careerpilot.platform.files import FileStorage
 
 RULE_PREFIX = "fer"
 PAYMENT_PREFIX = "fep"
@@ -26,6 +28,10 @@ class FeesContext:
     ids: IdGenerator
     records: FeeRecordRepository
     government: GovernmentFees
+    storage: FileStorage
+    currency_phrases: dict[str, list[str]]
+    opportunities: OpportunityLookup
+    programs: ProgramLookup
 
 
 class Stores:
