@@ -1,4 +1,4 @@
-import { parseAppConfig, type AppConfig } from '@careerpilot/client-core';
+import { parseAppConfig, type AppConfig } from '@careerpilot/client-core/src/config/client-config';
 
 let cached: AppConfig | undefined;
 

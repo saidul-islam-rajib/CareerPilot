@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { appConfigSchema } from '@careerpilot/client-core';
+import { appConfigSchema } from '@careerpilot/client-core/src/config/client-config';
 
 const adminConfigSchema = appConfigSchema.extend({
   admin: z.object({
