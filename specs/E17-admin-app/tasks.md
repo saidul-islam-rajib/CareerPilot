@@ -7,5 +7,5 @@
 - [x] Dashboard, users and user detail, opportunities, sources, applications, audit, admins
 - [x] Platform settings: theme preview and apply, limits, emergency stop
 - [x] Unit tests (11), production build, visual validation at 390/1280 (0 console errors)
-- [ ] MFA enrolment and re-authentication for destructive actions (with Keycloak in the backend)
+- [x] MFA enrolment and re-authentication for destructive actions (with Keycloak in the backend)
 - [ ] Create/delete admin accounts and custom roles (with the backend)

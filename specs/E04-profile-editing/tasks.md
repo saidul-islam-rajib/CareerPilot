@@ -8,5 +8,5 @@
 - [x] Profiles created before this release are started from the account on first read
 - [ ] Email and phone verification with codes (§5, UX §5a "Verification")
 - [ ] Signature pad and photo crop presets (UX §5a)
-- [ ] S3/MinIO storage adapter for production
+- [x] S3/MinIO storage adapter for production
 - [ ] Identity details (masked) and addresses sections

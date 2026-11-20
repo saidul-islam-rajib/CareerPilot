@@ -13,7 +13,6 @@ Updated 2026-11-05. Ticked 6 tasks that code proves built: E02 scheduled checks 
 | Inbound bounce processing | E05 tasks | BUILD | Only outbound bounce window found; needs inbound mail parsing |
 | User reports: dead link, inaccurate detail, false merge, fraud | E02 tasks | BUILD | Nothing found in code |
 | Portal routes with browser automation (ATS adapters) | E05 tasks | BUILD | In progress under E29; do not start in parallel |
-| BFF with httpOnly session cookies | E01-web-app tasks | BUILD | No cookie handling in apps/web; security-critical (ASVS L2) |
 | Government deadline reminders by worker schedule | E22 [!] | BUILD | Pair with E28 fee reminders |
 | Fee rule read from opportunity or program (option B) | E28 [!] | BUILD | Recommended B |
 | Receipt upload as stored file (option B) | E28 [!] | BUILD | Recommended as follow-up |
@@ -23,9 +22,7 @@ Updated 2026-11-05. Ticked 6 tasks that code proves built: E02 scheduled checks 
 | Dashboard date, country, track and user filters (53.3) | E27 [!] | BUILD | Recommended option A query filters |
 | Live notification counts and system health | E27 [!] | BUILD | Recommended option A |
 | Problem reports and academic records on user record | E27 [!] | BUILD | Add admin read ports |
-| MFA enrolment and re-auth for destructive actions | E17 tasks | BUILD | Keycloak self-hosted, free |
 | Create and delete admin accounts and custom roles | E17 tasks | BUILD | Not found in code |
-| S3/MinIO storage adapter for production | E04 tasks | BUILD | MinIO self-hosted, free |
 | Normalize workspace documents into per-entity tables | E01-backend-api tasks | BUILD | Internal refactor, lowest priority for seekers |
 | Self-healing auto-fix pipeline and triage | E22 backlog | BUILD | Not found; OTel exists |
 | Screen validators sign in with old demo accounts | E11 [!] | BUILD | Rewrite to create own test data; no seed |

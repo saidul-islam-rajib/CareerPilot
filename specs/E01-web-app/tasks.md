@@ -10,7 +10,7 @@
 - [x] Settings: tracks, pause, submission time, activity, about, licences, delete account
 - [x] Unit tests (25) and production build
 - [x] Visual validation at 390 px and 1280 px (`scripts/validate/web-screens.mjs`, 0 console errors)
-- [ ] BFF with httpOnly session cookies (with the backend, E01 foundation)
+- [x] BFF with httpOnly session cookies (with the backend, E01 foundation)
 
 ## Welcome page redesign (2026-10-29)
 
