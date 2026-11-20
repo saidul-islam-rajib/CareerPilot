@@ -25,7 +25,16 @@ profile:
     document_types: [application/pdf]
     photo_types: [image/jpeg, image/png, image/webp]
   storage:
+    backend: local
     local_root: .data/files
+    s3:
+      endpoint: http://localhost:9000
+      region: us-east-1
+      bucket: careerpilot-files
+      access_key_env: CAREERPILOT_STORAGE_ACCESS_KEY
+      secret_key_env: CAREERPILOT_STORAGE_SECRET_KEY
+      path_style: true
+      timeout_seconds: 15
     signed_url_ttl_seconds: 900
     signed_url_reuse_seconds: 600
   completeness:

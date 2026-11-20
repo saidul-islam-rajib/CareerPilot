@@ -28,6 +28,7 @@ from careerpilot.platform.enums import (
     ResultScale,
     SmtpSecurity,
     SpecialStatus,
+    StorageBackend,
     ThemeKey,
     Weekday,
 )
@@ -323,6 +324,7 @@ class BangladeshConfig(Strict):
     max_pdf_pages: int = Field(gt=0)
     max_pdf_bytes: int = Field(gt=0)
     default_country_code: str
+    time_zone: str
     requirements: BangladeshRequirementPatterns
 
 
@@ -548,8 +550,20 @@ class UploadConfig(Strict):
     photo_types: list[str]
 
 
+class S3Config(Strict):
+    endpoint: str
+    region: str
+    bucket: str
+    access_key_env: str
+    secret_key_env: str
+    path_style: bool
+    timeout_seconds: float = Field(gt=0)
+
+
 class StorageConfig(Strict):
+    backend: StorageBackend
     local_root: str
+    s3: S3Config
     signed_url_ttl_seconds: int = Field(gt=0)
     signed_url_reuse_seconds: int = Field(gt=0)
 

@@ -15,7 +15,10 @@ matching:
   mode: claude
 profile:
   storage:
+    backend: s3
     local_root: /data/files
+    s3:
+      endpoint: http://minio:9000
 bff:
   secure_cookies: true
   web:

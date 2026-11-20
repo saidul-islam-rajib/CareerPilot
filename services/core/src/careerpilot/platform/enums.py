@@ -298,6 +298,11 @@ class DeliveryMode(StrEnum):
     LIVE = "live"
 
 
+class StorageBackend(StrEnum):
+    LOCAL = "local"
+    S3 = "s3"
+
+
 class SmtpSecurity(StrEnum):
     NONE = "none"
     STARTTLS = "starttls"

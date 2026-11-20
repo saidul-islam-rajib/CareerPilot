@@ -6,6 +6,7 @@ from importlib.metadata import version
 from pathlib import Path
 
 import anthropic
+import httpx
 
 from careerpilot.academic.context import AcademicContext
 from careerpilot.academic.service import AcademicServices, build_academic
@@ -116,7 +117,15 @@ from careerpilot.platform.email_delivery import (
     connect_smtp,
     connect_smtp_tls,
 )
-from careerpilot.platform.enums import ApplicationMode, DeliveryMode, HealthTarget, PushMode, SmtpSecurity, SubmissionWindowKind
+from careerpilot.platform.enums import (
+    ApplicationMode,
+    DeliveryMode,
+    HealthTarget,
+    PushMode,
+    SmtpSecurity,
+    StorageBackend,
+    SubmissionWindowKind,
+)
 from careerpilot.platform.errors import DomainError
 from careerpilot.platform.files import FileLinkSigner, FileStorage, LocalFileStorage, SampleAwareStorage
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore
@@ -124,6 +133,7 @@ from careerpilot.platform.messages import translate
 from careerpilot.platform.one_time_codes import OneTimeCodes, random_token
 from careerpilot.platform.persistence import Database, create_database
 from careerpilot.platform.push import BackgroundPush, DirectPush, ExpoPushSender, NoPushSender, PushDispatcher, PushSender
+from careerpilot.platform.s3_storage import S3FileStorage, S3ObjectClient, credentials_from
 from careerpilot.platform.security import Argon2PasswordHasher, PasswordHasher, TokenService, token_secret_from_environment
 from careerpilot.portal.assembly import PortalParts, PortalServices, build_portal
 from careerpilot.portal.driver import BrowserSession
@@ -347,6 +357,15 @@ def email_sender_for(settings: Settings) -> EmailSender:
 def storage_root(settings: Settings) -> Path:
     root = Path(settings.profile.storage.local_root)
     return root if root.is_absolute() else repository_root() / root
+
+
+def file_storage_for(settings: Settings, clock: Clock) -> FileStorage:
+    config = settings.profile.storage
+    if config.backend is StorageBackend.S3:
+        credentials = credentials_from(config.s3, os.environ.get)
+        client = S3ObjectClient(config.s3, credentials, clock, httpx.Client(timeout=config.s3.timeout_seconds))
+        return S3FileStorage(client, config.signed_url_ttl_seconds)
+    return LocalFileStorage(storage_root(settings))
 
 
 def matcher_for(settings: Settings, clock: Clock) -> Matcher:
@@ -746,7 +765,7 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     pwd = options.hasher or Argon2PasswordHasher()
     secret = options.token_secret or token_secret_from_environment()
     tokens = TokenService(cfg.security, clk, secret)
-    storage = SampleAwareStorage(options.file_storage or LocalFileStorage(storage_root(cfg)))
+    storage = SampleAwareStorage(options.file_storage or file_storage_for(cfg, clk))
     file_links = FileLinkSigner(secret, clk, cfg.profile.storage.signed_url_ttl_seconds, cfg.profile.storage.signed_url_reuse_seconds)
     empty = empty_workspace_factory(cfg, clk)
     database = (
