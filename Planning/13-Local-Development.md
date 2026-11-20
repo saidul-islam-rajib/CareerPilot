@@ -76,16 +76,15 @@ Rules:
 - iOS: iOS Simulator requires a Mac. Without a Mac, iOS builds and tests run on cloud build services (EAS) or CI macOS runners, and on real iPhones via development builds.
 - The mobile app points to the local API through the machine's network address; accounts you create there (registration by email link) sign in as on the web.
 
-## 5. Git hooks (tests must pass before commit)
+## 5. Checks (CI only)
 
-Installed by `make setup` (pre-commit framework):
+There are no local git hooks, so commits and pushes are fast. Run the checks yourself when you want: `pnpm typecheck`, `pnpm test`, and in `services/core`: `ruff check .`, `ruff format --check .`, `pyright`, `pytest`.
 
-| Hook | Runs |
+| Where | Runs |
 |---|---|
-| pre-push | Linters, format checks, type checks, and all unit tests |
 | CI (required checks) | All unit tests with coverage, lint, types, and security scans |
 
-A commit is blocked if any check fails. Claude Code agents use the same commands, so they can't commit failing code either ([14-Testing-and-Quality.md](14-Testing-and-Quality.md)).
+A red CI run is fixed right away ([14-Testing-and-Quality.md](14-Testing-and-Quality.md)).
 
 ## 6. Production-like check without touching the dev stack
 
