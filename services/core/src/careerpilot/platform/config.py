@@ -414,6 +414,11 @@ class SponsorshipPhrases(Strict):
     positive: list[str]
 
 
+class AiPolicyPhrases(Strict):
+    forbidden: list[str]
+    allowed: list[str]
+
+
 class ApplicationEmailConfig(Strict):
     window_chars: int = Field(gt=0)
     phrases: list[str]
@@ -465,6 +470,7 @@ class MatchingConfig(Strict):
     weights: MatchWeights
     track_rules: dict[str, TrackRule]
     sponsorship: SponsorshipPhrases
+    ai_policy: AiPolicyPhrases
     compensation: CompensationConfig
     feedback: FeedbackConfig
 

@@ -2,9 +2,10 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Protocol
+from zoneinfo import ZoneInfo
 
 from careerpilot.discovery.bangla import latin_digits
-from careerpilot.discovery.text import iso_or_none
+from careerpilot.platform.clock import iso
 from careerpilot.platform.config import BangladeshConfig, DiscoveryConfig
 
 
@@ -40,6 +41,7 @@ class RuleRequirementExtractor:
     def __init__(self, discovery: DiscoveryConfig) -> None:
         self._config: BangladeshConfig = discovery.bangladesh
         self._date_formats = discovery.date_formats
+        self._zone = ZoneInfo(discovery.bangladesh.time_zone)
 
     def extract(self, text: str) -> ExtractedRequirements:
         clean = latin_digits(text, self._config)
@@ -68,7 +70,7 @@ class RuleRequirementExtractor:
         cleaned = raw.replace(".", "/").replace(",", "")
         for pattern in (*self._date_formats, "%d %b %Y"):
             try:
-                return iso_or_none(datetime.strptime(cleaned, pattern.replace(",", "")).date().isoformat())
+                return iso(datetime.strptime(cleaned, pattern.replace(",", "")).replace(tzinfo=self._zone))
             except ValueError:
                 continue
         return None

@@ -76,6 +76,7 @@ discovery:
     notice_keywords: [notice, circular, recruitment, vacancy, vacancies, career, appointment, নিয়োগ, বিজ্ঞপ্তি, নোটিশ, পদে, চাকরি]
     document_suffixes: [.pdf]
     bangla_digits: "০১২৩৪৫৬৭৮৯"
+    time_zone: Asia/Dhaka
     max_pdf_pages: 20
     max_pdf_bytes: 5000000
     default_country_code: BD
