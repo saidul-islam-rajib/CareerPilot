@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/playwright/python:v1.64.1-noble AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_DEFAULT_TIMEOUT=120 PIP_RETRIES=10 APP_ENV=docker VIRTUAL_ENV=/opt/venv PATH=/opt/venv/bin:$PATH
 WORKDIR /app
-RUN python -m venv /opt/venv
+RUN apt-get update && apt-get install -y --no-install-recommends python3-venv && rm -rf /var/lib/apt/lists/* && python -m venv /opt/venv
 COPY infra/docker/python_requirements.py /opt/build/python_requirements.py
 COPY services/core/pyproject.toml ./services/core/pyproject.toml
 COPY services/api/pyproject.toml ./services/api/pyproject.toml
