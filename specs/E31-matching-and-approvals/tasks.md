@@ -2,8 +2,8 @@
 
 Each task is end to end: backend, API client, client-core hook, web and mobile screens, unit tests. State lives in the workspace document unless a table is named.
 
-- [ ] 1 Compensation rule (§51): one global rule in preferences (minimum, currency, period, hard filter or preference, unstated policy include/exclude/recommend-only, range basis). Salary is read from the posting text by config phrases; other currency or missing period counts as not stated (no exchange rates in v1). Default: unstated is recommended, not applied automatically
-- [ ] 2 Match feedback: a verdict and reasons per opportunity; similar titles and organizations move the score by a configured weight, shown as a match factor
+- [x] 1 Compensation rule (§51): one global rule in preferences (minimum, currency, period, hard filter or preference, unstated policy include/exclude/recommend-only, range basis). Salary is read from the posting text by config phrases; other currency or missing period counts as not stated (no exchange rates in v1). Default: unstated is recommended, not applied automatically
+- [x] 2 Match feedback: a verdict and reasons per opportunity; similar titles and organizations move the score by a configured weight, shown as a match factor
 - [ ] 3 Bulk approval (§37.6): list shows employer, role, route, files, warnings; the call carries the exact approval ids and file hashes shown, and items with blocking warnings, fees or attestations are refused and listed
 - [ ] 4 Opportunity reports (dead link, inaccurate detail, false merge, fraud): table opportunity_reports with audit columns; admin list and status change, each action written to the admin audit log
 - [ ] 5 Fee rule read from the opportunity or academic program (E28 option B) and receipts uploaded as stored files (E28 option B)

@@ -6,8 +6,6 @@ Updated 2026-11-05. Ticked 6 tasks that code proves built: E02 scheduled checks 
 |---|---|---|---|
 | Bangladesh portal, government notice and university connectors with PDF and Bangla extraction | E02 tasks; E14 | BUILD | Greenhouse, Lever, Ashby exist; BD and university sources missing |
 | Profile-based requirement extraction from PDFs and Bangla circulars | E03 tasks | BUILD | Template path first; live AI needs ANTHROPIC_API_KEY (ACCOUNT) |
-| Compensation hard filter (§51) | E03 tasks | BUILD | Salary fields exist on candidate models; filter missing; needs extraction |
-| User feedback on matches feeding scoring | E03 tasks | BUILD | No feedback model or endpoint found |
 | Quiet hours for notifications | E08 backlog | BUILD | Not found in code |
 | Bulk approval of applications | E09 backlog | BUILD | Only single approvals found |
 | Reminders for approvals before they expire (§11.3) | E06 tasks | BUILD | expires_at exists; no reminder job |
