@@ -16,6 +16,7 @@ from careerpilot.administration.health import database_probe, run_probes, store_
 from careerpilot.administration.limits import effective_source_limit
 from careerpilot.administration.live_figures import LiveFigures
 from careerpilot.administration.messages import AdminMessages
+from careerpilot.administration.mfa_service import AdminMfaService
 from careerpilot.administration.models import AdminSourceRow, EmergencyStop, NotificationCounts, PlatformSettings
 from careerpilot.administration.presence import PresenceContext, PresenceService
 from careerpilot.administration.roles import AdminRoleService
@@ -67,6 +68,7 @@ from careerpilot.discovery.safety import public_https_url
 from careerpilot.discovery.service import DiscoveryContext, DiscoveryService
 from careerpilot.fees.context import FeesContext
 from careerpilot.fees.service import FeesServices, build_fees
+from careerpilot.fees.subjects import OpportunityFeeSubject, OpportunityLookup, ProgramFeeSubject, ProgramLookup
 from careerpilot.government.circulars import CircularContext, CircularService
 from careerpilot.government.connector import TeletalkReader
 from careerpilot.government.tracking import GovernmentTracking, TrackingContext
@@ -89,7 +91,7 @@ from careerpilot.matching.service import RecommendationContext, RecommendationSe
 from careerpilot.messaging.notifications import UNREGISTERED_REASON, NotificationContext, NotificationService
 from careerpilot.messaging.quiet import QuietHoursGate
 from careerpilot.messaging.service import MessagingContext, MessagingService
-from careerpilot.platform.clock import Clock, IdGenerator, SystemClock, UuidIdGenerator, iso
+from careerpilot.platform.clock import Clock, IdGenerator, SystemClock, UuidIdGenerator, iso, parse_iso
 from careerpilot.platform.config import (
     CoordinationMode,
     MatchingMode,
@@ -114,6 +116,7 @@ from careerpilot.platform.email_delivery import (
     connect_smtp_tls,
 )
 from careerpilot.platform.enums import ApplicationMode, DeliveryMode, HealthTarget, PushMode, SmtpSecurity, SubmissionWindowKind
+from careerpilot.platform.errors import DomainError
 from careerpilot.platform.files import FileLinkSigner, FileStorage, LocalFileStorage, SampleAwareStorage
 from careerpilot.platform.keyvalue import InMemoryKeyValueStore, KeyValueStore, RedisKeyValueStore
 from careerpilot.platform.messages import translate
@@ -179,6 +182,7 @@ class Container:
     opportunity_reports: OpportunityReportService
     dashboard: DashboardService
     admin_auth: AdminAuthService
+    admin_mfa: AdminMfaService
     admin_dashboard: AdminDashboardService
     admin_users: AdminUserService
     admin_catalog: AdminCatalogService
@@ -600,9 +604,29 @@ def _live_figures(catalog: AdminCatalogService, records: AdminUserRecords, repos
     return figures
 
 
-def _fees(cfg: Settings, parts: GovernmentParts) -> FeesServices:
+def _fee_subjects(cfg: Settings, parts: GovernmentParts, academic: AcademicServices) -> tuple[OpportunityLookup, ProgramLookup]:
+    def opportunity(_user_id: str, opportunity_id: str) -> OpportunityFeeSubject | None:
+        found = parts.repos.opportunities.get(opportunity_id)
+        if found is None:
+            return None
+        deadline = parse_iso(found.deadline) if found.deadline else None
+        return OpportunityFeeSubject(found.type, found.title, found.organization, found.description, found.source.url, deadline)
+
+    def program(user_id: str, program_id: str) -> ProgramFeeSubject | None:
+        try:
+            found = academic.programs.get(user_id, program_id)
+        except DomainError:
+            return None
+        fee = found.fee
+        return ProgramFeeSubject(found.title, found.university, fee.amount, fee.currency, fee.waiver_note, found.source_url, None)
+
+    return opportunity, program
+
+
+def _fees(cfg: Settings, parts: GovernmentParts, academic: AcademicServices) -> FeesServices:
     tracking = _government(parts).tracking
     candidate = parts.candidate
+    subjects = _fee_subjects(cfg, parts, academic)
     return build_fees(
         FeesContext(
             config=cfg.fees,
@@ -610,6 +634,10 @@ def _fees(cfg: Settings, parts: GovernmentParts) -> FeesServices:
             ids=candidate.ids,
             records=parts.repos.fee_records,
             government=lambda user_id: tracking.list_for(user_id, ""),
+            storage=parts.storage,
+            currency_phrases=cfg.matching.compensation.currency_phrases,
+            opportunities=subjects[0],
+            programs=subjects[1],
         )
     )
 
@@ -654,7 +682,7 @@ def _domains(cfg: Settings, inputs: DomainInputs, parts: GovernmentParts) -> Dom
         )
     )
     government = _government(parts)
-    fees = _fees(cfg, parts)
+    fees = _fees(cfg, parts, academic)
     reminders = ReminderService(
         ReminderContext(
             candidate=candidate,
@@ -698,6 +726,14 @@ def _portal(cfg: Settings, options: ContainerOverrides, wiring: PortalWiring) ->
             vault=FernetCipher(vault_secret(cfg.integrations.vault, wiring.secret), cfg.portals.vault_context),
         )
     )
+
+
+def _admin_access(
+    admin: AdminContext, guard: SignInGuard, cfg: Settings, secret: str, links: AdminLinkContext
+) -> tuple[AdminLinkService, AdminAuthService, AdminMfaService]:
+    link_service = AdminLinkService(links)
+    mfa = AdminMfaService(admin, guard, FernetCipher(vault_secret(cfg.integrations.vault, secret), cfg.security.mfa.vault_context))
+    return link_service, AdminAuthService(admin, guard, link_service, mfa), mfa
 
 
 def build_container(overrides: ContainerOverrides | None = None) -> Container:
@@ -792,7 +828,9 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
     account_links = AccountLinkService(
         AccountLinkContext(candidate=candidate, codes=link_codes, courier=courier, ttl_minutes=link_ttl_minutes)
     )
-    admin_links = AdminLinkService(AdminLinkContext(admin=admin, codes=link_codes, courier=courier, ttl_minutes=link_ttl_minutes))
+    admin_links, admin_auth, admin_mfa = _admin_access(
+        admin, guard, cfg, secret, AdminLinkContext(admin=admin, codes=link_codes, courier=courier, ttl_minutes=link_ttl_minutes)
+    )
     public_config = PublicConfigService(
         cfg,
         enum_value_documents(cfg.enum_values),
@@ -898,7 +936,8 @@ def build_container(overrides: ContainerOverrides | None = None) -> Container:
             lambda user_id: {view.rule.opportunity_id for view in domains.fees.rules.items(user_id) if view.rule.opportunity_id},
         ),
         dashboard=DashboardService(candidate, opportunity_service),
-        admin_auth=AdminAuthService(admin, guard, admin_links),
+        admin_auth=admin_auth,
+        admin_mfa=admin_mfa,
         admin_dashboard=AdminDashboardService(
             admin, live_figures, messaging.team_unread, _live_operations(repos, database, cache_store, coord_store)
         ),

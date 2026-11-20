@@ -1,7 +1,7 @@
 from collections.abc import AsyncGenerator
 from typing import Annotated, cast
 
-from fastapi import Depends, Query, Request
+from fastapi import Depends, Header, Query, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.concurrency import run_in_threadpool
 
@@ -13,6 +13,7 @@ from careerpilot.candidate.models import UserSummary
 from careerpilot.platform.enums import ActorType, UserSegment
 from careerpilot.platform.persistence import Actor, acting_as
 
+REAUTH_HEADER = "X-Reauth-Token"
 bearer = HTTPBearer(auto_error=False)
 Credentials = Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)]
 
@@ -35,6 +36,15 @@ async def current_admin(services: Services, credentials: Credentials) -> AsyncGe
     admin = await run_in_threadpool(services.admin_auth.authenticate, bearer_token(credentials))
     with acting_as(Actor(admin.summary.id, ActorType.ADMIN)):
         yield admin
+
+
+async def reauthenticated_admin(
+    services: Services,
+    admin: Annotated[AdminActor, Depends(current_admin)],
+    reauth_token: Annotated[str | None, Header(alias=REAUTH_HEADER)] = None,
+) -> AdminActor:
+    services.admin_auth.require_reauth(admin, reauth_token)
+    return admin
 
 
 def page_request(
@@ -60,4 +70,5 @@ def dashboard_filter(
 Filtering = Annotated[DashboardFilter, Depends(dashboard_filter)]
 CurrentUser = Annotated[UserSummary, Depends(current_user)]
 CurrentAdmin = Annotated[AdminActor, Depends(current_admin)]
+ReauthenticatedAdmin = Annotated[AdminActor, Depends(reauthenticated_admin)]
 Paging = Annotated[PageRequest, Depends(page_request)]

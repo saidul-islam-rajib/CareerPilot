@@ -3,7 +3,7 @@ from enum import StrEnum
 from typing import Any, TypeVar
 
 from pydantic import BaseModel
-from sqlalchemy import Boolean, DateTime, Integer, String, func, select
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, Integer, String, func, select
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from careerpilot.administration.adapters.documents import empty_operations, operations_from_document
@@ -50,6 +50,10 @@ class AdminAccountRow(Audited, Base):
     mfa_enabled: Mapped[bool] = mapped_column(Boolean)
     last_sign_in_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
     password_hash: Mapped[str] = mapped_column(String(TEXT))
+    mfa_secret: Mapped[str | None] = mapped_column(String(TEXT), default=None)
+    mfa_pending_secret: Mapped[str | None] = mapped_column(String(TEXT), default=None)
+    mfa_last_step: Mapped[int | None] = mapped_column(BigInteger, default=None)
+    mfa_recovery_hashes: Mapped[list[str] | None] = mapped_column(JSON, default=None)
 
 
 class PlatformSettingsRow(Audited, Base):
@@ -91,6 +95,10 @@ def _account(row: AdminAccountRow) -> AdminCredential:
             last_sign_in_at=iso(row.last_sign_in_at) if row.last_sign_in_at else None,
         ),
         password_hash=row.password_hash,
+        mfa_secret=row.mfa_secret,
+        mfa_pending_secret=row.mfa_pending_secret,
+        mfa_last_step=row.mfa_last_step,
+        mfa_recovery_hashes=list(row.mfa_recovery_hashes or []),
     )
 
 
@@ -130,6 +138,10 @@ class SqlAdminAccountRepository:
             "mfa_enabled": account.mfa_enabled,
             "last_sign_in_at": parse_iso(account.last_sign_in_at) if account.last_sign_in_at else None,
             "password_hash": credential.password_hash,
+            "mfa_secret": credential.mfa_secret,
+            "mfa_pending_secret": credential.mfa_pending_secret,
+            "mfa_last_step": credential.mfa_last_step,
+            "mfa_recovery_hashes": credential.mfa_recovery_hashes,
         }
         with self._db.unit_of_work() as session:
             row = session.get(AdminAccountRow, account.id)

@@ -108,7 +108,7 @@ def test_admin_paging_permissions_and_theme(user_client: TestClient, admin_clien
     viewer = admin_headers(admin_client, "viewer@sober.com")
     forbidden = admin_client.post("/admin/v1/users/usr_002/suspend", json={"reason": "x"}, headers=viewer)
     assert forbidden.status_code == 403
-    assert forbidden.json()["code"] == "forbidden"
+    assert forbidden.json()["code"] == "reauth_required"
     assert admin_client.patch("/admin/v1/settings", json={"activeTheme": "horizon"}, headers=headers).json()["activeTheme"] == "horizon"
     assert user_client.get("/v1/config").json()["theme"] == "horizon"
 

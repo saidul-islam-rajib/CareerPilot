@@ -5,10 +5,11 @@ from dataclasses import dataclass
 from datetime import timedelta
 
 from careerpilot.administration.account_links import ADMIN_ID_PREFIX, UNSET_PASSWORD, AdminLinkDetails, AdminLinkService
-from careerpilot.administration.context import ADMIN_AUDIENCE, AdminActor, AdminContext, PageRequest, paginate
+from careerpilot.administration.context import ADMIN_AUDIENCE, REAUTH_AUDIENCE, AdminActor, AdminContext, PageRequest, paginate
 from careerpilot.administration.discovery_sync import SourceCheckRunner
 from careerpilot.administration.limits import effective_source_limit
 from careerpilot.administration.live_figures import ISO_DATE_LENGTH, DashboardFilter, DirectoryFigures, Figures
+from careerpilot.administration.mfa_service import AdminMfaService
 from careerpilot.administration.models import (
     AdminAccount,
     AdminApplicationRow,
@@ -26,6 +27,7 @@ from careerpilot.administration.models import (
     NotificationCounts,
     Page,
     PlatformSettings,
+    ReauthProof,
     ServiceStatus,
     SourceDecision,
     SourceDefaults,
@@ -131,19 +133,49 @@ def count_by(values: list[str]) -> list[CountByKey]:
 
 
 class AdminAuthService:
-    def __init__(self, context: AdminContext, guard: SignInGuard, links: AdminLinkService) -> None:
+    def __init__(self, context: AdminContext, guard: SignInGuard, links: AdminLinkService, mfa: AdminMfaService) -> None:
         self._ctx = context
         self._guard = guard
         self._links = links
+        self._mfa = mfa
 
-    def sign_in(self, email: str, password: str, client_ip: str) -> AdminSession:
+    def sign_in(self, email: str, password: str, client_ip: str, code: str | None = None) -> AdminSession:
         self._guard.ensure_allowed(GuardScope.ADMIN, email, client_ip)
         credential = self._ctx.admins.find_by_email(email)
         if credential is None or credential.account.suspended or not self._ctx.hasher.verify(credential.password_hash, password):
             self._guard.record_failure(GuardScope.ADMIN, email)
             raise DomainError(ErrorCode.INVALID_CREDENTIALS)
+        if credential.account.mfa_enabled:
+            if not code:
+                raise DomainError(ErrorCode.MFA_REQUIRED)
+            self._mfa.check(credential, code, client_ip)
         self._guard.clear(GuardScope.ADMIN, email)
         return self._start_session(credential)
+
+    def reauthenticate(self, actor: AdminActor, password: str, code: str, client_ip: str) -> ReauthProof:
+        credential = self._ctx.admins.get(actor.summary.id)
+        email = actor.summary.email
+        self._guard.ensure_allowed(GuardScope.ADMIN, email, client_ip)
+        if credential is None or not self._ctx.hasher.verify(credential.password_hash, password):
+            self._guard.record_failure(GuardScope.ADMIN, email)
+            raise DomainError(ErrorCode.INVALID_CREDENTIALS)
+        if not credential.account.mfa_enabled:
+            raise DomainError(ErrorCode.MFA_REQUIRED)
+        self._mfa.check(credential, code, client_ip)
+        ttl = self._ctx.settings.security.mfa.reauth_ttl_minutes
+        token = self._ctx.tokens.issue(actor.summary.id, REAUTH_AUDIENCE, ttl)
+        actor.record("admin.reauthenticated", email)
+        return ReauthProof(reauth_token=token, expires_at=iso(self._ctx.clock.now() + timedelta(minutes=ttl)))
+
+    def require_reauth(self, actor: AdminActor, token: str | None) -> None:
+        if not token:
+            raise DomainError(ErrorCode.REAUTH_REQUIRED)
+        try:
+            claims = self._ctx.tokens.verify(token, REAUTH_AUDIENCE)
+        except DomainError as error:
+            raise DomainError(ErrorCode.REAUTH_REQUIRED) from error
+        if claims.subject != actor.summary.id:
+            raise DomainError(ErrorCode.REAUTH_REQUIRED)
 
     def request_password_link(self, email: str, client_ip: str) -> None:
         self._guard.throttle(GuardScope.ADMIN, client_ip)
@@ -169,7 +201,12 @@ class AdminAuthService:
         summary = self._summary(credential.account)
         AdminActor(summary, self._ctx).record("admin.signed_in", credential.account.email)
         token = self._ctx.tokens.issue(summary.id, ADMIN_AUDIENCE, self._ctx.settings.security.admin_token_ttl_minutes)
-        return AdminSession(access_token=token, admin=summary, permissions=permissions_for_role(summary.role))
+        return AdminSession(
+            access_token=token,
+            admin=summary,
+            permissions=permissions_for_role(summary.role),
+            mfa_enabled=credential.account.mfa_enabled,
+        )
 
     def authenticate(self, token: str) -> AdminActor:
         claims = self._ctx.tokens.verify(token, ADMIN_AUDIENCE)

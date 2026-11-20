@@ -3,3 +3,12 @@ security:
   admin_token_ttl_minutes: 30
   token_issuer: careerpilot
   token_algorithm: HS256
+  mfa:
+    digits: 6
+    period_seconds: 30
+    window_steps: 1
+    secret_bytes: 20
+    recovery_code_count: 8
+    recovery_code_bytes: 5
+    reauth_ttl_minutes: 5
+    vault_context: careerpilot-admin-mfa-v1

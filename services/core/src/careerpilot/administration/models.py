@@ -39,6 +39,21 @@ class AdminSession(CamelModel):
     access_token: str
     admin: AdminSummary
     permissions: list[AdminPermission]
+    mfa_enabled: bool = False
+
+
+class MfaEnrolment(CamelModel):
+    secret: str
+    otpauth_uri: str
+
+
+class RecoveryCodes(CamelModel):
+    codes: list[str]
+
+
+class ReauthProof(CamelModel):
+    reauth_token: str
+    expires_at: str
 
 
 class AdminAccount(CamelModel):

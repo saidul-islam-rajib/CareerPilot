@@ -8,7 +8,7 @@ from careerpilot.administration.models import AdminPermission, NewSource, Source
 from careerpilot.administration.user_records import AdminApplicationChange, AdminProfileChange
 from careerpilot.api import admin_messaging_routes, government_routes, integrations_routes, portal_routes, privacy_routes
 from careerpilot.api.common import client_info, configure, no_content, ok
-from careerpilot.api.dependencies import CurrentAdmin, Filtering, Paging, Services
+from careerpilot.api.dependencies import CurrentAdmin, Filtering, Paging, ReauthenticatedAdmin, Services
 from careerpilot.api.instrumentation import instrument
 from careerpilot.bootstrap import Container
 from careerpilot.platform.enums import (
@@ -33,6 +33,16 @@ router = APIRouter(prefix=PREFIX)
 class SignInBody(CamelModel):
     email: str
     password: str
+    code: str | None = None
+
+
+class ReauthBody(CamelModel):
+    password: str
+    code: str
+
+
+class CodeBody(CamelModel):
+    code: str
 
 
 class EmailBody(CamelModel):
@@ -107,7 +117,27 @@ class AdminUpdateBody(CamelModel):
 
 @router.post("/auth/sign-in")
 def sign_in(body: SignInBody, request: Request, services: Services) -> JSONResponse:
-    return ok(services.admin_auth.sign_in(body.email, body.password, client_info(request, services.settings).ip))
+    return ok(services.admin_auth.sign_in(body.email, body.password, client_info(request, services.settings).ip, body.code))
+
+
+@router.post("/auth/reauthenticate")
+def reauthenticate(body: ReauthBody, request: Request, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.admin_auth.reauthenticate(admin, body.password, body.code, client_info(request, services.settings).ip))
+
+
+@router.post("/auth/mfa/enrol")
+def begin_mfa(admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.admin_mfa.begin(admin))
+
+
+@router.post("/auth/mfa/confirm")
+def confirm_mfa(body: CodeBody, request: Request, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.admin_mfa.confirm(admin, body.code, client_info(request, services.settings).ip))
+
+
+@router.post("/auth/mfa/recovery-codes")
+def regenerate_recovery_codes(body: CodeBody, request: Request, admin: CurrentAdmin, services: Services) -> JSONResponse:
+    return ok(services.admin_mfa.regenerate(admin, body.code, client_info(request, services.settings).ip))
 
 
 @router.post("/auth/password-link")
@@ -189,7 +219,7 @@ def reject_user_approval(user_id: str, approval_id: str, admin: CurrentAdmin, se
 
 
 @router.post("/users/{user_id}/suspend")
-def suspend(user_id: str, _: ReasonBody, admin: CurrentAdmin, services: Services) -> JSONResponse:
+def suspend(user_id: str, _: ReasonBody, admin: ReauthenticatedAdmin, services: Services) -> JSONResponse:
     return ok(services.admin_users.set_status(admin, user_id, UserAccountStatus.SUSPENDED, "user.suspended"))
 
 
@@ -284,12 +314,12 @@ def update_settings(body: SettingsUpdateBody, admin: CurrentAdmin, services: Ser
 
 
 @router.post("/emergency-stop")
-def start_stop(body: EmergencyStopBody, admin: CurrentAdmin, services: Services) -> JSONResponse:
+def start_stop(body: EmergencyStopBody, admin: ReauthenticatedAdmin, services: Services) -> JSONResponse:
     return ok(services.admin_settings.start_emergency_stop(admin, body.scope, body.reason, body.target))
 
 
 @router.post("/emergency-stop/end")
-def end_stop(admin: CurrentAdmin, services: Services) -> JSONResponse:
+def end_stop(admin: ReauthenticatedAdmin, services: Services) -> JSONResponse:
     return ok(services.admin_settings.end_emergency_stop(admin))
 
 
@@ -304,7 +334,7 @@ def admins(admin: CurrentAdmin, services: Services) -> JSONResponse:
 
 
 @router.patch("/admins/{admin_id}")
-def update_admin(admin_id: str, body: AdminUpdateBody, admin: CurrentAdmin, services: Services) -> JSONResponse:
+def update_admin(admin_id: str, body: AdminUpdateBody, admin: ReauthenticatedAdmin, services: Services) -> JSONResponse:
     return ok(services.admin_accounts.update(admin, admin_id, body.role, body.suspended))
 
 
@@ -314,7 +344,7 @@ def create_admin(body: AdminCreateBody, admin: CurrentAdmin, services: Services)
 
 
 @router.delete("/admins/{admin_id}")
-def delete_admin(admin_id: str, admin: CurrentAdmin, services: Services) -> Response:
+def delete_admin(admin_id: str, admin: ReauthenticatedAdmin, services: Services) -> Response:
     services.admin_accounts.delete(admin, admin_id)
     return no_content()
 
@@ -325,17 +355,17 @@ def roles(admin: CurrentAdmin, services: Services) -> JSONResponse:
 
 
 @router.post("/roles")
-def create_role(body: RoleCreateBody, admin: CurrentAdmin, services: Services) -> JSONResponse:
+def create_role(body: RoleCreateBody, admin: ReauthenticatedAdmin, services: Services) -> JSONResponse:
     return ok(services.admin_roles.create(admin, body.name, body.permissions))
 
 
 @router.put("/roles/{role_id}/members")
-def assign_role(role_id: str, body: RoleAssignBody, admin: CurrentAdmin, services: Services) -> JSONResponse:
+def assign_role(role_id: str, body: RoleAssignBody, admin: ReauthenticatedAdmin, services: Services) -> JSONResponse:
     return ok(services.admin_roles.assign(admin, role_id, body.admin_id, body.assigned))
 
 
 @router.delete("/roles/{role_id}")
-def delete_role(role_id: str, admin: CurrentAdmin, services: Services) -> Response:
+def delete_role(role_id: str, admin: ReauthenticatedAdmin, services: Services) -> Response:
     services.admin_roles.delete(admin, role_id)
     return no_content()
 

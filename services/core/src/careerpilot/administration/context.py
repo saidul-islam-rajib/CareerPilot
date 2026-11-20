@@ -13,6 +13,7 @@ from careerpilot.platform.errors import DomainError, ErrorCode
 from careerpilot.platform.security import PasswordHasher, TokenService
 
 ADMIN_AUDIENCE = "admin"
+REAUTH_AUDIENCE = "admin-reauth"
 FIRST_PAGE = 1
 
 Item = TypeVar("Item")
@@ -81,3 +82,22 @@ def paginate(
     page = max(FIRST_PAGE, request.page)
     start = (page - FIRST_PAGE) * size
     return Page[Item](items=filtered[start : start + size], total=len(filtered), page=page, page_size=size)
+
+
+class UserAccessAudit:
+    def __init__(self, audit: AuditLog, clock: Clock, ids: IdGenerator) -> None:
+        self._audit = audit
+        self._clock = clock
+        self._ids = ids
+
+    def record(self, user_id: str, actor_name: str, action: str, target: str) -> None:
+        self._audit.append(
+            AuditEntry(
+                id=self._ids.next("aud"),
+                at=iso(self._clock.now()),
+                actor_name=actor_name,
+                actor_type=ActorType.USER,
+                action=action,
+                target=target,
+            )
+        )

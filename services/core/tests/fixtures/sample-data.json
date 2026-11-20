@@ -2300,7 +2300,7 @@
           "email": "admin@sober.com",
           "role": "super_admin",
           "suspended": false,
-          "mfaEnabled": true,
+          "mfaEnabled": false,
           "lastSignInAt": "2026-10-20T06:00:00.000Z"
         },
         "password": "admin@sober.com"
@@ -2312,7 +2312,7 @@
           "email": "saidul.rajib.online@gmail.com",
           "role": "super_admin",
           "suspended": false,
-          "mfaEnabled": true,
+          "mfaEnabled": false,
           "lastSignInAt": "2026-10-18T06:00:00.000Z"
         },
         "password": "Test@123#"
@@ -2324,7 +2324,7 @@
           "email": "support@sober.com",
           "role": "support",
           "suspended": false,
-          "mfaEnabled": true,
+          "mfaEnabled": false,
           "lastSignInAt": "2026-10-19T06:00:00.000Z"
         },
         "password": "admin@sober.com"
@@ -2336,7 +2336,7 @@
           "email": "operations@sober.com",
           "role": "operations",
           "suspended": false,
-          "mfaEnabled": true,
+          "mfaEnabled": false,
           "lastSignInAt": "2026-10-16T06:00:00.000Z"
         },
         "password": "admin@sober.com"

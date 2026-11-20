@@ -7,6 +7,8 @@ class ErrorCode(StrEnum):
     EMAIL_TAKEN = "email_taken"
     UNAUTHORIZED = "unauthorized"
     FORBIDDEN = "forbidden"
+    MFA_REQUIRED = "mfa_required"
+    REAUTH_REQUIRED = "reauth_required"
     NOT_FOUND = "not_found"
     CONFLICT = "conflict"
     VALIDATION = "validation"
@@ -19,6 +21,8 @@ HTTP_STATUS_BY_CODE: dict[ErrorCode, HTTPStatus] = {
     ErrorCode.EMAIL_TAKEN: HTTPStatus.CONFLICT,
     ErrorCode.UNAUTHORIZED: HTTPStatus.UNAUTHORIZED,
     ErrorCode.FORBIDDEN: HTTPStatus.FORBIDDEN,
+    ErrorCode.MFA_REQUIRED: HTTPStatus.UNAUTHORIZED,
+    ErrorCode.REAUTH_REQUIRED: HTTPStatus.FORBIDDEN,
     ErrorCode.NOT_FOUND: HTTPStatus.NOT_FOUND,
     ErrorCode.CONFLICT: HTTPStatus.CONFLICT,
     ErrorCode.VALIDATION: HTTPStatus.UNPROCESSABLE_ENTITY,

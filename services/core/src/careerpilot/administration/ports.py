@@ -21,6 +21,10 @@ from careerpilot.administration.models import (
 class AdminCredential:
     account: AdminAccount
     password_hash: str
+    mfa_secret: str | None = None
+    mfa_pending_secret: str | None = None
+    mfa_last_step: int | None = None
+    mfa_recovery_hashes: list[str] = field(default_factory=list[str])
 
 
 @dataclass
